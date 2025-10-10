@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bx7tbp4c6fh13"
-path="res://.godot/imported/Train_Heart.jpg-6c780bdd68c745bd8db539a6552b2518.ctex"
+uid="uid://b2p22oto547w8"
+path="res://.godot/imported/furnace.jpg-6cc1b2666489b7d2a28984617334a256.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Train_Heart.jpg"
-dest_files=["res://.godot/imported/Train_Heart.jpg-6c780bdd68c745bd8db539a6552b2518.ctex"]
+source_file="res://level1/furnace.jpg"
+dest_files=["res://.godot/imported/furnace.jpg-6cc1b2666489b7d2a28984617334a256.ctex"]
 
 [params]
 

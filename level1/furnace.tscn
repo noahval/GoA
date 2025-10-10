@@ -1,7 +1,7 @@
-[gd_scene load_steps=3 format=3 uid="uid://ctbqa2lmf0wkb"]
+[gd_scene load_steps=3 format=3 uid="uid://cni3f6t3vpjku"]
 
-[ext_resource type="Script" uid="uid://bc1774bks8bbb" path="res://furnace.gd" id="1"]
-[ext_resource type="Texture2D" uid="uid://b2p22oto547w8" path="res://furnace.jpg" id="2"]
+[ext_resource type="Script" path="res://level1/furnace.gd" id="1"]
+[ext_resource type="Texture2D" path="res://level1/furnace.jpg" id="2"]
 
 [node name="Furnace" type="Control"]
 layout_mode = 3
@@ -25,17 +25,14 @@ stretch_mode = 6
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
 layout_mode = 1
-anchors_preset = 8
+anchors_preset = 5
 anchor_left = 0.5
-anchor_top = 0.5
 anchor_right = 0.5
-anchor_bottom = 0.5
 offset_left = -100.0
-offset_top = -50.0
+offset_top = 10.0
 offset_right = 100.0
-offset_bottom = 50.0
+offset_bottom = 150.0
 grow_horizontal = 2
-grow_vertical = 2
 
 [node name="CoalLabel" type="Label" parent="VBoxContainer"]
 layout_mode = 2
@@ -54,9 +51,9 @@ layout_mode = 2
 text = "Shovel Coal"
 
 [node name="ShopButton" type="Button" parent="VBoxContainer"]
+visible = false
 layout_mode = 2
 text = "Take Break"
-visible = false
 
 [connection signal="pressed" from="VBoxContainer/MineButton" to="." method="_on_mine_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/ShopButton" to="." method="_on_shop_button_pressed"]
