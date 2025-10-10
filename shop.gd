@@ -3,49 +3,74 @@ extends Control
 var break_time = 10.0
 
 func _ready():
+	if Level1Vars.break_time_remaining > 0:
+		break_time = Level1Vars.break_time_remaining
+	else:
+		break_time = 10.0 + Level1Vars.overseer_lvl
 	update_labels()
 
 func _process(delta):
 	break_time -= delta
+	Level1Vars.break_time_remaining = break_time
 	if break_time <= 0:
+		Level1Vars.break_time_remaining = 0.0
 		get_tree().change_scene_to_file("res://furnace.tscn")
 	else:
 		$VBoxContainer/BreakTimer.text = "Break Timer: " + str(ceil(break_time))
 	update_labels()
 
-func _on_claim_button_pressed():
-	if Global.coal >= 100:
-		Global.coal = int(Global.coal) - 100
-		Global.coins = int(Global.coins) + 1
-		update_labels()
-
 func _on_shovel_button_pressed():
-	var cost = max(1, int(1 * pow(1.5, Global.shovel_lvl)))
-	if Global.coins >= cost:
-		Global.coins -= cost
-		Global.shovel_lvl += 1
+	var cost = max(1, int(1 * pow(1.5, Level1Vars.shovel_lvl)))
+	if Level1Vars.coins >= cost:
+		Level1Vars.coins -= cost
+		Level1Vars.shovel_lvl += 1
 		update_labels()
 
-func _on_cart_button_pressed():
-	var cost = max(Global.cart_lvl + 5, int(5 * pow(1.5, Global.cart_lvl)))
-	if Global.coins >= cost:
-		Global.coins -= cost
-		Global.cart_lvl += 1
+func _on_plow_button_pressed():
+	var cost = max(Level1Vars.plow_lvl + 5, int(5 * pow(1.5, Level1Vars.plow_lvl)))
+	if Level1Vars.coins >= cost:
+		Level1Vars.coins -= cost
+		Level1Vars.plow_lvl += 1
 		update_labels()
 
 func _on_furnace_upgrade_pressed():
-	var cost = max(Global.furnace_lvl + 10, int(10 * pow(1.15, Global.furnace_lvl)))
-	if Global.coins >= cost:
-		Global.coins -= cost
-		Global.furnace_lvl += 1
+	var cost = max(Level1Vars.auto_shovel_lvl + 10, int(10 * pow(1.15, Level1Vars.auto_shovel_lvl)))
+	if Level1Vars.coins >= cost:
+		Level1Vars.coins -= cost
+		Level1Vars.auto_shovel_lvl += 1
 		update_labels()
 
+func _on_bribe_overseer_pressed():
+	var cost = max(5, int(5 * pow(1.4, Level1Vars.overseer_lvl)))
+	if Level1Vars.coins >= cost:
+		Level1Vars.coins -= cost
+		Level1Vars.overseer_lvl += 1
+		update_labels()
+
+func _on_bribe_barkeep_pressed():
+	if Level1Vars.coins >= 10 and not Level1Vars.barkeep_bribed:
+		Level1Vars.coins -= 10
+		Level1Vars.barkeep_bribed = true
+		update_labels()
+
+func _on_secret_passage_pressed():
+	get_tree().change_scene_to_file("res://secret_passage.tscn")
+
 func update_labels():
-	$VBoxContainer/CoalLabel.text = "Coal Shoveled: " + str(int(Global.coal))
-	$VBoxContainer/CoinsLabel.text = "Coins: " + str(int(Global.coins))
-	$VBoxContainer/ShovelButton.text = "Better Shovel (+" + str(Global.shovel_lvl + 1) + " coal) - Cost: " + str(max(1, int(1 * pow(1.5, Global.shovel_lvl))))
-	$VBoxContainer/CartButton.text = "Coal Cart (+" + str((Global.cart_lvl + 1) * 5) + " coal) - Cost: " + str(max(Global.cart_lvl + 5, int(5 * pow(1.5, Global.cart_lvl))))
-	$VBoxContainer/FurnaceUpgrade.text = "Auto Furnace (+" + str(Global.furnace_lvl + 1) + "/s) - Cost: " + str(max(Global.furnace_lvl + 10, int(10 * pow(1.15, Global.furnace_lvl))))
+	$VBoxContainer/CoalLabel.text = "Coal Shoveled: " + str(int(Level1Vars.coal))
+	$VBoxContainer/CoinsLabel.text = "Coins: " + str(int(Level1Vars.coins))
+	$VBoxContainer/ShovelButton.text = "Better Shovel (+" + str(Level1Vars.shovel_lvl + 1) + " coal) - Cost: " + str(max(1, int(1 * pow(1.5, Level1Vars.shovel_lvl))))
+	$VBoxContainer/PlowButton.text = "Coal Plow (+" + str((Level1Vars.plow_lvl + 1) * 5) + " coal) - Cost: " + str(max(Level1Vars.plow_lvl + 5, int(5 * pow(1.5, Level1Vars.plow_lvl))))
+	$VBoxContainer/FurnaceUpgrade.text = "Auto Shovel (+" + str(Level1Vars.auto_shovel_lvl + 1) + "/s) - Cost: " + str(max(Level1Vars.auto_shovel_lvl + 10, int(10 * pow(1.15, Level1Vars.auto_shovel_lvl))))
+	$VBoxContainer/BribeOverseerButton.text = "Bribe Overseer (+1s break) - Cost: " + str(max(5, int(5 * pow(1.4, Level1Vars.overseer_lvl))))
+
+	# Show/hide barkeep and secret passage buttons
+	if Level1Vars.barkeep_bribed:
+		$VBoxContainer/BribeBarkeepButton.visible = false
+		$VBoxContainer/SecretPassageButton.visible = true
+	else:
+		$VBoxContainer/BribeBarkeepButton.visible = true
+		$VBoxContainer/SecretPassageButton.visible = false
 
 func _on_furnace_button_pressed():
 	get_tree().change_scene_to_file("res://furnace.tscn")

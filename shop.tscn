@@ -46,28 +46,39 @@ layout_mode = 2
 text = "Coins: 0"
 horizontal_alignment = 1
 
-[node name="ClaimButton" type="Button" parent="VBoxContainer"]
-layout_mode = 2
-text = "Claim Coin (100 coal)"
-
 [node name="ShovelButton" type="Button" parent="VBoxContainer"]
 layout_mode = 2
 text = "Better Shovel - Cost: 1"
 
-[node name="CartButton" type="Button" parent="VBoxContainer"]
+[node name="PlowButton" type="Button" parent="VBoxContainer"]
 layout_mode = 2
-text = "Coal Cart - Cost: 5"
+text = "Coal Plow - Cost: 5"
 
 [node name="FurnaceUpgrade" type="Button" parent="VBoxContainer"]
 layout_mode = 2
 text = "Auto Furnace - Cost: 10"
 
+[node name="BribeOverseerButton" type="Button" parent="VBoxContainer"]
+layout_mode = 2
+text = "Bribe Overseer - Cost: 5"
+
+[node name="BribeBarkeepButton" type="Button" parent="VBoxContainer"]
+layout_mode = 2
+text = "Bribe Barkeep - Cost: 10"
+
+[node name="SecretPassageButton" type="Button" parent="VBoxContainer"]
+layout_mode = 2
+text = "Enter Secret Passage"
+visible = false
+
 [node name="FurnaceButton" type="Button" parent="VBoxContainer"]
 layout_mode = 2
 text = "Go to Furnace"
 
-[connection signal="pressed" from="VBoxContainer/ClaimButton" to="." method="_on_claim_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/ShovelButton" to="." method="_on_shovel_button_pressed"]
-[connection signal="pressed" from="VBoxContainer/CartButton" to="." method="_on_cart_button_pressed"]
+[connection signal="pressed" from="VBoxContainer/PlowButton" to="." method="_on_plow_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/FurnaceUpgrade" to="." method="_on_furnace_upgrade_pressed"]
+[connection signal="pressed" from="VBoxContainer/BribeOverseerButton" to="." method="_on_bribe_overseer_pressed"]
+[connection signal="pressed" from="VBoxContainer/BribeBarkeepButton" to="." method="_on_bribe_barkeep_pressed"]
+[connection signal="pressed" from="VBoxContainer/SecretPassageButton" to="." method="_on_secret_passage_pressed"]
 [connection signal="pressed" from="VBoxContainer/FurnaceButton" to="." method="_on_furnace_button_pressed"]

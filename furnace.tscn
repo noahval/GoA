@@ -43,13 +43,15 @@ text = "Coal Shoveled: 0"
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="CoinsLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+text = "Coins: 0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="MineButton" type="Button" parent="VBoxContainer"]
 layout_mode = 2
 text = "Shovel Coal"
-
-[node name="Shovel1000Button" type="Button" parent="VBoxContainer"]
-layout_mode = 2
-text = "Shovel 1000 Coal"
 
 [node name="ShopButton" type="Button" parent="VBoxContainer"]
 layout_mode = 2
@@ -57,5 +59,4 @@ text = "Take Break"
 visible = false
 
 [connection signal="pressed" from="VBoxContainer/MineButton" to="." method="_on_mine_button_pressed"]
-[connection signal="pressed" from="VBoxContainer/Shovel1000Button" to="." method="_on_shovel_1000_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/ShopButton" to="." method="_on_shop_button_pressed"]
