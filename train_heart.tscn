@@ -1,9 +1,9 @@
-[gd_scene load_steps=3 format=3 uid="uid://secret_passage_001"]
+[gd_scene load_steps=3 format=3 uid="uid://train_heart_001"]
 
-[ext_resource type="Script" path="res://secret_passage.gd" id="1"]
-[ext_resource type="Texture2D" path="res://Secret_Passage.jpg" id="2"]
+[ext_resource type="Script" path="res://train_heart.gd" id="1"]
+[ext_resource type="Texture2D" path="res://Train_Heart.jpg" id="2"]
 
-[node name="SecretPassage" type="Control"]
+[node name="TrainHeart" type="Control"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -33,18 +33,13 @@ offset_top = -50.0
 offset_right = 100.0
 offset_bottom = 50.0
 
-[node name="BreakTimer" type="Label" parent="VBoxContainer"]
-layout_mode = 2
-text = "Break Timer: 10"
-horizontal_alignment = 1
-
 [node name="Label" type="Label" parent="VBoxContainer"]
 layout_mode = 2
-text = "Secret Passage"
+text = "Train Heart"
 horizontal_alignment = 1
 
 [node name="BackButton" type="Button" parent="VBoxContainer"]
 layout_mode = 2
-text = "Go Back to Shop"
+text = "Go Back"
 
 [connection signal="pressed" from="VBoxContainer/BackButton" to="." method="_on_back_button_pressed"]

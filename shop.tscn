@@ -71,6 +71,10 @@ layout_mode = 2
 text = "Enter Secret Passage"
 visible = false
 
+[node name="GetCoinButton" type="Button" parent="VBoxContainer"]
+layout_mode = 2
+text = "Get Coin (+1)"
+
 [node name="FurnaceButton" type="Button" parent="VBoxContainer"]
 layout_mode = 2
 text = "Go to Furnace"
@@ -81,4 +85,5 @@ text = "Go to Furnace"
 [connection signal="pressed" from="VBoxContainer/BribeOverseerButton" to="." method="_on_bribe_overseer_pressed"]
 [connection signal="pressed" from="VBoxContainer/BribeBarkeepButton" to="." method="_on_bribe_barkeep_pressed"]
 [connection signal="pressed" from="VBoxContainer/SecretPassageButton" to="." method="_on_secret_passage_pressed"]
+[connection signal="pressed" from="VBoxContainer/GetCoinButton" to="." method="_on_get_coin_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/FurnaceButton" to="." method="_on_furnace_button_pressed"]

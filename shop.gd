@@ -1,12 +1,12 @@
 extends Control
 
-var break_time = 10.0
+var break_time = 30.0
 
 func _ready():
 	if Level1Vars.break_time_remaining > 0:
 		break_time = Level1Vars.break_time_remaining
 	else:
-		break_time = 10.0 + Level1Vars.overseer_lvl
+		break_time = 30.0 + Level1Vars.overseer_lvl
 	update_labels()
 
 func _process(delta):
@@ -56,13 +56,17 @@ func _on_bribe_barkeep_pressed():
 func _on_secret_passage_pressed():
 	get_tree().change_scene_to_file("res://secret_passage.tscn")
 
+func _on_get_coin_button_pressed():
+	Level1Vars.coins += 1
+	update_labels()
+
 func update_labels():
 	$VBoxContainer/CoalLabel.text = "Coal Shoveled: " + str(int(Level1Vars.coal))
 	$VBoxContainer/CoinsLabel.text = "Coins: " + str(int(Level1Vars.coins))
-	$VBoxContainer/ShovelButton.text = "Better Shovel (+" + str(Level1Vars.shovel_lvl + 1) + " coal) - Cost: " + str(max(1, int(1 * pow(1.5, Level1Vars.shovel_lvl))))
-	$VBoxContainer/PlowButton.text = "Coal Plow (+" + str((Level1Vars.plow_lvl + 1) * 5) + " coal) - Cost: " + str(max(Level1Vars.plow_lvl + 5, int(5 * pow(1.5, Level1Vars.plow_lvl))))
-	$VBoxContainer/FurnaceUpgrade.text = "Auto Shovel (+" + str(Level1Vars.auto_shovel_lvl + 1) + "/s) - Cost: " + str(max(Level1Vars.auto_shovel_lvl + 10, int(10 * pow(1.15, Level1Vars.auto_shovel_lvl))))
-	$VBoxContainer/BribeOverseerButton.text = "Bribe Overseer (+1s break) - Cost: " + str(max(5, int(5 * pow(1.4, Level1Vars.overseer_lvl))))
+	$VBoxContainer/ShovelButton.text = "Better Shovel - Cost: " + str(max(1, int(1 * pow(1.5, Level1Vars.shovel_lvl))))
+	$VBoxContainer/PlowButton.text = "Coal Plow - Cost: " + str(max(Level1Vars.plow_lvl + 5, int(5 * pow(1.5, Level1Vars.plow_lvl))))
+	$VBoxContainer/FurnaceUpgrade.text = "Auto Shovel - Cost: " + str(max(Level1Vars.auto_shovel_lvl + 10, int(10 * pow(1.15, Level1Vars.auto_shovel_lvl))))
+	$VBoxContainer/BribeOverseerButton.text = "Bribe Overseer - Cost: " + str(max(5, int(5 * pow(1.4, Level1Vars.overseer_lvl))))
 
 	# Show/hide barkeep and secret passage buttons
 	if Level1Vars.barkeep_bribed:
