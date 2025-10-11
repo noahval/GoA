@@ -1,12 +1,14 @@
 extends Control
 
 var break_time = 30.0
+var max_break_time = 30.0
 
 func _ready():
 	if Level1Vars.break_time_remaining > 0:
 		break_time = Level1Vars.break_time_remaining
 	else:
 		break_time = Level1Vars.starting_break_time + Level1Vars.overseer_lvl
+	max_break_time = break_time
 	update_labels()
 
 func _process(delta):
@@ -17,6 +19,9 @@ func _process(delta):
 		get_tree().change_scene_to_file("res://level1/furnace.tscn")
 	else:
 		$HBoxContainer/LeftVBox/BreakTimerPanel/BreakTimer.text = "Break Timer: " + str(ceil(break_time))
+		# Update progress bar
+		var progress_percent = (break_time / max_break_time) * 100.0
+		$HBoxContainer/LeftVBox/BreakTimerPanel/BreakTimerBar.value = progress_percent
 	update_labels()
 
 func _on_shovel_button_pressed():
