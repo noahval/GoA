@@ -1,7 +1,2 @@
 # Godot 4+ specific ignores
 .godot/
-/android/
-
-# Export/build directories
-export/
-build/
