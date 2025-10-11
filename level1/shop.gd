@@ -81,5 +81,8 @@ func update_labels():
 		$HBoxContainer/RightVBox/BribeBarkeepButton.visible = true
 		$HBoxContainer/RightVBox/SecretPassageButton.visible = false
 
+func _on_nap_button_pressed():
+	get_tree().change_scene_to_file("res://level1/dream.tscn")
+
 func _on_furnace_button_pressed():
 	get_tree().change_scene_to_file("res://level1/furnace.tscn")

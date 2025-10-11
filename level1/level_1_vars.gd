@@ -12,4 +12,5 @@ var coin_cost = 25.0
 var components = 0
 var mechanisms = 0
 var pipes = 0
-
+var stamina = 100.0
+var max_stamina = 125.0

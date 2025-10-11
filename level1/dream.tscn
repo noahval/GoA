@@ -1,9 +1,9 @@
-[gd_scene load_steps=3 format=3 uid="uid://cni3f6t3vpjku"]
+[gd_scene load_steps=3 format=3 uid="uid://dream_scene_level1"]
 
-[ext_resource type="Script" path="res://level1/furnace.gd" id="1"]
-[ext_resource type="Texture2D" path="res://level1/furnace.jpg" id="2"]
+[ext_resource type="Script" path="res://level1/dream.gd" id="1"]
+[ext_resource type="Texture2D" path="res://level1/dream.jpg" id="2"]
 
-[node name="Furnace" type="Control"]
+[node name="Dream" type="Control"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -41,6 +41,23 @@ grow_vertical = 2
 layout_mode = 2
 custom_minimum_size = Vector2(220, 0)
 
+[node name="TitlePanel" type="Panel" parent="HBoxContainer/LeftVBox"]
+self_modulate = Color(0.5, 0.5, 0.5, 0.7)
+custom_minimum_size = Vector2(0, 24)
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="HBoxContainer/LeftVBox/TitlePanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+text = "Dream"
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="StaminaContainer" type="VBoxContainer" parent="HBoxContainer/LeftVBox"]
 layout_mode = 2
 
@@ -70,30 +87,19 @@ text = "Stamina"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="CoalLabel" type="Label" parent="HBoxContainer/LeftVBox"]
-layout_mode = 2
-text = "Coal Shoveled: 0"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="CoinsLabel" type="Label" parent="HBoxContainer/LeftVBox"]
-layout_mode = 2
-text = "Coins: 0"
-horizontal_alignment = 1
-vertical_alignment = 1
-
 [node name="RightVBox" type="VBoxContainer" parent="HBoxContainer"]
 layout_mode = 2
 custom_minimum_size = Vector2(260, 0)
 
-[node name="MineButton" type="Button" parent="HBoxContainer/RightVBox"]
+[node name="WillpowerButton" type="Button" parent="HBoxContainer/RightVBox"]
 layout_mode = 2
-text = "Shovel Coal"
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+text = "Dream of Willpower"
 
-[node name="ShopButton" type="Button" parent="HBoxContainer/RightVBox"]
-visible = false
+[node name="BackButton" type="Button" parent="HBoxContainer/RightVBox"]
 layout_mode = 2
-text = "Take Break"
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+text = "Try to Wake Up"
 
-[connection signal="pressed" from="HBoxContainer/RightVBox/MineButton" to="." method="_on_mine_button_pressed"]
-[connection signal="pressed" from="HBoxContainer/RightVBox/ShopButton" to="." method="_on_shop_button_pressed"]
+[connection signal="pressed" from="HBoxContainer/RightVBox/WillpowerButton" to="." method="_on_willpower_button_pressed"]
+[connection signal="pressed" from="HBoxContainer/RightVBox/BackButton" to="." method="_on_back_button_pressed"]
