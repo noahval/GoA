@@ -180,10 +180,8 @@ func _on_pipe_clicked(x: int, y: int):
 		# Check if puzzle is solved
 		if check_solution():
 			puzzle_solved = true
-			$VBoxContainer/LabelPanel/Label.text = "Puzzle Solved! +50 Coins!"
-			Level1Vars.coins += 50
-			await get_tree().create_timer(2.0).timeout
-			get_tree().change_scene_to_file("res://level1/shop.tscn")
+			$VBoxContainer/LabelPanel/Label.text = "Puzzle Solved!"
+			show_train_heart_button()
 
 func check_solution() -> bool:
 	# Start from (0,0) and try to reach (4,4)
@@ -264,6 +262,18 @@ func get_pipe_connections(type: int, rotation: int) -> Array:
 			connections = [3, 0]
 
 	return connections
+
+func show_train_heart_button():
+	# Create a button to enter the train heart
+	var enter_button = Button.new()
+	enter_button.text = "Enter Train Heart"
+	enter_button.custom_minimum_size = Vector2(200, 40)
+	enter_button.pressed.connect(_on_enter_train_heart_pressed)
+	$VBoxContainer.add_child(enter_button)
+	$VBoxContainer.move_child(enter_button, $VBoxContainer.get_child_count() - 2)  # Place before back button
+
+func _on_enter_train_heart_pressed():
+	get_tree().change_scene_to_file("res://level1/train_heart.tscn")
 
 func _on_back_button_pressed():
 	get_tree().change_scene_to_file("res://level1/shop.tscn")

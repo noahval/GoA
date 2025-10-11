@@ -16,13 +16,13 @@ func _process(delta):
 		Level1Vars.break_time_remaining = 0.0
 		get_tree().change_scene_to_file("res://level1/furnace.tscn")
 	else:
-		$VBoxContainer/BreakTimerPanel/BreakTimer.text = "Break Timer: " + str(ceil(break_time))
+		$HBoxContainer/LeftColumn/BreakTimerPanel/BreakTimer.text = "Break Timer: " + str(ceil(break_time))
 	update_labels()
 
 func update_labels():
-	$VBoxContainer/ComponentsPanel/ComponentsLabel.text = "Components: " + str(Level1Vars.components)
-	$VBoxContainer/MechanismsPanel/MechanismsLabel.text = "Mechanisms: " + str(Level1Vars.mechanisms)
-	$VBoxContainer/PipesPanel/PipesLabel.text = "Pipes: " + str(Level1Vars.pipes)
+	$HBoxContainer/LeftColumn/ComponentsPanel/ComponentsLabel.text = "Components: " + str(Level1Vars.components)
+	$HBoxContainer/LeftColumn/MechanismsPanel/MechanismsLabel.text = "Mechanisms: " + str(Level1Vars.mechanisms)
+	$HBoxContainer/LeftColumn/PipesPanel/PipesLabel.text = "Pipes: " + str(Level1Vars.pipes)
 
 func _on_assemble_component_button_pressed():
 	Level1Vars.components += 1

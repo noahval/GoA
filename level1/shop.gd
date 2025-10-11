@@ -6,7 +6,7 @@ func _ready():
 	if Level1Vars.break_time_remaining > 0:
 		break_time = Level1Vars.break_time_remaining
 	else:
-		break_time = 56.0 + Level1Vars.overseer_lvl
+		break_time = Level1Vars.starting_break_time + Level1Vars.overseer_lvl
 	update_labels()
 
 func _process(delta):
