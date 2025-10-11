@@ -32,6 +32,12 @@ jobs:
           relative_project_path: ./
           relative_export_path: ./build
 
+      - name: List build directory
+        run: |
+          echo "Listing build directory contents:"
+          ls -la build/ || echo "Build directory not found"
+          find build/ -type f || echo "No files found"
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
