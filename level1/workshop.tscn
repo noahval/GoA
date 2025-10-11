@@ -15,9 +15,11 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 texture = ExtResource("2")
 expand_mode = 1
-stretch_mode = 5
+stretch_mode = 6
 
 [node name="HBoxContainer" type="HBoxContainer" parent="."]
 layout_mode = 1
@@ -38,6 +40,17 @@ layout_mode = 2
 custom_minimum_size = Vector2(0, 24)
 layout_mode = 2
 self_modulate = Color(1, 1, 1, 0.7)
+
+[node name="BreakTimerBar" type="ProgressBar" parent="HBoxContainer/LeftColumn/BreakTimerPanel"]
+self_modulate = Color(0, 1, 0, 1)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+value = 100.0
+show_percentage = false
 
 [node name="BreakTimer" type="Label" parent="HBoxContainer/LeftColumn/BreakTimerPanel"]
 layout_mode = 1

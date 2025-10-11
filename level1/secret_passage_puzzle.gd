@@ -1,6 +1,7 @@
 extends Control
 
 var break_time = 0.0
+var max_break_time = 30.0
 
 # Pipe puzzle variables
 const GRID_SIZE = 5
@@ -15,6 +16,7 @@ var pipe_data = []
 
 func _ready():
 	break_time = Level1Vars.break_time_remaining
+	max_break_time = break_time
 	setup_puzzle()
 
 func _process(delta):
@@ -25,6 +27,9 @@ func _process(delta):
 		get_tree().change_scene_to_file("res://level1/furnace.tscn")
 	else:
 		$VBoxContainer/BreakTimerPanel/BreakTimer.text = "Break Timer: " + str(ceil(break_time))
+		# Update progress bar
+		var progress_percent = (break_time / max_break_time) * 100.0
+		$VBoxContainer/BreakTimerPanel/BreakTimerBar.value = progress_percent
 
 func setup_puzzle():
 	# Create puzzle container
