@@ -1,0 +1,143 @@
+[gd_scene load_steps=3 format=3 uid="uid://workshop_001"]
+
+[ext_resource type="Script" path="res://level1/workshop.gd" id="1"]
+[ext_resource type="Texture2D" path="res://level1/workshop.jpg" id="2"]
+
+[node name="Workshop" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1")
+
+[node name="Background" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -250.0
+offset_top = 10.0
+offset_right = 250.0
+offset_bottom = 250.0
+grow_horizontal = 2
+
+[node name="LeftColumn" type="VBoxContainer" parent="HBoxContainer"]
+custom_minimum_size = Vector2(240, 0)
+layout_mode = 2
+
+[node name="BreakTimerPanel" type="Panel" parent="HBoxContainer/LeftColumn"]
+custom_minimum_size = Vector2(0, 24)
+layout_mode = 2
+self_modulate = Color(1, 1, 1, 0.7)
+
+[node name="BreakTimerBar" type="ProgressBar" parent="HBoxContainer/LeftColumn/BreakTimerPanel"]
+self_modulate = Color(0, 1, 0, 1)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+value = 100.0
+show_percentage = false
+
+[node name="BreakTimer" type="Label" parent="HBoxContainer/LeftColumn/BreakTimerPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+text = "Break Timer"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="TitlePanel" type="Panel" parent="HBoxContainer/LeftColumn"]
+custom_minimum_size = Vector2(0, 24)
+layout_mode = 2
+self_modulate = Color(1, 1, 1, 0.7)
+
+[node name="Title" type="Label" parent="HBoxContainer/LeftColumn/TitlePanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+text = "Workshop"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ComponentsPanel" type="Panel" parent="HBoxContainer/LeftColumn"]
+custom_minimum_size = Vector2(0, 24)
+layout_mode = 2
+self_modulate = Color(1, 1, 1, 0.7)
+
+[node name="ComponentsLabel" type="Label" parent="HBoxContainer/LeftColumn/ComponentsPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+text = "Components: 0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="MechanismsPanel" type="Panel" parent="HBoxContainer/LeftColumn"]
+custom_minimum_size = Vector2(0, 24)
+layout_mode = 2
+self_modulate = Color(1, 1, 1, 0.7)
+
+[node name="MechanismsLabel" type="Label" parent="HBoxContainer/LeftColumn/MechanismsPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+text = "Mechanisms: 0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PipesPanel" type="Panel" parent="HBoxContainer/LeftColumn"]
+custom_minimum_size = Vector2(0, 24)
+layout_mode = 2
+self_modulate = Color(1, 1, 1, 0.7)
+
+[node name="PipesLabel" type="Label" parent="HBoxContainer/LeftColumn/PipesPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+text = "Pipes: 0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="RightColumn" type="VBoxContainer" parent="HBoxContainer"]
+custom_minimum_size = Vector2(240, 0)
+layout_mode = 2
+
+[node name="AssembleComponentButton" type="Button" parent="HBoxContainer/RightColumn"]
+layout_mode = 2
+text = "Assemble Component"
+
+[node name="BuyPipeButton" type="Button" parent="HBoxContainer/RightColumn"]
+layout_mode = 2
+text = "Assemble Pipe: 10 Components"
+
+[node name="BuyMechanismButton" type="Button" parent="HBoxContainer/RightColumn"]
+layout_mode = 2
+text = "Assemble Mechanism: 10 Components"
+
+[node name="BackToPassageButton" type="Button" parent="HBoxContainer/RightColumn"]
+layout_mode = 2
+text = "Back to Secret Passage"
+
+[connection signal="pressed" from="HBoxContainer/RightColumn/AssembleComponentButton" to="." method="_on_assemble_component_button_pressed"]
+[connection signal="pressed" from="HBoxContainer/RightColumn/BuyPipeButton" to="." method="_on_buy_pipe_button_pressed"]
+[connection signal="pressed" from="HBoxContainer/RightColumn/BuyMechanismButton" to="." method="_on_buy_mechanism_button_pressed"]
+[connection signal="pressed" from="HBoxContainer/RightColumn/BackToPassageButton" to="." method="_on_back_to_passage_button_pressed"]

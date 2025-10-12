@@ -1,0 +1,131 @@
+[gd_scene load_steps=3 format=3 uid="uid://cd70tr88djvet"]
+
+[ext_resource type="Script" path="res://level1/shop.gd" id="1"]
+[ext_resource type="Texture2D" path="res://level1/Shop.jpg" id="2"]
+
+[node name="Shop" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1")
+
+[node name="Background" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -250.0
+offset_top = -300.0
+offset_right = 250.0
+offset_bottom = 300.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="LeftVBox" type="VBoxContainer" parent="HBoxContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(220, 0)
+
+[node name="BreakTimerPanel" type="Panel" parent="HBoxContainer/LeftVBox"]
+self_modulate = Color(1, 1, 1, 0.7)
+custom_minimum_size = Vector2(0, 24)
+layout_mode = 2
+
+[node name="BreakTimerBar" type="ProgressBar" parent="HBoxContainer/LeftVBox/BreakTimerPanel"]
+self_modulate = Color(0, 1, 0, 1)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+value = 100.0
+show_percentage = false
+
+[node name="BreakTimer" type="Label" parent="HBoxContainer/LeftVBox/BreakTimerPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Break Timer"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CoinsPanel" type="Panel" parent="HBoxContainer/LeftVBox"]
+self_modulate = Color(1, 1, 1, 0.7)
+custom_minimum_size = Vector2(0, 24)
+layout_mode = 2
+
+[node name="CoinsLabel" type="Label" parent="HBoxContainer/LeftVBox/CoinsPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Coins: 0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="RightVBox" type="VBoxContainer" parent="HBoxContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(260, 0)
+
+[node name="ShovelButton" type="Button" parent="HBoxContainer/RightVBox"]
+layout_mode = 2
+text = "Better Shovel - Cost: 1"
+
+[node name="PlowButton" type="Button" parent="HBoxContainer/RightVBox"]
+layout_mode = 2
+text = "Coal Plow - Cost: 5"
+
+[node name="FurnaceUpgrade" type="Button" parent="HBoxContainer/RightVBox"]
+layout_mode = 2
+text = "Auto Furnace - Cost: 10"
+
+[node name="BribeOverseerButton" type="Button" parent="HBoxContainer/RightVBox"]
+layout_mode = 2
+text = "Bribe Overseer - Cost: 5"
+
+[node name="BribeBarkeepButton" type="Button" parent="HBoxContainer/RightVBox"]
+layout_mode = 2
+text = "Bribe Barkeep - Cost: 10"
+
+[node name="SecretPassageButton" type="Button" parent="HBoxContainer/RightVBox"]
+visible = false
+layout_mode = 2
+text = "Enter Secret Passage"
+
+[node name="NapButton" type="Button" parent="HBoxContainer/RightVBox"]
+layout_mode = 2
+text = "Nap"
+
+[node name="FurnaceButton" type="Button" parent="HBoxContainer/RightVBox"]
+layout_mode = 2
+text = "Back to Furnace"
+
+[connection signal="pressed" from="HBoxContainer/RightVBox/ShovelButton" to="." method="_on_shovel_button_pressed"]
+[connection signal="pressed" from="HBoxContainer/RightVBox/PlowButton" to="." method="_on_plow_button_pressed"]
+[connection signal="pressed" from="HBoxContainer/RightVBox/FurnaceUpgrade" to="." method="_on_furnace_upgrade_pressed"]
+[connection signal="pressed" from="HBoxContainer/RightVBox/BribeOverseerButton" to="." method="_on_bribe_overseer_pressed"]
+[connection signal="pressed" from="HBoxContainer/RightVBox/BribeBarkeepButton" to="." method="_on_bribe_barkeep_pressed"]
+[connection signal="pressed" from="HBoxContainer/RightVBox/SecretPassageButton" to="." method="_on_secret_passage_pressed"]
+[connection signal="pressed" from="HBoxContainer/RightVBox/NapButton" to="." method="_on_nap_button_pressed"]
+[connection signal="pressed" from="HBoxContainer/RightVBox/FurnaceButton" to="." method="_on_furnace_button_pressed"]
