@@ -20,6 +20,11 @@ config/icon="res://icon.svg"
 Global="*res://global.gd"
 Level1Vars="*res://level1/level_1_vars.gd"
 
+[display]
+
+window/size/viewport_width=1438
+window/size/viewport_height=817
+
 [rendering]
 
 renderer/rendering_method="gl_compatibility"

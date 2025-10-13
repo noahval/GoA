@@ -5,6 +5,19 @@ var stamina_timer = 0.0
 
 func _ready():
 	update_stamina_bar()
+	apply_mobile_scaling()
+
+func apply_mobile_scaling():
+	var viewport_size = get_viewport().get_visible_rect().size
+	# Check if in portrait mode (taller than wide)
+	if viewport_size.y > viewport_size.x:
+		# Scale up buttons for mobile
+		var buttons = $HBoxContainer/RightVBox.get_children()
+		for button in buttons:
+			if button is Button:
+				button.custom_minimum_size = Vector2(0, 60)
+				if button.get("theme_override_font_sizes/font_size") == null:
+					button.add_theme_font_size_override("font_size", 24)
 
 func _process(delta):
 	# Increase stamina by 1 every second
