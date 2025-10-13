@@ -65,6 +65,10 @@ func _on_get_coin_button_pressed():
 	Level1Vars.coins += 1
 	update_labels()
 
+func _on_developer_free_coins_button_pressed():
+	Level1Vars.coins += 10
+	update_labels()
+
 func update_labels():
 	$HBoxContainer/LeftVBox/CoinsPanel/CoinsLabel.text = "Coins: " + str(int(Level1Vars.coins))
 	$HBoxContainer/RightVBox/ShovelButton.text = "Better Shovel: " + str(max(1, int(1 * pow(1.5, Level1Vars.shovel_lvl))))

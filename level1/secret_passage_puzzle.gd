@@ -9,6 +9,8 @@ const CELL_SIZE = 80
 var grid = []  # 2D array of pipe pieces
 var puzzle_container = null
 var puzzle_solved = false
+var energized_cells = {}  # Tracks which cells are connected to the power source
+var is_destination_energized = false  # Tracks if destination is powered
 
 # Pipe types: 0=empty, 1=straight, 2=corner
 # Rotation: 0=0°, 1=90°, 2=180°, 3=270°
@@ -18,6 +20,7 @@ func _ready():
 	break_time = Level1Vars.break_time_remaining
 	max_break_time = break_time
 	setup_puzzle()
+	update_place_pipe_button()
 
 func _process(delta):
 	break_time -= delta
@@ -37,60 +40,49 @@ func setup_puzzle():
 	puzzle_container.position = Vector2(320, 200)  # Center of screen area
 	add_child(puzzle_container)
 
-	# Initialize grid
-	for y in range(GRID_SIZE):
-		var row = []
-		for x in range(GRID_SIZE):
-			row.append({"type": 0, "rotation": 0})
-		grid.append(row)
-
-	# Create a simple puzzle path from top-left to bottom-right
-	# You can customize this to create different puzzles
-	generate_puzzle()
+	# Initialize grid - load from saved state or start with no pipes
+	if Level1Vars.pipe_puzzle_grid.size() > 0:
+		# Load saved grid
+		grid = []
+		for y in range(GRID_SIZE):
+			var row = []
+			for x in range(GRID_SIZE):
+				# Deep copy the saved data
+				var saved_cell = Level1Vars.pipe_puzzle_grid[y][x]
+				row.append({"type": saved_cell["type"], "rotation": saved_cell["rotation"]})
+			grid.append(row)
+	else:
+		# Initialize empty grid
+		for y in range(GRID_SIZE):
+			var row = []
+			for x in range(GRID_SIZE):
+				row.append({"type": 0, "rotation": 0})
+			grid.append(row)
 
 	# Create visual grid
 	create_visual_grid()
+
+	# Add orange indicators outside the grid
+	create_corner_indicators()
 
 	# Update solve button
 	$VBoxContainer/LabelPanel/Label.text = "Rotate pipes to connect steam!"
 	update_pipes_label()
 
+	# Update energized state for initial grid
+	update_energized_cells()
+
 func update_pipes_label():
 	$VBoxContainer/PipesPanel/PipesLabel.text = "Pipes: " + str(Level1Vars.pipes)
 
-func generate_puzzle():
-	# Simple puzzle: create a path from (0,0) to (4,4)
-	# Path: right, down, right, down, right, down, right, down, right
-	var path_coords = [
-		[0, 0], [1, 0], [2, 0], [2, 1], [2, 2],
-		[3, 2], [4, 2], [4, 3], [4, 4]
-	]
-
-	# Place corner at (0,0) - start
-	grid[0][0] = {"type": 2, "rotation": 0}  # corner pointing right-down
-
-	# Straight pieces
-	grid[0][1] = {"type": 1, "rotation": 0}  # horizontal
-	grid[0][2] = {"type": 2, "rotation": 1}  # corner down-left
-	grid[1][2] = {"type": 1, "rotation": 1}  # vertical
-	grid[2][2] = {"type": 2, "rotation": 2}  # corner left-up becomes right-down
-	grid[2][3] = {"type": 1, "rotation": 0}  # horizontal
-	grid[2][4] = {"type": 2, "rotation": 1}  # corner
-	grid[3][4] = {"type": 1, "rotation": 1}  # vertical
-	grid[4][4] = {"type": 2, "rotation": 2}  # corner - end
-
-	# Add some random extra pieces
-	for i in range(8):
-		var rx = randi() % GRID_SIZE
-		var ry = randi() % GRID_SIZE
-		if grid[ry][rx]["type"] == 0:
-			grid[ry][rx] = {"type": randi() % 2 + 1, "rotation": randi() % 4}
-
-	# Randomize all rotations to make it a puzzle
+func save_grid_state():
+	# Deep copy the grid to Level1Vars
+	Level1Vars.pipe_puzzle_grid = []
 	for y in range(GRID_SIZE):
+		var row = []
 		for x in range(GRID_SIZE):
-			if grid[y][x]["type"] > 0:
-				grid[y][x]["rotation"] = randi() % 4
+			row.append({"type": grid[y][x]["type"], "rotation": grid[y][x]["rotation"]})
+		Level1Vars.pipe_puzzle_grid.append(row)
 
 func create_visual_grid():
 	for y in range(GRID_SIZE):
@@ -121,6 +113,72 @@ func create_visual_grid():
 
 			update_pipe_visual(x, y)
 
+func create_corner_indicators():
+	# Create top-left indicator (outside the grid)
+	var top_left_indicator = Control.new()
+	top_left_indicator.custom_minimum_size = Vector2(30, 30)
+	top_left_indicator.position = Vector2(-40, -40)  # Outside the grid, top-left
+	top_left_indicator.size = Vector2(30, 30)
+	top_left_indicator.draw.connect(_draw_top_left_indicator.bind(top_left_indicator))
+	puzzle_container.add_child(top_left_indicator)
+	top_left_indicator.queue_redraw()
+
+	# Create bottom-right indicator (outside the grid)
+	var bottom_right_indicator = Control.new()
+	bottom_right_indicator.custom_minimum_size = Vector2(30, 30)
+	bottom_right_indicator.position = Vector2(GRID_SIZE * CELL_SIZE + 10, GRID_SIZE * CELL_SIZE + 10)  # Outside the grid, bottom-right
+	bottom_right_indicator.size = Vector2(30, 30)
+	bottom_right_indicator.draw.connect(_draw_bottom_right_indicator.bind(bottom_right_indicator))
+	puzzle_container.add_child(bottom_right_indicator)
+	bottom_right_indicator.queue_redraw()
+
+func _draw_top_left_indicator(control: Control):
+	# Draw an orange circle/dot indicator
+	var center = Vector2(15, 15)
+	control.draw_circle(center, 10, Color.ORANGE)
+	# Draw a subtle outline
+	control.draw_arc(center, 10, 0, TAU, 32, Color.DARK_ORANGE, 2.0)
+
+	# Draw lines connecting to the top-left grid cell
+	var line_width = 12.0
+	var grid_edge = 40  # Distance to grid edge
+	var cell_center = grid_edge + CELL_SIZE / 2 - 2  # Center of top-left cell
+
+	# Horizontal line extending right from circle
+	control.draw_line(Vector2(center.x + 10, center.y), Vector2(cell_center, center.y), Color.ORANGE, line_width)
+	# Connecting vertical line at the end going down to grid edge
+	control.draw_line(Vector2(cell_center, center.y), Vector2(cell_center, grid_edge), Color.ORANGE, line_width)
+
+	# Vertical line extending down from circle
+	control.draw_line(Vector2(center.x, center.y + 10), Vector2(center.x, cell_center), Color.ORANGE, line_width)
+	# Connecting horizontal line at the end going right to grid edge
+	control.draw_line(Vector2(center.x, cell_center), Vector2(grid_edge, cell_center), Color.ORANGE, line_width)
+
+func _draw_bottom_right_indicator(control: Control):
+	# Use orange if energized, brown if not
+	var main_color = Color.ORANGE if is_destination_energized else Color.SADDLE_BROWN
+	var outline_color = Color.DARK_ORANGE if is_destination_energized else Color(0.35, 0.16, 0.08)  # Darker brown
+
+	var center = Vector2(15, 15)
+	control.draw_circle(center, 10, main_color)
+	# Draw a subtle outline
+	control.draw_arc(center, 10, 0, TAU, 32, outline_color, 2.0)
+
+	# Draw lines connecting to the bottom-right grid cell
+	var line_width = 12.0
+	var grid_edge = -10  # Distance back to grid edge
+	var cell_center = -(10 + CELL_SIZE / 2 - 2)  # Center of bottom-right cell
+
+	# Horizontal line extending left from circle
+	control.draw_line(Vector2(center.x - 10, center.y), Vector2(cell_center, center.y), main_color, line_width)
+	# Connecting vertical line at the end going up to grid edge
+	control.draw_line(Vector2(cell_center, center.y), Vector2(cell_center, grid_edge), main_color, line_width)
+
+	# Vertical line extending up from circle
+	control.draw_line(Vector2(center.x, center.y - 10), Vector2(center.x, cell_center), main_color, line_width)
+	# Connecting horizontal line at the end going left to grid edge
+	control.draw_line(Vector2(center.x, cell_center), Vector2(grid_edge, cell_center), main_color, line_width)
+
 func update_pipe_visual(x, y):
 	var cell_index = y * GRID_SIZE + x
 	var cell = puzzle_container.get_child(cell_index)
@@ -140,7 +198,11 @@ func _draw_pipe(pipe_visual: Control, x: int, y: int):
 		return
 
 	var center = Vector2(CELL_SIZE / 2 - 2, CELL_SIZE / 2 - 2)
-	var color = Color.STEEL_BLUE
+
+	# Check if this cell is energized
+	var key = str(x) + "," + str(y)
+	var is_energized = key in energized_cells
+	var color = Color.SADDLE_BROWN if not is_energized else Color.ORANGE
 	var width = 12.0
 
 	# Draw based on type and rotation
@@ -152,26 +214,18 @@ func _draw_pipe(pipe_visual: Control, x: int, y: int):
 
 	elif pipe["type"] == 2:  # Corner pipe
 		var rot = pipe["rotation"]
-		if rot == 0:  # Top-left corner (connects right and down)
-			pipe_visual.draw_line(Vector2(center.x, 0), center, color, width)
-			pipe_visual.draw_line(center, Vector2(CELL_SIZE - 4, center.y), color, width)
-		elif rot == 1:  # Top-right corner (connects down and left)
-			pipe_visual.draw_line(Vector2(center.x, 0), center, color, width)
-			pipe_visual.draw_line(center, Vector2(0, center.y), color, width)
-		elif rot == 2:  # Bottom-right corner (connects left and up)
-			pipe_visual.draw_line(Vector2(0, center.y), center, color, width)
-			pipe_visual.draw_line(center, Vector2(center.x, CELL_SIZE - 4), color, width)
-		elif rot == 3:  # Bottom-left corner (connects up and right)
-			pipe_visual.draw_line(Vector2(center.x, CELL_SIZE - 4), center, color, width)
-			pipe_visual.draw_line(center, Vector2(CELL_SIZE - 4, center.y), color, width)
-
-	# Draw start indicator (green)
-	if x == 0 and y == 0:
-		pipe_visual.draw_circle(center, 8, Color.GREEN)
-
-	# Draw end indicator (red)
-	if x == GRID_SIZE - 1 and y == GRID_SIZE - 1:
-		pipe_visual.draw_circle(center, 8, Color.RED)
+		if rot == 0:  # connects up and right
+			pipe_visual.draw_line(Vector2(center.x, 0), center, color, width)  # up
+			pipe_visual.draw_line(center, Vector2(CELL_SIZE - 4, center.y), color, width)  # right
+		elif rot == 1:  # connects right and down
+			pipe_visual.draw_line(center, Vector2(CELL_SIZE - 4, center.y), color, width)  # right
+			pipe_visual.draw_line(center, Vector2(center.x, CELL_SIZE - 4), color, width)  # down
+		elif rot == 2:  # connects down and left
+			pipe_visual.draw_line(center, Vector2(center.x, CELL_SIZE - 4), color, width)  # down
+			pipe_visual.draw_line(center, Vector2(0, center.y), color, width)  # left
+		elif rot == 3:  # connects left and up
+			pipe_visual.draw_line(center, Vector2(0, center.y), color, width)  # left
+			pipe_visual.draw_line(center, Vector2(center.x, 0), color, width)  # up
 
 func _on_pipe_clicked(x: int, y: int):
 	if puzzle_solved:
@@ -180,7 +234,10 @@ func _on_pipe_clicked(x: int, y: int):
 	# Rotate the pipe
 	if grid[y][x]["type"] > 0:
 		grid[y][x]["rotation"] = (grid[y][x]["rotation"] + 1) % 4
-		update_pipe_visual(x, y)
+		save_grid_state()
+
+		# Update energized state after rotation
+		update_energized_cells()
 
 		# Check if puzzle is solved
 		if check_solution():
@@ -189,7 +246,21 @@ func _on_pipe_clicked(x: int, y: int):
 			show_train_heart_button()
 
 func check_solution() -> bool:
-	# Start from (0,0) and try to reach (4,4)
+	# First check: pipe at (0,0) must connect to the power source (up or left)
+	if grid[0][0]["type"] == 0:
+		return false
+	var start_connections = get_pipe_connections(grid[0][0]["type"], grid[0][0]["rotation"])
+	if not (0 in start_connections or 3 in start_connections):
+		return false
+
+	# Second check: pipe at (4,4) must connect to the destination (down or right)
+	if grid[GRID_SIZE - 1][GRID_SIZE - 1]["type"] == 0:
+		return false
+	var end_connections = get_pipe_connections(grid[GRID_SIZE - 1][GRID_SIZE - 1]["type"], grid[GRID_SIZE - 1][GRID_SIZE - 1]["rotation"])
+	if not (2 in end_connections or 1 in end_connections):
+		return false
+
+	# Third check: there must be a valid path from (0,0) to (4,4)
 	var visited = {}
 	return flood_fill(0, 0, -1, visited)
 
@@ -268,6 +339,81 @@ func get_pipe_connections(type: int, rotation: int) -> Array:
 
 	return connections
 
+func update_energized_cells():
+	# Reset energized state
+	energized_cells = {}
+	is_destination_energized = false
+
+	# Check if the top-left cell (0,0) has a pipe that connects to the power source
+	# The power source comes from outside the grid (up and left)
+	if grid[0][0]["type"] > 0:
+		var connections = get_pipe_connections(grid[0][0]["type"], grid[0][0]["rotation"])
+		# Check if the pipe at (0,0) connects up (0) or left (3) to receive power
+		if 0 in connections or 3 in connections:
+			# Start flood-fill from top-left (0,0)
+			mark_energized(0, 0, -1)
+
+	# Check if destination is energized
+	var dest_key = str(GRID_SIZE - 1) + "," + str(GRID_SIZE - 1)
+	is_destination_energized = dest_key in energized_cells
+
+	# Redraw all pipes to show updated energy state
+	for y in range(GRID_SIZE):
+		for x in range(GRID_SIZE):
+			update_pipe_visual(x, y)
+
+	# Redraw bottom-right indicator
+	if puzzle_container and puzzle_container.get_child_count() > GRID_SIZE * GRID_SIZE + 1:
+		var bottom_right_indicator = puzzle_container.get_child(GRID_SIZE * GRID_SIZE + 1)
+		bottom_right_indicator.queue_redraw()
+
+func mark_energized(x: int, y: int, came_from_dir: int):
+	# Check if out of bounds
+	if x < 0 or x >= GRID_SIZE or y < 0 or y >= GRID_SIZE:
+		return
+
+	# Check if already visited
+	var key = str(x) + "," + str(y)
+	if key in energized_cells:
+		return
+
+	# Check if there's a pipe here
+	var pipe = grid[y][x]
+	if pipe["type"] == 0:
+		return
+
+	# Mark as energized
+	energized_cells[key] = true
+
+	# Get connections for this pipe
+	var connections = get_pipe_connections(pipe["type"], pipe["rotation"])
+
+	# Direction mapping: 0=up, 1=right, 2=down, 3=left
+	var dx = [0, 1, 0, -1]
+	var dy = [-1, 0, 1, 0]
+	var opposite_dir = [2, 3, 0, 1]  # Opposite directions
+
+	# Try each connection
+	for dir in connections:
+		var nx = x + dx[dir]
+		var ny = y + dy[dir]
+
+		# Check bounds
+		if nx < 0 or nx >= GRID_SIZE or ny < 0 or ny >= GRID_SIZE:
+			continue
+
+		# Check if next pipe connects back to us
+		var next_pipe = grid[ny][nx]
+		if next_pipe["type"] == 0:
+			continue
+
+		var next_connections = get_pipe_connections(next_pipe["type"], next_pipe["rotation"])
+		if not opposite_dir[dir] in next_connections:
+			continue
+
+		# Recursively mark as energized
+		mark_energized(nx, ny, dir)
+
 func show_train_heart_button():
 	# Create a button to enter the train heart
 	var enter_button = Button.new()
@@ -282,3 +428,47 @@ func _on_enter_train_heart_pressed():
 
 func _on_back_button_pressed():
 	get_tree().change_scene_to_file("res://level1/shop.tscn")
+
+func _on_place_pipe_button_pressed():
+	if Level1Vars.pipes > 0:
+		# Find all empty cells
+		var empty_cells = []
+		for y in range(GRID_SIZE):
+			for x in range(GRID_SIZE):
+				if grid[y][x]["type"] == 0:
+					empty_cells.append({"x": x, "y": y})
+
+		var x: int
+		var y: int
+
+		# If there are empty cells, place a pipe in a random one
+		if empty_cells.size() > 0:
+			var random_cell = empty_cells[randi() % empty_cells.size()]
+			x = random_cell["x"]
+			y = random_cell["y"]
+		else:
+			# Grid is full, overwrite a random piece
+			x = randi() % GRID_SIZE
+			y = randi() % GRID_SIZE
+
+		# Randomly choose straight (1) or corner (2) pipe
+		var pipe_type = randi() % 2 + 1
+		grid[y][x] = {"type": pipe_type, "rotation": randi() % 4}
+		Level1Vars.pipes -= 1
+		update_pipes_label()
+		update_place_pipe_button()
+		save_grid_state()
+
+		# Update energized state after placing pipe
+		update_energized_cells()
+
+		# Check if puzzle is solved
+		if check_solution():
+			puzzle_solved = true
+			$VBoxContainer/LabelPanel/Label.text = "Puzzle Solved!"
+			show_train_heart_button()
+
+func update_place_pipe_button():
+	if $VBoxContainer/PlacePipeButton:
+		$VBoxContainer/PlacePipeButton.disabled = Level1Vars.pipes <= 0
+		$VBoxContainer/PlacePipeButton.text = "Place Pipe (" + str(Level1Vars.pipes) + " available)"

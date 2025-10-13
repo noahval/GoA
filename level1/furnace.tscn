@@ -84,7 +84,7 @@ vertical_alignment = 1
 layout_mode = 2
 custom_minimum_size = Vector2(260, 0)
 
-[node name="MineButton" type="Button" parent="HBoxContainer/RightVBox"]
+[node name="ShovelCoalButton" type="Button" parent="HBoxContainer/RightVBox"]
 layout_mode = 2
 text = "Shovel Coal"
 
@@ -93,5 +93,5 @@ visible = false
 layout_mode = 2
 text = "Take Break"
 
-[connection signal="pressed" from="HBoxContainer/RightVBox/MineButton" to="." method="_on_mine_button_pressed"]
+[connection signal="pressed" from="HBoxContainer/RightVBox/ShovelCoalButton" to="." method="_on_shovel_coal_button_pressed"]
 [connection signal="pressed" from="HBoxContainer/RightVBox/ShopButton" to="." method="_on_shop_button_pressed"]

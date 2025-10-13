@@ -24,8 +24,7 @@ func update_stamina_bar():
 	stamina_bar.value = stamina_percent
 
 func _on_willpower_button_pressed():
-	# Add willpower dream functionality here
-	pass
+	Global.constitution += 0.02
 
 func _on_back_button_pressed():
 	# Increase stamina by 3

@@ -24,7 +24,7 @@ func _process(delta):
 	coal_label.text = "Coal Shoveled: " + str(int(Level1Vars.coal))
 	coins_label.text = "Coins: " + str(int(Level1Vars.coins))
 
-func _on_mine_button_pressed():
+func _on_shovel_coal_button_pressed():
 	# Reduce stamina by 1
 	Level1Vars.stamina -= 1
 	update_stamina_bar()
@@ -34,7 +34,16 @@ func _on_mine_button_pressed():
 		get_tree().change_scene_to_file("res://level1/dream.tscn")
 		return
 
-	Level1Vars.coal += 1 + Level1Vars.shovel_lvl + (Level1Vars.plow_lvl * 5)
+	# Increase global strength
+	Global.strength += 0.003
+
+	var coal_gained = 1 + Level1Vars.shovel_lvl + (Level1Vars.plow_lvl * 5)
+	Level1Vars.coal += coal_gained
+
+	# 3% chance per strength point to get a second coal
+	var bonus_coal_chance = Global.strength * 0.03
+	if randf() < bonus_coal_chance:
+		Level1Vars.coal += coal_gained
 
 	# Check if coal reaches coin_cost threshold
 	if Level1Vars.coal >= Level1Vars.coin_cost:
