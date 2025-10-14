@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3 uid="uid://dream_scene_level1"]
+[gd_scene load_steps=4 format=3 uid="uid://c2qus2204pgky"]
 
-[ext_resource type="Script" path="res://level1/dream.gd" id="1"]
-[ext_resource type="Texture2D" path="res://level1/dream.jpg" id="2"]
+[ext_resource type="Script" uid="uid://covx5m8lhrp3h" path="res://level1/dream.gd" id="1"]
+[ext_resource type="Texture2D" uid="uid://lpei21lrh7e0" path="res://level1/dream.jpg" id="2"]
+[ext_resource type="Theme" path="res://default_theme.tres" id="3"]
 
 [node name="Dream" type="Control"]
 layout_mode = 3
@@ -38,8 +39,8 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="LeftVBox" type="VBoxContainer" parent="HBoxContainer"]
-layout_mode = 2
 custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
 
 [node name="TitlePanel" type="Panel" parent="HBoxContainer/LeftVBox"]
 self_modulate = Color(0.5, 0.5, 0.5, 0.7)
@@ -53,6 +54,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("3")
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 text = "Dream"
 horizontal_alignment = 1
@@ -81,23 +83,26 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("3")
 text = "Stamina"
 horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="RightVBox" type="VBoxContainer" parent="HBoxContainer"]
-layout_mode = 2
 custom_minimum_size = Vector2(260, 0)
+layout_mode = 2
 
 [node name="BackButton" type="Button" parent="HBoxContainer/RightVBox"]
 layout_mode = 2
+theme = ExtResource("3")
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 text = "Try to Wake Up"
 
 [node name="WillpowerButton" type="Button" parent="HBoxContainer/RightVBox"]
 layout_mode = 2
+theme = ExtResource("3")
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 text = "Dream of Willpower"
 
-[connection signal="pressed" from="HBoxContainer/RightVBox/WillpowerButton" to="." method="_on_willpower_button_pressed"]
 [connection signal="pressed" from="HBoxContainer/RightVBox/BackButton" to="." method="_on_back_button_pressed"]
+[connection signal="pressed" from="HBoxContainer/RightVBox/WillpowerButton" to="." method="_on_willpower_button_pressed"]

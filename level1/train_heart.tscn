@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3 uid="uid://5fx8wv1di6ks"]
+[gd_scene load_steps=4 format=3 uid="uid://5fx8wv1di6ks"]
 
 [ext_resource type="Script" path="res://level1/train_heart.gd" id="1"]
 [ext_resource type="Texture2D" path="res://level1/Train_Heart.jpg" id="2"]
+[ext_resource type="Theme" path="res://default_theme.tres" id="3"]
 
 [node name="TrainHeart" type="Control"]
 layout_mode = 3
@@ -36,11 +37,13 @@ grow_horizontal = 2
 
 [node name="Label" type="Label" parent="VBoxContainer"]
 layout_mode = 2
+theme = ExtResource("3")
 text = "Train Heart"
 horizontal_alignment = 1
 
 [node name="BackButton" type="Button" parent="VBoxContainer"]
 layout_mode = 2
+theme = ExtResource("3")
 text = "Back to Pipes"
 
 [connection signal="pressed" from="VBoxContainer/BackButton" to="." method="_on_back_button_pressed"]

@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3 uid="uid://cd70tr88djvet"]
+[gd_scene load_steps=4 format=3 uid="uid://cd70tr88djvet"]
 
 [ext_resource type="Script" path="res://level1/shop.gd" id="1"]
 [ext_resource type="Texture2D" path="res://level1/Shop.jpg" id="2"]
+[ext_resource type="Theme" path="res://default_theme.tres" id="3"]
 
 [node name="Shop" type="Control"]
 layout_mode = 3
@@ -64,7 +65,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_font_sizes/font_size = 25
+theme = ExtResource("3")
 text = "Break Timer"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -81,7 +82,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_font_sizes/font_size = 25
+theme = ExtResource("3")
 text = "Coins: 0"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -92,48 +93,48 @@ custom_minimum_size = Vector2(260, 0)
 
 [node name="ShovelButton" type="Button" parent="HBoxContainer/RightVBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 25
+theme = ExtResource("3")
 text = "Better Shovel - Cost: 1"
 
 [node name="PlowButton" type="Button" parent="HBoxContainer/RightVBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 25
+theme = ExtResource("3")
 text = "Coal Plow - Cost: 5"
 
 [node name="FurnaceUpgrade" type="Button" parent="HBoxContainer/RightVBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 25
+theme = ExtResource("3")
 text = "Auto Furnace - Cost: 10"
 
 [node name="BribeOverseerButton" type="Button" parent="HBoxContainer/RightVBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 25
+theme = ExtResource("3")
 text = "Bribe Overseer - Cost: 5"
 
 [node name="BribeBarkeepButton" type="Button" parent="HBoxContainer/RightVBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 25
+theme = ExtResource("3")
 text = "Bribe Barkeep - Cost: 10"
 
 [node name="SecretPassageButton" type="Button" parent="HBoxContainer/RightVBox"]
 visible = false
 layout_mode = 2
-theme_override_font_sizes/font_size = 25
+theme = ExtResource("3")
 text = "Enter Secret Passage"
 
 [node name="DeveloperFreeCoinsButton" type="Button" parent="HBoxContainer/RightVBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 25
+theme = ExtResource("3")
 text = "Developer Free Coins"
 
 [node name="NapButton" type="Button" parent="HBoxContainer/RightVBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 25
+theme = ExtResource("3")
 text = "Nap"
 
 [node name="FurnaceButton" type="Button" parent="HBoxContainer/RightVBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 25
+theme = ExtResource("3")
 text = "Back to Furnace"
 
 [connection signal="pressed" from="HBoxContainer/RightVBox/ShovelButton" to="." method="_on_shovel_button_pressed"]

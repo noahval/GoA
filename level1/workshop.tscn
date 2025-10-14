@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3 uid="uid://workshop_001"]
+[gd_scene load_steps=4 format=3 uid="uid://workshop_001"]
 
 [ext_resource type="Script" path="res://level1/workshop.gd" id="1"]
 [ext_resource type="Texture2D" path="res://level1/workshop.jpg" id="2"]
+[ext_resource type="Theme" path="res://default_theme.tres" id="3"]
 
 [node name="Workshop" type="Control"]
 layout_mode = 3
@@ -57,6 +58,7 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+theme = ExtResource("3")
 text = "Break Timer"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -71,6 +73,7 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+theme = ExtResource("3")
 text = "Workshop"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -85,6 +88,7 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+theme = ExtResource("3")
 text = "Components: 0"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -99,6 +103,7 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+theme = ExtResource("3")
 text = "Mechanisms: 0"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -113,6 +118,7 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+theme = ExtResource("3")
 text = "Pipes: 0"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -123,18 +129,22 @@ layout_mode = 2
 
 [node name="AssembleComponentButton" type="Button" parent="HBoxContainer/RightColumn"]
 layout_mode = 2
+theme = ExtResource("3")
 text = "Assemble Component"
 
 [node name="BuyPipeButton" type="Button" parent="HBoxContainer/RightColumn"]
 layout_mode = 2
+theme = ExtResource("3")
 text = "Assemble Pipe: 10 Components"
 
 [node name="BuyMechanismButton" type="Button" parent="HBoxContainer/RightColumn"]
 layout_mode = 2
+theme = ExtResource("3")
 text = "Assemble Mechanism: 10 Components"
 
 [node name="BackToPassageButton" type="Button" parent="HBoxContainer/RightColumn"]
 layout_mode = 2
+theme = ExtResource("3")
 text = "Back to Secret Passage"
 
 [connection signal="pressed" from="HBoxContainer/RightColumn/AssembleComponentButton" to="." method="_on_assemble_component_button_pressed"]
