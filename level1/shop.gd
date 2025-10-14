@@ -3,6 +3,9 @@ extends Control
 var break_time = 30.0
 var max_break_time = 30.0
 
+@onready var suspicion_panel = $HBoxContainer/LeftVBox/SuspicionPanel
+@onready var suspicion_bar = $HBoxContainer/LeftVBox/SuspicionPanel/SuspicionBar
+
 func _ready():
 	if Level1Vars.break_time_remaining > 0:
 		break_time = Level1Vars.break_time_remaining
@@ -10,6 +13,7 @@ func _ready():
 		break_time = Level1Vars.starting_break_time + Level1Vars.overseer_lvl
 	max_break_time = break_time
 	update_labels()
+	update_suspicion_bar()
 	apply_mobile_scaling()
 
 func apply_mobile_scaling():
@@ -36,6 +40,7 @@ func _process(delta):
 		var progress_percent = (break_time / max_break_time) * 100.0
 		$HBoxContainer/LeftVBox/BreakTimerPanel/BreakTimerBar.value = progress_percent
 	update_labels()
+	update_suspicion_bar()
 
 func _on_shovel_button_pressed():
 	var cost = max(1, int(1 * pow(1.5, Level1Vars.shovel_lvl)))
@@ -114,3 +119,7 @@ func _on_nap_button_pressed():
 
 func _on_furnace_button_pressed():
 	get_tree().change_scene_to_file("res://level1/furnace.tscn")
+
+func update_suspicion_bar():
+	suspicion_panel.visible = Level1Vars.suspicion > 0
+	suspicion_bar.value = Level1Vars.suspicion

@@ -1,7 +1,7 @@
 [gd_scene load_steps=4 format=3 uid="uid://cd70tr88djvet"]
 
-[ext_resource type="Script" path="res://level1/shop.gd" id="1"]
-[ext_resource type="Texture2D" path="res://level1/Shop.jpg" id="2"]
+[ext_resource type="Script" uid="uid://blu645dk8w7uu" path="res://level1/shop.gd" id="1"]
+[ext_resource type="Texture2D" uid="uid://cq4dy1cttp2ky" path="res://level1/Shop.jpg" id="2"]
 [ext_resource type="Theme" path="res://default_theme.tres" id="3"]
 
 [node name="Shop" type="Control"]
@@ -39,8 +39,8 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="LeftVBox" type="VBoxContainer" parent="HBoxContainer"]
-layout_mode = 2
 custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
 
 [node name="BreakTimerPanel" type="Panel" parent="HBoxContainer/LeftVBox"]
 self_modulate = Color(1, 1, 1, 0.7)
@@ -70,6 +70,34 @@ text = "Break Timer"
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="SuspicionPanel" type="Panel" parent="HBoxContainer/LeftVBox"]
+visible = false
+self_modulate = Color(1, 1, 1, 0.7)
+custom_minimum_size = Vector2(0, 24)
+layout_mode = 2
+
+[node name="SuspicionBar" type="ProgressBar" parent="HBoxContainer/LeftVBox/SuspicionPanel"]
+self_modulate = Color(1, 0, 0, 1)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+show_percentage = false
+
+[node name="SuspicionLabel" type="Label" parent="HBoxContainer/LeftVBox/SuspicionPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("3")
+text = "Suspicion"
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="CoinsPanel" type="Panel" parent="HBoxContainer/LeftVBox"]
 self_modulate = Color(1, 1, 1, 0.7)
 custom_minimum_size = Vector2(0, 24)
@@ -88,33 +116,33 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="RightVBox" type="VBoxContainer" parent="HBoxContainer"]
-layout_mode = 2
 custom_minimum_size = Vector2(260, 0)
+layout_mode = 2
 
 [node name="ShovelButton" type="Button" parent="HBoxContainer/RightVBox"]
 layout_mode = 2
 theme = ExtResource("3")
-text = "Better Shovel - Cost: 1"
+text = "Improve Shovel: 1"
 
 [node name="PlowButton" type="Button" parent="HBoxContainer/RightVBox"]
 layout_mode = 2
 theme = ExtResource("3")
-text = "Coal Plow - Cost: 5"
+text = "Coal Plow: 5"
 
 [node name="FurnaceUpgrade" type="Button" parent="HBoxContainer/RightVBox"]
 layout_mode = 2
 theme = ExtResource("3")
-text = "Auto Furnace - Cost: 10"
+text = "Auto Furnace: 10"
 
 [node name="BribeOverseerButton" type="Button" parent="HBoxContainer/RightVBox"]
 layout_mode = 2
 theme = ExtResource("3")
-text = "Bribe Overseer - Cost: 5"
+text = "Bribe Overseer: 5"
 
 [node name="BribeBarkeepButton" type="Button" parent="HBoxContainer/RightVBox"]
 layout_mode = 2
 theme = ExtResource("3")
-text = "Bribe Barkeep - Cost: 10"
+text = "Bribe Barkeep: 10"
 
 [node name="SecretPassageButton" type="Button" parent="HBoxContainer/RightVBox"]
 visible = false
@@ -131,7 +159,7 @@ text = "Enter Overseer's Office"
 [node name="DeveloperFreeCoinsButton" type="Button" parent="HBoxContainer/RightVBox"]
 layout_mode = 2
 theme = ExtResource("3")
-text = "Developer Free Coins"
+text = "Developer: Free Coins"
 
 [node name="NapButton" type="Button" parent="HBoxContainer/RightVBox"]
 layout_mode = 2

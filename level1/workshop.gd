@@ -3,6 +3,9 @@ extends Control
 var break_time = 30.0
 var max_break_time = 30.0
 
+@onready var suspicion_panel = $HBoxContainer/LeftColumn/SuspicionPanel
+@onready var suspicion_bar = $HBoxContainer/LeftColumn/SuspicionPanel/SuspicionBar
+
 func _ready():
 	if Level1Vars.break_time_remaining > 0:
 		break_time = Level1Vars.break_time_remaining
@@ -10,6 +13,8 @@ func _ready():
 		break_time = 56.0 + Level1Vars.overseer_lvl
 	max_break_time = break_time
 	update_labels()
+	update_suspicion_bar()
+	add_planning_table_button()
 	apply_mobile_scaling()
 
 func apply_mobile_scaling():
@@ -36,6 +41,7 @@ func _process(delta):
 		var progress_percent = (break_time / max_break_time) * 100.0
 		$HBoxContainer/LeftColumn/BreakTimerPanel/BreakTimerBar.value = progress_percent
 	update_labels()
+	update_suspicion_bar()
 
 func update_labels():
 	$HBoxContainer/LeftColumn/ComponentsPanel/ComponentsLabel.text = "Components: " + str(Level1Vars.components)
@@ -60,3 +66,30 @@ func _on_buy_mechanism_button_pressed():
 
 func _on_back_to_passage_button_pressed():
 	get_tree().change_scene_to_file("res://level1/secret_passage_entrance.tscn")
+
+func add_planning_table_button():
+	if Level1Vars.heart_taken:
+		var planning_table_button = Button.new()
+		planning_table_button.name = "PlanningTableButton"
+		planning_table_button.text = "Planning Table"
+
+		# Get the theme from another button
+		var theme_resource = load("res://default_theme.tres")
+		planning_table_button.theme = theme_resource
+
+		# Add the button to the right column (before the back button)
+		var right_column = $HBoxContainer/RightColumn
+		var back_button = $HBoxContainer/RightColumn/BackToPassageButton
+		var back_button_index = back_button.get_index()
+		right_column.add_child(planning_table_button)
+		right_column.move_child(planning_table_button, back_button_index)
+
+		# Connect the signal
+		planning_table_button.pressed.connect(_on_planning_table_button_pressed)
+
+func _on_planning_table_button_pressed():
+	get_tree().change_scene_to_file("res://level1/planning_table.tscn")
+
+func update_suspicion_bar():
+	suspicion_panel.visible = Level1Vars.suspicion > 0
+	suspicion_bar.value = Level1Vars.suspicion

@@ -1,7 +1,7 @@
 [gd_scene load_steps=4 format=3 uid="uid://5fx8wv1di6ks"]
 
-[ext_resource type="Script" path="res://level1/train_heart.gd" id="1"]
-[ext_resource type="Texture2D" path="res://level1/Train_Heart.jpg" id="2"]
+[ext_resource type="Script" uid="uid://du6jlvjawa835" path="res://level1/train_heart.gd" id="1"]
+[ext_resource type="Texture2D" uid="uid://bx7tbp4c6fh13" path="res://level1/Train_Heart.jpg" id="2"]
 [ext_resource type="Theme" path="res://default_theme.tres" id="3"]
 
 [node name="TrainHeart" type="Control"]
@@ -38,12 +38,18 @@ grow_horizontal = 2
 [node name="Label" type="Label" parent="VBoxContainer"]
 layout_mode = 2
 theme = ExtResource("3")
-text = "Train Heart"
+text = "Crystal Mechanism"
 horizontal_alignment = 1
+
+[node name="TakeHeartButton" type="Button" parent="VBoxContainer"]
+layout_mode = 2
+theme = ExtResource("3")
+text = "Take Whispering Crystal"
 
 [node name="BackButton" type="Button" parent="VBoxContainer"]
 layout_mode = 2
 theme = ExtResource("3")
 text = "Back to Pipes"
 
+[connection signal="pressed" from="VBoxContainer/TakeHeartButton" to="." method="_on_take_heart_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/BackButton" to="." method="_on_back_button_pressed"]
