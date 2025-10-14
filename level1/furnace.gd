@@ -10,7 +10,26 @@ func _ready():
 	coal_label.text = "Coal Shoveled: " + str(Level1Vars.coal)
 	coins_label.text = "Coins: " + str(int(Level1Vars.coins))
 	update_stamina_bar()
+	apply_font_scaling()
 	apply_mobile_scaling()
+
+func apply_font_scaling():
+	# Make all labels bigger
+	var left_labels = $HBoxContainer/LeftVBox.get_children()
+	for node in left_labels:
+		if node is Label:
+			node.add_theme_font_size_override("font_size", 28)
+		elif node is Panel:
+			# Handle the stamina label inside the panel
+			var stamina_label = node.get_node_or_null("StaminaLabel")
+			if stamina_label:
+				stamina_label.add_theme_font_size_override("font_size", 28)
+
+	# Make all buttons bigger
+	var buttons = $HBoxContainer/RightVBox.get_children()
+	for button in buttons:
+		if button is Button:
+			button.add_theme_font_size_override("font_size", 28)
 
 func apply_mobile_scaling():
 	var viewport_size = get_viewport().get_visible_rect().size
@@ -31,14 +50,6 @@ func apply_mobile_scaling():
 		for button in buttons:
 			if button is Button:
 				button.custom_minimum_size = Vector2(0, 60)
-				if button.get("theme_override_font_sizes/font_size") == null:
-					button.add_theme_font_size_override("font_size", 24)
-
-		# Make left column labels bigger to match right column buttons
-		var left_labels = $HBoxContainer/LeftVBox.get_children()
-		for node in left_labels:
-			if node is Label:
-				node.add_theme_font_size_override("font_size", 24)
 
 func _process(delta):
 	if Level1Vars.auto_shovel_lvl > 0:
