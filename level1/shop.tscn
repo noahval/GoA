@@ -122,6 +122,12 @@ layout_mode = 2
 theme = ExtResource("3")
 text = "Enter Secret Passage"
 
+[node name="OverseersOfficeButton" type="Button" parent="HBoxContainer/RightVBox"]
+visible = false
+layout_mode = 2
+theme = ExtResource("3")
+text = "Enter Overseer's Office"
+
 [node name="DeveloperFreeCoinsButton" type="Button" parent="HBoxContainer/RightVBox"]
 layout_mode = 2
 theme = ExtResource("3")
@@ -143,6 +149,7 @@ text = "Back to Furnace"
 [connection signal="pressed" from="HBoxContainer/RightVBox/BribeOverseerButton" to="." method="_on_bribe_overseer_pressed"]
 [connection signal="pressed" from="HBoxContainer/RightVBox/BribeBarkeepButton" to="." method="_on_bribe_barkeep_pressed"]
 [connection signal="pressed" from="HBoxContainer/RightVBox/SecretPassageButton" to="." method="_on_secret_passage_pressed"]
+[connection signal="pressed" from="HBoxContainer/RightVBox/OverseersOfficeButton" to="." method="_on_overseers_office_button_pressed"]
 [connection signal="pressed" from="HBoxContainer/RightVBox/DeveloperFreeCoinsButton" to="." method="_on_developer_free_coins_button_pressed"]
 [connection signal="pressed" from="HBoxContainer/RightVBox/NapButton" to="." method="_on_nap_button_pressed"]
 [connection signal="pressed" from="HBoxContainer/RightVBox/FurnaceButton" to="." method="_on_furnace_button_pressed"]

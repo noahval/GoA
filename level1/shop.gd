@@ -59,11 +59,14 @@ func _on_furnace_upgrade_pressed():
 		update_labels()
 
 func _on_bribe_overseer_pressed():
-	var cost = max(5, int(5 * pow(1.4, Level1Vars.overseer_lvl)))
+	var cost = max(3, int(3 * pow(1.3, Level1Vars.overseer_lvl)))
 	if Level1Vars.coins >= cost:
 		Level1Vars.coins -= cost
-		Level1Vars.overseer_lvl += 1
+		Level1Vars.overseer_lvl += 2
 		update_labels()
+
+func _on_overseers_office_button_pressed():
+	get_tree().change_scene_to_file("res://level1/overseers_office.tscn")
 
 func _on_bribe_barkeep_pressed():
 	if Level1Vars.coins >= 10 and not Level1Vars.barkeep_bribed:
@@ -87,7 +90,7 @@ func update_labels():
 	$HBoxContainer/RightVBox/ShovelButton.text = "Better Shovel: " + str(max(1, int(1 * pow(1.5, Level1Vars.shovel_lvl))))
 	$HBoxContainer/RightVBox/PlowButton.text = "Coal Plow: " + str(max(Level1Vars.plow_lvl + 5, int(5 * pow(1.5, Level1Vars.plow_lvl))))
 	$HBoxContainer/RightVBox/FurnaceUpgrade.text = "Auto Shovel: " + str(max(Level1Vars.auto_shovel_lvl + 10, int(10 * pow(1.15, Level1Vars.auto_shovel_lvl))))
-	$HBoxContainer/RightVBox/BribeOverseerButton.text = "Bribe Overseer: " + str(max(5, int(5 * pow(1.4, Level1Vars.overseer_lvl))))
+	$HBoxContainer/RightVBox/BribeOverseerButton.text = "Bribe Overseer: " + str(max(3, int(3 * pow(1.3, Level1Vars.overseer_lvl))))
 	$HBoxContainer/RightVBox/BribeBarkeepButton.text = "Bribe Barkeep: 10"
 
 	# Show/hide barkeep and secret passage buttons
@@ -97,6 +100,14 @@ func update_labels():
 	else:
 		$HBoxContainer/RightVBox/BribeBarkeepButton.visible = true
 		$HBoxContainer/RightVBox/SecretPassageButton.visible = false
+
+	# Show/hide overseer buttons based on level
+	if Level1Vars.overseer_lvl >= 12:
+		$HBoxContainer/RightVBox/BribeOverseerButton.visible = false
+		$HBoxContainer/RightVBox/OverseersOfficeButton.visible = true
+	else:
+		$HBoxContainer/RightVBox/BribeOverseerButton.visible = true
+		$HBoxContainer/RightVBox/OverseersOfficeButton.visible = false
 
 func _on_nap_button_pressed():
 	get_tree().change_scene_to_file("res://level1/dream.tscn")

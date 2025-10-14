@@ -5,7 +5,8 @@
       "Bash(git add:*)",
       "Bash(git commit -m \"$(cat <<''EOF''\nEnhance game mechanics with stats system, pipe puzzle, and developer tools\n\n- Replace old stat system with new RPG-style stats (strength, constitution, dexterity, wisdom, intelligence, charisma)\n- Add strength training mechanic to coal shoveling with bonus coal chance\n- Add constitution training to dream willpower button\n- Implement persistent pipe puzzle grid state with save/load\n- Add visual energized pipe indicators (orange for powered, brown for unpowered)\n- Add corner indicators for power source and destination in pipe puzzle\n- Implement \"Place Pipe\" button with pipe inventory system\n- Add developer free coins button for testing\n- Rename button from \"Mine\" to \"Shovel Coal\" for clarity\n- Fix pipe rotation definitions to match standard directions\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
       "Bash(git push:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(git checkout:*)"
     ],
     "deny": [],
     "ask": []

@@ -28,7 +28,6 @@ window/size/viewport_height=817
 [gui]
 
 theme/custom="res://default_theme.tres"
-theme/default_theme_scale=1.3
 
 [rendering]
 
