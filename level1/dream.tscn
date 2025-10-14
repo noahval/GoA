@@ -89,15 +89,15 @@ vertical_alignment = 1
 layout_mode = 2
 custom_minimum_size = Vector2(260, 0)
 
-[node name="WillpowerButton" type="Button" parent="HBoxContainer/RightVBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-text = "Dream of Willpower"
-
 [node name="BackButton" type="Button" parent="HBoxContainer/RightVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 text = "Try to Wake Up"
+
+[node name="WillpowerButton" type="Button" parent="HBoxContainer/RightVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+text = "Dream of Willpower"
 
 [connection signal="pressed" from="HBoxContainer/RightVBox/WillpowerButton" to="." method="_on_willpower_button_pressed"]
 [connection signal="pressed" from="HBoxContainer/RightVBox/BackButton" to="." method="_on_back_button_pressed"]
