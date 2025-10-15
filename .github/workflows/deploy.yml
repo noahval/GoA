@@ -36,6 +36,7 @@ jobs:
         run: |
           mv build/Web/* build/
           rmdir build/Web
+          cp Title.jpg build/
           ls -la build/
 
       - name: Upload artifact
