@@ -1,5 +1,111 @@
 extends Node
 
+# ===== EXPERIENCE SYSTEM CONFIGURATION =====
+# Base XP needed for first level up (level 1 -> 2)
+const BASE_XP_FOR_LEVEL = 100
+# Scaling factor for XP growth (higher = steeper curve)
+# Common values: 1.5 (gentle), 2.0 (balanced), 2.5 (steep)
+const EXP_SCALING = 1.8
+
+# Experience tracking for each stat
+var strength_exp = 0.0
+var constitution_exp = 0.0
+var dexterity_exp = 0.0
+var wisdom_exp = 0.0
+var intelligence_exp = 0.0
+var charisma_exp = 0.0
+
+# Calculate XP needed for a specific level
+func get_xp_for_level(level: int) -> float:
+	if level <= 1:
+		return 0.0
+	return BASE_XP_FOR_LEVEL * pow(level - 1, EXP_SCALING)
+
+# Add experience to a stat and handle level ups
+func add_stat_exp(stat_name: String, amount: float):
+	match stat_name:
+		"strength":
+			strength_exp += amount
+			_check_level_up("strength", strength, strength_exp)
+		"constitution":
+			constitution_exp += amount
+			_check_level_up("constitution", constitution, constitution_exp)
+		"dexterity":
+			dexterity_exp += amount
+			_check_level_up("dexterity", dexterity, dexterity_exp)
+		"wisdom":
+			wisdom_exp += amount
+			_check_level_up("wisdom", wisdom, wisdom_exp)
+		"intelligence":
+			intelligence_exp += amount
+			_check_level_up("intelligence", intelligence, intelligence_exp)
+		"charisma":
+			charisma_exp += amount
+			_check_level_up("charisma", charisma, charisma_exp)
+
+# Check if a stat should level up
+func _check_level_up(stat_name: String, current_stat_value: float, current_exp: float):
+	var current_level = int(current_stat_value)
+	var xp_needed = get_xp_for_level(current_level + 1)
+
+	while current_exp >= xp_needed:
+		current_level += 1
+		xp_needed = get_xp_for_level(current_level + 1)
+
+		# Update the actual stat
+		match stat_name:
+			"strength":
+				strength = current_level
+			"constitution":
+				constitution = current_level
+			"dexterity":
+				dexterity = current_level
+			"wisdom":
+				wisdom = current_level
+			"intelligence":
+				intelligence = current_level
+			"charisma":
+				charisma = current_level
+
+# Get progress toward next level (0.0 to 1.0)
+func get_stat_level_progress(stat_name: String) -> float:
+	var current_level: int
+	var current_exp: float
+
+	match stat_name:
+		"strength":
+			current_level = int(strength)
+			current_exp = strength_exp
+		"constitution":
+			current_level = int(constitution)
+			current_exp = constitution_exp
+		"dexterity":
+			current_level = int(dexterity)
+			current_exp = dexterity_exp
+		"wisdom":
+			current_level = int(wisdom)
+			current_exp = wisdom_exp
+		"intelligence":
+			current_level = int(intelligence)
+			current_exp = intelligence_exp
+		"charisma":
+			current_level = int(charisma)
+			current_exp = charisma_exp
+		_:
+			return 0.0
+
+	var xp_for_current = get_xp_for_level(current_level)
+	var xp_for_next = get_xp_for_level(current_level + 1)
+	var xp_in_level = current_exp - xp_for_current
+	var xp_needed_in_level = xp_for_next - xp_for_current
+
+	if xp_needed_in_level <= 0:
+		return 1.0
+
+	return clamp(xp_in_level / xp_needed_in_level, 0.0, 1.0)
+
+# ===== END EXPERIENCE SYSTEM =====
+
 # Stats with setters to detect changes
 var strength = 1:
 	set(value):
@@ -38,6 +144,7 @@ var charisma = 1:
 		charisma = value
 
 # Notification UI
+var notification_panel: Panel = null
 var notification_label: Label = null
 var notification_timer: Timer = null
 var whisper_timer: Timer = null
@@ -45,21 +152,46 @@ var suspicion_decrease_timer: Timer = null
 var get_caught_timer: Timer = null
 
 func _ready():
+	# Create notification panel (background)
+	notification_panel = Panel.new()
+	notification_panel.z_index = 100
+
+	# Create a StyleBoxFlat for the grey translucent background
+	var style_box = StyleBoxFlat.new()
+	style_box.bg_color = Color(0.15, 0.15, 0.15, 0.4)  # Dark grey with 40% opacity
+	style_box.corner_radius_top_left = 8
+	style_box.corner_radius_top_right = 8
+	style_box.corner_radius_bottom_left = 8
+	style_box.corner_radius_bottom_right = 8
+	notification_panel.add_theme_stylebox_override("panel", style_box)
+
+	# Position panel at bottom of screen
+	notification_panel.anchor_left = 0.5
+	notification_panel.anchor_right = 0.5
+	notification_panel.anchor_top = 1
+	notification_panel.anchor_bottom = 1
+	notification_panel.offset_left = -200
+	notification_panel.offset_right = 200
+	notification_panel.offset_top = -80
+	notification_panel.offset_bottom = -40
+	notification_panel.modulate.a = 0  # Initially invisible
+
 	# Create notification label
 	notification_label = Label.new()
 	notification_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	notification_label.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
+	notification_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	notification_label.add_theme_font_size_override("font_size", 24)
-	notification_label.modulate = Color(1, 1, 0.7, 0)  # Yellowish, initially invisible
-	notification_label.z_index = 100  # Make sure it's on top
+	notification_label.add_theme_color_override("font_color", Color(1, 1, 1, 1))  # White text
+	notification_label.z_index = 101  # Make sure it's on top of the panel
 
-	# Position at bottom of screen
+	# Position label to fill the panel
 	notification_label.anchor_left = 0
 	notification_label.anchor_right = 1
-	notification_label.anchor_top = 1
+	notification_label.anchor_top = 0
 	notification_label.anchor_bottom = 1
-	notification_label.offset_top = -80
-	notification_label.offset_bottom = -40
+
+	# Add label as child of panel
+	notification_panel.add_child(notification_label)
 
 	# Create timer for hiding notification
 	notification_timer = Timer.new()
@@ -67,8 +199,8 @@ func _ready():
 	notification_timer.timeout.connect(_on_notification_timeout)
 	add_child(notification_timer)
 
-	# Add label to the current scene tree
-	add_child(notification_label)
+	# Add panel (with label inside) to the current scene tree
+	add_child(notification_panel)
 
 	# Create timer for whisper notifications
 	whisper_timer = Timer.new()
@@ -92,11 +224,11 @@ func _ready():
 	add_child(get_caught_timer)
 
 func show_stat_notification(message: String):
-	if notification_label == null:
+	if notification_label == null or notification_panel == null:
 		return
 
 	notification_label.text = message
-	notification_label.modulate.a = 1.0  # Make visible
+	notification_panel.modulate.a = 1.0  # Make visible
 
 	# Restart timer
 	if notification_timer.is_stopped():
@@ -106,8 +238,8 @@ func show_stat_notification(message: String):
 		notification_timer.start(3.0)
 
 func _on_notification_timeout():
-	if notification_label:
-		notification_label.modulate.a = 0.0  # Make invisible
+	if notification_panel:
+		notification_panel.modulate.a = 0.0  # Make invisible
 
 func _process(delta):
 	# Regenerate stamina at 1 per second, up to max_stamina

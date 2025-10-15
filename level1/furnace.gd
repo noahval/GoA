@@ -85,8 +85,8 @@ func _on_shovel_coal_button_pressed():
 		get_tree().change_scene_to_file("res://level1/dream.tscn")
 		return
 
-	# Increase global strength
-	Global.strength += 0.003
+	# Increase global strength exp
+	Global.add_stat_exp("strength", 1)
 
 	var coal_gained = 1 + Level1Vars.shovel_lvl + (Level1Vars.plow_lvl * 5)
 	Level1Vars.coal += coal_gained

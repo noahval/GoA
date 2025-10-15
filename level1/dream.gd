@@ -37,7 +37,7 @@ func update_stamina_bar():
 	stamina_bar.value = stamina_percent
 
 func _on_willpower_button_pressed():
-	Global.constitution += 0.01
+	Global.add_stat_exp("constitution", 1)
 
 func _on_back_button_pressed():
 	# Increase stamina by 3
