@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
+	<title>GoA</title>
+	<style>
+		body {
+			margin: 0;
+			padding: 0;
+			background-color: #000000;
+			overflow: hidden;
+		}
+		#canvas {
+			display: block;
+			margin: 0;
+			color: white;
+		}
+		#canvas:focus {
+			outline: none;
+		}
+		#status {
+			position: absolute;
+			left: 0;
+			top: 0;
+			right: 0;
+			bottom: 0;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			flex-direction: column;
+			background-color: #000000;
+		}
+		#status-splash {
+			max-width: 90%;
+			max-height: 90%;
+			object-fit: contain;
+		}
+		#status-progress {
+			width: 50%;
+			height: 10px;
+			background-color: #333333;
+			border-radius: 5px;
+			margin-top: 20px;
+			overflow: hidden;
+		}
+		#status-progress-inner {
+			height: 100%;
+			width: 0%;
+			background-color: #ffffff;
+			transition: width 0.3s;
+		}
+		#status.hidden {
+			display: none;
+		}
+	</style>
+</head>
+<body>
+	<canvas id="canvas">
+		Your browser does not support the canvas tag.
+	</canvas>
+	<div id="status">
+		<img id="status-splash" src="Title.jpg" alt="Loading...">
+		<div id="status-progress">
+			<div id="status-progress-inner"></div>
+		</div>
+	</div>
+
+	<script src="$GODOT_BASENAME.js"></script>
+	<script>
+		const GODOT_CONFIG = $GODOT_CONFIG;
+		const engine = new Engine(GODOT_CONFIG);
+
+		const statusElement = document.getElementById('status');
+		const statusProgressInner = document.getElementById('status-progress-inner');
+
+		engine.startGame({
+			'onProgress': function (current, total) {
+				if (total > 0) {
+					statusProgressInner.style.width = (current / total * 100) + '%';
+				}
+			}
+		}).then(() => {
+			statusElement.classList.add('hidden');
+		}, (err) => {
+			console.error(err);
+			statusElement.innerHTML = '<p style="color: red;">Error: ' + err.message + '</p>';
+		});
+	</script>
+</body>
+</html>
