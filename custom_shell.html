@@ -113,6 +113,18 @@
 		const startButton = document.getElementById('start-button');
 
 		let gameStarted = false;
+		let preloadComplete = false;
+
+		// Preload the engine before user interaction
+		(async function() {
+			try {
+				await engine.preloadFile('GoA.pck');
+				preloadComplete = true;
+			} catch (e) {
+				console.log('Preload skipped or failed:', e);
+				preloadComplete = true; // Continue anyway
+			}
+		})();
 
 		// Handle start button click
 		const startGame = () => {
@@ -131,10 +143,13 @@
 			engine.startGame({
 				'onProgress': function (current, total) {
 					if (total > 0) {
-						statusProgressInner.style.width = (current / total * 100) + '%';
+						const progress = (current / total * 100);
+						statusProgressInner.style.width = progress + '%';
+						console.log('Loading progress:', progress.toFixed(1) + '%');
 					}
 				}
 			}).then(() => {
+				console.log('Game loaded, waiting 3 seconds before hiding loading screen');
 				// Keep video playing for 3 seconds after loading, then hide
 				setTimeout(() => {
 					statusElement.classList.add('hidden');
