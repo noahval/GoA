@@ -30,7 +30,7 @@ grow_horizontal = 2
 grow_vertical = 2
 texture = ExtResource("1_intro")
 expand_mode = 1
-stretch_mode = 1
+stretch_mode = 5
 
 [node name="FadeOverlay" type="ColorRect" parent="."]
 layout_mode = 1

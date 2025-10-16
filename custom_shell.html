@@ -54,7 +54,7 @@
 		#status-progress-inner {
 			height: 100%;
 			width: 0%;
-			background-color: #ffffff;
+			background-color: #9d4edd;
 			transition: width 0.3s;
 		}
 		#status.hidden {
@@ -114,6 +114,7 @@
 
 		let gameStarted = false;
 		let preloadComplete = false;
+		let startTime = 0;
 
 		// Preload the engine before user interaction
 		(async function() {
@@ -130,6 +131,7 @@
 		const startGame = () => {
 			if (gameStarted) return;
 			gameStarted = true;
+			startTime = Date.now();
 
 			// Hide the start overlay
 			startOverlay.classList.add('hidden');
@@ -142,14 +144,22 @@
 			// Start the engine
 			engine.startGame({
 				'onProgress': function (current, total) {
+					console.log('Progress callback:', current, '/', total);
 					if (total > 0) {
 						const progress = (current / total * 100);
 						statusProgressInner.style.width = progress + '%';
 						console.log('Loading progress:', progress.toFixed(1) + '%');
+					} else {
+						// If total is 0 or unknown, show indeterminate progress
+						const elapsed = Date.now() - startTime;
+						const fakeProgress = Math.min(90, (elapsed / 50)); // Cap at 90% until complete
+						statusProgressInner.style.width = fakeProgress + '%';
 					}
 				}
 			}).then(() => {
-				console.log('Game loaded, waiting 3 seconds before hiding loading screen');
+				console.log('Game loaded, setting progress to 100%');
+				// Set to 100% when complete
+				statusProgressInner.style.width = '100%';
 				// Keep video playing for 3 seconds after loading, then hide
 				setTimeout(() => {
 					statusElement.classList.add('hidden');
