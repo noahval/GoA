@@ -152,7 +152,7 @@
 					} else {
 						// If total is 0 or unknown, show indeterminate progress
 						const elapsed = Date.now() - startTime;
-						const fakeProgress = Math.min(90, (elapsed / 50)); // Cap at 90% until complete
+						const fakeProgress = Math.min(90, (elapsed / 20)); // Faster progress, cap at 90% until complete
 						statusProgressInner.style.width = fakeProgress + '%';
 					}
 				}
