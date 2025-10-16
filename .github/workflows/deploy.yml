@@ -37,6 +37,7 @@ jobs:
           mv build/Web/* build/
           rmdir build/Web
           cp Title.jpg build/
+          cp begin.jpg build/
           if [ -f title.webm ]; then cp title.webm build/; fi
           ls -la build/
 

@@ -77,23 +77,16 @@
 			display: none;
 		}
 		#start-button {
-			padding: 20px 40px;
-			font-size: 24px;
-			color: white;
-			background-color: #333333;
-			border: 2px solid white;
-			border-radius: 10px;
+			max-width: 90%;
+			max-height: 90%;
+			object-fit: contain;
 			cursor: pointer;
-			font-family: Arial, sans-serif;
-		}
-		#start-button:hover {
-			background-color: #555555;
 		}
 	</style>
 </head>
 <body>
 	<div id="start-overlay">
-		<div id="start-button">Click to Start</div>
+		<img id="start-button" src="begin.jpg" alt="Click to Start">
 	</div>
 	<canvas id="canvas">
 		Your browser does not support the canvas tag.
