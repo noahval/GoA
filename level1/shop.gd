@@ -84,6 +84,7 @@ func _on_secret_passage_pressed():
 
 func _on_get_coin_button_pressed():
 	Level1Vars.coins += 1
+	Global.show_stat_notification("developer notification: coins")
 	update_labels()
 
 func _on_developer_free_coins_button_pressed():

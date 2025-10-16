@@ -144,63 +144,14 @@ var charisma = 1:
 		charisma = value
 
 # Notification UI
-var notification_panel: Panel = null
-var notification_label: Label = null
-var notification_timer: Timer = null
+var active_notifications: Array = []  # Array of dictionaries with {panel: Panel, timer: Timer}
+var notification_spacing: float = 10.0  # Space between stacked notifications
 var whisper_timer: Timer = null
 var suspicion_decrease_timer: Timer = null
 var get_caught_timer: Timer = null
 
 func _ready():
-	# Create notification panel (background)
-	notification_panel = Panel.new()
-	notification_panel.z_index = 100
-
-	# Create a StyleBoxFlat for the grey translucent background
-	var style_box = StyleBoxFlat.new()
-	style_box.bg_color = Color(0.15, 0.15, 0.15, 0.4)  # Dark grey with 40% opacity
-	style_box.corner_radius_top_left = 8
-	style_box.corner_radius_top_right = 8
-	style_box.corner_radius_bottom_left = 8
-	style_box.corner_radius_bottom_right = 8
-	notification_panel.add_theme_stylebox_override("panel", style_box)
-
-	# Position panel at bottom of screen
-	notification_panel.anchor_left = 0.5
-	notification_panel.anchor_right = 0.5
-	notification_panel.anchor_top = 1
-	notification_panel.anchor_bottom = 1
-	notification_panel.offset_left = -200
-	notification_panel.offset_right = 200
-	notification_panel.offset_top = -80
-	notification_panel.offset_bottom = -40
-	notification_panel.modulate.a = 0  # Initially invisible
-
-	# Create notification label
-	notification_label = Label.new()
-	notification_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	notification_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	notification_label.add_theme_font_size_override("font_size", 24)
-	notification_label.add_theme_color_override("font_color", Color(1, 1, 1, 1))  # White text
-	notification_label.z_index = 101  # Make sure it's on top of the panel
-
-	# Position label to fill the panel
-	notification_label.anchor_left = 0
-	notification_label.anchor_right = 1
-	notification_label.anchor_top = 0
-	notification_label.anchor_bottom = 1
-
-	# Add label as child of panel
-	notification_panel.add_child(notification_label)
-
-	# Create timer for hiding notification
-	notification_timer = Timer.new()
-	notification_timer.one_shot = true
-	notification_timer.timeout.connect(_on_notification_timeout)
-	add_child(notification_timer)
-
-	# Add panel (with label inside) to the current scene tree
-	add_child(notification_panel)
+	# Notification system is now dynamic - panels are created on demand
 
 	# Create timer for whisper notifications
 	whisper_timer = Timer.new()
@@ -224,22 +175,100 @@ func _ready():
 	add_child(get_caught_timer)
 
 func show_stat_notification(message: String):
-	if notification_label == null or notification_panel == null:
-		return
+	# Create a new notification panel
+	var notification_panel = Panel.new()
+	notification_panel.z_index = 100
 
+	# Create a StyleBoxFlat for the grey translucent background
+	var style_box = StyleBoxFlat.new()
+	style_box.bg_color = Color(0.15, 0.15, 0.15, 0.4)  # Dark grey with 40% opacity
+	style_box.corner_radius_top_left = 8
+	style_box.corner_radius_top_right = 8
+	style_box.corner_radius_bottom_left = 8
+	style_box.corner_radius_bottom_right = 8
+	notification_panel.add_theme_stylebox_override("panel", style_box)
+
+	# Position panel at bottom of screen (will be adjusted for stacking)
+	notification_panel.anchor_left = 0.5
+	notification_panel.anchor_right = 0.5
+	notification_panel.anchor_top = 1
+	notification_panel.anchor_bottom = 1
+	notification_panel.offset_left = -200
+	notification_panel.offset_right = 200
+	notification_panel.offset_top = -80
+	notification_panel.offset_bottom = -40
+
+	# Create notification label
+	var notification_label = Label.new()
 	notification_label.text = message
-	notification_panel.modulate.a = 1.0  # Make visible
+	notification_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	notification_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	notification_label.add_theme_font_size_override("font_size", 24)
+	notification_label.add_theme_color_override("font_color", Color(1, 1, 1, 1))  # White text
+	notification_label.z_index = 101
 
-	# Restart timer
-	if notification_timer.is_stopped():
-		notification_timer.start(3.0)
-	else:
-		notification_timer.stop()
-		notification_timer.start(3.0)
+	# Position label to fill the panel
+	notification_label.anchor_left = 0
+	notification_label.anchor_right = 1
+	notification_label.anchor_top = 0
+	notification_label.anchor_bottom = 1
 
-func _on_notification_timeout():
-	if notification_panel:
-		notification_panel.modulate.a = 0.0  # Make invisible
+	# Add label as child of panel
+	notification_panel.add_child(notification_label)
+
+	# Create timer for this notification
+	var notification_timer = Timer.new()
+	notification_timer.one_shot = true
+	notification_timer.wait_time = 3.0
+	add_child(notification_timer)
+
+	# Store notification data
+	var notification_data = {
+		"panel": notification_panel,
+		"timer": notification_timer
+	}
+	active_notifications.append(notification_data)
+
+	# Connect timer to remove this specific notification
+	notification_timer.timeout.connect(func(): _remove_notification(notification_data))
+
+	# Add panel to scene tree
+	add_child(notification_panel)
+
+	# Reposition all notifications to stack them
+	_reposition_notifications()
+
+	# Start the timer
+	notification_timer.start()
+
+func _remove_notification(notification_data: Dictionary):
+	# Find and remove from active notifications
+	var index = active_notifications.find(notification_data)
+	if index != -1:
+		active_notifications.remove_at(index)
+
+	# Remove the panel and timer from scene tree
+	if notification_data.panel:
+		notification_data.panel.queue_free()
+	if notification_data.timer:
+		notification_data.timer.queue_free()
+
+	# Reposition remaining notifications
+	_reposition_notifications()
+
+func _reposition_notifications():
+	# Position notifications from bottom to top
+	var base_offset_top = -80
+	var notification_height = 40
+
+	for i in range(active_notifications.size()):
+		var notification = active_notifications[i]
+		var panel = notification.panel
+
+		# Calculate position - newer notifications push older ones up
+		var stack_offset = i * (notification_height + notification_spacing)
+		panel.offset_top = base_offset_top - stack_offset
+		panel.offset_bottom = base_offset_top - stack_offset + notification_height
 
 func _process(delta):
 	# Regenerate stamina at 1 per second, up to max_stamina
