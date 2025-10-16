@@ -17,21 +17,34 @@ func _setup_web_video():
 	# Use JavaScript to create and play an HTML5 video element
 	if OS.has_feature("web"):
 		JavaScriptBridge.eval("""
-			var video = document.createElement('video');
-			video.src = 'title.webm';
-			video.loop = true;
-			video.autoplay = true;
-			video.muted = false;
-			video.style.position = 'absolute';
-			video.style.top = '0';
-			video.style.left = '0';
-			video.style.width = '100%';
-			video.style.height = '100%';
-			video.style.objectFit = 'contain';
-			video.style.zIndex = '1000';
-			video.id = 'loading-video';
-			document.body.appendChild(video);
-			video.play();
+			(function() {
+				// Remove the static loading image first
+				var splash = document.getElementById('status-splash');
+				if (splash) splash.style.display = 'none';
+
+				var video = document.createElement('video');
+				video.src = 'title.webm';
+				video.loop = true;
+				video.autoplay = true;
+				video.muted = true;  // Must be muted for autoplay to work
+				video.playsInline = true;
+				video.style.position = 'fixed';
+				video.style.top = '50%';
+				video.style.left = '50%';
+				video.style.transform = 'translate(-50%, -50%)';
+				video.style.width = '100vw';
+				video.style.height = '100vh';
+				video.style.objectFit = 'contain';
+				video.style.zIndex = '10000';
+				video.style.backgroundColor = '#000000';
+				video.id = 'loading-video';
+				document.body.appendChild(video);
+
+				// Attempt to play with error handling
+				video.play().catch(function(e) {
+					console.log('Video autoplay failed:', e);
+				});
+			})();
 		""", true)
 
 func _process(delta):
