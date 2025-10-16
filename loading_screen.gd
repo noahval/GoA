@@ -1,9 +1,16 @@
 extends Control
 
 var minimum_display_time = 3.0  # seconds
+var fade_duration = 1.0  # seconds
 var elapsed_time = 0.0
+var state = "loading"  # States: loading, fading_out
+
+@onready var fade_overlay = $FadeOverlay
 
 func _ready():
+	# Start with transparent overlay
+	fade_overlay.modulate.a = 0.0
+
 	# For web builds, we need to use JavaScript to play HTML5 video
 	if OS.has_feature("web"):
 		_setup_web_video()
@@ -19,6 +26,18 @@ func _setup_web_video():
 
 func _process(delta):
 	elapsed_time += delta
-	if elapsed_time >= minimum_display_time:
-		# Transition to the main scene
-		get_tree().change_scene_to_file("res://level1/furnace.tscn")
+
+	match state:
+		"loading":
+			if elapsed_time >= minimum_display_time:
+				state = "fading_out"
+				elapsed_time = 0.0
+
+		"fading_out":
+			# Fade to black
+			var progress = min(elapsed_time / fade_duration, 1.0)
+			fade_overlay.modulate.a = progress
+
+			if progress >= 1.0:
+				# Transition to intro screen
+				get_tree().change_scene_to_file("res://intro_screen.tscn")

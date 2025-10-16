@@ -5,3 +5,6 @@
 build/
 *.zip
 *.pck
+
+# Windows-specific: nul file created by Git Bash commands
+nul
