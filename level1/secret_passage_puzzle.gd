@@ -19,14 +19,26 @@ var pipe_data = []
 func _ready():
 	break_time = Level1Vars.break_time_remaining
 	max_break_time = break_time
+	puzzle_container = $PuzzleContainer
+	apply_responsive_layout()
 	setup_puzzle()
 	update_place_pipe_button()
-	apply_mobile_scaling()
 
-func apply_mobile_scaling():
+func apply_responsive_layout():
 	var viewport_size = get_viewport().get_visible_rect().size
-	# Check if in portrait mode (taller than wide)
-	if viewport_size.y > viewport_size.x:
+	var is_portrait = viewport_size.y > viewport_size.x
+
+	if is_portrait:
+		# Mobile/Portrait layout: puzzle below menu
+		# Position menu at top center (moved down 40 pixels)
+		$VBoxContainer.position = Vector2(viewport_size.x / 2 - 150, 50)
+
+		# Position puzzle below menu (with 40 pixel gap)
+		# Calculate menu height: 4 panels at 24px (Label, BreakTimer, Instruction, Pipes) + 2 buttons at 60px + spacing
+		var menu_height = (4 * 24) + (2 * 60) + 20  # panels + buttons + spacing
+		var menu_bottom = 50 + menu_height
+		puzzle_container.position = Vector2(viewport_size.x / 2 - 200, menu_bottom + 40)
+
 		# Scale up buttons for mobile
 		var buttons = $VBoxContainer.get_children()
 		for button in buttons:
@@ -34,6 +46,13 @@ func apply_mobile_scaling():
 				button.custom_minimum_size = Vector2(0, 60)
 				if button.get("theme_override_font_sizes/font_size") == null:
 					button.add_theme_font_size_override("font_size", 24)
+	else:
+		# Widescreen layout: puzzle beside menu
+		# Position menu on the left of center
+		$VBoxContainer.position = Vector2(viewport_size.x / 2 - 450, viewport_size.y / 2 - 150)
+
+		# Position puzzle on the right of center
+		puzzle_container.position = Vector2(viewport_size.x / 2 + 50, viewport_size.y / 2 - 200)
 
 func _process(delta):
 	break_time -= delta
@@ -48,11 +67,6 @@ func _process(delta):
 		$VBoxContainer/BreakTimerPanel/BreakTimerBar.value = progress_percent
 
 func setup_puzzle():
-	# Create puzzle container
-	puzzle_container = Control.new()
-	puzzle_container.position = Vector2(320, 200)  # Center of screen area
-	add_child(puzzle_container)
-
 	# Initialize grid - load from saved state or start with no pipes
 	if Level1Vars.pipe_puzzle_grid.size() > 0:
 		# Load saved grid
@@ -78,8 +92,7 @@ func setup_puzzle():
 	# Add orange indicators outside the grid
 	create_corner_indicators()
 
-	# Update solve button
-	$VBoxContainer/LabelPanel/Label.text = "Rotate pipes to connect steam!"
+	# Update pipes label
 	update_pipes_label()
 
 	# Update energized state for initial grid
@@ -440,7 +453,7 @@ func _on_enter_train_heart_pressed():
 	get_tree().change_scene_to_file("res://level1/train_heart.tscn")
 
 func _on_back_button_pressed():
-	get_tree().change_scene_to_file("res://level1/shop.tscn")
+	get_tree().change_scene_to_file("res://level1/secret_passage_entrance.tscn")
 
 func _on_place_pipe_button_pressed():
 	if Level1Vars.pipes > 0:
