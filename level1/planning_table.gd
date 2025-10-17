@@ -5,6 +5,9 @@ var max_break_time = 30.0
 
 @onready var suspicion_panel = $HBoxContainer/LeftColumn/SuspicionPanel
 @onready var suspicion_bar = $HBoxContainer/LeftColumn/SuspicionPanel/SuspicionBar
+@onready var stolen_coal_panel = $HBoxContainer/LeftColumn/StolenCoalPanel
+@onready var stolen_writs_panel = $HBoxContainer/LeftColumn/StolenWritsPanel
+@onready var mechanisms_panel = $HBoxContainer/LeftColumn/MechanismsPanel
 
 func _ready():
 	# Set the actual maximum break time (not the remaining time)
@@ -51,8 +54,13 @@ func _process(delta):
 	update_suspicion_bar()
 
 func update_labels():
+	stolen_coal_panel.visible = Level1Vars.stolen_coal > 0
 	$HBoxContainer/LeftColumn/StolenCoalPanel/StolenCoalLabel.text = "Stolen Coal: " + str(Level1Vars.stolen_coal)
+
+	stolen_writs_panel.visible = Level1Vars.stolen_writs > 0
 	$HBoxContainer/LeftColumn/StolenWritsPanel/StolenWritsLabel.text = "Stolen Writs: " + str(Level1Vars.stolen_writs)
+
+	mechanisms_panel.visible = Level1Vars.mechanisms > 0
 	$HBoxContainer/LeftColumn/MechanismsPanel/MechanismsLabel.text = "Mechanisms: " + str(Level1Vars.mechanisms)
 
 func _on_back_to_workshop_button_pressed():

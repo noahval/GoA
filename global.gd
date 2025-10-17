@@ -188,30 +188,35 @@ func show_stat_notification(message: String):
 	style_box.corner_radius_bottom_right = 8
 	notification_panel.add_theme_stylebox_override("panel", style_box)
 
-	# Position panel at bottom of screen (will be adjusted for stacking)
-	notification_panel.anchor_left = 0.5
-	notification_panel.anchor_right = 0.5
+	# Position panel at bottom center of screen using percentage-based width
+	notification_panel.anchor_left = 0.1  # 10% from left
+	notification_panel.anchor_right = 0.9  # 10% from right (80% width total)
 	notification_panel.anchor_top = 1
 	notification_panel.anchor_bottom = 1
-	notification_panel.offset_left = -200
-	notification_panel.offset_right = 200
+	notification_panel.offset_left = 0
+	notification_panel.offset_right = 0
 	notification_panel.offset_top = -80
 	notification_panel.offset_bottom = -40
 
-	# Create notification label
+	# Create notification label with word wrap
 	var notification_label = Label.new()
 	notification_label.text = message
 	notification_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	notification_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	notification_label.add_theme_font_size_override("font_size", 24)
+	notification_label.add_theme_font_size_override("font_size", 20)
 	notification_label.add_theme_color_override("font_color", Color(1, 1, 1, 1))  # White text
+	notification_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	notification_label.z_index = 101
 
-	# Position label to fill the panel
+	# Position label to fill the panel with padding
 	notification_label.anchor_left = 0
 	notification_label.anchor_right = 1
 	notification_label.anchor_top = 0
 	notification_label.anchor_bottom = 1
+	notification_label.offset_left = 10  # Left padding
+	notification_label.offset_right = -10  # Right padding
+	notification_label.offset_top = 5  # Top padding
+	notification_label.offset_bottom = -5  # Bottom padding
 
 	# Add label as child of panel
 	notification_panel.add_child(notification_label)

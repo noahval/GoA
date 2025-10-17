@@ -12,7 +12,9 @@
       "Bash(git update-index:*)",
       "Bash(git rm:*)",
       "Bash(md5sum:*)",
-      "Bash(git mv:*)"
+      "Bash(git mv:*)",
+      "Bash(del /Q config.json)",
+      "Bash(python:*)"
     ],
     "deny": [],
     "ask": []
