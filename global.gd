@@ -167,9 +167,9 @@ func _ready():
 	suspicion_decrease_timer.timeout.connect(_on_suspicion_decrease_timeout)
 	add_child(suspicion_decrease_timer)
 
-	# Create timer for get_caught check (every 10 seconds)
+	# Create timer for get_caught check (every 45 seconds)
 	get_caught_timer = Timer.new()
-	get_caught_timer.wait_time = 10.0
+	get_caught_timer.wait_time = 45.0
 	get_caught_timer.autostart = true
 	get_caught_timer.timeout.connect(_on_get_caught_timeout)
 	add_child(get_caught_timer)
@@ -285,9 +285,11 @@ func _on_suspicion_decrease_timeout():
 	if Level1Vars.suspicion > 0:
 		Level1Vars.suspicion -= 1
 
-func _on_get_caught_timeout():
-	# Only check if there's any suspicion
-	if Level1Vars.suspicion > 0:
+# Check if player gets caught based on suspicion level
+# Returns true if player was caught, false otherwise
+func check_get_caught() -> bool:
+	# Only check if suspicion is 13% or higher
+	if Level1Vars.suspicion >= 13:
 		# Percentage chance equal to half of suspicion level
 		var caught_chance = (Level1Vars.suspicion / 100.0) / 2.0
 		if randf() < caught_chance:
@@ -296,3 +298,15 @@ func _on_get_caught_timeout():
 			Level1Vars.suspicion = 0
 			Level1Vars.coins = 0
 			show_stat_notification("You've been caught, your coal and coins have been seized")
+			return true
+	return false
+
+func _on_get_caught_timeout():
+	check_get_caught()
+
+# Wrapper function for changing scenes with get caught check
+func change_scene_with_check(scene_tree: SceneTree, scene_path: String):
+	# Check if player gets caught before scene change
+	if not check_get_caught():
+		# If not caught, proceed with scene change
+		scene_tree.change_scene_to_file(scene_path)

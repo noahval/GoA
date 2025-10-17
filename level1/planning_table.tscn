@@ -37,6 +37,11 @@ grow_horizontal = 2
 custom_minimum_size = Vector2(240, 0)
 layout_mode = 2
 
+[node name="BackToWorkshopButton" type="Button" parent="HBoxContainer/LeftColumn"]
+layout_mode = 2
+theme = ExtResource("3")
+text = "Back to Workshop"
+
 [node name="BreakTimerPanel" type="Panel" parent="HBoxContainer/LeftColumn"]
 custom_minimum_size = Vector2(0, 24)
 layout_mode = 2
@@ -63,6 +68,35 @@ text = "Break Timer"
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="SuspicionPanel" type="Panel" parent="HBoxContainer/LeftColumn"]
+visible = false
+self_modulate = Color(1, 1, 1, 0.7)
+custom_minimum_size = Vector2(0, 24)
+layout_mode = 2
+
+[node name="SuspicionBar" type="ProgressBar" parent="HBoxContainer/LeftColumn/SuspicionPanel"]
+self_modulate = Color(1, 0, 0, 1)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+value = 0.0
+show_percentage = false
+
+[node name="SuspicionLabel" type="Label" parent="HBoxContainer/LeftColumn/SuspicionPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("3")
+text = "Suspicion"
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="TitlePanel" type="Panel" parent="HBoxContainer/LeftColumn"]
 custom_minimum_size = Vector2(0, 24)
 layout_mode = 2
@@ -78,13 +112,53 @@ text = "Planning Table"
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="StolenCoalPanel" type="Panel" parent="HBoxContainer/LeftColumn"]
+custom_minimum_size = Vector2(0, 24)
+layout_mode = 2
+self_modulate = Color(1, 1, 1, 0.7)
+
+[node name="StolenCoalLabel" type="Label" parent="HBoxContainer/LeftColumn/StolenCoalPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme = ExtResource("3")
+text = "Stolen Coal: 0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="StolenWritsPanel" type="Panel" parent="HBoxContainer/LeftColumn"]
+custom_minimum_size = Vector2(0, 24)
+layout_mode = 2
+self_modulate = Color(1, 1, 1, 0.7)
+
+[node name="StolenWritsLabel" type="Label" parent="HBoxContainer/LeftColumn/StolenWritsPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme = ExtResource("3")
+text = "Stolen Writs: 0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="MechanismsPanel" type="Panel" parent="HBoxContainer/LeftColumn"]
+custom_minimum_size = Vector2(0, 24)
+layout_mode = 2
+self_modulate = Color(1, 1, 1, 0.7)
+
+[node name="MechanismsLabel" type="Label" parent="HBoxContainer/LeftColumn/MechanismsPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme = ExtResource("3")
+text = "Mechanisms: 0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="RightColumn" type="VBoxContainer" parent="HBoxContainer"]
 custom_minimum_size = Vector2(240, 0)
 layout_mode = 2
 
-[node name="BackToWorkshopButton" type="Button" parent="HBoxContainer/RightColumn"]
-layout_mode = 2
-theme = ExtResource("3")
-text = "Back to Workshop"
-
-[connection signal="pressed" from="HBoxContainer/RightColumn/BackToWorkshopButton" to="." method="_on_back_to_workshop_button_pressed"]
+[connection signal="pressed" from="HBoxContainer/LeftColumn/BackToWorkshopButton" to="." method="_on_back_to_workshop_button_pressed"]

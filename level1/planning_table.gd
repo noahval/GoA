@@ -3,6 +3,9 @@ extends Control
 var break_time = 30.0
 var max_break_time = 30.0
 
+@onready var suspicion_panel = $HBoxContainer/LeftColumn/SuspicionPanel
+@onready var suspicion_bar = $HBoxContainer/LeftColumn/SuspicionPanel/SuspicionBar
+
 func _ready():
 	# Set the actual maximum break time (not the remaining time)
 	max_break_time = Level1Vars.starting_break_time + Level1Vars.overseer_lvl
@@ -16,6 +19,8 @@ func _ready():
 	var progress_percent = (break_time / max_break_time) * 100.0
 	$HBoxContainer/LeftColumn/BreakTimerPanel/BreakTimerBar.value = progress_percent
 
+	update_labels()
+	update_suspicion_bar()
 	apply_mobile_scaling()
 
 func apply_mobile_scaling():
@@ -40,7 +45,19 @@ func _process(delta):
 
 	if break_time <= 0:
 		Level1Vars.break_time_remaining = 0.0
-		get_tree().change_scene_to_file("res://level1/furnace.tscn")
+		Global.change_scene_with_check(get_tree(), "res://level1/furnace.tscn")
+
+	update_labels()
+	update_suspicion_bar()
+
+func update_labels():
+	$HBoxContainer/LeftColumn/StolenCoalPanel/StolenCoalLabel.text = "Stolen Coal: " + str(Level1Vars.stolen_coal)
+	$HBoxContainer/LeftColumn/StolenWritsPanel/StolenWritsLabel.text = "Stolen Writs: " + str(Level1Vars.stolen_writs)
+	$HBoxContainer/LeftColumn/MechanismsPanel/MechanismsLabel.text = "Mechanisms: " + str(Level1Vars.mechanisms)
 
 func _on_back_to_workshop_button_pressed():
-	get_tree().change_scene_to_file("res://level1/workshop.tscn")
+	Global.change_scene_with_check(get_tree(), "res://level1/workshop.tscn")
+
+func update_suspicion_bar():
+	suspicion_panel.visible = Level1Vars.suspicion > 0
+	suspicion_bar.value = Level1Vars.suspicion

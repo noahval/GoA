@@ -74,7 +74,7 @@ func _process(delta):
 
 	if break_time <= 0:
 		Level1Vars.break_time_remaining = 0.0
-		get_tree().change_scene_to_file("res://level1/furnace.tscn")
+		Global.change_scene_with_check(get_tree(), "res://level1/furnace.tscn")
 
 func setup_puzzle():
 	# Initialize grid - load from saved state or start with no pipes
@@ -460,10 +460,10 @@ func show_train_heart_button():
 	$VBoxContainer.move_child(enter_button, $VBoxContainer.get_child_count() - 2)  # Place before back button
 
 func _on_enter_train_heart_pressed():
-	get_tree().change_scene_to_file("res://level1/train_heart.tscn")
+	Global.change_scene_with_check(get_tree(), "res://level1/train_heart.tscn")
 
 func _on_back_button_pressed():
-	get_tree().change_scene_to_file("res://level1/secret_passage_entrance.tscn")
+	Global.change_scene_with_check(get_tree(), "res://level1/secret_passage_entrance.tscn")
 
 func _on_place_pipe_button_pressed():
 	if Level1Vars.pipes > 0:
@@ -507,4 +507,4 @@ func _on_place_pipe_button_pressed():
 func update_place_pipe_button():
 	if $VBoxContainer/PlacePipeButton:
 		$VBoxContainer/PlacePipeButton.disabled = Level1Vars.pipes <= 0
-		$VBoxContainer/PlacePipeButton.text = "Place Pipe (" + str(Level1Vars.pipes) + " available)"
+		$VBoxContainer/PlacePipeButton.text = "Place Pipe"

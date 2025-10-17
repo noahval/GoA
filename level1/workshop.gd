@@ -46,7 +46,7 @@ func _process(delta):
 
 	if break_time <= 0:
 		Level1Vars.break_time_remaining = 0.0
-		get_tree().change_scene_to_file("res://level1/furnace.tscn")
+		Global.change_scene_with_check(get_tree(), "res://level1/furnace.tscn")
 
 	update_labels()
 	update_suspicion_bar()
@@ -73,7 +73,11 @@ func _on_buy_mechanism_button_pressed():
 		update_labels()
 
 func _on_back_to_passage_button_pressed():
-	get_tree().change_scene_to_file("res://level1/secret_passage_entrance.tscn")
+	Global.change_scene_with_check(get_tree(), "res://level1/secret_passage_entrance.tscn")
+
+func _on_dev_pipes_button_pressed():
+	Level1Vars.pipes += 30
+	update_labels()
 
 func add_planning_table_button():
 	if Level1Vars.heart_taken:
@@ -96,7 +100,7 @@ func add_planning_table_button():
 		planning_table_button.pressed.connect(_on_planning_table_button_pressed)
 
 func _on_planning_table_button_pressed():
-	get_tree().change_scene_to_file("res://level1/planning_table.tscn")
+	Global.change_scene_with_check(get_tree(), "res://level1/planning_table.tscn")
 
 func update_suspicion_bar():
 	suspicion_panel.visible = Level1Vars.suspicion > 0

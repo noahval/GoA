@@ -34,7 +34,7 @@ func apply_mobile_scaling():
 							button.add_theme_font_size_override("font_size", 24)
 
 func _on_back_button_pressed():
-	get_tree().change_scene_to_file("res://level1/secret_passage_entrance.tscn")
+	Global.change_scene_with_check(get_tree(), "res://level1/secret_passage_entrance.tscn")
 
 func _on_take_heart_button_pressed():
 	Level1Vars.heart_taken = true

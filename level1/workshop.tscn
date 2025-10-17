@@ -171,6 +171,11 @@ layout_mode = 2
 theme = ExtResource("3")
 text = "Assemble Mechanism: 10"
 
+[node name="DevPipesButton" type="Button" parent="HBoxContainer/RightColumn"]
+layout_mode = 2
+theme = ExtResource("3")
+text = "Developer: Pipes"
+
 [node name="BackToPassageButton" type="Button" parent="HBoxContainer/RightColumn"]
 layout_mode = 2
 theme = ExtResource("3")
@@ -179,4 +184,5 @@ text = "Back to Secret Passage"
 [connection signal="pressed" from="HBoxContainer/RightColumn/AssembleComponentButton" to="." method="_on_assemble_component_button_pressed"]
 [connection signal="pressed" from="HBoxContainer/RightColumn/BuyPipeButton" to="." method="_on_buy_pipe_button_pressed"]
 [connection signal="pressed" from="HBoxContainer/RightColumn/BuyMechanismButton" to="." method="_on_buy_mechanism_button_pressed"]
+[connection signal="pressed" from="HBoxContainer/RightColumn/DevPipesButton" to="." method="_on_dev_pipes_button_pressed"]
 [connection signal="pressed" from="HBoxContainer/RightColumn/BackToPassageButton" to="." method="_on_back_to_passage_button_pressed"]

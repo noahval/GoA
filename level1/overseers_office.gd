@@ -45,7 +45,7 @@ func _process(delta):
 
 	if break_time <= 0:
 		Level1Vars.break_time_remaining = 0.0
-		get_tree().change_scene_to_file("res://level1/furnace.tscn")
+		Global.change_scene_with_check(get_tree(), "res://level1/furnace.tscn")
 
 	update_labels()
 	update_suspicion_bar()
@@ -54,7 +54,7 @@ func update_labels():
 	$HBoxContainer/LeftVBox/CoinsPanel/CoinsLabel.text = "Coins: " + str(int(Level1Vars.coins))
 
 func _on_back_button_pressed():
-	get_tree().change_scene_to_file("res://level1/shop.tscn")
+	Global.change_scene_with_check(get_tree(), "res://level1/shop.tscn")
 
 func update_suspicion_bar():
 	suspicion_panel.visible = Level1Vars.suspicion > 0

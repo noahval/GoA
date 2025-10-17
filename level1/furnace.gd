@@ -82,7 +82,7 @@ func _on_shovel_coal_button_pressed():
 
 	# Check if stamina is depleted
 	if Level1Vars.stamina <= 0:
-		get_tree().change_scene_to_file("res://level1/dream.tscn")
+		Global.change_scene_with_check(get_tree(), "res://level1/dream.tscn")
 		return
 
 	# Increase global strength exp
@@ -114,7 +114,7 @@ func _on_shovel_coal_button_pressed():
 			steal_coal_button.visible = true
 
 func _on_shop_button_pressed():
-	get_tree().change_scene_to_file("res://level1/shop.tscn")
+	Global.change_scene_with_check(get_tree(), "res://level1/shop.tscn")
 
 func _on_steal_coal_button_pressed():
 	Level1Vars.stolen_coal += 1

@@ -30,7 +30,7 @@ func _process(delta):
 
 	# Return to furnace when stamina is full
 	if Level1Vars.stamina >= Level1Vars.max_stamina:
-		get_tree().change_scene_to_file("res://level1/furnace.tscn")
+		Global.change_scene_with_check(get_tree(), "res://level1/furnace.tscn")
 
 func update_stamina_bar():
 	var stamina_percent = (Level1Vars.stamina / Level1Vars.max_stamina) * 100.0

@@ -40,4 +40,4 @@ func _process(delta):
 
 			if progress >= 1.0:
 				# Transition to intro screen
-				get_tree().change_scene_to_file("res://level1/intro_screen.tscn")
+				Global.change_scene_with_check(get_tree(), "res://level1/intro_screen.tscn")

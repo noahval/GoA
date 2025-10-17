@@ -40,13 +40,13 @@ func _process(delta):
 
 	if break_time <= 0:
 		Level1Vars.break_time_remaining = 0.0
-		get_tree().change_scene_to_file("res://level1/furnace.tscn")
+		Global.change_scene_with_check(get_tree(), "res://level1/furnace.tscn")
 
 func _on_puzzle_button_pressed():
-	get_tree().change_scene_to_file("res://level1/secret_passage_puzzle.tscn")
+	Global.change_scene_with_check(get_tree(), "res://level1/secret_passage_puzzle.tscn")
 
 func _on_workshop_button_pressed():
-	get_tree().change_scene_to_file("res://level1/workshop.tscn")
+	Global.change_scene_with_check(get_tree(), "res://level1/workshop.tscn")
 
 func _on_back_button_pressed():
-	get_tree().change_scene_to_file("res://level1/shop.tscn")
+	Global.change_scene_with_check(get_tree(), "res://level1/shop.tscn")

@@ -45,7 +45,7 @@ func _process(delta):
 
 	if break_time <= 0:
 		Level1Vars.break_time_remaining = 0.0
-		get_tree().change_scene_to_file("res://level1/furnace.tscn")
+		Global.change_scene_with_check(get_tree(), "res://level1/furnace.tscn")
 
 	update_labels()
 	update_suspicion_bar()
@@ -79,7 +79,7 @@ func _on_bribe_overseer_pressed():
 		update_labels()
 
 func _on_overseers_office_button_pressed():
-	get_tree().change_scene_to_file("res://level1/overseers_office.tscn")
+	Global.change_scene_with_check(get_tree(), "res://level1/overseers_office.tscn")
 
 func _on_bribe_barkeep_pressed():
 	if Level1Vars.coins >= 10 and not Level1Vars.barkeep_bribed:
@@ -88,7 +88,7 @@ func _on_bribe_barkeep_pressed():
 		update_labels()
 
 func _on_secret_passage_pressed():
-	get_tree().change_scene_to_file("res://level1/secret_passage_entrance.tscn")
+	Global.change_scene_with_check(get_tree(), "res://level1/secret_passage_entrance.tscn")
 
 func _on_get_coin_button_pressed():
 	Level1Vars.coins += 1
@@ -124,10 +124,10 @@ func update_labels():
 		$HBoxContainer/RightVBox/OverseersOfficeButton.visible = false
 
 func _on_nap_button_pressed():
-	get_tree().change_scene_to_file("res://level1/dream.tscn")
+	Global.change_scene_with_check(get_tree(), "res://level1/dream.tscn")
 
 func _on_furnace_button_pressed():
-	get_tree().change_scene_to_file("res://level1/furnace.tscn")
+	Global.change_scene_with_check(get_tree(), "res://level1/furnace.tscn")
 
 func update_suspicion_bar():
 	suspicion_panel.visible = Level1Vars.suspicion > 0
