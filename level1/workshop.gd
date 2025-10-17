@@ -7,11 +7,18 @@ var max_break_time = 30.0
 @onready var suspicion_bar = $HBoxContainer/LeftColumn/SuspicionPanel/SuspicionBar
 
 func _ready():
+	# Set the actual maximum break time (not the remaining time)
+	max_break_time = Level1Vars.starting_break_time + Level1Vars.overseer_lvl
+
 	if Level1Vars.break_time_remaining > 0:
 		break_time = Level1Vars.break_time_remaining
 	else:
-		break_time = 56.0 + Level1Vars.overseer_lvl
-	max_break_time = break_time
+		break_time = max_break_time
+
+	# Initialize the progress bar to the current percentage
+	var progress_percent = (break_time / max_break_time) * 100.0
+	$HBoxContainer/LeftColumn/BreakTimerPanel/BreakTimerBar.value = progress_percent
+
 	update_labels()
 	update_suspicion_bar()
 	add_planning_table_button()
@@ -32,14 +39,15 @@ func apply_mobile_scaling():
 func _process(delta):
 	break_time -= delta
 	Level1Vars.break_time_remaining = break_time
+
+	# Update progress bar based on current break time
+	var progress_percent = (break_time / max_break_time) * 100.0
+	$HBoxContainer/LeftColumn/BreakTimerPanel/BreakTimerBar.value = progress_percent
+
 	if break_time <= 0:
 		Level1Vars.break_time_remaining = 0.0
 		get_tree().change_scene_to_file("res://level1/furnace.tscn")
-	else:
-		$HBoxContainer/LeftColumn/BreakTimerPanel/BreakTimer.text = "Break Timer"
-		# Update progress bar
-		var progress_percent = (break_time / max_break_time) * 100.0
-		$HBoxContainer/LeftColumn/BreakTimerPanel/BreakTimerBar.value = progress_percent
+
 	update_labels()
 	update_suspicion_bar()
 

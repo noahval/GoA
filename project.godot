@@ -11,10 +11,10 @@ config_version=5
 [application]
 
 config/name="GoA"
-run/main_scene="res://loading_screen.tscn"
+run/main_scene="res://level1/furnace.tscn"
 config/features=PackedStringArray("4.5", "GL Compatibility")
 boot_splash/bg_color=Color(0, 0, 0, 1)
-boot_splash/image="uid://rbt8qtnvkihk"
+boot_splash/image="uid://bubn8iml7phuu"
 config/icon="res://icon.svg"
 boot_splash/minimum_display_time=3000
 

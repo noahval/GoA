@@ -17,8 +17,18 @@ var is_destination_energized = false  # Tracks if destination is powered
 var pipe_data = []
 
 func _ready():
-	break_time = Level1Vars.break_time_remaining
-	max_break_time = break_time
+	# Set the actual maximum break time (not the remaining time)
+	max_break_time = Level1Vars.starting_break_time + Level1Vars.overseer_lvl
+
+	if Level1Vars.break_time_remaining > 0:
+		break_time = Level1Vars.break_time_remaining
+	else:
+		break_time = max_break_time
+
+	# Initialize the progress bar to the current percentage
+	var progress_percent = (break_time / max_break_time) * 100.0
+	$VBoxContainer/BreakTimerPanel/BreakTimerBar.value = progress_percent
+
 	puzzle_container = $PuzzleContainer
 	apply_responsive_layout()
 	setup_puzzle()
@@ -57,14 +67,14 @@ func apply_responsive_layout():
 func _process(delta):
 	break_time -= delta
 	Level1Vars.break_time_remaining = break_time
+
+	# Update progress bar based on current break time
+	var progress_percent = (break_time / max_break_time) * 100.0
+	$VBoxContainer/BreakTimerPanel/BreakTimerBar.value = progress_percent
+
 	if break_time <= 0:
 		Level1Vars.break_time_remaining = 0.0
 		get_tree().change_scene_to_file("res://level1/furnace.tscn")
-	else:
-		$VBoxContainer/BreakTimerPanel/BreakTimer.text = "Break Timer"
-		# Update progress bar
-		var progress_percent = (break_time / max_break_time) * 100.0
-		$VBoxContainer/BreakTimerPanel/BreakTimerBar.value = progress_percent
 
 func setup_puzzle():
 	# Initialize grid - load from saved state or start with no pipes

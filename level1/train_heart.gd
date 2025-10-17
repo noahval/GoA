@@ -13,6 +13,8 @@ func update_scene_state():
 		var background = $Background
 		var empty_heart_texture = load("res://level1/empty_heart.jpg")
 		background.texture = empty_heart_texture
+		# Hide the take heart button
+		$VBoxContainer/TakeHeartButton.visible = false
 
 func apply_mobile_scaling():
 	var viewport_size = get_viewport().get_visible_rect().size
@@ -42,3 +44,5 @@ func _on_take_heart_button_pressed():
 	var background = $Background
 	var empty_heart_texture = load("res://level1/empty_heart.jpg")
 	background.texture = empty_heart_texture
+	# Hide the take heart button
+	$VBoxContainer/TakeHeartButton.visible = false
