@@ -36,9 +36,10 @@ jobs:
         run: |
           mv build/Web/* build/
           rmdir build/Web
-          cp Title.jpg build/
-          cp begin.jpg build/
-          if [ -f title.webm ]; then cp title.webm build/; fi
+          mkdir -p build/level1
+          cp level1/Title.jpg build/level1/
+          cp level1/begin.jpg build/level1/
+          if [ -f level1/title.webm ]; then cp level1/title.webm build/level1/; fi
           ls -la build/
 
       - name: Upload artifact

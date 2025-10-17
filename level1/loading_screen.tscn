@@ -1,9 +1,9 @@
-[gd_scene load_steps=3 format=3 uid="uid://intro_screen_001"]
+[gd_scene load_steps=3 format=3 uid="uid://loading_screen_001"]
 
-[ext_resource type="Texture2D" path="res://intro.jpg" id="1_intro"]
-[ext_resource type="Script" path="res://intro_screen.gd" id="2_script"]
+[ext_resource type="VideoStreamTheora" path="res://level1/title.mov" id="1_video"]
+[ext_resource type="Script" path="res://level1/loading_screen.gd" id="2_script"]
 
-[node name="IntroScreen" type="Control"]
+[node name="LoadingScreen" type="Control"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -21,16 +21,17 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0, 0, 0, 1)
 
-[node name="IntroImage" type="TextureRect" parent="."]
+[node name="VideoStreamPlayer" type="VideoStreamPlayer" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-texture = ExtResource("1_intro")
-expand_mode = 2
-stretch_mode = 0
+stream = ExtResource("1_video")
+autoplay = true
+loop = true
+expand = true
 
 [node name="FadeOverlay" type="ColorRect" parent="."]
 layout_mode = 1
@@ -40,5 +41,3 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 color = Color(0, 0, 0, 1)
-
-[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
