@@ -125,6 +125,7 @@ theme = ExtResource("3")
 text = "Improve Shovel: 1"
 
 [node name="PlowButton" type="Button" parent="HBoxContainer/RightVBox"]
+visible = false
 layout_mode = 2
 theme = ExtResource("3")
 text = "Coal Plow: 5"
@@ -133,11 +134,6 @@ text = "Coal Plow: 5"
 layout_mode = 2
 theme = ExtResource("3")
 text = "Auto Furnace: 10"
-
-[node name="BribeOverseerButton" type="Button" parent="HBoxContainer/RightVBox"]
-layout_mode = 2
-theme = ExtResource("3")
-text = "Bribe Overseer: 5"
 
 [node name="BribeBarkeepButton" type="Button" parent="HBoxContainer/RightVBox"]
 layout_mode = 2
@@ -149,6 +145,11 @@ visible = false
 layout_mode = 2
 theme = ExtResource("3")
 text = "Enter Secret Passage"
+
+[node name="BribeOverseerButton" type="Button" parent="HBoxContainer/RightVBox"]
+layout_mode = 2
+theme = ExtResource("3")
+text = "Bribe Overseer: 5"
 
 [node name="OverseersOfficeButton" type="Button" parent="HBoxContainer/RightVBox"]
 visible = false

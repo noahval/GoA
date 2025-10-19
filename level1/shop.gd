@@ -115,6 +115,12 @@ func update_labels():
 		$HBoxContainer/RightVBox/BribeBarkeepButton.visible = true
 		$HBoxContainer/RightVBox/SecretPassageButton.visible = false
 
+	# Show/hide plow button based on shovel level
+	if Level1Vars.shovel_lvl >= 5:
+		$HBoxContainer/RightVBox/PlowButton.visible = true
+	else:
+		$HBoxContainer/RightVBox/PlowButton.visible = false
+
 	# Show/hide overseer buttons based on level
 	if Level1Vars.overseer_lvl >= 12:
 		$HBoxContainer/RightVBox/BribeOverseerButton.visible = false

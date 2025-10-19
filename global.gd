@@ -267,8 +267,8 @@ func _reposition_notifications():
 	var notification_height = 40
 
 	for i in range(active_notifications.size()):
-		var notification = active_notifications[i]
-		var panel = notification.panel
+		var notif_data = active_notifications[i]
+		var panel = notif_data.panel
 
 		# Calculate position - newer notifications push older ones up
 		var stack_offset = i * (notification_height + notification_spacing)

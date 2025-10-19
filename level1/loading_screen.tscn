@@ -1,6 +1,5 @@
-[gd_scene load_steps=3 format=3 uid="uid://loading_screen_001"]
+[gd_scene load_steps=2 format=3 uid="uid://loading_screen_001"]
 
-[ext_resource type="VideoStreamTheora" path="res://level1/title.mov" id="1_video"]
 [ext_resource type="Script" path="res://level1/loading_screen.gd" id="2_script"]
 
 [node name="LoadingScreen" type="Control"]
@@ -28,9 +27,8 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-stream = ExtResource("1_video")
-autoplay = true
-loop = true
+autoplay = false
+loop = false
 expand = true
 
 [node name="FadeOverlay" type="ColorRect" parent="."]
