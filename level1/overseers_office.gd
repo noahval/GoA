@@ -105,8 +105,9 @@ func update_talk_button_visibility(delta):
 	if Level1Vars.talk_button_cooldown > 0:
 		Level1Vars.talk_button_cooldown -= delta
 
-	# Show Talk button only if heart_taken is true and cooldown is over
-	talk_button.visible = Level1Vars.heart_taken and Level1Vars.talk_button_cooldown <= 0
+	# Show Talk button only if heart_taken is true, cooldown is over, and question panel is not visible
+	var panel_is_visible = talk_questions_panel != null and talk_questions_panel.visible
+	talk_button.visible = Level1Vars.heart_taken and Level1Vars.talk_button_cooldown <= 0 and not panel_is_visible
 
 	# Show Steal Writ button only if correct_answers is 3 or higher
 	steal_writ_button.visible = Level1Vars.correct_answers >= 3
@@ -205,5 +206,4 @@ func _on_steal_writ_button_pressed():
 	var suspicion_increase = randf_range(7.0, 14.0)
 	Level1Vars.suspicion += suspicion_increase
 
-	# Close the talk questions panel
-	talk_questions_panel.visible = false
+	# Keep the same question displayed - don't fetch a new one

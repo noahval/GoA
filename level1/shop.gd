@@ -133,6 +133,8 @@ func _on_nap_button_pressed():
 	Global.change_scene_with_check(get_tree(), "res://level1/dream.tscn")
 
 func _on_furnace_button_pressed():
+	# Reset break timer to max before returning to furnace
+	Level1Vars.break_time_remaining = 0.0
 	Global.change_scene_with_check(get_tree(), "res://level1/furnace.tscn")
 
 func update_suspicion_bar():
