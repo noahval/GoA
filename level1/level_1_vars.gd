@@ -12,7 +12,7 @@ var coin_cost = 25.0
 var components = 0
 var mechanisms = 0
 var pipes = 5
-var stamina = 125.0
+var stamina = 75.0
 var max_stamina:
 	get:
 		return 125.0 + (4 * Global.constitution)
