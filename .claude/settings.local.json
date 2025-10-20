@@ -1,8 +1,10 @@
 {
   "permissions": {
     "allow": [
-      "Bash(dir /b c:GoA)",
-      "Bash(git add -A)"
+      "Bash",
+      "Bash(cat .gitignore)",
+      "Bash(git add .claude/settings.local.json)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nconfigure automatic bash command permissions\n\nUpdated .claude/settings.local.json to allow all bash and git commands\nto execute automatically without requiring user approval.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
     ],
     "deny": [],
     "ask": []
