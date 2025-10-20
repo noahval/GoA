@@ -20,11 +20,12 @@ boot_splash/minimum_display_time=3000
 
 Global="*res://global.gd"
 Level1Vars="*res://level1/level_1_vars.gd"
+ResponsiveLayout="*res://responsive_layout.gd"
 
 [display]
 
-window/size/viewport_width=738
-window/size/viewport_height=907
+window/size/viewport_width=1328
+window/size/viewport_height=787
 
 [gui]
 

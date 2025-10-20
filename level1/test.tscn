@@ -1,0 +1,101 @@
+[gd_scene load_steps=3 format=3 uid="uid://cfw1awlc8t6oq"]
+
+[ext_resource type="PackedScene" path="res://level1/scene_template.tscn" id="1_base"]
+[ext_resource type="Script" uid="uid://bv6n8x4dgjdre" path="res://level1/test.gd" id="2_script"]
+
+[node name="SceneRoot" instance=ExtResource("1_base")]
+script = ExtResource("2_script")
+
+[node name="TitlePanel" type="Panel" parent="HBoxContainer/LeftVBox" index="0"]
+custom_minimum_size = Vector2(0, 24)
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="HBoxContainer/LeftVBox/TitlePanel" index="0"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Test Scene"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BreakTimerPanel" type="Panel" parent="HBoxContainer/LeftVBox" index="1"]
+custom_minimum_size = Vector2(0, 24)
+layout_mode = 2
+
+[node name="BreakTimerBar" type="ProgressBar" parent="HBoxContainer/LeftVBox/BreakTimerPanel" index="0"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+value = 100.0
+show_percentage = false
+
+[node name="BreakTimerLabel" type="Label" parent="HBoxContainer/LeftVBox/BreakTimerPanel" index="1"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Break Timer"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="SuspicionPanel" type="Panel" parent="HBoxContainer/LeftVBox" index="2"]
+custom_minimum_size = Vector2(0, 24)
+layout_mode = 2
+
+[node name="SuspicionBar" type="ProgressBar" parent="HBoxContainer/LeftVBox/SuspicionPanel" index="0"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_type_variation = &"SuspicionProgressBar"
+show_percentage = false
+
+[node name="SuspicionLabel" type="Label" parent="HBoxContainer/LeftVBox/SuspicionPanel" index="1"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Suspicion"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="StolenCoalPanel" type="Panel" parent="HBoxContainer/LeftVBox" index="3"]
+custom_minimum_size = Vector2(0, 24)
+layout_mode = 2
+
+[node name="StolenCoalLabel" type="Label" parent="HBoxContainer/LeftVBox/StolenCoalPanel" index="0"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Stolen Coal: 0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ToFurnaceButton" type="Button" parent="HBoxContainer/RightVBox" index="0"]
+layout_mode = 2
+text = "Go to Furnace"
+
+[node name="StealCoalButton" type="Button" parent="HBoxContainer/RightVBox" index="1"]
+layout_mode = 2
+text = "Steal Coal"
+
+[node name="Background2" parent="." index="3" instance=ExtResource("1_base")]
+layout_mode = 1
+
+[connection signal="pressed" from="HBoxContainer/RightVBox/ToFurnaceButton" to="." method="_on_to_furnace_button_pressed"]
+[connection signal="pressed" from="HBoxContainer/RightVBox/StealCoalButton" to="." method="_on_steal_coal_button_pressed"]

@@ -4,6 +4,7 @@
 
 ### Scripts (.gd)
 - [global.gd](global.gd)  
+- [responsive_layout.gd](responsive_layout.gd)  
 - [toc_updater.gd](toc_updater.gd)  
 - [victory.gd](victory.gd)  
 
@@ -25,6 +26,7 @@
 - [level1/secret_passage_entrance.gd](level1/secret_passage_entrance.gd)  
 - [level1/secret_passage_puzzle.gd](level1/secret_passage_puzzle.gd)  
 - [level1/shop.gd](level1/shop.gd)  
+- [level1/test.gd](level1/test.gd)  
 - [level1/train_heart.gd](level1/train_heart.gd)  
 - [level1/workshop.gd](level1/workshop.gd)  
 
@@ -35,9 +37,11 @@
 - [level1/loading_screen.tscn](level1/loading_screen.tscn)  
 - [level1/overseers_office.tscn](level1/overseers_office.tscn)  
 - [level1/planning_table.tscn](level1/planning_table.tscn)  
+- [level1/scene_template.tscn](level1/scene_template.tscn)  
 - [level1/secret_passage_entrance.tscn](level1/secret_passage_entrance.tscn)  
 - [level1/secret_passage_puzzle.tscn](level1/secret_passage_puzzle.tscn)  
 - [level1/shop.tscn](level1/shop.tscn)  
+- [level1/test.tscn](level1/test.tscn)  
 - [level1/train_heart.tscn](level1/train_heart.tscn)  
 - [level1/workshop.tscn](level1/workshop.tscn)  
 
