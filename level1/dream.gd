@@ -48,12 +48,12 @@ func apply_mobile_scaling():
 		var buttons = right_vbox.get_children()
 		for button in buttons:
 			if button is Button:
-				button.custom_minimum_size = Vector2(0, 60)
-				# Get current font size and increase by 30%
+				button.custom_minimum_size = Vector2(0, 105)  # 60 * 1.75 = 105
+				# Get current font size and increase by 75%
 				var current_size = button.get_theme_font_size("font_size")
 				if current_size <= 0:
 					current_size = 16  # Default size
-				button.add_theme_font_size_override("font_size", int(current_size * 1.3))
+				button.add_theme_font_size_override("font_size", int(current_size * 1.75))
 
 		# Scale panels and labels in left vbox (title and stamina)
 		var title_panel = left_vbox.get_node_or_null("TitlePanel")
@@ -62,20 +62,20 @@ func apply_mobile_scaling():
 		var stamina_label = left_vbox.get_node_or_null("StaminaPanel/StaminaLabel")
 
 		if title_panel:
-			title_panel.custom_minimum_size = Vector2(0, 36)  # Increase from 24 to 36
+			title_panel.custom_minimum_size = Vector2(0, 42)  # 24 * 1.75 = 42
 		if title_label:
 			var title_size = title_label.get_theme_font_size("font_size")
 			if title_size <= 0:
 				title_size = 16
-			title_label.add_theme_font_size_override("font_size", int(title_size * 1.3))
+			title_label.add_theme_font_size_override("font_size", int(title_size * 1.75))
 
 		if stamina_panel:
-			stamina_panel.custom_minimum_size = Vector2(0, 36)  # Increase from 24 to 36
+			stamina_panel.custom_minimum_size = Vector2(0, 42)  # 24 * 1.75 = 42
 		if stamina_label:
 			var stamina_size = stamina_label.get_theme_font_size("font_size")
 			if stamina_size <= 0:
 				stamina_size = 16
-			stamina_label.add_theme_font_size_override("font_size", int(stamina_size * 1.3))
+			stamina_label.add_theme_font_size_override("font_size", int(stamina_size * 1.75))
 	else:
 		# Reset UI sizes for desktop
 		var buttons = right_vbox.get_children()
