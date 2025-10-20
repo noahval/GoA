@@ -2,9 +2,14 @@
   "permissions": {
     "allow": [
       "Bash",
-      "Bash(cat .gitignore)",
-      "Bash(git add .claude/settings.local.json)",
-      "Bash(git commit -m \"$(cat <<''EOF''\nconfigure automatic bash command permissions\n\nUpdated .claude/settings.local.json to allow all bash and git commands\nto execute automatically without requiring user approval.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
+      "Read",
+      "Write",
+      "Edit",
+      "Glob",
+      "Grep",
+      "WebFetch",
+      "WebSearch",
+      "Bash(git commit -m \"$(cat <<''EOF''\nadd full tool permissions to settings.local.json\n\nAdded automatic permissions for Read, Write, Edit, Glob, Grep,\nWebFetch, and WebSearch tools to enable unrestricted file operations,\nweb access, and search capabilities.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
     ],
     "deny": [],
     "ask": []
