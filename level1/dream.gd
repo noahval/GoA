@@ -62,7 +62,7 @@ func apply_mobile_scaling():
 		var stamina_label = left_vbox.get_node_or_null("StaminaPanel/StaminaLabel")
 
 		if title_panel:
-			title_panel.custom_minimum_size = Vector2(0, 42)  # 24 * 1.75 = 42
+			title_panel.custom_minimum_size = Vector2(0, 70)  # Almost as tall as buttons (105)
 		if title_label:
 			var title_size = title_label.get_theme_font_size("font_size")
 			if title_size <= 0:
@@ -70,7 +70,7 @@ func apply_mobile_scaling():
 			title_label.add_theme_font_size_override("font_size", int(title_size * 1.75))
 
 		if stamina_panel:
-			stamina_panel.custom_minimum_size = Vector2(0, 42)  # 24 * 1.75 = 42
+			stamina_panel.custom_minimum_size = Vector2(0, 70)  # Almost as tall as buttons (105)
 		if stamina_label:
 			var stamina_size = stamina_label.get_theme_font_size("font_size")
 			if stamina_size <= 0:
