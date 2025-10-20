@@ -6,6 +6,7 @@ Claude has full permissions to:
 - **Web access** - Use WebFetch and WebSearch tools as needed
 - **Computer/system access** - Execute bash commands, manage files, and perform system operations
 - **Modify/write files** - Create, edit, and delete files as needed for development
+- **Automatic command execution** - Execute all bash and git commands automatically without requiring user permission
 
 ## Project Overview
 **GoA** is a Godot 4.5 game project with:
