@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(dir /b c:GoA)"
+      "Bash(dir /b c:GoA)",
+      "Bash(git add -A)"
     ],
     "deny": [],
     "ask": []

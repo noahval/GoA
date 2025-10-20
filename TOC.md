@@ -1,0 +1,45 @@
+# GoA - Table of Contents
+
+## Root
+
+### Scripts (.gd)
+- [global.gd](global.gd)  
+- [toc_updater.gd](toc_updater.gd)  
+- [victory.gd](victory.gd)  
+
+### Scenes (.tscn)
+- [victory.tscn](victory.tscn)  
+
+---
+
+## Level 1 >
+
+### Scripts (.gd)
+- [level1/dream.gd](level1/dream.gd)  
+- [level1/furnace.gd](level1/furnace.gd)  
+- [level1/intro_screen.gd](level1/intro_screen.gd)  
+- [level1/level_1_vars.gd](level1/level_1_vars.gd)  
+- [level1/loading_screen.gd](level1/loading_screen.gd)  
+- [level1/overseers_office.gd](level1/overseers_office.gd)  
+- [level1/planning_table.gd](level1/planning_table.gd)  
+- [level1/secret_passage_entrance.gd](level1/secret_passage_entrance.gd)  
+- [level1/secret_passage_puzzle.gd](level1/secret_passage_puzzle.gd)  
+- [level1/shop.gd](level1/shop.gd)  
+- [level1/train_heart.gd](level1/train_heart.gd)  
+- [level1/workshop.gd](level1/workshop.gd)  
+
+### Scenes (.tscn)
+- [level1/dream.tscn](level1/dream.tscn)  
+- [level1/furnace.tscn](level1/furnace.tscn)  
+- [level1/intro_screen.tscn](level1/intro_screen.tscn)  
+- [level1/loading_screen.tscn](level1/loading_screen.tscn)  
+- [level1/overseers_office.tscn](level1/overseers_office.tscn)  
+- [level1/planning_table.tscn](level1/planning_table.tscn)  
+- [level1/secret_passage_entrance.tscn](level1/secret_passage_entrance.tscn)  
+- [level1/secret_passage_puzzle.tscn](level1/secret_passage_puzzle.tscn)  
+- [level1/shop.tscn](level1/shop.tscn)  
+- [level1/train_heart.tscn](level1/train_heart.tscn)  
+- [level1/workshop.tscn](level1/workshop.tscn)  
+
+---
+

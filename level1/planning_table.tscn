@@ -39,6 +39,23 @@ grow_horizontal = 2
 custom_minimum_size = Vector2(240, 0)
 layout_mode = 2
 
+[node name="TitlePanel" type="Panel" parent="HBoxContainer/LeftColumn"]
+self_modulate = Color(1, 1, 1, 0.7)
+custom_minimum_size = Vector2(0, 24)
+layout_mode = 2
+
+[node name="Title" type="Label" parent="HBoxContainer/LeftColumn/TitlePanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("3")
+text = "Planning Table"
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="BreakTimerPanel" type="Panel" parent="HBoxContainer/LeftColumn"]
 self_modulate = Color(1, 1, 1, 0.7)
 custom_minimum_size = Vector2(0, 24)
@@ -92,23 +109,6 @@ grow_horizontal = 2
 grow_vertical = 2
 theme = ExtResource("3")
 text = "Suspicion"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="TitlePanel" type="Panel" parent="HBoxContainer/LeftColumn"]
-self_modulate = Color(1, 1, 1, 0.7)
-custom_minimum_size = Vector2(0, 24)
-layout_mode = 2
-
-[node name="Title" type="Label" parent="HBoxContainer/LeftColumn/TitlePanel"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme = ExtResource("3")
-text = "Planning Table"
 horizontal_alignment = 1
 vertical_alignment = 1
 

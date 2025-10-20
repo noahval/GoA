@@ -1,5 +1,13 @@
 extends Node
 
+# ===== VICTORY CONDITION CONFIGURATION =====
+# Configure these values to change when the player wins
+var victory_conditions = {
+	"stolen_coal": 3,
+	"stolen_writs": 3,
+	"mechanisms": 3
+}
+
 # ===== EXPERIENCE SYSTEM CONFIGURATION =====
 # Base XP needed for first level up (level 1 -> 2)
 const BASE_XP_FOR_LEVEL = 100
@@ -152,6 +160,10 @@ var get_caught_timer: Timer = null
 
 func _ready():
 	# Notification system is now dynamic - panels are created on demand
+
+	# Update TOC.md automatically
+	var toc_updater = load("res://toc_updater.gd").new()
+	add_child(toc_updater)
 
 	# Create timer for whisper notifications
 	whisper_timer = Timer.new()
@@ -311,7 +323,35 @@ func _on_get_caught_timeout():
 
 # Wrapper function for changing scenes with get caught check
 func change_scene_with_check(scene_tree: SceneTree, scene_path: String):
+	# Check for victory conditions first
+	if check_victory_conditions():
+		scene_tree.change_scene_to_file("res://victory.tscn")
+		return
+
 	# Check if player gets caught before scene change
 	if not check_get_caught():
 		# If not caught, proceed with scene change
 		scene_tree.change_scene_to_file(scene_path)
+
+# Check if victory conditions have been met
+func check_victory_conditions() -> bool:
+	# Check all configured victory conditions
+	for condition in victory_conditions:
+		var required_amount = victory_conditions[condition]
+		var current_amount = 0
+
+		# Get the current value from Level1Vars
+		if condition in Level1Vars:
+			current_amount = Level1Vars.get(condition)
+
+		# If any condition is not met, return false
+		if current_amount < required_amount:
+			return false
+
+	# All conditions met!
+	return true
+
+# Call this after any change that might trigger victory
+func check_and_trigger_victory(scene_tree: SceneTree):
+	if check_victory_conditions():
+		scene_tree.change_scene_to_file("res://victory.tscn")

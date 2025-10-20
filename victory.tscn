@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://victory_scene_001"]
+[gd_scene load_steps=3 format=3 uid="uid://w8iqht4o0c2p"]
 
-[ext_resource type="Script" path="res://victory.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://d12movvnqxnjw" path="res://victory.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://df54hfib2543l" path="res://victory.jpg" id="2_texture"]
 
 [node name="Victory" type="Control"]
 layout_mode = 3
@@ -11,14 +12,16 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_script")
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="Background" type="TextureRect" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.1, 0.1, 0.15, 1)
+texture = ExtResource("2_texture")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
 layout_mode = 1
@@ -27,10 +30,10 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -300.0
-offset_top = -200.0
-offset_right = 300.0
-offset_bottom = 200.0
+offset_left = 83.0
+offset_top = -232.5
+offset_right = 487.0
+offset_bottom = 196.0
 grow_horizontal = 2
 grow_vertical = 2
 
@@ -45,8 +48,9 @@ custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 
 [node name="VictoryMessage" type="Label" parent="VBoxContainer"]
+custom_minimum_size = Vector2(400, 0)
 layout_mode = 2
-text = "You have escaped the mines and achieved freedom!"
+text = "You have escaped the train and achieved freedom. Everyone in the world is proud of you!"
 horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 3
@@ -55,62 +59,6 @@ autowrap_mode = 3
 custom_minimum_size = Vector2(0, 60)
 layout_mode = 2
 
-[node name="StatsLabel" type="Label" parent="VBoxContainer"]
-layout_mode = 2
-text = "Final Stats"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="StatsContainer" type="VBoxContainer" parent="VBoxContainer"]
-layout_mode = 2
-
-[node name="StrengthLabel" type="Label" parent="VBoxContainer/StatsContainer"]
-layout_mode = 2
-text = "Strength: 0"
-horizontal_alignment = 1
-
-[node name="ConstitutionLabel" type="Label" parent="VBoxContainer/StatsContainer"]
-layout_mode = 2
-text = "Constitution: 0"
-horizontal_alignment = 1
-
-[node name="DexterityLabel" type="Label" parent="VBoxContainer/StatsContainer"]
-layout_mode = 2
-text = "Dexterity: 0"
-horizontal_alignment = 1
-
-[node name="WisdomLabel" type="Label" parent="VBoxContainer/StatsContainer"]
-layout_mode = 2
-text = "Wisdom: 0"
-horizontal_alignment = 1
-
-[node name="IntelligenceLabel" type="Label" parent="VBoxContainer/StatsContainer"]
-layout_mode = 2
-text = "Intelligence: 0"
-horizontal_alignment = 1
-
-[node name="CharismaLabel" type="Label" parent="VBoxContainer/StatsContainer"]
-layout_mode = 2
-text = "Charisma: 0"
-horizontal_alignment = 1
-
 [node name="Spacer3" type="Control" parent="VBoxContainer"]
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
-
-[node name="ButtonContainer" type="HBoxContainer" parent="VBoxContainer"]
-layout_mode = 2
-alignment = 1
-
-[node name="MainMenuButton" type="Button" parent="VBoxContainer/ButtonContainer"]
-custom_minimum_size = Vector2(200, 50)
-layout_mode = 2
-text = "Main Menu"
-
-[node name="QuitButton" type="Button" parent="VBoxContainer/ButtonContainer"]
-custom_minimum_size = Vector2(200, 50)
-layout_mode = 2
-text = "Quit Game"
-
-[connection signal="pressed" from="VBoxContainer/ButtonContainer/MainMenuButton" to="." method="_on_main_menu_button_pressed"]
-[connection signal="pressed" from="VBoxContainer/ButtonContainer/QuitButton" to="." method="_on_quit_button_pressed"]
