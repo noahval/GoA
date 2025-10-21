@@ -31,22 +31,10 @@ func _ready():
 
 	update_labels()
 	update_suspicion_bar()
-	apply_mobile_scaling()
+	ResponsiveLayout.apply_to_scene(self)
 
 	# Load questions from file
 	load_questions()
-
-func apply_mobile_scaling():
-	var viewport_size = get_viewport().get_visible_rect().size
-	# Check if in portrait mode (taller than wide)
-	if viewport_size.y > viewport_size.x:
-		# Scale up buttons for mobile
-		var buttons = $HBoxContainer/RightVBox.get_children()
-		for button in buttons:
-			if button is Button:
-				button.custom_minimum_size = Vector2(0, 60)
-				if button.get("theme_override_font_sizes/font_size") == null:
-					button.add_theme_font_size_override("font_size", 24)
 
 func _process(delta):
 	break_time -= delta

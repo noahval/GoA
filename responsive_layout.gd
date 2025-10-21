@@ -38,6 +38,14 @@ func get_dynamic_separation(viewport_width: float) -> int:
 ## Apply responsive layout to a scene
 ## Call this from _ready() in your scene script
 func apply_to_scene(scene_root: Control) -> void:
+	# Add settings overlay if it doesn't exist
+	if not scene_root.has_node("SettingsOverlay"):
+		var settings_scene = load("res://settings_overlay.tscn")
+		if settings_scene:
+			var settings_instance = settings_scene.instantiate()
+			settings_instance.name = "SettingsOverlay"
+			scene_root.add_child(settings_instance)
+
 	var viewport_size = scene_root.get_viewport().get_visible_rect().size
 	var is_portrait = viewport_size.y > viewport_size.x
 

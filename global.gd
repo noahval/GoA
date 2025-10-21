@@ -1,5 +1,7 @@
 extends Node
 
+var dev_speed_mode = false
+
 # ===== VICTORY CONDITION CONFIGURATION =====
 # Configure these values to change when the player wins
 var victory_conditions = {

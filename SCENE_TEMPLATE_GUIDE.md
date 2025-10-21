@@ -296,6 +296,78 @@ Example scenes already using the pattern:
 **Q: Theme changes aren't applying**
 - A: Delete `.godot/editor` cache and restart Godot
 
+## Settings Overlay Pattern
+
+A reusable settings overlay component is available for adding persistent settings UI to any scene.
+
+### Files
+- **Scene**: [settings_overlay.tscn](settings_overlay.tscn)
+- **Script**: [settings_overlay.gd](settings_overlay.gd)
+
+### Features
+- **30x30px orange gear button** in bottom-right corner
+- **Centered overlay panel** with settings controls
+- **Dev Speed Mode toggle** that controls `Global.dev_speed_mode`
+- **Responsive text** - button shows "Dev Speed Mode: ON/OFF" based on state
+
+### Adding to Your Scene
+
+**Automatic (Recommended):**
+If your scene uses `ResponsiveLayout.apply_to_scene(self)`, the settings overlay is **automatically added** - no manual work needed!
+
+**Manual Method 1: Via Godot Editor**
+1. Open your scene
+2. Right-click the root node
+3. Select "Instantiate Child Scene"
+4. Choose `settings_overlay.tscn`
+5. The overlay automatically handles all logic
+
+**Manual Method 2: Via TSCN File**
+Add this to your scene file:
+
+```gdscript
+[ext_resource type="PackedScene" path="res://settings_overlay.tscn" id="settings"]
+
+[node name="SettingsOverlay" parent="." instance=ExtResource("settings")]
+```
+
+**Manual Method 3: Via Scene Template**
+The settings overlay is included in [scene_template.tscn](level1/scene_template.tscn), so all scenes inheriting from it automatically have it.
+
+### Usage
+- Click the orange gear button in bottom-right corner
+- Toggle "Dev Speed Mode" to change `Global.dev_speed_mode` between true/false
+- Click "Close" to hide the overlay
+
+### Structure
+```
+SettingsOverlay (Control)
+├── SettingsButton (Button) - 30x30px orange gear
+└── MenuOverlay (Panel) - 300x200px centered
+    └── VBoxContainer
+        ├── TitleLabel - "Settings"
+        ├── DevSpeedToggle - Toggle button
+        └── CloseButton - Close overlay
+```
+
+### Extending the Settings Menu
+
+To add new settings:
+
+1. Open [settings_overlay.tscn](settings_overlay.tscn)
+2. Add new Button/CheckBox/etc to VBoxContainer
+3. Update [settings_overlay.gd](settings_overlay.gd):
+
+```gdscript
+@onready var my_new_setting = $MenuOverlay/VBoxContainer/MyNewSetting
+
+func _on_my_new_setting_pressed():
+    Global.my_setting = !Global.my_setting
+    # Update UI if needed
+```
+
+4. All scenes using the overlay automatically get the new setting
+
 ## Future Enhancements
 
 Consider creating specialized templates:

@@ -33,6 +33,7 @@ func _ready():
 	apply_responsive_layout()
 	setup_puzzle()
 	update_place_pipe_button()
+	add_developer_skip_button()
 
 func apply_responsive_layout():
 	var viewport_size = get_viewport().get_visible_rect().size
@@ -75,6 +76,10 @@ func _process(delta):
 	if break_time <= 0:
 		Level1Vars.break_time_remaining = 0.0
 		Global.change_scene_with_check(get_tree(), "res://level1/furnace.tscn")
+
+	# Update developer button visibility
+	if $VBoxContainer.has_node("DeveloperSkipButton"):
+		$VBoxContainer/DeveloperSkipButton.visible = Global.dev_speed_mode
 
 func setup_puzzle():
 	# Initialize grid - load from saved state or start with no pipes
@@ -508,3 +513,26 @@ func update_place_pipe_button():
 	if $VBoxContainer/PlacePipeButton:
 		$VBoxContainer/PlacePipeButton.disabled = Level1Vars.pipes <= 0
 		$VBoxContainer/PlacePipeButton.text = "Place Pipe"
+
+func add_developer_skip_button():
+	# Create a developer button to skip the puzzle
+	var skip_button = Button.new()
+	skip_button.name = "DeveloperSkipButton"
+	skip_button.text = "Developer: Skip Puzzle"
+	skip_button.custom_minimum_size = Vector2(200, 40)
+	skip_button.visible = Global.dev_speed_mode
+	skip_button.pressed.connect(_on_developer_skip_pressed)
+
+	# Get the theme
+	var theme_resource = load("res://default_theme.tres")
+	skip_button.theme = theme_resource
+
+	# Add the button to VBoxContainer (before the back button)
+	var vbox = $VBoxContainer
+	var back_button = $VBoxContainer/BackButton
+	var back_button_index = back_button.get_index()
+	vbox.add_child(skip_button)
+	vbox.move_child(skip_button, back_button_index)
+
+func _on_developer_skip_pressed():
+	Global.change_scene_with_check(get_tree(), "res://level1/train_heart.tscn")

@@ -2,6 +2,8 @@ extends Control
 
 var click_count = 0
 var steal_click_count = 0
+@onready var left_vbox = $HBoxContainer/LeftVBox
+@onready var right_vbox = $HBoxContainer/RightVBox
 @onready var coal_label = $HBoxContainer/LeftVBox/CoalLabel
 @onready var coins_label = $HBoxContainer/LeftVBox/CoinsLabel
 @onready var shop_button = $HBoxContainer/RightVBox/ShopButton
@@ -11,11 +13,11 @@ var steal_click_count = 0
 @onready var steal_coal_button = $HBoxContainer/RightVBox/StealCoalButton
 
 func _ready():
+	ResponsiveLayout.apply_to_scene(self)
 	coal_label.text = "Coal Shoveled: " + str(Level1Vars.coal)
 	coins_label.text = "Coins: " + str(int(Level1Vars.coins))
 	update_stamina_bar()
 	update_suspicion_bar()
-	ResponsiveLayout.apply_to_scene(self)
 
 func _process(delta):
 	if Level1Vars.auto_shovel_lvl > 0:

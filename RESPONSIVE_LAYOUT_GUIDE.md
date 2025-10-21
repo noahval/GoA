@@ -54,6 +54,7 @@ That's it! The ResponsiveLayout autoload handles everything:
 - ✅ Reparents columns to correct containers
 - ✅ Scales buttons, panels, and fonts
 - ✅ Resets everything when switching orientations
+- ✅ Automatically adds settings overlay (gear button in bottom-right)
 
 ## Making Global Changes
 

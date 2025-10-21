@@ -3,8 +3,9 @@ extends Control
 var break_time = 30.0
 var max_break_time = 30.0
 
-@onready var suspicion_panel = $HBoxContainer/LeftColumn/SuspicionPanel
-@onready var suspicion_bar = $HBoxContainer/LeftColumn/SuspicionPanel/SuspicionBar
+@onready var suspicion_panel = $HBoxContainer/LeftVBox/SuspicionPanel
+@onready var suspicion_bar = $HBoxContainer/LeftVBox/SuspicionPanel/SuspicionBar
+@onready var dev_pipes_button = $HBoxContainer/RightVBox/DevPipesButton
 
 func _ready():
 	# Set the actual maximum break time (not the remaining time)
@@ -17,24 +18,12 @@ func _ready():
 
 	# Initialize the progress bar to the current percentage
 	var progress_percent = (break_time / max_break_time) * 100.0
-	$HBoxContainer/LeftColumn/BreakTimerPanel/BreakTimerBar.value = progress_percent
+	$HBoxContainer/LeftVBox/BreakTimerPanel/BreakTimerBar.value = progress_percent
 
 	update_labels()
 	update_suspicion_bar()
 	add_planning_table_button()
-	apply_mobile_scaling()
-
-func apply_mobile_scaling():
-	var viewport_size = get_viewport().get_visible_rect().size
-	# Check if in portrait mode (taller than wide)
-	if viewport_size.y > viewport_size.x:
-		# Scale up buttons for mobile
-		var buttons = $HBoxContainer/RightColumn.get_children()
-		for button in buttons:
-			if button is Button:
-				button.custom_minimum_size = Vector2(0, 60)
-				if button.get("theme_override_font_sizes/font_size") == null:
-					button.add_theme_font_size_override("font_size", 24)
+	ResponsiveLayout.apply_to_scene(self)
 
 func _process(delta):
 	break_time -= delta
@@ -42,7 +31,7 @@ func _process(delta):
 
 	# Update progress bar based on current break time
 	var progress_percent = (break_time / max_break_time) * 100.0
-	$HBoxContainer/LeftColumn/BreakTimerPanel/BreakTimerBar.value = progress_percent
+	$HBoxContainer/LeftVBox/BreakTimerPanel/BreakTimerBar.value = progress_percent
 
 	if break_time <= 0:
 		Level1Vars.break_time_remaining = 0.0
@@ -52,9 +41,12 @@ func _process(delta):
 	update_suspicion_bar()
 
 func update_labels():
-	$HBoxContainer/LeftColumn/ComponentsPanel/ComponentsLabel.text = "Components: " + str(Level1Vars.components)
-	$HBoxContainer/LeftColumn/MechanismsPanel/MechanismsLabel.text = "Mechanisms: " + str(Level1Vars.mechanisms)
-	$HBoxContainer/LeftColumn/PipesPanel/PipesLabel.text = "Pipes: " + str(Level1Vars.pipes)
+	$HBoxContainer/LeftVBox/ComponentsPanel/ComponentsLabel.text = "Components: " + str(Level1Vars.components)
+	$HBoxContainer/LeftVBox/MechanismsPanel/MechanismsLabel.text = "Mechanisms: " + str(Level1Vars.mechanisms)
+	$HBoxContainer/LeftVBox/PipesPanel/PipesLabel.text = "Pipes: " + str(Level1Vars.pipes)
+
+	# Show/hide dev pipes button based on dev_speed_mode
+	dev_pipes_button.visible = Global.dev_speed_mode
 
 func _on_assemble_component_button_pressed():
 	Level1Vars.components += 1
@@ -90,8 +82,8 @@ func add_planning_table_button():
 		planning_table_button.theme = theme_resource
 
 		# Add the button to the right column (before the back button)
-		var right_column = $HBoxContainer/RightColumn
-		var back_button = $HBoxContainer/RightColumn/BackToPassageButton
+		var right_column = $HBoxContainer/RightVBox
+		var back_button = $HBoxContainer/RightVBox/BackToPassageButton
 		var back_button_index = back_button.get_index()
 		right_column.add_child(planning_table_button)
 		right_column.move_child(planning_table_button, back_button_index)

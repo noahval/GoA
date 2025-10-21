@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://base_scene_template"]
+[gd_scene load_steps=3 format=3 uid="uid://base_scene_template"]
 
 [ext_resource type="Theme" path="res://default_theme.tres" id="1"]
+[ext_resource type="PackedScene" path="res://settings_overlay.tscn" id="2"]
 
 [node name="SceneRoot" type="Control"]
 layout_mode = 3
@@ -72,3 +73,5 @@ layout_mode = 2
 [node name="RightVBox" type="VBoxContainer" parent="HBoxContainer"]
 custom_minimum_size = Vector2(260, 0)
 layout_mode = 2
+
+[node name="SettingsOverlay" parent="." instance=ExtResource("2")]
