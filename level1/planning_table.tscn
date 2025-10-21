@@ -1,20 +1,20 @@
 [gd_scene load_steps=4 format=3 uid="uid://dd0mrwbnv8jnk"]
 
-[ext_resource type="PackedScene" uid="uid://base_scene_template" path="res://level1/scene_template.tscn" id="1_base"]
+[ext_resource type="PackedScene" path="res://level1/scene_template.tscn" id="1_base"]
 [ext_resource type="Script" uid="uid://1vxrmtrokvy5" path="res://level1/planning_table.gd" id="2_script"]
-[ext_resource type="Texture2D" uid="uid://be0rm3txsqqyb" path="res://level1/planning_table.jpg" id="3_bg"]
+[ext_resource type="Texture2D" uid="uid://be0rm3txsqqyb" path="res://level1/planning_table.jpg" id="3_texture"]
 
-[node name="SceneRoot" instance=ExtResource("1_base")]
+[node name="PlanningTable" instance=ExtResource("1_base")]
 script = ExtResource("2_script")
 
-[node name="Background" parent="." instance=ExtResource("1_base")]
-texture = ExtResource("3_bg")
+[node name="Background" parent="." index="0"]
+texture = ExtResource("3_texture")
 
 [node name="TitlePanel" type="Panel" parent="HBoxContainer/LeftVBox" index="0"]
 custom_minimum_size = Vector2(0, 24)
 layout_mode = 2
 
-[node name="Title" type="Label" parent="HBoxContainer/LeftVBox/TitlePanel"]
+[node name="TitleLabel" type="Label" parent="HBoxContainer/LeftVBox/TitlePanel" index="0"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0

@@ -59,9 +59,7 @@ func update_labels():
 	coins_label.text = "Coins: " + str(int(Level1Vars.coins))
 
 	# Update break timer display
-	var minutes = int(break_time) / 60
-	var seconds = int(break_time) % 60
-	break_timer_label.text = "Break: %d:%02d" % [minutes, seconds]
+	break_timer_label.text = "Break Timer"
 
 func _on_back_button_pressed():
 	Global.change_scene_with_check(get_tree(), "res://level1/shop.tscn")
@@ -160,6 +158,9 @@ func fetch_question():
 	# Store the correct answer
 	current_correct_answer = question_data["correct"]
 
+	# Resize panel to accommodate content
+	resize_talk_panel()
+
 	# Enable answer buttons
 	set_answer_buttons_enabled(true)
 
@@ -190,6 +191,77 @@ func _on_answer_selected(selected_answer: String):
 
 		# Set cooldown to random time between 2-4 minutes (120-240 seconds)
 		Level1Vars.talk_button_cooldown = randf_range(120.0, 240.0)
+
+func resize_talk_panel():
+	# Get viewport dimensions
+	var viewport_size = get_viewport().get_visible_rect().size
+	var viewport_width = viewport_size.x
+
+	# Define constants for panel sizing
+	const MIN_PANEL_WIDTH = 300  # Minimum panel width
+	const PANEL_PADDING = 60  # Padding for panel content
+	const MARGIN_FROM_EDGE = 20  # Margin from screen edges
+
+	# Maximum panel width - leave margin from screen edges
+	var max_panel_width = viewport_width - (MARGIN_FROM_EDGE * 2)
+
+	# Calculate required width based on text content
+	var max_required_width = MIN_PANEL_WIDTH
+
+	# Check question label width
+	var question_width = calculate_text_width(question_label)
+	max_required_width = max(max_required_width, question_width)
+
+	# Check all answer button widths
+	var answer_buttons = [
+		$TalkQuestionsPanel/VBoxContainer/AnswerA,
+		$TalkQuestionsPanel/VBoxContainer/AnswerB,
+		$TalkQuestionsPanel/VBoxContainer/AnswerC,
+		$TalkQuestionsPanel/VBoxContainer/AnswerD
+	]
+
+	for button in answer_buttons:
+		var button_width = calculate_text_width(button)
+		max_required_width = max(max_required_width, button_width)
+
+	# Clamp to min and max bounds
+	var desired_width = clamp(max_required_width, MIN_PANEL_WIDTH, max_panel_width)
+
+	# Apply the width to the panel (centered)
+	var half_width = desired_width / 2.0
+	talk_questions_panel.offset_left = -half_width
+	talk_questions_panel.offset_right = half_width
+
+	# Enable word wrapping on question label and buttons
+	question_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	for button in answer_buttons:
+		button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+
+func calculate_text_width(control: Control) -> float:
+	# Get text based on control type
+	var text = ""
+	if control is Label:
+		text = control.text
+	elif control is Button:
+		text = control.text
+
+	if text.is_empty():
+		return 0.0
+
+	# Get font and font size
+	var font = control.get_theme_font("font")
+	var font_size = control.get_theme_font_size("font_size")
+	if font_size <= 0:
+		font_size = 25  # Default font size
+
+	# Calculate text width
+	var text_width = 0.0
+	if font:
+		text_width = font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+
+	# Add padding
+	const CONTROL_PADDING = 60
+	return text_width + CONTROL_PADDING
 
 func _on_steal_writ_button_pressed():
 	# Increase stolen writs by 1

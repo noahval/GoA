@@ -76,6 +76,13 @@ corner_radius_top_right = 4
 corner_radius_bottom_right = 4
 corner_radius_bottom_left = 4
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_DarkPanel"]
+bg_color = Color(0.25, 0.25, 0.25, 0.3)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
 [node name="OverseersOffice" instance=ExtResource("1_base")]
 script = ExtResource("2_script")
 
@@ -240,6 +247,7 @@ offset_right = 300.0
 offset_bottom = 100.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_DarkPanel")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="TalkQuestionsPanel"]
 layout_mode = 1

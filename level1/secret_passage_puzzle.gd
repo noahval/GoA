@@ -59,11 +59,95 @@ func apply_responsive_layout():
 					button.add_theme_font_size_override("font_size", 24)
 	else:
 		# Widescreen layout: puzzle beside menu
+		# Apply width expansion logic to menu
+		apply_landscape_width_expansion()
+
 		# Position menu on the left of center
 		$VBoxContainer.position = Vector2(viewport_size.x / 2 - 450, viewport_size.y / 2 - 150)
 
 		# Position puzzle on the right of center
 		puzzle_container.position = Vector2(viewport_size.x / 2 + 50, viewport_size.y / 2 - 200)
+
+func apply_landscape_width_expansion():
+	# Apply similar width expansion logic as ResponsiveLayout
+	var viewport_size = get_viewport().get_visible_rect().size
+	var default_menu_width = 300.0
+	var max_width = viewport_size.x / 2 - 100  # Leave room for puzzle
+	var max_desired_width = default_menu_width
+
+	# Check all panels and calculate required widths
+	for child in $VBoxContainer.get_children():
+		if child is Panel:
+			var panel_desired_width = default_menu_width
+
+			# Check all labels in this panel
+			for label_child in child.get_children():
+				if label_child is Label:
+					# Enable word wrapping
+					label_child.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+
+					# Calculate required width for text
+					var font = label_child.get_theme_font("font")
+					var font_size = label_child.get_theme_font_size("font_size")
+					if font_size <= 0:
+						font_size = 25  # Default
+
+					# Get text width
+					var text_width = 0
+					if font:
+						text_width = font.get_string_size(label_child.text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+
+					# Add padding for panel margins
+					text_width += 40
+
+					# Calculate desired width for this label
+					var label_desired_width = max(default_menu_width, text_width)
+					label_desired_width = min(label_desired_width, max_width)
+
+					# Track the widest label in this panel
+					if label_desired_width > panel_desired_width:
+						panel_desired_width = label_desired_width
+
+			# Set panel size
+			child.custom_minimum_size = Vector2(panel_desired_width, 24)
+
+			# Track maximum width across all panels
+			if panel_desired_width > max_desired_width:
+				max_desired_width = panel_desired_width
+
+		elif child is Button:
+			# Enable word wrapping on buttons
+			child.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+
+			# Calculate required width for button text
+			var font = child.get_theme_font("font")
+			var font_size = child.get_theme_font_size("font_size")
+			if font_size <= 0:
+				font_size = 25  # Default
+
+			# Get text width
+			var text_width = 0
+			if font:
+				text_width = font.get_string_size(child.text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+
+			# Add padding for button margins
+			text_width += 60
+
+			# Calculate desired width
+			var button_desired_width = max(default_menu_width, text_width)
+			button_desired_width = min(button_desired_width, max_width)
+
+			# Set button size
+			child.custom_minimum_size = Vector2(button_desired_width, 0)
+
+			# Track maximum width
+			if button_desired_width > max_desired_width:
+				max_desired_width = button_desired_width
+
+	# Set VBoxContainer to the widest element
+	$VBoxContainer.custom_minimum_size = Vector2(max_desired_width, 0)
+
+	print("SecretPassagePuzzle: Menu width expanded to: ", max_desired_width)
 
 func _process(delta):
 	break_time -= delta

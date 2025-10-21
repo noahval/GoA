@@ -10,6 +10,13 @@ var max_break_time = 30.0
 @onready var mechanisms_panel = $HBoxContainer/LeftVBox/MechanismsPanel
 
 func _ready():
+	# CRITICAL: Apply responsive layout FIRST before accessing any UI elements
+	# This ensures the scene tree is fully initialized and in the correct state
+	ResponsiveLayout.apply_to_scene(self)
+
+	# Wait one frame to ensure responsive layout has completed
+	await get_tree().process_frame
+
 	# Set the actual maximum break time (not the remaining time)
 	max_break_time = Level1Vars.starting_break_time + Level1Vars.overseer_lvl
 
@@ -24,7 +31,6 @@ func _ready():
 
 	update_labels()
 	update_suspicion_bar()
-	ResponsiveLayout.apply_to_scene(self)
 
 func _process(delta):
 	break_time -= delta

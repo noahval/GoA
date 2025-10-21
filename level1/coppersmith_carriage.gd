@@ -37,9 +37,7 @@ func _process(delta):
 
 	# Update timer label
 	if break_timer_label:
-		var minutes = int(break_time) / 60
-		var seconds = int(break_time) % 60
-		break_timer_label.text = "Break: %d:%02d" % [minutes, seconds]
+		break_timer_label.text = "Break Timer"
 
 	if break_time <= 0:
 		Level1Vars.break_time_remaining = 0.0
