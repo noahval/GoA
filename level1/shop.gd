@@ -10,10 +10,8 @@ var max_break_time = 30.0
 @onready var shovel_button = $HBoxContainer/RightVBox/ShovelButton
 @onready var plow_button = $HBoxContainer/RightVBox/PlowButton
 @onready var furnace_upgrade = $HBoxContainer/RightVBox/FurnaceUpgrade
-@onready var bribe_overseer_button = $HBoxContainer/RightVBox/BribeOverseerButton
-@onready var bribe_barkeep_button = $HBoxContainer/RightVBox/BribeBarkeepButton
-@onready var secret_passage_button = $HBoxContainer/RightVBox/SecretPassageButton
-@onready var overseers_office_button = $HBoxContainer/RightVBox/OverseersOfficeButton
+@onready var bribe_shopkeep_button = $HBoxContainer/RightVBox/BribeShopkeepButton
+@onready var workshop_button = $HBoxContainer/RightVBox/WorkshopButton
 @onready var developer_free_coins_button = $HBoxContainer/RightVBox/DeveloperFreeCoinsButton
 
 func _ready():
@@ -71,24 +69,14 @@ func _on_furnace_upgrade_pressed():
 		Level1Vars.auto_shovel_lvl += 1
 		update_labels()
 
-func _on_bribe_overseer_pressed():
-	var cost = max(3, int(3 * pow(1.3, Level1Vars.overseer_lvl)))
-	if Level1Vars.coins >= cost:
-		Level1Vars.coins -= cost
-		Level1Vars.overseer_lvl += 2
-		update_labels()
-
-func _on_overseers_office_button_pressed():
-	Global.change_scene_with_check(get_tree(), "res://level1/overseers_office.tscn")
-
-func _on_bribe_barkeep_pressed():
-	if Level1Vars.coins >= 10 and not Level1Vars.barkeep_bribed:
+func _on_bribe_shopkeep_pressed():
+	if Level1Vars.coins >= 10 and not Level1Vars.shopkeep_bribed:
 		Level1Vars.coins -= 10
-		Level1Vars.barkeep_bribed = true
+		Level1Vars.shopkeep_bribed = true
 		update_labels()
 
-func _on_secret_passage_pressed():
-	Global.change_scene_with_check(get_tree(), "res://level1/secret_passage_entrance.tscn")
+func _on_workshop_button_pressed():
+	Global.change_scene_with_check(get_tree(), "res://level1/workshop.tscn")
 
 func _on_get_coin_button_pressed():
 	Level1Vars.coins += 1
@@ -108,22 +96,20 @@ func update_labels():
 		plow_button.text = "Coal Plow: " + str(max(Level1Vars.plow_lvl + 5, int(5 * pow(1.5, Level1Vars.plow_lvl))))
 	if furnace_upgrade:
 		furnace_upgrade.text = "Auto Shovel: " + str(max(Level1Vars.auto_shovel_lvl + 10, int(10 * pow(1.15, Level1Vars.auto_shovel_lvl))))
-	if bribe_overseer_button:
-		bribe_overseer_button.text = "Bribe Overseer: " + str(max(3, int(3 * pow(1.3, Level1Vars.overseer_lvl))))
-	if bribe_barkeep_button:
-		bribe_barkeep_button.text = "Bribe Barkeep: 10"
+	if bribe_shopkeep_button:
+		bribe_shopkeep_button.text = "Bribe Shopkeep: 10"
 
-	# Show/hide barkeep and secret passage buttons
-	if Level1Vars.barkeep_bribed:
-		if bribe_barkeep_button:
-			bribe_barkeep_button.visible = false
-		if secret_passage_button:
-			secret_passage_button.visible = true
+	# Show/hide shopkeep and workshop buttons
+	if Level1Vars.shopkeep_bribed:
+		if bribe_shopkeep_button:
+			bribe_shopkeep_button.visible = false
+		if workshop_button:
+			workshop_button.visible = true
 	else:
-		if bribe_barkeep_button:
-			bribe_barkeep_button.visible = true
-		if secret_passage_button:
-			secret_passage_button.visible = false
+		if bribe_shopkeep_button:
+			bribe_shopkeep_button.visible = true
+		if workshop_button:
+			workshop_button.visible = false
 
 	# Show/hide plow button based on shovel level
 	if plow_button:
@@ -132,18 +118,6 @@ func update_labels():
 		else:
 			plow_button.visible = false
 
-	# Show/hide overseer buttons based on level
-	if Level1Vars.overseer_lvl >= 12:
-		if bribe_overseer_button:
-			bribe_overseer_button.visible = false
-		if overseers_office_button:
-			overseers_office_button.visible = true
-	else:
-		if bribe_overseer_button:
-			bribe_overseer_button.visible = true
-		if overseers_office_button:
-			overseers_office_button.visible = false
-
 	# Show/hide developer button based on dev_speed_mode
 	if developer_free_coins_button:
 		developer_free_coins_button.visible = Global.dev_speed_mode
@@ -151,10 +125,8 @@ func update_labels():
 func _on_nap_button_pressed():
 	Global.change_scene_with_check(get_tree(), "res://level1/dream.tscn")
 
-func _on_furnace_button_pressed():
-	# Reset break timer to max before returning to furnace
-	Level1Vars.break_time_remaining = 0.0
-	Global.change_scene_with_check(get_tree(), "res://level1/furnace.tscn")
+func _on_to_coppersmith_carriage_button_pressed():
+	Global.change_scene_with_check(get_tree(), "res://level1/coppersmith_carriage.tscn")
 
 func update_suspicion_bar():
 	suspicion_panel.visible = Level1Vars.suspicion > 0

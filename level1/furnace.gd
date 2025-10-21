@@ -73,7 +73,7 @@ func _on_shovel_coal_button_pressed():
 			steal_coal_button.visible = true
 
 func _on_shop_button_pressed():
-	Global.change_scene_with_check(get_tree(), "res://level1/shop.tscn")
+	Global.change_scene_with_check(get_tree(), "res://level1/bar.tscn")
 
 func _on_steal_coal_button_pressed():
 	Level1Vars.stolen_coal += 1

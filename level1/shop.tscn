@@ -92,43 +92,32 @@ text = "Coal Plow: 5"
 layout_mode = 2
 text = "Auto Furnace: 10"
 
-[node name="BribeBarkeepButton" type="Button" parent="HBoxContainer/RightVBox" index="3"]
+[node name="BribeShopkeepButton" type="Button" parent="HBoxContainer/RightVBox" index="3"]
 layout_mode = 2
-text = "Bribe Barkeep: 10"
+text = "Bribe Shopkeep: 10"
 
-[node name="SecretPassageButton" type="Button" parent="HBoxContainer/RightVBox" index="4"]
+[node name="WorkshopButton" type="Button" parent="HBoxContainer/RightVBox" index="4"]
 visible = false
 layout_mode = 2
-text = "Enter Secret Passage"
+text = "Enter Workshop"
 
-[node name="BribeOverseerButton" type="Button" parent="HBoxContainer/RightVBox" index="5"]
-layout_mode = 2
-text = "Bribe Overseer: 5"
-
-[node name="OverseersOfficeButton" type="Button" parent="HBoxContainer/RightVBox" index="6"]
-visible = false
-layout_mode = 2
-text = "Enter Overseer's Office"
-
-[node name="DeveloperFreeCoinsButton" type="Button" parent="HBoxContainer/RightVBox" index="7"]
+[node name="DeveloperFreeCoinsButton" type="Button" parent="HBoxContainer/RightVBox" index="5"]
 layout_mode = 2
 text = "Developer: Free Coins"
 
-[node name="NapButton" type="Button" parent="HBoxContainer/RightVBox" index="8"]
+[node name="NapButton" type="Button" parent="HBoxContainer/RightVBox" index="6"]
 layout_mode = 2
 text = "Nap"
 
-[node name="FurnaceButton" type="Button" parent="HBoxContainer/RightVBox" index="9"]
+[node name="ToCoppersmithCarriageButton" type="Button" parent="HBoxContainer/RightVBox" index="7"]
 layout_mode = 2
-text = "Back to Furnace"
+text = "To Coppersmith Carriage"
 
 [connection signal="pressed" from="HBoxContainer/RightVBox/ShovelButton" to="." method="_on_shovel_button_pressed"]
 [connection signal="pressed" from="HBoxContainer/RightVBox/PlowButton" to="." method="_on_plow_button_pressed"]
 [connection signal="pressed" from="HBoxContainer/RightVBox/FurnaceUpgrade" to="." method="_on_furnace_upgrade_pressed"]
-[connection signal="pressed" from="HBoxContainer/RightVBox/BribeBarkeepButton" to="." method="_on_bribe_barkeep_pressed"]
-[connection signal="pressed" from="HBoxContainer/RightVBox/SecretPassageButton" to="." method="_on_secret_passage_pressed"]
-[connection signal="pressed" from="HBoxContainer/RightVBox/BribeOverseerButton" to="." method="_on_bribe_overseer_pressed"]
-[connection signal="pressed" from="HBoxContainer/RightVBox/OverseersOfficeButton" to="." method="_on_overseers_office_button_pressed"]
+[connection signal="pressed" from="HBoxContainer/RightVBox/BribeShopkeepButton" to="." method="_on_bribe_shopkeep_pressed"]
+[connection signal="pressed" from="HBoxContainer/RightVBox/WorkshopButton" to="." method="_on_workshop_button_pressed"]
 [connection signal="pressed" from="HBoxContainer/RightVBox/DeveloperFreeCoinsButton" to="." method="_on_developer_free_coins_button_pressed"]
 [connection signal="pressed" from="HBoxContainer/RightVBox/NapButton" to="." method="_on_nap_button_pressed"]
-[connection signal="pressed" from="HBoxContainer/RightVBox/FurnaceButton" to="." method="_on_furnace_button_pressed"]
+[connection signal="pressed" from="HBoxContainer/RightVBox/ToCoppersmithCarriageButton" to="." method="_on_to_coppersmith_carriage_button_pressed"]

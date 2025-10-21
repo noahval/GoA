@@ -18,6 +18,8 @@
 ## Level 1 >
 
 ### Scripts (.gd)
+- [level1/bar.gd](level1/bar.gd)  
+- [level1/coppersmith_carriage.gd](level1/coppersmith_carriage.gd)  
 - [level1/dream.gd](level1/dream.gd)  
 - [level1/furnace.gd](level1/furnace.gd)  
 - [level1/intro_screen.gd](level1/intro_screen.gd)  
@@ -33,6 +35,8 @@
 - [level1/workshop.gd](level1/workshop.gd)  
 
 ### Scenes (.tscn)
+- [level1/bar.tscn](level1/bar.tscn)  
+- [level1/coppersmith_carriage.tscn](level1/coppersmith_carriage.tscn)  
 - [level1/dream.tscn](level1/dream.tscn)  
 - [level1/furnace.tscn](level1/furnace.tscn)  
 - [level1/intro_screen.tscn](level1/intro_screen.tscn)  

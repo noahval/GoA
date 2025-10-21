@@ -43,6 +43,15 @@ func get_dynamic_separation(viewport_width: float) -> int:
 ## Apply responsive layout to a scene
 ## Call this from _ready() in your scene script
 func apply_to_scene(scene_root: Control) -> void:
+	# Use call_deferred to ensure the scene tree is fully ready
+	# This is CRITICAL for inherited scenes where nodes may not be fully initialized yet
+	call_deferred("_apply_responsive_layout_internal", scene_root)
+
+## Internal function that actually applies the layout
+## Do not call directly - use apply_to_scene() instead
+func _apply_responsive_layout_internal(scene_root: Control) -> void:
+	print("ResponsiveLayout: Starting layout application for ", scene_root.name)
+
 	# Add settings overlay if it doesn't exist
 	if not scene_root.has_node("SettingsOverlay"):
 		var settings_scene = load("res://settings_overlay.tscn")
@@ -50,10 +59,13 @@ func apply_to_scene(scene_root: Control) -> void:
 			var settings_instance = settings_scene.instantiate()
 			settings_instance.name = "SettingsOverlay"
 			scene_root.add_child(settings_instance)
+			print("ResponsiveLayout: Added settings overlay")
 
 	var viewport_size = scene_root.get_viewport().get_visible_rect().size
 	var is_portrait = viewport_size.y > viewport_size.x
+	print("ResponsiveLayout: Viewport size: ", viewport_size, " Portrait: ", is_portrait)
 
+	var background = scene_root.get_node_or_null("Background")
 	var hbox = scene_root.get_node_or_null("HBoxContainer")
 	var vbox = scene_root.get_node_or_null("VBoxContainer")
 	var left_vbox = scene_root.get_node_or_null("HBoxContainer/LeftVBox")
@@ -61,9 +73,41 @@ func apply_to_scene(scene_root: Control) -> void:
 	var top_vbox = scene_root.get_node_or_null("VBoxContainer/TopVBox")
 	var bottom_vbox = scene_root.get_node_or_null("VBoxContainer/BottomVBox")
 
+	print("ResponsiveLayout: Found nodes - Background: ", background != null, " HBox: ", hbox != null,
+		  " VBox: ", vbox != null, " LeftVBox: ", left_vbox != null, " RightVBox: ", right_vbox != null)
+
 	if not hbox or not vbox or not left_vbox or not right_vbox or not top_vbox or not bottom_vbox:
 		push_warning("ResponsiveLayout: Scene missing required container nodes")
 		return
+
+	# CRITICAL: Ensure mouse_filter is set to PASS (2) on all containers and background
+	# This allows mouse events to reach buttons even if scenes were created before template was updated
+	if background:
+		background.mouse_filter = Control.MOUSE_FILTER_PASS
+		print("ResponsiveLayout: Set Background mouse_filter to PASS")
+		if background is TextureRect:
+			print("ResponsiveLayout: Background texture: ", background.texture)
+			# If texture is null, try to load it from the scene's expected path
+			if background.texture == null:
+				print("ResponsiveLayout: WARNING - Background texture is null!")
+				print("ResponsiveLayout: Attempting to auto-load background based on scene name...")
+				_auto_load_background(scene_root, background)
+	else:
+		print("ResponsiveLayout: WARNING - No Background node found!")
+
+	hbox.mouse_filter = Control.MOUSE_FILTER_PASS
+	vbox.mouse_filter = Control.MOUSE_FILTER_PASS
+	left_vbox.mouse_filter = Control.MOUSE_FILTER_PASS
+	right_vbox.mouse_filter = Control.MOUSE_FILTER_PASS
+	print("ResponsiveLayout: Set all container mouse_filters to PASS")
+
+	# Debug: Print buttons found
+	var button_count = 0
+	for child in right_vbox.get_children():
+		if child is Button:
+			button_count += 1
+			print("ResponsiveLayout: Found button: ", child.name, " Text: ", child.text)
+	print("ResponsiveLayout: Total buttons found: ", button_count)
 
 	# Always apply separation to landscape HBox with dynamic calculation
 	if not is_portrait:
@@ -221,3 +265,39 @@ func _reverse_button_order(container: VBoxContainer) -> void:
 
 	for button in buttons:
 		container.add_child(button)
+
+## Automatically load background texture based on scene root name
+## Converts scene root name (e.g. "Bar", "CoppersmithCarriage") to snake_case
+## and attempts to load the corresponding .jpg file from level1 directory
+func _auto_load_background(scene_root: Control, background: TextureRect) -> void:
+	var scene_name = scene_root.name
+
+	# Convert PascalCase/CamelCase to snake_case
+	var snake_case_name = _to_snake_case(scene_name)
+
+	# Try to load from level1 directory
+	var image_path = "res://level1/" + snake_case_name + ".jpg"
+
+	print("ResponsiveLayout: Trying to load background from: ", image_path)
+
+	if ResourceLoader.exists(image_path):
+		var texture = load(image_path)
+		if texture:
+			background.texture = texture
+			print("ResponsiveLayout: Successfully auto-loaded background texture!")
+		else:
+			print("ResponsiveLayout: ERROR - Failed to load texture at path: ", image_path)
+	else:
+		print("ResponsiveLayout: No background image found at: ", image_path)
+
+## Convert PascalCase or CamelCase string to snake_case
+## Examples: "Bar" -> "bar", "CoppersmithCarriage" -> "coppersmith_carriage"
+func _to_snake_case(text: String) -> String:
+	var result = ""
+	for i in range(text.length()):
+		var c = text[i]
+		# If uppercase and not first character, add underscore before it
+		if c == c.to_upper() and c != c.to_lower() and i > 0:
+			result += "_"
+		result += c.to_lower()
+	return result

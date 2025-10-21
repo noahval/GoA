@@ -1,0 +1,43 @@
+[gd_scene load_steps=4 format=3 uid="uid://c8hqkr2vx4pne"]
+
+[ext_resource type="PackedScene" path="res://level1/scene_template.tscn" id="1_base"]
+[ext_resource type="Script" uid="uid://ct2m1b5l80fxo" path="res://level1/bar.gd" id="2_script"]
+[ext_resource type="Texture2D" path="res://level1/bar.jpg" id="3_texture"]
+
+[node name="Bar" instance=ExtResource("1_base")]
+script = ExtResource("2_script")
+
+[node name="Background" parent="." index="0"]
+texture = ExtResource("3_texture")
+
+[node name="TitlePanel" type="Panel" parent="HBoxContainer/LeftVBox" index="0"]
+custom_minimum_size = Vector2(0, 24)
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="HBoxContainer/LeftVBox/TitlePanel" index="0"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Blackbore Bar"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BribeBarkeepButton" type="Button" parent="HBoxContainer/RightVBox" index="0"]
+layout_mode = 2
+text = "Bribe Barkeep: 10"
+
+[node name="SecretPassageButton" type="Button" parent="HBoxContainer/RightVBox" index="1"]
+visible = false
+layout_mode = 2
+text = "Enter Secret Passage"
+
+[node name="ToCoppersmithCarriageButton" type="Button" parent="HBoxContainer/RightVBox" index="2"]
+layout_mode = 2
+text = "to coppersmith carriage"
+
+[connection signal="pressed" from="HBoxContainer/RightVBox/BribeBarkeepButton" to="." method="_on_bribe_barkeep_pressed"]
+[connection signal="pressed" from="HBoxContainer/RightVBox/SecretPassageButton" to="." method="_on_secret_passage_pressed"]
+[connection signal="pressed" from="HBoxContainer/RightVBox/ToCoppersmithCarriageButton" to="." method="_on_to_coppersmith_carriage_button_pressed"]

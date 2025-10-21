@@ -6,6 +6,7 @@ var plow_lvl = 0
 var auto_shovel_lvl = 0
 var overseer_lvl = 0
 var barkeep_bribed = false
+var shopkeep_bribed = false
 var break_time_remaining = 0.0
 var starting_break_time = 20
 var coin_cost = 25.0

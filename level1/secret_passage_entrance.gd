@@ -45,8 +45,5 @@ func _process(delta):
 func _on_puzzle_button_pressed():
 	Global.change_scene_with_check(get_tree(), "res://level1/secret_passage_puzzle.tscn")
 
-func _on_workshop_button_pressed():
-	Global.change_scene_with_check(get_tree(), "res://level1/workshop.tscn")
-
 func _on_back_button_pressed():
 	Global.change_scene_with_check(get_tree(), "res://level1/shop.tscn")

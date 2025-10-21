@@ -1,0 +1,48 @@
+[gd_scene load_steps=4 format=3 uid="uid://cj7m3qaxr8wqv"]
+
+[ext_resource type="PackedScene" uid="uid://base_scene_template" path="res://level1/scene_template.tscn" id="1_base"]
+[ext_resource type="Script" path="res://level1/coppersmith_carriage.gd" id="2_script"]
+[ext_resource type="Texture2D" path="res://level1/coppersmith_carriage.jpg" id="3_texture"]
+
+[node name="CoppersmithCarriage" instance=ExtResource("1_base")]
+script = ExtResource("2_script")
+
+[node name="Background" parent="." index="0"]
+texture = ExtResource("3_texture")
+
+[node name="TitlePanel" type="Panel" parent="HBoxContainer/LeftVBox"]
+custom_minimum_size = Vector2(0, 24)
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="HBoxContainer/LeftVBox/TitlePanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Coppersmith Carriage"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BribeOverseerButton" type="Button" parent="HBoxContainer/RightVBox"]
+layout_mode = 2
+text = "Bribe Overseer: 5"
+
+[node name="OverseersOfficeButton" type="Button" parent="HBoxContainer/RightVBox"]
+visible = false
+layout_mode = 2
+text = "Enter Overseer's Office"
+
+[node name="ShopButton" type="Button" parent="HBoxContainer/RightVBox"]
+layout_mode = 2
+text = "shop"
+
+[node name="ToBlackboreButton" type="Button" parent="HBoxContainer/RightVBox"]
+layout_mode = 2
+text = "to blackbore"
+
+[connection signal="pressed" from="HBoxContainer/RightVBox/BribeOverseerButton" to="." method="_on_bribe_overseer_pressed"]
+[connection signal="pressed" from="HBoxContainer/RightVBox/OverseersOfficeButton" to="." method="_on_overseers_office_button_pressed"]
+[connection signal="pressed" from="HBoxContainer/RightVBox/ShopButton" to="." method="_on_shop_button_pressed"]
+[connection signal="pressed" from="HBoxContainer/RightVBox/ToBlackboreButton" to="." method="_on_to_blackbore_button_pressed"]

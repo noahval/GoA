@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bwdj1q5ox86nm"
-path="res://.godot/imported/furnace.jpg-6cc1b2666489b7d2a28984617334a256.ctex"
+uid="uid://bywkbdy5yi2h"
+path="res://.godot/imported/coppersmith_carriage.jpg-c7542c7cbf0c3f821bfdf7205fc73366.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://level1/furnace.jpg"
-dest_files=["res://.godot/imported/furnace.jpg-6cc1b2666489b7d2a28984617334a256.ctex"]
+source_file="res://level1/coppersmith_carriage.jpg"
+dest_files=["res://.godot/imported/coppersmith_carriage.jpg-c7542c7cbf0c3f821bfdf7205fc73366.ctex"]
 
 [params]
 

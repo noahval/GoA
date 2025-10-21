@@ -12,17 +12,19 @@ Location: `level1/scene_template.tscn`
 
 ```
 SceneRoot (Control)
-├── Background (TextureRect) - Full screen background
-├── HBoxContainer (Landscape layout)
-│   ├── LeftVBox (220px wide) - Info panels
-│   └── RightVBox (260px wide) - Buttons
-└── VBoxContainer (Portrait layout - hidden by default)
+├── Background (TextureRect) - Full screen background - mouse_filter = PASS ⚠️
+├── HBoxContainer (Landscape layout) - mouse_filter = PASS
+│   ├── LeftVBox (220px wide) - Info panels - mouse_filter = PASS
+│   └── RightVBox (260px wide) - Buttons - mouse_filter = PASS
+└── VBoxContainer (Portrait layout - hidden by default) - mouse_filter = PASS
     ├── TopPadding (90px)
     ├── TopVBox - Info panels
     ├── Spacer (flexible)
     ├── BottomVBox - Buttons
     └── BottomPadding (90px)
 ```
+
+**CRITICAL**: The **Background** TextureRect and all container nodes (HBoxContainer, VBoxContainer, LeftVBox, RightVBox) **MUST** have `mouse_filter = 2` (PASS) to ensure buttons are clickable. The Background is full-screen and will block ALL mouse clicks if mouse_filter is not set to PASS!
 
 ### Dimensions
 
@@ -52,28 +54,28 @@ All scenes inherit from `default_theme.tres`:
 1. Right-click `level1/scene_template.tscn` in FileSystem
 2. Select "New Inherited Scene"
 3. Godot creates a new scene that inherits the template
-4. Add your scene-specific content:
-   - Set Background texture
+4. **IMPORTANT**: Change the root node name from "SceneRoot" to your scene's name (e.g., "Bar", "Tavern", "CoppersmithCarriage")
+5. Add your scene-specific content:
    - Add panels to LeftVBox
    - Add buttons to RightVBox
    - Attach your script
-5. Save with descriptive name (e.g., `new_location.tscn`)
+6. Save with descriptive name matching the root node name (e.g., `bar.tscn` for root node "Bar")
+7. Place a background image in `level1/` with the same name as the root node in snake_case (e.g., `bar.jpg`, `coppersmith_carriage.jpg`)
 
-### Method 2: Manual TSCN File Creation
+**The background will auto-load!** ResponsiveLayout automatically loads `level1/<scene_name>.jpg` based on the root node name.
 
-Create a new `.tscn` file:
+### Method 2: Manual TSCN File Creation (Simple - Auto-Loading Background)
+
+Create a new `.tscn` file with a **unique root node name** and place a matching `.jpg` file in `level1/`:
 
 ```gdscript
-[gd_scene load_steps=3 format=3 uid="uid://unique_id_here"]
+[gd_scene load_steps=2 format=3 uid="uid://unique_id_here"]
 
 [ext_resource type="PackedScene" uid="uid://base_scene_template" path="res://level1/scene_template.tscn" id="1_base"]
-[ext_resource type="Script" path="res://level1/your_script.gd" id="2_script"]
+[ext_resource type="Script" path="res://level1/bar.gd" id="2_script"]
 
-[node name="SceneRoot" instance=ExtResource("1_base")]
+[node name="Bar" instance=ExtResource("1_base")]
 script = ExtResource("2_script")
-
-[node name="Background" parent="." instance=ExtResource("1_base")]
-texture = preload("res://level1/your_background.jpg")
 
 [node name="MyPanel" type="Panel" parent="HBoxContainer/LeftVBox"]
 layout_mode = 2
@@ -92,6 +94,36 @@ vertical_alignment = 1
 layout_mode = 2
 text = "My Action"
 ```
+
+Then create `level1/bar.jpg` - ResponsiveLayout will automatically load it!
+
+### Method 3: Manual TSCN File Creation (Explicit Background)
+
+If you need to explicitly set the background texture:
+
+```gdscript
+[gd_scene load_steps=3 format=3 uid="uid://unique_id_here"]
+
+[ext_resource type="PackedScene" uid="uid://base_scene_template" path="res://level1/scene_template.tscn" id="1_base"]
+[ext_resource type="Script" path="res://level1/your_script.gd" id="2_script"]
+[ext_resource type="Texture2D" path="res://level1/your_background.jpg" id="3_texture"]
+
+[node name="YourSceneName" instance=ExtResource("1_base")]
+script = ExtResource("2_script")
+
+[node name="Background" parent="." index="0"]
+texture = ExtResource("3_texture")
+
+[node name="MyPanel" type="Panel" parent="HBoxContainer/LeftVBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 24)
+```
+
+**CRITICAL SYNTAX NOTES:**
+- ✅ **Root node MUST have a unique name** (e.g., "Bar", "CoppersmithCarriage", NOT "SceneRoot")
+- ✅ Background uses `[node name="Background" parent="." index="0"]` (NO `instance=` attribute!)
+- ✅ Texture is loaded via ExtResource, not preload
+- ✅ load_steps should match the number of ext_resource lines + 1
 
 ## How Template Updates Work
 
@@ -126,52 +158,31 @@ RightVBox: 240px wide
 
 ## Responsive Layout Script Pattern
 
-All scenes should implement responsive switching between landscape and portrait layouts. Copy this pattern from `dream.gd`:
+All scenes should use the centralized ResponsiveLayout system. This is the **modern, recommended approach**:
 
 ```gdscript
 extends Control
 
-@onready var hbox_container = $HBoxContainer
-@onready var vbox_container = $VBoxContainer
-@onready var left_vbox = $HBoxContainer/LeftVBox
-@onready var right_vbox = $HBoxContainer/RightVBox
-@onready var top_vbox = $VBoxContainer/TopVBox
-@onready var bottom_vbox = $VBoxContainer/BottomVBox
-
-var is_portrait_mode = false
-
 func _ready():
-    apply_mobile_scaling()
-
-func apply_mobile_scaling():
-    var viewport_size = get_viewport().get_visible_rect().size
-    var is_portrait = viewport_size.y > viewport_size.x
-
-    if is_portrait_mode != is_portrait:
-        # Reparent columns
-        if left_vbox.get_parent():
-            left_vbox.get_parent().remove_child(left_vbox)
-        if right_vbox.get_parent():
-            right_vbox.get_parent().remove_child(right_vbox)
-
-        if is_portrait:
-            top_vbox.add_child(left_vbox)
-            bottom_vbox.add_child(right_vbox)
-        else:
-            hbox_container.add_child(left_vbox)
-            hbox_container.add_child(right_vbox)
-
-        hbox_container.visible = not is_portrait
-        vbox_container.visible = is_portrait
-        is_portrait_mode = is_portrait
-
-    # Scale UI for portrait (1.75x larger)
-    if is_portrait:
-        # Scale buttons to 105px height, increase font by 75%
-        # Scale panels to 70px height
-    else:
-        # Reset to defaults
+    ResponsiveLayout.apply_to_scene(self)
+    # Your other initialization...
 ```
+
+**That's it!** ResponsiveLayout automatically:
+- ✅ Handles portrait/landscape switching
+- ✅ Scales UI elements appropriately
+- ✅ Adds settings overlay
+- ✅ **Uses call_deferred to wait for scene tree to be fully ready** (critical for inherited scenes!)
+- ✅ **Sets mouse_filter to PASS on Background and containers** (ensures buttons work!)
+
+**Old Pattern (deprecated):**
+```gdscript
+# DON'T DO THIS ANYMORE - use ResponsiveLayout instead!
+func apply_mobile_scaling():
+    # 50+ lines of custom scaling logic...
+```
+
+See [RESPONSIVE_LAYOUT_GUIDE.md](RESPONSIVE_LAYOUT_GUIDE.md) for details on the centralized system.
 
 ## Standard Panel Pattern
 
@@ -295,6 +306,46 @@ Example scenes already using the pattern:
 
 **Q: Theme changes aren't applying**
 - A: Delete `.godot/editor` cache and restart Godot
+
+**Q: Buttons aren't clickable in my new scene / Background not showing**
+- A: **Check the Godot console output first!** ResponsiveLayout now has debug logging enabled. When you run your scene, look for messages like:
+  ```
+  ResponsiveLayout: Starting layout application for Bar
+  ResponsiveLayout: Found nodes - Background: true HBox: true ...
+  ResponsiveLayout: Set Background mouse_filter to PASS
+  ResponsiveLayout: Background texture: <Texture2D#...>
+  ResponsiveLayout: Found button: ToCoppersmithCarriageButton Text: to coppersmith carriage
+  ```
+
+  **If you see "Background: false"**: The Background node wasn't found. This means the scene structure is wrong.
+
+  **If you see "Background texture: null"** followed by **"Attempting to auto-load background..."**:
+  - ResponsiveLayout will try to automatically load the background based on your scene's root node name
+  - Look for: `ResponsiveLayout: Trying to load background from: res://level1/your_scene.jpg`
+  - **If auto-load succeeds**: You'll see `Successfully auto-loaded background texture!`
+  - **If auto-load fails**: You need to create the image file or fix the root node name
+
+  **Common issues:**
+  1. **Root node is named "SceneRoot"**: Change it to a unique name like "Bar" or "CoppersmithCarriage"
+  2. **Image file doesn't exist**: Create `level1/<scene_name>.jpg` where scene_name matches your root node in snake_case
+     - "Bar" → `bar.jpg`
+     - "CoppersmithCarriage" → `coppersmith_carriage.jpg`
+  3. **Wrong .tscn syntax**: If you manually override Background, use:
+    ```
+    [node name="Background" parent="." index="0"]
+    texture = ExtResource("3_texture")
+    ```
+    NOT:
+    ```
+    [node name="Background" parent="." instance=ExtResource("1_base")]  ❌ WRONG!
+    ```
+
+  **If you don't see any ResponsiveLayout messages**: You forgot to call `ResponsiveLayout.apply_to_scene(self)` in `_ready()`!
+
+  **Manual fixes** (if not using ResponsiveLayout):
+  1. Ensure Background, HBoxContainer, VBoxContainer, LeftVBox, RightVBox all have `mouse_filter = 2` (PASS)
+  2. Check that your background image file exists in the level1 folder
+  3. Verify the texture path in your .tscn file matches the actual file location
 
 ## Settings Overlay Pattern
 

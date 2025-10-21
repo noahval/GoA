@@ -55,6 +55,8 @@ That's it! The ResponsiveLayout autoload handles everything:
 - ✅ Scales buttons, panels, and fonts
 - ✅ Resets everything when switching orientations
 - ✅ Automatically adds settings overlay (gear button in bottom-right)
+- ✅ **Uses call_deferred to ensure scene tree is fully ready** (critical for inherited scenes!)
+- ✅ **Ensures mouse_filter is PASS on Background and all containers at runtime** (fixes button clicks!)
 
 ## Making Global Changes
 
@@ -112,10 +114,11 @@ For ResponsiveLayout to work, scenes must have this structure (provided by scene
 
 ```
 SceneRoot (Control)
-├── HBoxContainer
-│   ├── LeftVBox
-│   └── RightVBox
-└── VBoxContainer
+├── Background (TextureRect) - mouse_filter = PASS (2) ⚠️ CRITICAL
+├── HBoxContainer - mouse_filter = PASS (2)
+│   ├── LeftVBox - mouse_filter = PASS (2)
+│   └── RightVBox - mouse_filter = PASS (2)
+└── VBoxContainer - mouse_filter = PASS (2)
     ├── TopPadding
     ├── TopVBox
     ├── Spacer
@@ -123,8 +126,10 @@ SceneRoot (Control)
     └── BottomPadding
 ```
 
-**If using scene_template.tscn as base**: ✅ Structure already correct
-**If creating custom scene**: ⚠️ Must follow this naming convention
+**CRITICAL**: The **Background** TextureRect and all container nodes must have `mouse_filter = 2` (PASS) set to ensure buttons are clickable. The Background is full-screen and will block ALL clicks if not set to PASS!
+
+**If using scene_template.tscn as base**: ✅ Structure already correct (includes mouse_filter on Background and containers)
+**If creating custom scene**: ⚠️ Must follow this naming convention AND set mouse_filter = 2 on Background and all containers
 
 ## Migration Guide
 
@@ -305,6 +310,15 @@ A: Call `ResponsiveLayout.apply_to_scene(self)` first, then add custom adjustmen
 
 **Q: Can I change constants at runtime?**
 A: No, they're constants. You'd need scene-specific logic for dynamic changes.
+
+**Q: Buttons aren't clickable in my scene**
+A: **FIXED AUTOMATICALLY!** As of the latest update, `ResponsiveLayout.apply_to_scene()` automatically sets `mouse_filter = PASS` on the Background and all container nodes at runtime. Just call `ResponsiveLayout.apply_to_scene(self)` in your `_ready()` function and buttons will work!
+
+  If you're NOT using ResponsiveLayout for some reason, you can manually set:
+  - Background → Inspector → Mouse → Filter → "Pass"
+  - HBoxContainer, VBoxContainer, LeftVBox, RightVBox → same setting
+
+  **Root cause**: The Background TextureRect is full-screen and blocks ALL mouse events unless mouse_filter is set to PASS.
 
 ## Future Enhancements
 

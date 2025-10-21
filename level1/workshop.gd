@@ -65,7 +65,7 @@ func _on_buy_mechanism_button_pressed():
 		update_labels()
 
 func _on_back_to_passage_button_pressed():
-	Global.change_scene_with_check(get_tree(), "res://level1/secret_passage_entrance.tscn")
+	Global.change_scene_with_check(get_tree(), "res://level1/shop.tscn")
 
 func _on_dev_pipes_button_pressed():
 	Level1Vars.pipes += 30
