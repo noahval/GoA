@@ -33,7 +33,7 @@ offset_bottom = -10.0
 grow_horizontal = 0
 grow_vertical = 0
 theme_override_styles/normal = SubResource("StyleBoxFlat_gear")
-text = "⚙"
+text = ":::"
 
 [node name="MenuOverlay" type="Panel" parent="."]
 visible = false

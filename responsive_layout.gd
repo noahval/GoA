@@ -10,6 +10,11 @@ const PORTRAIT_FONT_SCALE = 1.75
 const PORTRAIT_TOP_PADDING = 90
 const PORTRAIT_BOTTOM_PADDING = 90
 
+# Adaptive scaling settings
+const MIN_BUTTON_HEIGHT = 50  # Minimum height for buttons when squeezed
+const MIN_FONT_SCALE = 0.8    # Minimum font scale when squeezed
+const BUTTON_MARGIN = 5        # Spacing between buttons
+
 # Landscape mode defaults
 const LANDSCAPE_PANEL_HEIGHT = 24
 const LANDSCAPE_BUTTON_HEIGHT = 0  # 0 = auto
@@ -97,26 +102,81 @@ func apply_to_scene(scene_root: Control) -> void:
 
 ## Scale UI elements for portrait mode
 func _scale_for_portrait(left_vbox: VBoxContainer, right_vbox: VBoxContainer) -> void:
-	# Scale buttons in right column
+	var viewport_size = left_vbox.get_viewport().get_visible_rect().size
+
+	# Calculate adaptive scaling for buttons
+	var buttons = []
 	for button in right_vbox.get_children():
 		if button is Button:
-			button.custom_minimum_size = Vector2(0, PORTRAIT_BUTTON_HEIGHT)
+			buttons.append(button)
+
+	if buttons.size() > 0:
+		var available_height = viewport_size.y - PORTRAIT_TOP_PADDING - PORTRAIT_BOTTOM_PADDING
+		var total_margin = BUTTON_MARGIN * (buttons.size() - 1)
+		var ideal_total_height = PORTRAIT_BUTTON_HEIGHT * buttons.size() + total_margin
+
+		# Determine if we need to squeeze
+		var scale_factor = 1.0
+		if ideal_total_height > available_height:
+			scale_factor = available_height / ideal_total_height
+			scale_factor = max(scale_factor, MIN_BUTTON_HEIGHT / float(PORTRAIT_BUTTON_HEIGHT))
+
+		# Apply progressive scaling - buttons get progressively smaller from top to bottom
+		for i in range(buttons.size()):
+			var button = buttons[i]
+			# Progressive reduction factor (0.0 at top, 1.0 at bottom)
+			var progress = float(i) / max(1, buttons.size() - 1)
+
+			# Calculate button height with progressive thinning
+			var base_height = PORTRAIT_BUTTON_HEIGHT * scale_factor
+			var reduction = (1.0 - scale_factor) * progress * 0.3  # Up to 30% additional reduction at bottom
+			var button_height = base_height * (1.0 - reduction)
+			button_height = max(button_height, MIN_BUTTON_HEIGHT)
+
+			# Calculate font scale with progressive reduction
+			var font_scale = PORTRAIT_FONT_SCALE * scale_factor * (1.0 - reduction * 0.5)
+			font_scale = max(font_scale, MIN_FONT_SCALE)
+
+			# Apply scaling
+			button.custom_minimum_size = Vector2(0, button_height)
 			var current_size = button.get_theme_font_size("font_size")
 			if current_size <= 0:
 				current_size = 25  # Default from theme
-			button.add_theme_font_size_override("font_size", int(current_size * PORTRAIT_FONT_SCALE))
+			button.add_theme_font_size_override("font_size", int(current_size * font_scale))
 
-	# Scale panels in left column
+	# Scale panels in left column with adaptive scaling
+	var panels = []
 	for panel in left_vbox.get_children():
 		if panel is Panel:
-			panel.custom_minimum_size = Vector2(0, PORTRAIT_PANEL_HEIGHT)
+			panels.append(panel)
+
+	if panels.size() > 0:
+		var available_height = viewport_size.y - PORTRAIT_TOP_PADDING - PORTRAIT_BOTTOM_PADDING
+		var total_margin = BUTTON_MARGIN * (panels.size() - 1)
+		var ideal_total_height = PORTRAIT_PANEL_HEIGHT * panels.size() + total_margin
+
+		var scale_factor = 1.0
+		if ideal_total_height > available_height:
+			scale_factor = available_height / ideal_total_height
+			scale_factor = max(scale_factor, 0.6)  # Don't shrink panels below 60%
+
+		for i in range(panels.size()):
+			var panel = panels[i]
+			var progress = float(i) / max(1, panels.size() - 1)
+			var reduction = (1.0 - scale_factor) * progress * 0.2
+			var panel_height = PORTRAIT_PANEL_HEIGHT * scale_factor * (1.0 - reduction)
+
+			panel.custom_minimum_size = Vector2(0, panel_height)
+
 			# Scale labels and other children
 			for child in panel.get_children():
 				if child is Label:
 					var label_size = child.get_theme_font_size("font_size")
 					if label_size <= 0:
 						label_size = 25  # Default from theme
-					child.add_theme_font_size_override("font_size", int(label_size * PORTRAIT_FONT_SCALE))
+					var font_scale = PORTRAIT_FONT_SCALE * scale_factor * (1.0 - reduction * 0.5)
+					font_scale = max(font_scale, MIN_FONT_SCALE)
+					child.add_theme_font_size_override("font_size", int(label_size * font_scale))
 
 ## Reset UI elements to landscape/desktop defaults
 func _reset_scale(left_vbox: VBoxContainer, right_vbox: VBoxContainer) -> void:
