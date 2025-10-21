@@ -4,7 +4,7 @@
 [ext_resource type="Script" path="res://level1/workshop.gd" id="2_script"]
 [ext_resource type="Texture2D" path="res://level1/workshop.jpg" id="3_bg"]
 
-[node name="SceneRoot" instance=ExtResource("1_base")]
+[node name="Workshop" instance=ExtResource("1_base")]
 script = ExtResource("2_script")
 
 [node name="Background" parent="." index="0"]

@@ -99,17 +99,13 @@ text = "Bribe Shopkeep: 10"
 [node name="WorkshopButton" type="Button" parent="HBoxContainer/RightVBox" index="4"]
 visible = false
 layout_mode = 2
-text = "Enter Workshop"
+text = "To Workshop"
 
-[node name="DeveloperFreeCoinsButton" type="Button" parent="HBoxContainer/RightVBox" index="5"]
+[node name="NapButton" type="Button" parent="HBoxContainer/RightVBox" index="5"]
 layout_mode = 2
-text = "Developer: Free Coins"
+text = "Take Nap"
 
-[node name="NapButton" type="Button" parent="HBoxContainer/RightVBox" index="6"]
-layout_mode = 2
-text = "Nap"
-
-[node name="ToCoppersmithCarriageButton" type="Button" parent="HBoxContainer/RightVBox" index="7"]
+[node name="ToCoppersmithCarriageButton" type="Button" parent="HBoxContainer/RightVBox" index="6"]
 layout_mode = 2
 text = "To Coppersmith Carriage"
 
@@ -118,6 +114,5 @@ text = "To Coppersmith Carriage"
 [connection signal="pressed" from="HBoxContainer/RightVBox/FurnaceUpgrade" to="." method="_on_furnace_upgrade_pressed"]
 [connection signal="pressed" from="HBoxContainer/RightVBox/BribeShopkeepButton" to="." method="_on_bribe_shopkeep_pressed"]
 [connection signal="pressed" from="HBoxContainer/RightVBox/WorkshopButton" to="." method="_on_workshop_button_pressed"]
-[connection signal="pressed" from="HBoxContainer/RightVBox/DeveloperFreeCoinsButton" to="." method="_on_developer_free_coins_button_pressed"]
 [connection signal="pressed" from="HBoxContainer/RightVBox/NapButton" to="." method="_on_nap_button_pressed"]
 [connection signal="pressed" from="HBoxContainer/RightVBox/ToCoppersmithCarriageButton" to="." method="_on_to_coppersmith_carriage_button_pressed"]

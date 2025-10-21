@@ -12,7 +12,6 @@ var max_break_time = 30.0
 @onready var furnace_upgrade = $HBoxContainer/RightVBox/FurnaceUpgrade
 @onready var bribe_shopkeep_button = $HBoxContainer/RightVBox/BribeShopkeepButton
 @onready var workshop_button = $HBoxContainer/RightVBox/WorkshopButton
-@onready var developer_free_coins_button = $HBoxContainer/RightVBox/DeveloperFreeCoinsButton
 
 func _ready():
 	# Set the actual maximum break time (not the remaining time)
@@ -83,10 +82,6 @@ func _on_get_coin_button_pressed():
 	Global.show_stat_notification("developer notification: coins")
 	update_labels()
 
-func _on_developer_free_coins_button_pressed():
-	Level1Vars.coins += 10
-	update_labels()
-
 func update_labels():
 	if coins_label:
 		coins_label.text = "Coins: " + str(int(Level1Vars.coins))
@@ -117,10 +112,6 @@ func update_labels():
 			plow_button.visible = true
 		else:
 			plow_button.visible = false
-
-	# Show/hide developer button based on dev_speed_mode
-	if developer_free_coins_button:
-		developer_free_coins_button.visible = Global.dev_speed_mode
 
 func _on_nap_button_pressed():
 	Global.change_scene_with_check(get_tree(), "res://level1/dream.tscn")

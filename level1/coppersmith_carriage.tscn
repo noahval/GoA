@@ -10,7 +10,7 @@ script = ExtResource("2_script")
 [node name="Background" parent="." index="0"]
 texture = ExtResource("3_texture")
 
-[node name="TitlePanel" type="Panel" parent="HBoxContainer/LeftVBox"]
+[node name="TitlePanel" type="Panel" parent="HBoxContainer/LeftVBox" index="0"]
 custom_minimum_size = Vector2(0, 24)
 layout_mode = 2
 
@@ -25,6 +25,48 @@ text = "Coppersmith Carriage"
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="BreakTimerPanel" type="Panel" parent="HBoxContainer/LeftVBox" index="1"]
+self_modulate = Color(1, 1, 1, 0.7)
+custom_minimum_size = Vector2(0, 24)
+layout_mode = 2
+
+[node name="BreakTimerBar" type="ProgressBar" parent="HBoxContainer/LeftVBox/BreakTimerPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+value = 100.0
+show_percentage = false
+
+[node name="BreakTimer" type="Label" parent="HBoxContainer/LeftVBox/BreakTimerPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Break Timer"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CoinsPanel" type="Panel" parent="HBoxContainer/LeftVBox" index="2"]
+self_modulate = Color(1, 1, 1, 0.7)
+custom_minimum_size = Vector2(0, 24)
+layout_mode = 2
+
+[node name="CoinsLabel" type="Label" parent="HBoxContainer/LeftVBox/CoinsPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Coins: 0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="BribeOverseerButton" type="Button" parent="HBoxContainer/RightVBox"]
 layout_mode = 2
 text = "Bribe Overseer: 5"
@@ -32,15 +74,15 @@ text = "Bribe Overseer: 5"
 [node name="OverseersOfficeButton" type="Button" parent="HBoxContainer/RightVBox"]
 visible = false
 layout_mode = 2
-text = "Enter Overseer's Office"
+text = "To Overseer's Office"
 
 [node name="ShopButton" type="Button" parent="HBoxContainer/RightVBox"]
 layout_mode = 2
-text = "shop"
+text = "To Shop"
 
 [node name="ToBlackboreButton" type="Button" parent="HBoxContainer/RightVBox"]
 layout_mode = 2
-text = "to blackbore"
+text = "To Blackbore Bar"
 
 [connection signal="pressed" from="HBoxContainer/RightVBox/BribeOverseerButton" to="." method="_on_bribe_overseer_pressed"]
 [connection signal="pressed" from="HBoxContainer/RightVBox/OverseersOfficeButton" to="." method="_on_overseers_office_button_pressed"]

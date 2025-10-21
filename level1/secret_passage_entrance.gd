@@ -4,6 +4,8 @@ var break_time = 0.0
 var max_break_time = 30.0
 
 func _ready():
+	ResponsiveLayout.apply_to_scene(self)
+
 	# Set the actual maximum break time (not the remaining time)
 	max_break_time = Level1Vars.starting_break_time + Level1Vars.overseer_lvl
 
@@ -14,21 +16,7 @@ func _ready():
 
 	# Initialize the progress bar to the current percentage
 	var progress_percent = (break_time / max_break_time) * 100.0
-	$VBoxContainer/BreakTimerPanel/BreakTimerBar.value = progress_percent
-
-	apply_mobile_scaling()
-
-func apply_mobile_scaling():
-	var viewport_size = get_viewport().get_visible_rect().size
-	# Check if in portrait mode (taller than wide)
-	if viewport_size.y > viewport_size.x:
-		# Scale up buttons for mobile
-		var buttons = $VBoxContainer.get_children()
-		for button in buttons:
-			if button is Button:
-				button.custom_minimum_size = Vector2(0, 60)
-				if button.get("theme_override_font_sizes/font_size") == null:
-					button.add_theme_font_size_override("font_size", 24)
+	$HBoxContainer/LeftVBox/BreakTimerPanel/BreakTimerBar.value = progress_percent
 
 func _process(delta):
 	break_time -= delta
@@ -36,7 +24,7 @@ func _process(delta):
 
 	# Update progress bar based on current break time
 	var progress_percent = (break_time / max_break_time) * 100.0
-	$VBoxContainer/BreakTimerPanel/BreakTimerBar.value = progress_percent
+	$HBoxContainer/LeftVBox/BreakTimerPanel/BreakTimerBar.value = progress_percent
 
 	if break_time <= 0:
 		Level1Vars.break_time_remaining = 0.0
@@ -45,5 +33,5 @@ func _process(delta):
 func _on_puzzle_button_pressed():
 	Global.change_scene_with_check(get_tree(), "res://level1/secret_passage_puzzle.tscn")
 
-func _on_back_button_pressed():
-	Global.change_scene_with_check(get_tree(), "res://level1/shop.tscn")
+func _on_to_bar_button_pressed():
+	Global.change_scene_with_check(get_tree(), "res://level1/bar.tscn")

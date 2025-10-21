@@ -87,7 +87,7 @@ That's it! The ResponsiveLayout autoload handles everything:
 ### Example 3: Adjust Column Widths
 
 **Before**: LeftVBox is 220px, RightVBox is 260px
-**Want**: Equal width columns (240px each)
+**Want**: Wider columns to accommodate longer text (280px and 300px)
 
 **Solution**:
 1. Open [responsive_layout.gd](c:\Goa\responsive_layout.gd)
@@ -98,15 +98,17 @@ That's it! The ResponsiveLayout autoload handles everything:
    ```
    to:
    ```gdscript
-   const LEFT_COLUMN_WIDTH = 240
-   const RIGHT_COLUMN_WIDTH = 240
+   const LEFT_COLUMN_WIDTH = 280
+   const RIGHT_COLUMN_WIDTH = 300
    ```
 3. Open [level1/scene_template.tscn](c:\Goa\level1\scene_template.tscn)
 4. Update the template columns to match:
-   - LeftVBox: `custom_minimum_size = Vector2(240, 0)`
-   - RightVBox: `custom_minimum_size = Vector2(240, 0)`
+   - LeftVBox: `custom_minimum_size = Vector2(280, 0)`
+   - RightVBox: `custom_minimum_size = Vector2(300, 0)`
+5. Adjust container width to fit both columns plus separation:
+   - Change `const CONTAINER_WIDTH = 500` to accommodate new total width
 
-**Result**: All inherited scenes now have equal width columns!
+**Result**: All inherited scenes now have wider columns that can fit longer text! Text will automatically word-wrap to new lines in Labels with `autowrap_mode` enabled.
 
 ## Scene Requirements
 
@@ -231,9 +233,9 @@ func custom_portrait_adjustments():
 | `PORTRAIT_BOTTOM_PADDING` | 90 | Bottom padding for portrait layout (px) |
 | `LANDSCAPE_PANEL_HEIGHT` | 24 | Panel height in landscape mode (px) |
 | `LANDSCAPE_BUTTON_HEIGHT` | 0 | Button height in landscape (0 = auto) |
-| `LEFT_COLUMN_WIDTH` | 220 | Minimum width for left column (px) |
-| `RIGHT_COLUMN_WIDTH` | 260 | Minimum width for right column (px) |
-| `CONTAINER_WIDTH` | 500 | HBoxContainer width in landscape (px) |
+| `LEFT_COLUMN_WIDTH` | 220 | Minimum width for left column (px) - increase for longer text |
+| `RIGHT_COLUMN_WIDTH` | 260 | Minimum width for right column (px) - increase for longer text |
+| `CONTAINER_WIDTH` | 500 | HBoxContainer width in landscape (px) - adjust to fit columns |
 | `CONTAINER_HEIGHT` | 600 | HBoxContainer height in landscape (px) |
 
 ### Common Adjustments
@@ -254,9 +256,17 @@ const PORTRAIT_FONT_SCALE = 1.5     # was 1.75
 
 **Change landscape container size:**
 ```gdscript
-const CONTAINER_WIDTH = 600   # was 500 (wider)
+const CONTAINER_WIDTH = 600   # was 500 (wider - adjust for column widths)
 const CONTAINER_HEIGHT = 700  # was 600 (taller)
 ```
+
+**Accommodate longer text:**
+```gdscript
+const LEFT_COLUMN_WIDTH = 280   # was 220 (wider for long labels)
+const RIGHT_COLUMN_WIDTH = 300  # was 260 (wider for long button text)
+const CONTAINER_WIDTH = 620     # was 500 (fits new columns + 40px separation)
+```
+Then enable word-wrap on labels with `autowrap_mode = 3` (AUTOWRAP_WORD_SMART) in scene files.
 
 ## Testing Changes
 

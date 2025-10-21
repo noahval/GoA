@@ -5,6 +5,9 @@ var max_break_time = 30.0
 
 @onready var suspicion_panel = $HBoxContainer/LeftVBox/SuspicionPanel
 @onready var suspicion_bar = $HBoxContainer/LeftVBox/SuspicionPanel/SuspicionBar
+@onready var break_timer_bar = $HBoxContainer/LeftVBox/BreakTimerPanel/BreakTimerBar
+@onready var break_timer_label = $HBoxContainer/LeftVBox/BreakTimerPanel/BreakTimer
+@onready var coins_label = $HBoxContainer/LeftVBox/CoinsPanel/CoinsLabel
 @onready var talk_button = $HBoxContainer/RightVBox/TalkButton
 @onready var steal_writ_button = $HBoxContainer/RightVBox/StealWritButton
 @onready var confirmation_popup = $ConfirmationPopup
@@ -27,7 +30,7 @@ func _ready():
 
 	# Initialize the progress bar to the current percentage
 	var progress_percent = (break_time / max_break_time) * 100.0
-	$HBoxContainer/LeftVBox/BreakTimerPanel/BreakTimerBar.value = progress_percent
+	break_timer_bar.value = progress_percent
 
 	update_labels()
 	update_suspicion_bar()
@@ -42,7 +45,7 @@ func _process(delta):
 
 	# Update progress bar based on current break time
 	var progress_percent = (break_time / max_break_time) * 100.0
-	$HBoxContainer/LeftVBox/BreakTimerPanel/BreakTimerBar.value = progress_percent
+	break_timer_bar.value = progress_percent
 
 	if break_time <= 0:
 		Level1Vars.break_time_remaining = 0.0
@@ -53,7 +56,12 @@ func _process(delta):
 	update_talk_button_visibility(delta)
 
 func update_labels():
-	$HBoxContainer/LeftVBox/CoinsPanel/CoinsLabel.text = "Coins: " + str(int(Level1Vars.coins))
+	coins_label.text = "Coins: " + str(int(Level1Vars.coins))
+
+	# Update break timer display
+	var minutes = int(break_time) / 60
+	var seconds = int(break_time) % 60
+	break_timer_label.text = "Break: %d:%02d" % [minutes, seconds]
 
 func _on_back_button_pressed():
 	Global.change_scene_with_check(get_tree(), "res://level1/shop.tscn")

@@ -113,6 +113,8 @@ func _apply_responsive_layout_internal(scene_root: Control) -> void:
 	if not is_portrait:
 		var separation = get_dynamic_separation(viewport_size.x)
 		hbox.add_theme_constant_override("separation", separation)
+		# Always apply landscape adjustments (including title expansion)
+		_apply_landscape_adjustments(left_vbox, right_vbox, hbox)
 
 	# Check if already in correct mode
 	var currently_portrait = vbox.visible
@@ -143,6 +145,123 @@ func _apply_responsive_layout_internal(scene_root: Control) -> void:
 		var separation = get_dynamic_separation(viewport_size.x)
 		hbox.add_theme_constant_override("separation", separation)
 		_reset_scale(left_vbox, right_vbox)
+
+## Apply landscape-specific adjustments (title expansion, etc.)
+## This runs every time a landscape scene is loaded
+func _apply_landscape_adjustments(left_vbox: VBoxContainer, right_vbox: VBoxContainer, hbox: HBoxContainer) -> void:
+	print("ResponsiveLayout: Applying landscape adjustments")
+
+	# Get current separation value
+	var separation = hbox.get_theme_constant("separation")
+	if separation == 0:
+		separation = 40  # Default from template
+
+	# Reset to default size first
+	left_vbox.custom_minimum_size = Vector2(LEFT_COLUMN_WIDTH, 0)
+	var default_total_width = LEFT_COLUMN_WIDTH + RIGHT_COLUMN_WIDTH + separation
+	var default_half_width = default_total_width / 2.0
+	hbox.offset_left = -default_half_width
+	hbox.offset_right = default_half_width
+
+	# Check all panels in left column and calculate widths for all labels
+	var max_desired_width = LEFT_COLUMN_WIDTH
+	var viewport_width = left_vbox.get_viewport().get_visible_rect().size.x
+	var max_width = viewport_width - RIGHT_COLUMN_WIDTH - separation - 100
+
+	for panel in left_vbox.get_children():
+		if panel is Panel:
+			var panel_desired_width = LEFT_COLUMN_WIDTH
+
+			# Check all labels in this panel and find the widest one
+			for child in panel.get_children():
+				if child is Label:
+					# Enable word wrapping on all labels
+					child.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+
+					# Calculate required width for this label's text
+					var font = child.get_theme_font("font")
+					var font_size = child.get_theme_font_size("font_size")
+					if font_size <= 0:
+						font_size = 25  # Default
+
+					# Get the text width
+					var text_width = 0
+					if font:
+						text_width = font.get_string_size(child.text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+
+					# Add padding for panel margins
+					text_width += 40
+
+					# Calculate desired width for this label
+					var label_desired_width = max(LEFT_COLUMN_WIDTH, text_width)
+					label_desired_width = min(label_desired_width, max_width)
+
+					# Track the widest label in this panel
+					if label_desired_width > panel_desired_width:
+						panel_desired_width = label_desired_width
+
+					print("ResponsiveLayout: Panel '", panel.name, "' Label '", child.name, "' text: '", child.text, "' width: ", label_desired_width)
+
+			# Set panel size to accommodate the widest label
+			panel.custom_minimum_size = Vector2(panel_desired_width, LANDSCAPE_PANEL_HEIGHT)
+			# Allow panel to grow vertically if text wraps
+			panel.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+
+			# Track the maximum width needed across all panels
+			if panel_desired_width > max_desired_width:
+				max_desired_width = panel_desired_width
+
+			print("ResponsiveLayout: Panel '", panel.name, "' final width: ", panel_desired_width)
+
+	# Check all buttons in right column and calculate widths
+	var max_right_width = RIGHT_COLUMN_WIDTH
+	for button in right_vbox.get_children():
+		if button is Button:
+			# Enable word wrapping on button text
+			button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+
+			# Calculate required width for button text
+			var font = button.get_theme_font("font")
+			var font_size = button.get_theme_font_size("font_size")
+			if font_size <= 0:
+				font_size = 25  # Default
+
+			# Get the text width
+			var text_width = 0
+			if font:
+				text_width = font.get_string_size(button.text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+
+			# Add padding for button margins and icon space
+			text_width += 60
+
+			# Calculate desired width for this button
+			var button_desired_width = max(RIGHT_COLUMN_WIDTH, text_width)
+			button_desired_width = min(button_desired_width, max_width)
+
+			# Track the maximum width needed
+			if button_desired_width > max_right_width:
+				max_right_width = button_desired_width
+
+			print("ResponsiveLayout: Button '", button.name, "' text: '", button.text, "' width: ", button_desired_width)
+
+	# Set right column width if needed
+	if max_right_width > RIGHT_COLUMN_WIDTH:
+		right_vbox.custom_minimum_size = Vector2(max_right_width, 0)
+		print("ResponsiveLayout: Expanded right column to: ", max_right_width)
+
+	# Expand HBoxContainer if either column needs more space
+	var final_left_width = max(LEFT_COLUMN_WIDTH, max_desired_width)
+	var final_right_width = max(RIGHT_COLUMN_WIDTH, max_right_width)
+
+	if final_left_width > LEFT_COLUMN_WIDTH or final_right_width > RIGHT_COLUMN_WIDTH:
+		left_vbox.custom_minimum_size = Vector2(final_left_width, 0)
+		right_vbox.custom_minimum_size = Vector2(final_right_width, 0)
+		var total_width = final_left_width + final_right_width + separation
+		var half_width = total_width / 2.0
+		hbox.offset_left = -half_width
+		hbox.offset_right = half_width
+		print("ResponsiveLayout: Final layout - Left: ", final_left_width, " Right: ", final_right_width)
+		print("ResponsiveLayout: Expanded HBoxContainer offsets to: ", -half_width, " to ", half_width)
 
 ## Scale UI elements for portrait mode
 func _scale_for_portrait(left_vbox: VBoxContainer, right_vbox: VBoxContainer) -> void:
@@ -222,8 +341,32 @@ func _scale_for_portrait(left_vbox: VBoxContainer, right_vbox: VBoxContainer) ->
 					font_scale = max(font_scale, MIN_FONT_SCALE)
 					child.add_theme_font_size_override("font_size", int(label_size * font_scale))
 
+					# Enable word wrapping on title labels and allow panel to expand
+					if child.name == "TitleLabel" or child.name == "Title":
+						child.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+						# In portrait mode, allow full viewport width
+						var viewport_width = viewport_size.x
+						panel.custom_minimum_size = Vector2(0, 0)
+						# Set max width for wrapping but allow expansion
+						child.custom_minimum_size = Vector2(viewport_width - 40, 0)
+
 ## Reset UI elements to landscape/desktop defaults
 func _reset_scale(left_vbox: VBoxContainer, right_vbox: VBoxContainer) -> void:
+	# Reset left column to default width first
+	left_vbox.custom_minimum_size = Vector2(LEFT_COLUMN_WIDTH, 0)
+
+	# Get the HBoxContainer parent
+	var hbox = left_vbox.get_parent() as HBoxContainer
+	if not hbox:
+		print("ResponsiveLayout: ERROR - LeftVBox parent is not HBoxContainer")
+		return
+
+	# Reset HBoxContainer to default size (from template: -290 to 290 = 580px total)
+	var default_total_width = LEFT_COLUMN_WIDTH + RIGHT_COLUMN_WIDTH + hbox.get_theme_constant("separation")
+	var default_half_width = default_total_width / 2.0
+	hbox.offset_left = -default_half_width
+	hbox.offset_right = default_half_width
+
 	# Reset buttons
 	for button in right_vbox.get_children():
 		if button is Button:
@@ -233,10 +376,66 @@ func _reset_scale(left_vbox: VBoxContainer, right_vbox: VBoxContainer) -> void:
 	# Reset panels
 	for panel in left_vbox.get_children():
 		if panel is Panel:
-			panel.custom_minimum_size = Vector2(0, LANDSCAPE_PANEL_HEIGHT)
+			# Check if this is a title panel before resetting size
+			var is_title_panel = false
+			var title_label = null
 			for child in panel.get_children():
-				if child is Label:
-					child.remove_theme_font_size_override("font_size")
+				if child is Label and (child.name == "TitleLabel" or child.name == "Title"):
+					is_title_panel = true
+					title_label = child
+					break
+
+			if is_title_panel and title_label:
+				# Handle title panel specially - calculate required width
+				title_label.remove_theme_font_size_override("font_size")
+				title_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+
+				# Calculate required width for the text
+				var font = title_label.get_theme_font("font")
+				var font_size = title_label.get_theme_font_size("font_size")
+				if font_size <= 0:
+					font_size = 25  # Default
+
+				print("ResponsiveLayout: Title text: '", title_label.text, "' Font size: ", font_size)
+
+				# Get the text width (with some padding)
+				var text_width = 0
+				if font:
+					text_width = font.get_string_size(title_label.text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+					print("ResponsiveLayout: Calculated text width: ", text_width)
+
+				# Add padding for panel margins
+				text_width += 40
+
+				# Expand panel width if text is longer than column width
+				# But cap at viewport width minus some margin
+				var viewport_width = left_vbox.get_viewport().get_visible_rect().size.x
+				var max_width = viewport_width - RIGHT_COLUMN_WIDTH - 100  # Leave room for right column
+				var desired_width = max(LEFT_COLUMN_WIDTH, text_width)
+				desired_width = min(desired_width, max_width)
+
+				print("ResponsiveLayout: Desired width: ", desired_width, " (min: ", LEFT_COLUMN_WIDTH, ", max: ", max_width, ")")
+
+				# Set panel size - allow vertical expansion for wrapped text
+				panel.custom_minimum_size = Vector2(desired_width, 0)
+
+				# Also set the left column to match the widest title panel
+				if desired_width > left_vbox.custom_minimum_size.x:
+					left_vbox.custom_minimum_size = Vector2(desired_width, 0)
+					print("ResponsiveLayout: Expanded left column to: ", desired_width)
+
+					# Expand the HBoxContainer to accommodate the new column width
+					var total_width = desired_width + RIGHT_COLUMN_WIDTH + hbox.get_theme_constant("separation")
+					var half_width = total_width / 2.0
+					hbox.offset_left = -half_width
+					hbox.offset_right = half_width
+					print("ResponsiveLayout: Expanded HBoxContainer offsets to: ", -half_width, " to ", half_width)
+			else:
+				# Regular panel - use default height
+				panel.custom_minimum_size = Vector2(0, LANDSCAPE_PANEL_HEIGHT)
+				for child in panel.get_children():
+					if child is Label:
+						child.remove_theme_font_size_override("font_size")
 
 ## Check if viewport is in portrait orientation
 static func is_portrait_mode(viewport: Viewport) -> bool:

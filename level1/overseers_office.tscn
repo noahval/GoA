@@ -76,10 +76,10 @@ corner_radius_top_right = 4
 corner_radius_bottom_right = 4
 corner_radius_bottom_left = 4
 
-[node name="SceneRoot" instance=ExtResource("1_base")]
+[node name="OverseersOffice" instance=ExtResource("1_base")]
 script = ExtResource("2_script")
 
-[node name="Background" parent="." instance=ExtResource("1_base")]
+[node name="Background" parent="." index="0"]
 texture = ExtResource("3_bg")
 
 [node name="TitleLabel" type="Label" parent="HBoxContainer/LeftVBox" index="0"]

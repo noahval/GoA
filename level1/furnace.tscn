@@ -1,8 +1,8 @@
 [gd_scene load_steps=4 format=3 uid="uid://cni3f6t3vpjku"]
 
 [ext_resource type="Script" uid="uid://bc1774bks8bbb" path="res://level1/furnace.gd" id="1"]
-[ext_resource type="Texture2D" uid="uid://b2p22oto547w8" path="res://level1/furnace.jpg" id="2"]
-[ext_resource type="Theme" path="res://default_theme.tres" id="3_w5m21"]
+[ext_resource type="Texture2D" uid="uid://bwdj1q5ox86nm" path="res://level1/furnace.jpg" id="2"]
+[ext_resource type="Theme" uid="uid://d3j86yyfijc68" path="res://default_theme.tres" id="3_w5m21"]
 
 [node name="Furnace" type="Control"]
 layout_mode = 3
@@ -38,38 +38,25 @@ offset_bottom = 300.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="."]
-visible = false
+[node name="LeftVBox" type="VBoxContainer" parent="HBoxContainer"]
+custom_minimum_size = Vector2(260, 0)
+layout_mode = 2
+
+[node name="TitlePanel" type="Panel" parent="HBoxContainer/LeftVBox"]
+custom_minimum_size = Vector2(0, 24)
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="HBoxContainer/LeftVBox/TitlePanel"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-
-[node name="TopPadding" type="Control" parent="VBoxContainer"]
-custom_minimum_size = Vector2(0, 90)
-layout_mode = 2
-
-[node name="TopVBox" type="VBoxContainer" parent="VBoxContainer"]
-layout_mode = 2
-size_flags_vertical = 0
-
-[node name="Spacer" type="Control" parent="VBoxContainer"]
-layout_mode = 2
-size_flags_vertical = 3
-
-[node name="BottomVBox" type="VBoxContainer" parent="VBoxContainer"]
-layout_mode = 2
-size_flags_vertical = 0
-
-[node name="BottomPadding" type="Control" parent="VBoxContainer"]
-custom_minimum_size = Vector2(0, 90)
-layout_mode = 2
-
-[node name="LeftVBox" type="VBoxContainer" parent="HBoxContainer"]
-custom_minimum_size = Vector2(260, 0)
-layout_mode = 2
+theme = ExtResource("3_w5m21")
+text = "Blackbore Furnace"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="StaminaPanel" type="Panel" parent="HBoxContainer/LeftVBox"]
 self_modulate = Color(1, 1, 1, 0.7)
@@ -111,7 +98,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_type_variation = "SuspicionProgressBar"
+theme_type_variation = &"SuspicionProgressBar"
 show_percentage = false
 
 [node name="SuspicionLabel" type="Label" parent="HBoxContainer/LeftVBox/SuspicionPanel"]
@@ -160,6 +147,35 @@ visible = false
 layout_mode = 2
 theme = ExtResource("3_w5m21")
 text = "Steal Coal"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TopPadding" type="Control" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 90)
+layout_mode = 2
+
+[node name="TopVBox" type="VBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 0
+
+[node name="Spacer" type="Control" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="BottomVBox" type="VBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 0
+
+[node name="BottomPadding" type="Control" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 90)
+layout_mode = 2
 
 [connection signal="pressed" from="HBoxContainer/RightVBox/ShovelCoalButton" to="." method="_on_shovel_coal_button_pressed"]
 [connection signal="pressed" from="HBoxContainer/RightVBox/ShopButton" to="." method="_on_shop_button_pressed"]
