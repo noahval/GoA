@@ -62,7 +62,7 @@ func update_labels():
 	break_timer_label.text = "Break Timer"
 
 func _on_back_button_pressed():
-	Global.change_scene_with_check(get_tree(), "res://level1/shop.tscn")
+	Global.change_scene_with_check(get_tree(), "res://level1/coppersmith_carriage.tscn")
 
 func update_suspicion_bar():
 	suspicion_panel.visible = Level1Vars.suspicion > 0
