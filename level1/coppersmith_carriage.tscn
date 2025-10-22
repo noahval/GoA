@@ -78,7 +78,7 @@ text = "To Overseer's Office"
 
 [node name="ShopButton" type="Button" parent="HBoxContainer/RightVBox"]
 layout_mode = 2
-text = "To Shop"
+text = "To Crankshaft's"
 
 [node name="ToBlackboreButton" type="Button" parent="HBoxContainer/RightVBox"]
 layout_mode = 2

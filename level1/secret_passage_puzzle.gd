@@ -27,127 +27,99 @@ func _ready():
 
 	# Initialize the progress bar to the current percentage
 	var progress_percent = (break_time / max_break_time) * 100.0
-	$VBoxContainer/BreakTimerPanel/BreakTimerBar.value = progress_percent
+	$HBoxContainer/LeftVBox/BreakTimerPanel/BreakTimerBar.value = progress_percent
 
 	puzzle_container = $PuzzleContainer
-	apply_responsive_layout()
+
+	# Apply custom layout first, then setup puzzle
+	# We need to wait for the scene to be fully ready
+	call_deferred("_delayed_setup")
+
+
+func _delayed_setup():
+	var viewport_size = get_viewport().get_visible_rect().size
+	var is_portrait = viewport_size.y > viewport_size.x
+
+	print("=== Secret Passage Puzzle Setup ===")
+	print("Viewport size: ", viewport_size)
+	print("Is portrait: ", is_portrait)
+	print("Puzzle container exists: ", puzzle_container != null)
+
+	# Setup puzzle first (creates the visual elements)
 	setup_puzzle()
 	update_place_pipe_button()
 	add_developer_skip_button()
 
-func apply_responsive_layout():
-	var viewport_size = get_viewport().get_visible_rect().size
-	var is_portrait = viewport_size.y > viewport_size.x
-
+	# Then apply layout
 	if is_portrait:
-		# Mobile/Portrait layout: puzzle below menu
-		# Position menu at top center (moved down 40 pixels)
-		$VBoxContainer.position = Vector2(viewport_size.x / 2 - 150, 50)
-
-		# Position puzzle below menu (with 40 pixel gap)
-		# Calculate menu height: 4 panels at 24px (Label, BreakTimer, Instruction, Pipes) + 2 buttons at 60px + spacing
-		var menu_height = (4 * 24) + (2 * 60) + 20  # panels + buttons + spacing
-		var menu_bottom = 50 + menu_height
-		puzzle_container.position = Vector2(viewport_size.x / 2 - 200, menu_bottom + 40)
-
-		# Scale up buttons for mobile
-		var buttons = $VBoxContainer.get_children()
-		for button in buttons:
-			if button is Button:
-				button.custom_minimum_size = Vector2(0, 60)
-				if button.get("theme_override_font_sizes/font_size") == null:
-					button.add_theme_font_size_override("font_size", 24)
+		# Portrait mode: use responsive layout
+		ResponsiveLayout.apply_to_scene(self)
 	else:
-		# Widescreen layout: puzzle beside menu
-		# Apply width expansion logic to menu
-		apply_landscape_width_expansion()
+		# Landscape mode: custom layout for this scene
+		apply_custom_landscape_layout()
 
-		# Position menu on the left of center
-		$VBoxContainer.position = Vector2(viewport_size.x / 2 - 450, viewport_size.y / 2 - 150)
-
-		# Position puzzle on the right of center
-		puzzle_container.position = Vector2(viewport_size.x / 2 + 50, viewport_size.y / 2 - 200)
-
-func apply_landscape_width_expansion():
-	# Apply similar width expansion logic as ResponsiveLayout
+func apply_custom_landscape_layout():
 	var viewport_size = get_viewport().get_visible_rect().size
-	var default_menu_width = 300.0
-	var max_width = viewport_size.x / 2 - 100  # Leave room for puzzle
-	var max_desired_width = default_menu_width
+	var hbox = $HBoxContainer
+	var vbox = $VBoxContainer
+	var left_vbox = $HBoxContainer/LeftVBox
+	var right_vbox = $HBoxContainer/RightVBox
 
-	# Check all panels and calculate required widths
-	for child in $VBoxContainer.get_children():
+	# Make sure HBoxContainer is visible and VBoxContainer is hidden
+	hbox.visible = true
+	vbox.visible = false
+
+	# Move all children from RightVBox to LeftVBox to stack them
+	var right_children = right_vbox.get_children().duplicate()
+	for child in right_children:
+		right_vbox.remove_child(child)
+		left_vbox.add_child(child)
+
+	# Hide the now-empty RightVBox so it doesn't take up space
+	right_vbox.visible = false
+
+	# Set proper sizing for all panels to prevent overlap
+	for child in left_vbox.get_children():
 		if child is Panel:
-			var panel_desired_width = default_menu_width
-
-			# Check all labels in this panel
-			for label_child in child.get_children():
-				if label_child is Label:
-					# Enable word wrapping
-					label_child.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-
-					# Calculate required width for text
-					var font = label_child.get_theme_font("font")
-					var font_size = label_child.get_theme_font_size("font_size")
-					if font_size <= 0:
-						font_size = 25  # Default
-
-					# Get text width
-					var text_width = 0
-					if font:
-						text_width = font.get_string_size(label_child.text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
-
-					# Add padding for panel margins
-					text_width += 40
-
-					# Calculate desired width for this label
-					var label_desired_width = max(default_menu_width, text_width)
-					label_desired_width = min(label_desired_width, max_width)
-
-					# Track the widest label in this panel
-					if label_desired_width > panel_desired_width:
-						panel_desired_width = label_desired_width
-
-			# Set panel size
-			child.custom_minimum_size = Vector2(panel_desired_width, 24)
-
-			# Track maximum width across all panels
-			if panel_desired_width > max_desired_width:
-				max_desired_width = panel_desired_width
-
+			child.custom_minimum_size = Vector2(0, 40)
 		elif child is Button:
-			# Enable word wrapping on buttons
-			child.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+			child.custom_minimum_size = Vector2(0, 40)
 
-			# Calculate required width for button text
-			var font = child.get_theme_font("font")
-			var font_size = child.get_theme_font_size("font_size")
-			if font_size <= 0:
-				font_size = 25  # Default
+	# Add spacing between elements
+	left_vbox.add_theme_constant_override("separation", 5)
 
-			# Get text width
-			var text_width = 0
-			if font:
-				text_width = font.get_string_size(child.text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+	# Set a reasonable width for the left column
+	left_vbox.custom_minimum_size = Vector2(300, 0)
 
-			# Add padding for button margins
-			text_width += 60
+	# Position the menu centered vertically on the left side
+	# Using left anchor = 0 means offset_left is from the left edge of the screen
+	hbox.anchor_left = 0
+	hbox.anchor_top = 0.5
+	hbox.anchor_right = 0
+	hbox.anchor_bottom = 0.5
+	hbox.offset_left = 20  # Left edge 20px from screen left edge
+	hbox.offset_top = -300  # Half of approximate menu height (centers it)
+	hbox.offset_right = 20 + 300  # Right edge = left edge + width
+	hbox.offset_bottom = 300  # Half of approximate menu height
 
-			# Calculate desired width
-			var button_desired_width = max(default_menu_width, text_width)
-			button_desired_width = min(button_desired_width, max_width)
+	# Make sure puzzle container is visible
+	puzzle_container.visible = true
 
-			# Set button size
-			child.custom_minimum_size = Vector2(button_desired_width, 0)
+	# Position puzzle on the right side with 100px padding from right edge
+	var puzzle_total_size = GRID_SIZE * CELL_SIZE + 80  # Grid + indicator space
+	var puzzle_x = viewport_size.x - puzzle_total_size - 100  # 100px from right edge
+	var puzzle_y = (viewport_size.y - puzzle_total_size) / 2  # Centered vertically
+	puzzle_container.position = Vector2(puzzle_x, puzzle_y)
 
-			# Track maximum width
-			if button_desired_width > max_desired_width:
-				max_desired_width = button_desired_width
-
-	# Set VBoxContainer to the widest element
-	$VBoxContainer.custom_minimum_size = Vector2(max_desired_width, 0)
-
-	print("SecretPassagePuzzle: Menu width expanded to: ", max_desired_width)
+	print("Landscape layout applied:")
+	print("  Viewport: ", viewport_size)
+	print("  Menu position: ", hbox.position)
+	print("  Menu size: ", hbox.size)
+	print("  LeftVBox children count: ", left_vbox.get_child_count())
+	print("  Puzzle container visible: ", puzzle_container.visible)
+	print("  Puzzle position: ", puzzle_container.position)
+	print("  Puzzle size: ", puzzle_total_size)
+	print("  Puzzle children count: ", puzzle_container.get_child_count())
 
 func _process(delta):
 	break_time -= delta
@@ -155,15 +127,15 @@ func _process(delta):
 
 	# Update progress bar based on current break time
 	var progress_percent = (break_time / max_break_time) * 100.0
-	$VBoxContainer/BreakTimerPanel/BreakTimerBar.value = progress_percent
+	$HBoxContainer/LeftVBox/BreakTimerPanel/BreakTimerBar.value = progress_percent
 
 	if break_time <= 0:
 		Level1Vars.break_time_remaining = 0.0
 		Global.change_scene_with_check(get_tree(), "res://level1/furnace.tscn")
 
 	# Update developer button visibility
-	if $VBoxContainer.has_node("DeveloperSkipButton"):
-		$VBoxContainer/DeveloperSkipButton.visible = Global.dev_speed_mode
+	if $HBoxContainer/RightVBox.has_node("DeveloperSkipButton"):
+		$HBoxContainer/RightVBox/DeveloperSkipButton.visible = Global.dev_speed_mode
 
 func setup_puzzle():
 	# Initialize grid - load from saved state or start with no pipes
@@ -198,7 +170,7 @@ func setup_puzzle():
 	update_energized_cells()
 
 func update_pipes_label():
-	$VBoxContainer/PipesPanel/PipesLabel.text = "Pipes: " + str(Level1Vars.pipes)
+	$HBoxContainer/LeftVBox/PipesPanel/PipesLabel.text = "Pipes: " + str(Level1Vars.pipes)
 
 func save_grid_state():
 	# Deep copy the grid to Level1Vars
@@ -367,7 +339,7 @@ func _on_pipe_clicked(x: int, y: int):
 		# Check if puzzle is solved
 		if check_solution():
 			puzzle_solved = true
-			$VBoxContainer/LabelPanel/Label.text = "Puzzle Solved!"
+			$HBoxContainer/LeftVBox/TitlePanel/TitleLabel.text = "Puzzle Solved!"
 			show_train_heart_button()
 
 func check_solution() -> bool:
@@ -545,8 +517,8 @@ func show_train_heart_button():
 	enter_button.text = "Enter Train Heart"
 	enter_button.custom_minimum_size = Vector2(200, 40)
 	enter_button.pressed.connect(_on_enter_train_heart_pressed)
-	$VBoxContainer.add_child(enter_button)
-	$VBoxContainer.move_child(enter_button, $VBoxContainer.get_child_count() - 2)  # Place before back button
+	$HBoxContainer/RightVBox.add_child(enter_button)
+	$HBoxContainer/RightVBox.move_child(enter_button, $HBoxContainer/RightVBox.get_child_count() - 2)  # Place before back button
 
 func _on_enter_train_heart_pressed():
 	Global.change_scene_with_check(get_tree(), "res://level1/train_heart.tscn")
@@ -590,13 +562,13 @@ func _on_place_pipe_button_pressed():
 		# Check if puzzle is solved
 		if check_solution():
 			puzzle_solved = true
-			$VBoxContainer/LabelPanel/Label.text = "Puzzle Solved!"
+			$HBoxContainer/LeftVBox/TitlePanel/TitleLabel.text = "Puzzle Solved!"
 			show_train_heart_button()
 
 func update_place_pipe_button():
-	if $VBoxContainer/PlacePipeButton:
-		$VBoxContainer/PlacePipeButton.disabled = Level1Vars.pipes <= 0
-		$VBoxContainer/PlacePipeButton.text = "Place Pipe"
+	if $HBoxContainer/RightVBox/PlacePipeButton:
+		$HBoxContainer/RightVBox/PlacePipeButton.disabled = Level1Vars.pipes <= 0
+		$HBoxContainer/RightVBox/PlacePipeButton.text = "Place Pipe"
 
 func add_developer_skip_button():
 	# Create a developer button to skip the puzzle
@@ -611,12 +583,12 @@ func add_developer_skip_button():
 	var theme_resource = load("res://default_theme.tres")
 	skip_button.theme = theme_resource
 
-	# Add the button to VBoxContainer (before the back button)
-	var vbox = $VBoxContainer
-	var back_button = $VBoxContainer/BackButton
+	# Add the button to RightVBox (before the back button)
+	var right_vbox = $HBoxContainer/RightVBox
+	var back_button = $HBoxContainer/RightVBox/BackButton
 	var back_button_index = back_button.get_index()
-	vbox.add_child(skip_button)
-	vbox.move_child(skip_button, back_button_index)
+	right_vbox.add_child(skip_button)
+	right_vbox.move_child(skip_button, back_button_index)
 
 func _on_developer_skip_pressed():
 	Global.change_scene_with_check(get_tree(), "res://level1/train_heart.tscn")

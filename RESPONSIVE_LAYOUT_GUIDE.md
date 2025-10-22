@@ -17,16 +17,22 @@ The **ResponsiveLayout** autoload provides centralized scaling configuration for
 All scaling values are defined in ONE place:
 
 ```gdscript
-# Portrait mode scaling factors
-const PORTRAIT_BUTTON_HEIGHT = 105
-const PORTRAIT_PANEL_HEIGHT = 70
+# UNIVERSAL MENU ELEMENT HEIGHTS
+# All menu items (buttons, panels, counters, titles) use the same height in each mode
+
+# Portrait mode - one universal height for ALL menu elements
+# NOTE: Panels will automatically scale to PORTRAIT_ELEMENT_HEIGHT * PORTRAIT_FONT_SCALE
+# to accommodate larger font sizes and prevent overlapping backgrounds
+const PORTRAIT_ELEMENT_HEIGHT = 40
 const PORTRAIT_FONT_SCALE = 1.75
-const PORTRAIT_TOP_PADDING = 90
+const PORTRAIT_TOP_PADDING = 50
 const PORTRAIT_BOTTOM_PADDING = 90
 
-# Landscape mode defaults
-const LANDSCAPE_PANEL_HEIGHT = 24
-const LANDSCAPE_BUTTON_HEIGHT = 0  # 0 = auto
+# Landscape mode - one universal height for ALL menu elements
+const LANDSCAPE_ELEMENT_HEIGHT = 40
+
+# Spacing settings
+const PORTRAIT_SEPARATION_RATIO = 0.5  # Spacing between items as % of scaled height (50% = adequate spacing)
 
 # Column widths (from template)
 const LEFT_COLUMN_WIDTH = 220
@@ -60,17 +66,17 @@ That's it! The ResponsiveLayout autoload handles everything:
 
 ## Making Global Changes
 
-### Example 1: Change Portrait Button Height
+### Example 1: Change Universal Element Height in Portrait Mode
 
-**Before**: Buttons are 105px tall in portrait mode
-**Want**: Buttons should be 120px tall
+**Before**: All menu elements (buttons, panels, counters, titles) are 90px tall in portrait mode
+**Want**: All elements should be 100px tall for more spacing
 
 **Solution**:
 1. Open [responsive_layout.gd](c:\Goa\responsive_layout.gd)
-2. Change line: `const PORTRAIT_BUTTON_HEIGHT = 105` → `const PORTRAIT_BUTTON_HEIGHT = 120`
+2. Change line: `const PORTRAIT_ELEMENT_HEIGHT = 90` → `const PORTRAIT_ELEMENT_HEIGHT = 100`
 3. Save
 
-**Result**: ALL scenes using ResponsiveLayout now have 120px buttons in portrait mode!
+**Result**: ALL menu elements in ALL scenes now have 100px height in portrait mode - creating a perfectly consistent UI!
 
 ### Example 2: Increase Font Scaling
 
@@ -226,13 +232,12 @@ func custom_portrait_adjustments():
 
 | Constant | Default | Description |
 |----------|---------|-------------|
-| `PORTRAIT_BUTTON_HEIGHT` | 105 | Button height in portrait mode (px) |
-| `PORTRAIT_PANEL_HEIGHT` | 70 | Panel height in portrait mode (px) |
-| `PORTRAIT_FONT_SCALE` | 1.75 | Font size multiplier for portrait (1.75 = 175%) |
-| `PORTRAIT_TOP_PADDING` | 90 | Top padding for portrait layout (px) |
+| `PORTRAIT_ELEMENT_HEIGHT` | 40 | **BASE** height for menu elements in portrait. Panels auto-scale to `PORTRAIT_ELEMENT_HEIGHT * PORTRAIT_FONT_SCALE` (70px) to prevent overlapping |
+| `PORTRAIT_FONT_SCALE` | 1.75 | Font size multiplier for portrait (1.75 = 175%). Also scales panel heights automatically |
+| `PORTRAIT_SEPARATION_RATIO` | 0.5 | Spacing between portrait items as ratio of scaled height. 0.5 = 50% prevents overlapping. Adapts automatically when you change element height |
+| `PORTRAIT_TOP_PADDING` | 150 | Top padding for portrait layout (px) |
 | `PORTRAIT_BOTTOM_PADDING` | 90 | Bottom padding for portrait layout (px) |
-| `LANDSCAPE_PANEL_HEIGHT` | 24 | Panel height in landscape mode (px) |
-| `LANDSCAPE_BUTTON_HEIGHT` | 0 | Button height in landscape (0 = auto) |
+| `LANDSCAPE_ELEMENT_HEIGHT` | 40 | **UNIVERSAL** height for ALL menu elements in landscape (buttons, panels, counters, titles) |
 | `LEFT_COLUMN_WIDTH` | 220 | Minimum width for left column (px) - increase for longer text |
 | `RIGHT_COLUMN_WIDTH` | 260 | Minimum width for right column (px) - increase for longer text |
 | `CONTAINER_WIDTH` | 500 | HBoxContainer width in landscape (px) - adjust to fit columns |
@@ -242,16 +247,30 @@ func custom_portrait_adjustments():
 
 **Make portrait UI bigger:**
 ```gdscript
-const PORTRAIT_BUTTON_HEIGHT = 120  # was 105
-const PORTRAIT_PANEL_HEIGHT = 80    # was 70
-const PORTRAIT_FONT_SCALE = 2.0     # was 1.75
+const PORTRAIT_ELEMENT_HEIGHT = 50  # was 40 - base height increases
+const PORTRAIT_FONT_SCALE = 2.0      # was 1.75 - fonts and panel heights scale up
+# Panels will be 50 * 2.0 = 100px tall
+# Spacing will be 100 * 0.5 = 50px (automatically calculated)
 ```
 
 **Make portrait UI smaller:**
 ```gdscript
-const PORTRAIT_BUTTON_HEIGHT = 90   # was 105
-const PORTRAIT_PANEL_HEIGHT = 60    # was 70
-const PORTRAIT_FONT_SCALE = 1.5     # was 1.75
+const PORTRAIT_ELEMENT_HEIGHT = 30   # was 40 - base height decreases
+const PORTRAIT_FONT_SCALE = 1.5      # was 1.75 - fonts and panel heights scale down
+# Panels will be 30 * 1.5 = 45px tall
+# Spacing will be 45 * 0.5 = 22.5px (automatically calculated)
+```
+
+**Adjust spacing between items (if overlapping or too far apart):**
+```gdscript
+const PORTRAIT_SEPARATION_RATIO = 0.6  # was 0.5 - more spacing (60% of panel height)
+# or
+const PORTRAIT_SEPARATION_RATIO = 0.4  # was 0.5 - less spacing (40% of panel height)
+```
+
+**Make landscape UI bigger:**
+```gdscript
+const LANDSCAPE_ELEMENT_HEIGHT = 50  # was 40 - increases ALL elements uniformly
 ```
 
 **Change landscape container size:**

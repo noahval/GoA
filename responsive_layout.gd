@@ -3,23 +3,24 @@ extends Node
 ## All scenes can reference this for consistent scaling behavior
 ## Change values here and all scenes will update automatically
 
-# Portrait mode scaling factors
-const PORTRAIT_BUTTON_HEIGHT = 105
-const PORTRAIT_PANEL_HEIGHT = 70
+# UNIVERSAL MENU ELEMENT HEIGHTS
+# All menu items (buttons, panels, counters, titles) use the same height in each mode
+# This creates a consistent, uniform appearance across all UI elements
+
+# Portrait mode - one universal height for ALL menu elements
+const PORTRAIT_ELEMENT_HEIGHT = 30
 const PORTRAIT_FONT_SCALE = 1.75
-const PORTRAIT_TOP_PADDING = 90
+const PORTRAIT_TOP_PADDING = 150
 const PORTRAIT_BOTTOM_PADDING = 90
 
-# Adaptive scaling settings
-const MIN_BUTTON_HEIGHT = 50  # Minimum height for buttons when squeezed
-const MIN_FONT_SCALE = 0.8    # Minimum font scale when squeezed
-const BUTTON_MARGIN = 5        # Spacing between buttons
+# Landscape mode - one universal height for ALL menu elements
+const LANDSCAPE_ELEMENT_HEIGHT = 40
 
-# Landscape mode defaults
-const LANDSCAPE_PANEL_HEIGHT = 24
-const LANDSCAPE_BUTTON_HEIGHT = 0  # 0 = auto
+# Spacing settings
+const BUTTON_MARGIN = 5  # Spacing between buttons
 const LANDSCAPE_HBOX_SEPARATION_MAX = 300  # Maximum gap between left and right columns
 const LANDSCAPE_HBOX_SEPARATION_MIN = 20  # Minimum gap to maintain
+const PORTRAIT_SEPARATION_RATIO = 0.5  # Portrait separation as ratio of scaled element height (50%)
 
 # Column widths (from template)
 const LEFT_COLUMN_WIDTH = 220
@@ -109,41 +110,55 @@ func _apply_responsive_layout_internal(scene_root: Control) -> void:
 			print("ResponsiveLayout: Found button: ", child.name, " Text: ", child.text)
 	print("ResponsiveLayout: Total buttons found: ", button_count)
 
-	# Always apply separation to landscape HBox with dynamic calculation
-	if not is_portrait:
-		var separation = get_dynamic_separation(viewport_size.x)
-		hbox.add_theme_constant_override("separation", separation)
-		# Always apply landscape adjustments (including title expansion)
-		_apply_landscape_adjustments(left_vbox, right_vbox, hbox)
-
 	# Check if already in correct mode
 	var currently_portrait = vbox.visible
-	if currently_portrait == is_portrait:
-		return  # Already in correct mode
+	var need_reparent = currently_portrait != is_portrait
 
-	# Reparent columns
-	if left_vbox.get_parent():
-		left_vbox.get_parent().remove_child(left_vbox)
-	if right_vbox.get_parent():
-		right_vbox.get_parent().remove_child(right_vbox)
+	if need_reparent:
+		# Reparent columns when switching modes
+		if left_vbox.get_parent():
+			left_vbox.get_parent().remove_child(left_vbox)
+		if right_vbox.get_parent():
+			right_vbox.get_parent().remove_child(right_vbox)
 
+		if is_portrait:
+			# Portrait: stack vertically
+			top_vbox.add_child(left_vbox)
+			bottom_vbox.add_child(right_vbox)
+			hbox.visible = false
+			vbox.visible = true
+			_reverse_button_order(right_vbox)
+		else:
+			# Landscape: side by side
+			hbox.add_child(left_vbox)
+			hbox.add_child(right_vbox)
+			hbox.visible = true
+			vbox.visible = false
+
+	# Always apply mode-specific styling and scaling (even if already in correct mode)
 	if is_portrait:
-		# Portrait: stack vertically
-		top_vbox.add_child(left_vbox)
-		bottom_vbox.add_child(right_vbox)
-		hbox.visible = false
-		vbox.visible = true
-		_reverse_button_order(right_vbox)
+		# Calculate dynamic separation based on scaled element height
+		var scaled_height = PORTRAIT_ELEMENT_HEIGHT * PORTRAIT_FONT_SCALE
+		var dynamic_separation = max(5, int(scaled_height * PORTRAIT_SEPARATION_RATIO))
+		print("ResponsiveLayout: Portrait separation = ", dynamic_separation, " (", scaled_height, " * ", PORTRAIT_SEPARATION_RATIO, ")")
+
+		# Apply portrait styling and scaling
+		left_vbox.add_theme_constant_override("separation", dynamic_separation)
+		right_vbox.add_theme_constant_override("separation", dynamic_separation)
+		_apply_portrait_styling(left_vbox)
 		_scale_for_portrait(left_vbox, right_vbox)
 	else:
-		# Landscape: side by side
-		hbox.add_child(left_vbox)
-		hbox.add_child(right_vbox)
-		hbox.visible = true
-		vbox.visible = false
-		# Add separation between columns (dynamic based on viewport width)
+		# Remove portrait spacing overrides and apply landscape spacing
+		left_vbox.remove_theme_constant_override("separation")
+		right_vbox.remove_theme_constant_override("separation")
+		# Add spacing between panels to prevent overlap
+		left_vbox.add_theme_constant_override("separation", BUTTON_MARGIN)
+		right_vbox.add_theme_constant_override("separation", BUTTON_MARGIN)
+
+		# Apply landscape styling and scaling
 		var separation = get_dynamic_separation(viewport_size.x)
 		hbox.add_theme_constant_override("separation", separation)
+		_apply_landscape_adjustments(left_vbox, right_vbox, hbox)
 		_reset_scale(left_vbox, right_vbox)
 
 ## Apply landscape-specific adjustments (title expansion, etc.)
@@ -170,6 +185,11 @@ func _apply_landscape_adjustments(left_vbox: VBoxContainer, right_vbox: VBoxCont
 
 	for panel in left_vbox.get_children():
 		if panel is Panel:
+			# Remove theme background to prevent double backgrounds
+			# Panels have self_modulate in the scene which provides the background
+			var empty_style = StyleBoxEmpty.new()
+			panel.add_theme_stylebox_override("panel", empty_style)
+
 			var panel_desired_width = LEFT_COLUMN_WIDTH
 
 			# Check all labels in this panel and find the widest one
@@ -202,8 +222,8 @@ func _apply_landscape_adjustments(left_vbox: VBoxContainer, right_vbox: VBoxCont
 
 					print("ResponsiveLayout: Panel '", panel.name, "' Label '", child.name, "' text: '", child.text, "' width: ", label_desired_width)
 
-			# Set panel size to accommodate the widest label
-			panel.custom_minimum_size = Vector2(panel_desired_width, LANDSCAPE_PANEL_HEIGHT)
+			# Set panel size to UNIVERSAL HEIGHT for all panels
+			panel.custom_minimum_size = Vector2(panel_desired_width, LANDSCAPE_ELEMENT_HEIGHT)
 			# Allow panel to grow vertically if text wraps
 			panel.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 
@@ -263,73 +283,44 @@ func _apply_landscape_adjustments(left_vbox: VBoxContainer, right_vbox: VBoxCont
 		print("ResponsiveLayout: Final layout - Left: ", final_left_width, " Right: ", final_right_width)
 		print("ResponsiveLayout: Expanded HBoxContainer offsets to: ", -half_width, " to ", half_width)
 
-## Scale UI elements for portrait mode
-func _scale_for_portrait(left_vbox: VBoxContainer, right_vbox: VBoxContainer) -> void:
-	var viewport_size = left_vbox.get_viewport().get_visible_rect().size
+## Apply portrait-specific styling (title backgrounds, etc.)
+func _apply_portrait_styling(left_vbox: VBoxContainer) -> void:
+	print("ResponsiveLayout: Applying portrait styling")
 
-	# Calculate adaptive scaling for buttons
-	var buttons = []
+	# Panels will use the default theme background, no need to override
+	# The theme already provides a semi-transparent background for all panels
+
+## Scale UI elements for portrait mode with CONSISTENT universal height
+func _scale_for_portrait(left_vbox: VBoxContainer, right_vbox: VBoxContainer) -> void:
+	# Calculate scaled height once
+	var scaled_height = PORTRAIT_ELEMENT_HEIGHT * PORTRAIT_FONT_SCALE
+	print("ResponsiveLayout: Portrait scaled height = ", scaled_height, " (", PORTRAIT_ELEMENT_HEIGHT, " * ", PORTRAIT_FONT_SCALE, ")")
+
+	# Apply UNIVERSAL HEIGHT to all buttons
 	for button in right_vbox.get_children():
 		if button is Button:
-			buttons.append(button)
-
-	if buttons.size() > 0:
-		var available_height = viewport_size.y - PORTRAIT_TOP_PADDING - PORTRAIT_BOTTOM_PADDING
-		var total_margin = BUTTON_MARGIN * (buttons.size() - 1)
-		var ideal_total_height = PORTRAIT_BUTTON_HEIGHT * buttons.size() + total_margin
-
-		# Determine if we need to squeeze
-		var scale_factor = 1.0
-		if ideal_total_height > available_height:
-			scale_factor = available_height / ideal_total_height
-			scale_factor = max(scale_factor, MIN_BUTTON_HEIGHT / float(PORTRAIT_BUTTON_HEIGHT))
-
-		# Apply progressive scaling - buttons get progressively smaller from top to bottom
-		for i in range(buttons.size()):
-			var button = buttons[i]
-			# Progressive reduction factor (0.0 at top, 1.0 at bottom)
-			var progress = float(i) / max(1, buttons.size() - 1)
-
-			# Calculate button height with progressive thinning
-			var base_height = PORTRAIT_BUTTON_HEIGHT * scale_factor
-			var reduction = (1.0 - scale_factor) * progress * 0.3  # Up to 30% additional reduction at bottom
-			var button_height = base_height * (1.0 - reduction)
-			button_height = max(button_height, MIN_BUTTON_HEIGHT)
-
-			# Calculate font scale with progressive reduction
-			var font_scale = PORTRAIT_FONT_SCALE * scale_factor * (1.0 - reduction * 0.5)
-			font_scale = max(font_scale, MIN_FONT_SCALE)
-
-			# Apply scaling
-			button.custom_minimum_size = Vector2(0, button_height)
+			button.custom_minimum_size = Vector2(0, scaled_height)
 			var current_size = button.get_theme_font_size("font_size")
 			if current_size <= 0:
 				current_size = 25  # Default from theme
-			button.add_theme_font_size_override("font_size", int(current_size * font_scale))
+			button.add_theme_font_size_override("font_size", int(current_size * PORTRAIT_FONT_SCALE))
 
-	# Scale panels in left column with adaptive scaling
-	var panels = []
+	# Apply UNIVERSAL HEIGHT to all panels
 	for panel in left_vbox.get_children():
 		if panel is Panel:
-			panels.append(panel)
+			panel.custom_minimum_size = Vector2(0, scaled_height)
+			# Set both minimum AND maximum to prevent expansion
+			panel.size_flags_vertical = Control.SIZE_FILL
 
-	if panels.size() > 0:
-		var available_height = viewport_size.y - PORTRAIT_TOP_PADDING - PORTRAIT_BOTTOM_PADDING
-		var total_margin = BUTTON_MARGIN * (panels.size() - 1)
-		var ideal_total_height = PORTRAIT_PANEL_HEIGHT * panels.size() + total_margin
+			# Explicitly constrain the panel size
+			panel.size.y = scaled_height
 
-		var scale_factor = 1.0
-		if ideal_total_height > available_height:
-			scale_factor = available_height / ideal_total_height
-			scale_factor = max(scale_factor, 0.6)  # Don't shrink panels below 60%
+			# Remove theme background to prevent double backgrounds
+			# Panels have self_modulate in the scene which provides the background
+			var empty_style = StyleBoxEmpty.new()
+			panel.add_theme_stylebox_override("panel", empty_style)
 
-		for i in range(panels.size()):
-			var panel = panels[i]
-			var progress = float(i) / max(1, panels.size() - 1)
-			var reduction = (1.0 - scale_factor) * progress * 0.2
-			var panel_height = PORTRAIT_PANEL_HEIGHT * scale_factor * (1.0 - reduction)
-
-			panel.custom_minimum_size = Vector2(0, panel_height)
+			print("ResponsiveLayout: Set panel '", panel.name, "' size to (width, ", scaled_height, ")")
 
 			# Scale labels and other children
 			for child in panel.get_children():
@@ -337,18 +328,21 @@ func _scale_for_portrait(left_vbox: VBoxContainer, right_vbox: VBoxContainer) ->
 					var label_size = child.get_theme_font_size("font_size")
 					if label_size <= 0:
 						label_size = 25  # Default from theme
-					var font_scale = PORTRAIT_FONT_SCALE * scale_factor * (1.0 - reduction * 0.5)
-					font_scale = max(font_scale, MIN_FONT_SCALE)
-					child.add_theme_font_size_override("font_size", int(label_size * font_scale))
+					child.add_theme_font_size_override("font_size", int(label_size * PORTRAIT_FONT_SCALE))
 
-					# Enable word wrapping on title labels and allow panel to expand
+					# Enable word wrapping on title labels
 					if child.name == "TitleLabel" or child.name == "Title":
 						child.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-						# In portrait mode, allow full viewport width
+						var viewport_size = left_vbox.get_viewport().get_visible_rect().size
 						var viewport_width = viewport_size.x
-						panel.custom_minimum_size = Vector2(0, 0)
 						# Set max width for wrapping but allow expansion
 						child.custom_minimum_size = Vector2(viewport_width - 40, 0)
+				elif child is ProgressBar:
+					# Scale progress bar font size
+					var bar_font_size = child.get_theme_font_size("font_size")
+					if bar_font_size <= 0:
+						bar_font_size = 25  # Default from theme
+					child.add_theme_font_size_override("font_size", int(bar_font_size * PORTRAIT_FONT_SCALE))
 
 ## Reset UI elements to landscape/desktop defaults
 func _reset_scale(left_vbox: VBoxContainer, right_vbox: VBoxContainer) -> void:
@@ -367,10 +361,10 @@ func _reset_scale(left_vbox: VBoxContainer, right_vbox: VBoxContainer) -> void:
 	hbox.offset_left = -default_half_width
 	hbox.offset_right = default_half_width
 
-	# Reset buttons
+	# Reset buttons to UNIVERSAL HEIGHT
 	for button in right_vbox.get_children():
 		if button is Button:
-			button.custom_minimum_size = Vector2(0, LANDSCAPE_BUTTON_HEIGHT)
+			button.custom_minimum_size = Vector2(0, LANDSCAPE_ELEMENT_HEIGHT)
 			button.remove_theme_font_size_override("font_size")
 
 	# Reset panels
@@ -416,8 +410,8 @@ func _reset_scale(left_vbox: VBoxContainer, right_vbox: VBoxContainer) -> void:
 
 				print("ResponsiveLayout: Desired width: ", desired_width, " (min: ", LEFT_COLUMN_WIDTH, ", max: ", max_width, ")")
 
-				# Set panel size - allow vertical expansion for wrapped text
-				panel.custom_minimum_size = Vector2(desired_width, 0)
+				# Set panel size with UNIVERSAL HEIGHT
+				panel.custom_minimum_size = Vector2(desired_width, LANDSCAPE_ELEMENT_HEIGHT)
 
 				# Also set the left column to match the widest title panel
 				if desired_width > left_vbox.custom_minimum_size.x:
@@ -431,8 +425,8 @@ func _reset_scale(left_vbox: VBoxContainer, right_vbox: VBoxContainer) -> void:
 					hbox.offset_right = half_width
 					print("ResponsiveLayout: Expanded HBoxContainer offsets to: ", -half_width, " to ", half_width)
 			else:
-				# Regular panel - use default height
-				panel.custom_minimum_size = Vector2(0, LANDSCAPE_PANEL_HEIGHT)
+				# Regular panel - use UNIVERSAL HEIGHT
+				panel.custom_minimum_size = Vector2(0, LANDSCAPE_ELEMENT_HEIGHT)
 				for child in panel.get_children():
 					if child is Label:
 						child.remove_theme_font_size_override("font_size")

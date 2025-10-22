@@ -56,6 +56,7 @@ layout_mode = 2
 [node name="TopVBox" type="VBoxContainer" parent="VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 0
+theme_override_constants/separation = 20
 
 [node name="Spacer" type="Control" parent="VBoxContainer"]
 layout_mode = 2
@@ -64,6 +65,7 @@ size_flags_vertical = 3
 [node name="BottomVBox" type="VBoxContainer" parent="VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 0
+theme_override_constants/separation = 20
 
 [node name="BottomPadding" type="Control" parent="VBoxContainer"]
 custom_minimum_size = Vector2(0, 90)
