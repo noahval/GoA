@@ -42,8 +42,6 @@ vertical_alignment = 1
 
 [node name="SuspicionPanel" type="Panel" parent="HBoxContainer/LeftVBox" index="2"]
 visible = false
-self_modulate = Color(1, 1, 1, 0.7)
-custom_minimum_size = Vector2(0, 24)
 layout_mode = 2
 
 [node name="SuspicionBar" type="ProgressBar" parent="HBoxContainer/LeftVBox/SuspicionPanel"]
@@ -68,8 +66,6 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="CoinsPanel" type="Panel" parent="HBoxContainer/LeftVBox" index="3"]
-self_modulate = Color(1, 1, 1, 0.7)
-custom_minimum_size = Vector2(0, 24)
 layout_mode = 2
 
 [node name="CoinsLabel" type="Label" parent="HBoxContainer/LeftVBox/CoinsPanel"]

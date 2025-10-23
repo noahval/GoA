@@ -41,12 +41,18 @@ corner_radius_bottom_right = 4
 corner_radius_bottom_left = 4
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_progress_bg"]
-bg_color = Color(0.2, 0.2, 0.2, 0.3)
+content_margin_top = 4.0
+content_margin_bottom = 4.0
+bg_color = Color(0.2, 0.2, 0.2, 0)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_progress_fill"]
+content_margin_top = 4.0
+content_margin_bottom = 4.0
 bg_color = Color(0, 1, 0, 0.3)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_progress_fill_red"]
+content_margin_top = 4.0
+content_margin_bottom = 4.0
 bg_color = Color(1, 0, 0, 0.3)
 
 [resource]

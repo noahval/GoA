@@ -27,7 +27,9 @@ func _ready():
 
 	# Initialize the progress bar to the current percentage
 	var progress_percent = (break_time / max_break_time) * 100.0
-	$HBoxContainer/LeftVBox/BreakTimerPanel/BreakTimerBar.value = progress_percent
+	var break_timer_bar = find_node_recursive(self, "BreakTimerBar")
+	if break_timer_bar:
+		break_timer_bar.value = progress_percent
 
 	puzzle_container = $PuzzleContainer
 
@@ -52,11 +54,86 @@ func _delayed_setup():
 
 	# Then apply layout
 	if is_portrait:
-		# Portrait mode: use responsive layout
-		ResponsiveLayout.apply_to_scene(self)
+		# Portrait mode: custom portrait layout
+		apply_custom_portrait_layout()
 	else:
 		# Landscape mode: custom layout for this scene
 		apply_custom_landscape_layout()
+
+func apply_custom_portrait_layout():
+	var viewport_size = get_viewport().get_visible_rect().size
+	var hbox = $HBoxContainer
+	var vbox = $VBoxContainer
+	var top_vbox = $VBoxContainer/TopVBox
+	var bottom_vbox = $VBoxContainer/BottomVBox
+	var left_vbox = $HBoxContainer/LeftVBox
+	var right_vbox = $HBoxContainer/RightVBox
+
+	# Make sure VBoxContainer is visible and HBoxContainer is hidden
+	vbox.visible = true
+	hbox.visible = false
+
+	# Move all children from LeftVBox and RightVBox to TopVBox
+	var left_children = left_vbox.get_children().duplicate()
+	for child in left_children:
+		left_vbox.remove_child(child)
+		top_vbox.add_child(child)
+
+	var right_children = right_vbox.get_children().duplicate()
+	for child in right_children:
+		right_vbox.remove_child(child)
+		top_vbox.add_child(child)
+
+	# Set proper sizing for all elements
+	for child in top_vbox.get_children():
+		if child is Panel:
+			child.custom_minimum_size = Vector2(0, 40)
+		elif child is Button:
+			child.custom_minimum_size = Vector2(0, 40)
+
+	# Add spacing between elements
+	top_vbox.add_theme_constant_override("separation", 5)
+
+	# Calculate puzzle size
+	var puzzle_total_size = GRID_SIZE * CELL_SIZE + 80  # Grid + indicator space
+
+	# Make sure puzzle container is visible
+	puzzle_container.visible = true
+
+	# Calculate menu height (approximate based on number of children)
+	var menu_height = top_vbox.get_child_count() * 45 + 50  # ~45px per item + padding
+
+	# Calculate equal spacing: total_height = gap + menu_height + gap + puzzle_size + gap
+	# So: gap = (total_height - menu_height - puzzle_size) / 3
+	var total_content_height = menu_height + puzzle_total_size
+	var gap = (viewport_size.y - total_content_height) / 3.0
+
+	# Position TopVBox at the top with gap spacing
+	var top_padding = $VBoxContainer/TopPadding
+	top_padding.custom_minimum_size = Vector2(0, gap)
+
+	# Add spacing between menu and puzzle
+	var spacer = $VBoxContainer/Spacer
+	spacer.custom_minimum_size = Vector2(0, gap)
+	spacer.size_flags_vertical = 0  # Don't expand
+
+	# Position puzzle centered horizontally
+	var puzzle_x = (viewport_size.x - puzzle_total_size) / 2
+	var puzzle_y = gap + menu_height + gap  # top_gap + menu + middle_gap
+	puzzle_container.position = Vector2(puzzle_x, puzzle_y)
+
+	# Set bottom padding
+	var bottom_padding = $VBoxContainer/BottomPadding
+	bottom_padding.custom_minimum_size = Vector2(0, gap)
+
+	print("Portrait layout applied:")
+	print("  Viewport: ", viewport_size)
+	print("  Menu height: ", menu_height)
+	print("  Puzzle size: ", puzzle_total_size)
+	print("  Calculated gap: ", gap)
+	print("  Puzzle position: ", puzzle_container.position)
+	print("  Bottom gap check: ", viewport_size.y - (puzzle_y + puzzle_total_size))
+	print("  TopVBox children count: ", top_vbox.get_child_count())
 
 func apply_custom_landscape_layout():
 	var viewport_size = get_viewport().get_visible_rect().size
@@ -88,38 +165,56 @@ func apply_custom_landscape_layout():
 	# Add spacing between elements
 	left_vbox.add_theme_constant_override("separation", 5)
 
-	# Set a reasonable width for the left column
-	left_vbox.custom_minimum_size = Vector2(300, 0)
+	# Set a reasonable width for the menu
+	var menu_width = 300
+	left_vbox.custom_minimum_size = Vector2(menu_width, 0)
 
-	# Position the menu centered vertically on the left side
-	# Using left anchor = 0 means offset_left is from the left edge of the screen
+	# Calculate puzzle size
+	var puzzle_total_size = GRID_SIZE * CELL_SIZE + 80  # Grid + indicator space
+
+	# Calculate equal spacing: total_width = gap + menu_width + gap + puzzle_size + gap
+	# So: gap = (total_width - menu_width - puzzle_size) / 3
+	var total_content_width = menu_width + puzzle_total_size
+	var gap = (viewport_size.x - total_content_width) / 3.0
+
+	# Position the menu with gap spacing from left edge
 	hbox.anchor_left = 0
 	hbox.anchor_top = 0.5
 	hbox.anchor_right = 0
 	hbox.anchor_bottom = 0.5
-	hbox.offset_left = 20  # Left edge 20px from screen left edge
+	hbox.offset_left = gap
 	hbox.offset_top = -300  # Half of approximate menu height (centers it)
-	hbox.offset_right = 20 + 300  # Right edge = left edge + width
+	hbox.offset_right = gap + menu_width
 	hbox.offset_bottom = 300  # Half of approximate menu height
 
 	# Make sure puzzle container is visible
 	puzzle_container.visible = true
 
-	# Position puzzle on the right side with 100px padding from right edge
-	var puzzle_total_size = GRID_SIZE * CELL_SIZE + 80  # Grid + indicator space
-	var puzzle_x = viewport_size.x - puzzle_total_size - 100  # 100px from right edge
+	# Position puzzle: left_gap + menu_width + middle_gap
+	var puzzle_x = gap + menu_width + gap
 	var puzzle_y = (viewport_size.y - puzzle_total_size) / 2  # Centered vertically
 	puzzle_container.position = Vector2(puzzle_x, puzzle_y)
 
 	print("Landscape layout applied:")
 	print("  Viewport: ", viewport_size)
-	print("  Menu position: ", hbox.position)
-	print("  Menu size: ", hbox.size)
-	print("  LeftVBox children count: ", left_vbox.get_child_count())
-	print("  Puzzle container visible: ", puzzle_container.visible)
-	print("  Puzzle position: ", puzzle_container.position)
+	print("  Menu width: ", menu_width)
 	print("  Puzzle size: ", puzzle_total_size)
+	print("  Calculated gap: ", gap)
+	print("  Menu position: ", hbox.position)
+	print("  Menu offset_left: ", hbox.offset_left)
+	print("  Puzzle position: ", puzzle_container.position)
+	print("  Right gap check: ", viewport_size.x - (puzzle_x + puzzle_total_size))
+	print("  LeftVBox children count: ", left_vbox.get_child_count())
 	print("  Puzzle children count: ", puzzle_container.get_child_count())
+
+func find_node_recursive(node: Node, node_name: String) -> Node:
+	if node.name == node_name:
+		return node
+	for child in node.get_children():
+		var result = find_node_recursive(child, node_name)
+		if result:
+			return result
+	return null
 
 func _process(delta):
 	break_time -= delta
@@ -127,15 +222,18 @@ func _process(delta):
 
 	# Update progress bar based on current break time
 	var progress_percent = (break_time / max_break_time) * 100.0
-	$HBoxContainer/LeftVBox/BreakTimerPanel/BreakTimerBar.value = progress_percent
+	var break_timer_bar = find_node_recursive(self, "BreakTimerBar")
+	if break_timer_bar:
+		break_timer_bar.value = progress_percent
 
 	if break_time <= 0:
 		Level1Vars.break_time_remaining = 0.0
 		Global.change_scene_with_check(get_tree(), "res://level1/furnace.tscn")
 
 	# Update developer button visibility
-	if $HBoxContainer/RightVBox.has_node("DeveloperSkipButton"):
-		$HBoxContainer/RightVBox/DeveloperSkipButton.visible = Global.dev_speed_mode
+	var dev_button = find_node_recursive(self, "DeveloperSkipButton")
+	if dev_button:
+		dev_button.visible = Global.dev_speed_mode
 
 func setup_puzzle():
 	# Initialize grid - load from saved state or start with no pipes
@@ -170,7 +268,9 @@ func setup_puzzle():
 	update_energized_cells()
 
 func update_pipes_label():
-	$HBoxContainer/LeftVBox/PipesPanel/PipesLabel.text = "Pipes: " + str(Level1Vars.pipes)
+	var pipes_label = find_node_recursive(self, "PipesLabel")
+	if pipes_label:
+		pipes_label.text = "Pipes: " + str(Level1Vars.pipes)
 
 func save_grid_state():
 	# Deep copy the grid to Level1Vars
@@ -339,7 +439,9 @@ func _on_pipe_clicked(x: int, y: int):
 		# Check if puzzle is solved
 		if check_solution():
 			puzzle_solved = true
-			$HBoxContainer/LeftVBox/TitlePanel/TitleLabel.text = "Puzzle Solved!"
+			var title_label = find_node_recursive(self, "TitleLabel")
+			if title_label:
+				title_label.text = "Puzzle Solved!"
 			show_train_heart_button()
 
 func check_solution() -> bool:
@@ -517,8 +619,13 @@ func show_train_heart_button():
 	enter_button.text = "Enter Train Heart"
 	enter_button.custom_minimum_size = Vector2(200, 40)
 	enter_button.pressed.connect(_on_enter_train_heart_pressed)
-	$HBoxContainer/RightVBox.add_child(enter_button)
-	$HBoxContainer/RightVBox.move_child(enter_button, $HBoxContainer/RightVBox.get_child_count() - 2)  # Place before back button
+
+	# Find the appropriate parent container (could be in RightVBox or TopVBox depending on orientation)
+	var back_button = find_node_recursive(self, "BackButton")
+	if back_button and back_button.get_parent():
+		var parent = back_button.get_parent()
+		parent.add_child(enter_button)
+		parent.move_child(enter_button, back_button.get_index())  # Place before back button
 
 func _on_enter_train_heart_pressed():
 	Global.change_scene_with_check(get_tree(), "res://level1/train_heart.tscn")
@@ -562,13 +669,16 @@ func _on_place_pipe_button_pressed():
 		# Check if puzzle is solved
 		if check_solution():
 			puzzle_solved = true
-			$HBoxContainer/LeftVBox/TitlePanel/TitleLabel.text = "Puzzle Solved!"
+			var title_label = find_node_recursive(self, "TitleLabel")
+			if title_label:
+				title_label.text = "Puzzle Solved!"
 			show_train_heart_button()
 
 func update_place_pipe_button():
-	if $HBoxContainer/RightVBox/PlacePipeButton:
-		$HBoxContainer/RightVBox/PlacePipeButton.disabled = Level1Vars.pipes <= 0
-		$HBoxContainer/RightVBox/PlacePipeButton.text = "Place Pipe"
+	var place_pipe_button = find_node_recursive(self, "PlacePipeButton")
+	if place_pipe_button:
+		place_pipe_button.disabled = Level1Vars.pipes <= 0
+		place_pipe_button.text = "Place Pipe"
 
 func add_developer_skip_button():
 	# Create a developer button to skip the puzzle
@@ -583,12 +693,13 @@ func add_developer_skip_button():
 	var theme_resource = load("res://default_theme.tres")
 	skip_button.theme = theme_resource
 
-	# Add the button to RightVBox (before the back button)
-	var right_vbox = $HBoxContainer/RightVBox
-	var back_button = $HBoxContainer/RightVBox/BackButton
-	var back_button_index = back_button.get_index()
-	right_vbox.add_child(skip_button)
-	right_vbox.move_child(skip_button, back_button_index)
+	# Add the button before the back button (works for any layout)
+	var back_button = find_node_recursive(self, "BackButton")
+	if back_button and back_button.get_parent():
+		var parent = back_button.get_parent()
+		var back_button_index = back_button.get_index()
+		parent.add_child(skip_button)
+		parent.move_child(skip_button, back_button_index)
 
 func _on_developer_skip_pressed():
 	Global.change_scene_with_check(get_tree(), "res://level1/train_heart.tscn")

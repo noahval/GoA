@@ -16,7 +16,18 @@ func _ready():
 
 	# Initialize the progress bar to the current percentage
 	var progress_percent = (break_time / max_break_time) * 100.0
-	$HBoxContainer/LeftVBox/BreakTimerPanel/BreakTimerBar.value = progress_percent
+	var break_timer_bar = find_node_recursive(self, "BreakTimerBar")
+	if break_timer_bar:
+		break_timer_bar.value = progress_percent
+
+func find_node_recursive(node: Node, node_name: String) -> Node:
+	if node.name == node_name:
+		return node
+	for child in node.get_children():
+		var result = find_node_recursive(child, node_name)
+		if result:
+			return result
+	return null
 
 func _process(delta):
 	break_time -= delta
@@ -24,7 +35,9 @@ func _process(delta):
 
 	# Update progress bar based on current break time
 	var progress_percent = (break_time / max_break_time) * 100.0
-	$HBoxContainer/LeftVBox/BreakTimerPanel/BreakTimerBar.value = progress_percent
+	var break_timer_bar = find_node_recursive(self, "BreakTimerBar")
+	if break_timer_bar:
+		break_timer_bar.value = progress_percent
 
 	if break_time <= 0:
 		Level1Vars.break_time_remaining = 0.0

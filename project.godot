@@ -24,8 +24,8 @@ ResponsiveLayout="*res://responsive_layout.gd"
 
 [display]
 
-window/size/viewport_width=1463
-window/size/viewport_height=872
+window/size/viewport_width=503
+window/size/viewport_height=977
 
 [gui]
 
