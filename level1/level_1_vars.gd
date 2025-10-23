@@ -8,8 +8,8 @@ var overseer_lvl = 0
 var barkeep_bribed = false
 var shopkeep_bribed = false
 var break_time_remaining = 0.0
-var starting_break_time = 20
-var coin_cost = 25.0
+var starting_break_time = 23
+var coin_cost = 30.0
 var components = 0
 var mechanisms = 0
 var pipes = 5
@@ -26,3 +26,7 @@ var suspicion = 0:
 	set(value):
 		suspicion = clamp(value, 0, 100)
 var talk_button_cooldown = 0.0
+var stimulated_remaining = 0.0:
+	set(value):
+		stimulated_remaining = clamp(value, 0, 300)
+var shown_tired_notification = false

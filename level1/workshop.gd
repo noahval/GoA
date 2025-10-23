@@ -3,9 +3,14 @@ extends Control
 var break_time = 30.0
 var max_break_time = 30.0
 
-@onready var suspicion_panel = $HBoxContainer/LeftVBox/SuspicionPanel
-@onready var suspicion_bar = $HBoxContainer/LeftVBox/SuspicionPanel/SuspicionBar
-@onready var dev_pipes_button = $HBoxContainer/RightVBox/DevPipesButton
+func find_node_recursive(node: Node, node_name: String) -> Node:
+	if node.name == node_name:
+		return node
+	for child in node.get_children():
+		var result = find_node_recursive(child, node_name)
+		if result:
+			return result
+	return null
 
 func _ready():
 	# Set the actual maximum break time (not the remaining time)
@@ -18,7 +23,9 @@ func _ready():
 
 	# Initialize the progress bar to the current percentage
 	var progress_percent = (break_time / max_break_time) * 100.0
-	$HBoxContainer/LeftVBox/BreakTimerPanel/BreakTimerBar.value = progress_percent
+	var break_timer_bar = find_node_recursive(self, "BreakTimerBar")
+	if break_timer_bar:
+		break_timer_bar.value = progress_percent
 
 	update_labels()
 	update_suspicion_bar()
@@ -31,7 +38,9 @@ func _process(delta):
 
 	# Update progress bar based on current break time
 	var progress_percent = (break_time / max_break_time) * 100.0
-	$HBoxContainer/LeftVBox/BreakTimerPanel/BreakTimerBar.value = progress_percent
+	var break_timer_bar = find_node_recursive(self, "BreakTimerBar")
+	if break_timer_bar:
+		break_timer_bar.value = progress_percent
 
 	if break_time <= 0:
 		Level1Vars.break_time_remaining = 0.0
@@ -41,12 +50,22 @@ func _process(delta):
 	update_suspicion_bar()
 
 func update_labels():
-	$HBoxContainer/LeftVBox/ComponentsPanel/ComponentsLabel.text = "Components: " + str(Level1Vars.components)
-	$HBoxContainer/LeftVBox/MechanismsPanel/MechanismsLabel.text = "Mechanisms: " + str(Level1Vars.mechanisms)
-	$HBoxContainer/LeftVBox/PipesPanel/PipesLabel.text = "Pipes: " + str(Level1Vars.pipes)
+	var components_label = find_node_recursive(self, "ComponentsLabel")
+	if components_label:
+		components_label.text = "Components: " + str(Level1Vars.components)
+
+	var mechanisms_label = find_node_recursive(self, "MechanismsLabel")
+	if mechanisms_label:
+		mechanisms_label.text = "Mechanisms: " + str(Level1Vars.mechanisms)
+
+	var pipes_label = find_node_recursive(self, "PipesLabel")
+	if pipes_label:
+		pipes_label.text = "Pipes: " + str(Level1Vars.pipes)
 
 	# Show/hide dev pipes button based on dev_speed_mode
-	dev_pipes_button.visible = Global.dev_speed_mode
+	var dev_pipes_button = find_node_recursive(self, "DevPipesButton")
+	if dev_pipes_button:
+		dev_pipes_button.visible = Global.dev_speed_mode
 
 func _on_assemble_component_button_pressed():
 	Level1Vars.components += 1
@@ -81,19 +100,25 @@ func add_planning_table_button():
 		var theme_resource = load("res://default_theme.tres")
 		planning_table_button.theme = theme_resource
 
-		# Add the button to the right column (before the back button)
-		var right_column = $HBoxContainer/RightVBox
-		var back_button = $HBoxContainer/RightVBox/BackToPassageButton
-		var back_button_index = back_button.get_index()
-		right_column.add_child(planning_table_button)
-		right_column.move_child(planning_table_button, back_button_index)
+		# Add the button before the back button (works for any layout)
+		var back_button = find_node_recursive(self, "BackToPassageButton")
+		if back_button and back_button.get_parent():
+			var parent = back_button.get_parent()
+			var back_button_index = back_button.get_index()
+			parent.add_child(planning_table_button)
+			parent.move_child(planning_table_button, back_button_index)
 
-		# Connect the signal
-		planning_table_button.pressed.connect(_on_planning_table_button_pressed)
+			# Connect the signal
+			planning_table_button.pressed.connect(_on_planning_table_button_pressed)
 
 func _on_planning_table_button_pressed():
 	Global.change_scene_with_check(get_tree(), "res://level1/planning_table.tscn")
 
 func update_suspicion_bar():
-	suspicion_panel.visible = Level1Vars.suspicion > 0
-	suspicion_bar.value = Level1Vars.suspicion
+	var suspicion_panel = find_node_recursive(self, "SuspicionPanel")
+	if suspicion_panel:
+		suspicion_panel.visible = Level1Vars.suspicion > 0
+
+	var suspicion_bar = find_node_recursive(self, "SuspicionBar")
+	if suspicion_bar:
+		suspicion_bar.value = Level1Vars.suspicion

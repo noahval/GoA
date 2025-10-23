@@ -6,8 +6,12 @@ var max_break_time = 30.0
 @onready var suspicion_panel = $HBoxContainer/LeftVBox/SuspicionPanel
 @onready var suspicion_bar = $HBoxContainer/LeftVBox/SuspicionPanel/SuspicionBar
 @onready var stolen_coal_panel = $HBoxContainer/LeftVBox/StolenCoalPanel
+@onready var stolen_coal_label = $HBoxContainer/LeftVBox/StolenCoalPanel/StolenCoalLabel
 @onready var stolen_writs_panel = $HBoxContainer/LeftVBox/StolenWritsPanel
+@onready var stolen_writs_label = $HBoxContainer/LeftVBox/StolenWritsPanel/StolenWritsLabel
 @onready var mechanisms_panel = $HBoxContainer/LeftVBox/MechanismsPanel
+@onready var mechanisms_label = $HBoxContainer/LeftVBox/MechanismsPanel/MechanismsLabel
+@onready var break_timer_bar = $HBoxContainer/LeftVBox/BreakTimerPanel/BreakTimerBar
 
 func _ready():
 	# CRITICAL: Apply responsive layout FIRST before accessing any UI elements
@@ -27,7 +31,7 @@ func _ready():
 
 	# Initialize the progress bar to the current percentage
 	var progress_percent = (break_time / max_break_time) * 100.0
-	$HBoxContainer/LeftVBox/BreakTimerPanel/BreakTimerBar.value = progress_percent
+	break_timer_bar.value = progress_percent
 
 	update_labels()
 	update_suspicion_bar()
@@ -38,7 +42,7 @@ func _process(delta):
 
 	# Update progress bar based on current break time
 	var progress_percent = (break_time / max_break_time) * 100.0
-	$HBoxContainer/LeftVBox/BreakTimerPanel/BreakTimerBar.value = progress_percent
+	break_timer_bar.value = progress_percent
 
 	if break_time <= 0:
 		Level1Vars.break_time_remaining = 0.0
@@ -49,13 +53,13 @@ func _process(delta):
 
 func update_labels():
 	stolen_coal_panel.visible = Level1Vars.stolen_coal > 0
-	$HBoxContainer/LeftVBox/StolenCoalPanel/StolenCoalLabel.text = "Stolen Coal: " + str(Level1Vars.stolen_coal)
+	stolen_coal_label.text = "Stolen Coal: " + str(Level1Vars.stolen_coal)
 
 	stolen_writs_panel.visible = Level1Vars.stolen_writs > 0
-	$HBoxContainer/LeftVBox/StolenWritsPanel/StolenWritsLabel.text = "Stolen Writs: " + str(Level1Vars.stolen_writs)
+	stolen_writs_label.text = "Stolen Writs: " + str(Level1Vars.stolen_writs)
 
 	mechanisms_panel.visible = Level1Vars.mechanisms > 0
-	$HBoxContainer/LeftVBox/MechanismsPanel/MechanismsLabel.text = "Mechanisms: " + str(Level1Vars.mechanisms)
+	mechanisms_label.text = "Mechanisms: " + str(Level1Vars.mechanisms)
 
 func _on_back_to_workshop_button_pressed():
 	Global.change_scene_with_check(get_tree(), "res://level1/workshop.tscn")

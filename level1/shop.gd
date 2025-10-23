@@ -48,17 +48,17 @@ func _process(delta):
 	update_suspicion_bar()
 
 func _on_shovel_button_pressed():
-	var cost = max(1, int(1 * pow(1.5, Level1Vars.shovel_lvl)))
+	var cost = max(1, int(5 * pow(1.6, Level1Vars.shovel_lvl)))
 	if Level1Vars.coins >= cost:
 		Level1Vars.coins -= cost
 		Level1Vars.shovel_lvl += 1
 		update_labels()
 
 func _on_plow_button_pressed():
-	var cost = max(Level1Vars.plow_lvl + 5, int(5 * pow(1.5, Level1Vars.plow_lvl)))
+	var cost = max(Level1Vars.plow_lvl + 5, int(20 * pow(1.7, Level1Vars.plow_lvl)))
 	if Level1Vars.coins >= cost:
 		Level1Vars.coins -= cost
-		Level1Vars.plow_lvl += 1
+		Level1Vars.plow_lvl += 5
 		update_labels()
 
 func _on_furnace_upgrade_pressed():
@@ -86,9 +86,9 @@ func update_labels():
 	if coins_label:
 		coins_label.text = "Coins: " + str(int(Level1Vars.coins))
 	if shovel_button:
-		shovel_button.text = "Better Shovel: " + str(max(1, int(1 * pow(1.5, Level1Vars.shovel_lvl))))
+		shovel_button.text = "Better Shovel: " + str(max(1, int(5 * pow(1.6, Level1Vars.shovel_lvl))))
 	if plow_button:
-		plow_button.text = "Coal Plow: " + str(max(Level1Vars.plow_lvl + 5, int(5 * pow(1.5, Level1Vars.plow_lvl))))
+		plow_button.text = "Coal Plow: " + str(max(Level1Vars.plow_lvl + 5, int(20 * pow(1.7, Level1Vars.plow_lvl))))
 	if furnace_upgrade:
 		furnace_upgrade.text = "Auto Shovel: " + str(max(Level1Vars.auto_shovel_lvl + 10, int(10 * pow(1.15, Level1Vars.auto_shovel_lvl))))
 	if bribe_shopkeep_button:

@@ -174,9 +174,9 @@ func _ready():
 	whisper_timer.timeout.connect(_on_whisper_timer_timeout)
 	add_child(whisper_timer)
 
-	# Create timer for suspicion decrease (every 5 seconds)
+	# Create timer for suspicion decrease (every 3 seconds)
 	suspicion_decrease_timer = Timer.new()
-	suspicion_decrease_timer.wait_time = 5.0
+	suspicion_decrease_timer.wait_time = 3.0
 	suspicion_decrease_timer.autostart = true
 	suspicion_decrease_timer.timeout.connect(_on_suspicion_decrease_timeout)
 	add_child(suspicion_decrease_timer)
@@ -294,23 +294,27 @@ func _process(delta):
 	if Level1Vars.stamina < Level1Vars.max_stamina:
 		Level1Vars.stamina = min(Level1Vars.stamina + delta, Level1Vars.max_stamina)
 
+	# Update talk button cooldown timer
+	if Level1Vars.talk_button_cooldown > 0:
+		Level1Vars.talk_button_cooldown -= delta
+
 func _on_whisper_timer_timeout():
 	# Only show whisper if heart hasn't been taken
 	if not Level1Vars.heart_taken:
 		show_stat_notification("A voice whispers in your mind, pleading for your help")
 
 func _on_suspicion_decrease_timeout():
-	# Decrease suspicion by 1 every 5 seconds
+	# Decrease suspicion by 1 every 3 seconds
 	if Level1Vars.suspicion > 0:
 		Level1Vars.suspicion -= 1
 
 # Check if player gets caught based on suspicion level
 # Returns true if player was caught, false otherwise
 func check_get_caught() -> bool:
-	# Only check if suspicion is 13% or higher
-	if Level1Vars.suspicion >= 13:
-		# Percentage chance equal to half of suspicion level
-		var caught_chance = (Level1Vars.suspicion / 100.0) / 2.0
+	# Only check if suspicion is 17% or higher
+	if Level1Vars.suspicion >= 17:
+		# Percentage chance equal to third of suspicion level
+		var caught_chance = (Level1Vars.suspicion / 100.0) / 3.0
 		if randf() < caught_chance:
 			# Player got caught!
 			Level1Vars.stolen_coal = 0

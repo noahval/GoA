@@ -95,10 +95,6 @@ func load_questions():
 		print("Error: questions.json not found. Quiz feature will not work.")
 
 func update_talk_button_visibility(delta):
-	# Update cooldown timer
-	if Level1Vars.talk_button_cooldown > 0:
-		Level1Vars.talk_button_cooldown -= delta
-
 	# Show Talk button only if heart_taken is true, cooldown is over, and question panel is not visible
 	var panel_is_visible = talk_questions_panel != null and talk_questions_panel.visible
 	talk_button.visible = Level1Vars.heart_taken and Level1Vars.talk_button_cooldown <= 0 and not panel_is_visible
@@ -189,8 +185,8 @@ func _on_answer_selected(selected_answer: String):
 		# Close the talk questions panel
 		talk_questions_panel.visible = false
 
-		# Set cooldown to random time between 2-4 minutes (120-240 seconds)
-		Level1Vars.talk_button_cooldown = randf_range(120.0, 240.0)
+		# Set cooldown to random time ~1min
+		Level1Vars.talk_button_cooldown = randf_range(45.0, 65.0)
 
 func resize_talk_panel():
 	# Get viewport dimensions

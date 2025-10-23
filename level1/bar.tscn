@@ -67,27 +67,32 @@ text = "Coins: 0"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="BribeBarkeepButton" type="Button" parent="HBoxContainer/RightVBox" index="0"]
+[node name="AnthraciteDelightButton" type="Button" parent="HBoxContainer/RightVBox" index="0"]
+layout_mode = 2
+text = "Anthracite Delight: 1"
+
+[node name="BribeBarkeepButton" type="Button" parent="HBoxContainer/RightVBox" index="1"]
 layout_mode = 2
 text = "Bribe Barkeep: 10"
 
-[node name="SecretPassageButton" type="Button" parent="HBoxContainer/RightVBox" index="1"]
+[node name="SecretPassageButton" type="Button" parent="HBoxContainer/RightVBox" index="2"]
 visible = false
 layout_mode = 2
 text = "Enter Secret Passage"
 
-[node name="DeveloperFreeCoinsButton" type="Button" parent="HBoxContainer/RightVBox" index="2"]
+[node name="DeveloperFreeCoinsButton" type="Button" parent="HBoxContainer/RightVBox" index="3"]
 layout_mode = 2
 text = "Developer: Free Coins"
 
-[node name="ToBlackboreFurnaceButton" type="Button" parent="HBoxContainer/RightVBox" index="3"]
+[node name="ToBlackboreFurnaceButton" type="Button" parent="HBoxContainer/RightVBox" index="4"]
 layout_mode = 2
 text = "To Blackbore Furnace"
 
-[node name="ToCoppersmithCarriageButton" type="Button" parent="HBoxContainer/RightVBox" index="4"]
+[node name="ToCoppersmithCarriageButton" type="Button" parent="HBoxContainer/RightVBox" index="5"]
 layout_mode = 2
 text = "To Coppersmith Carriage"
 
+[connection signal="pressed" from="HBoxContainer/RightVBox/AnthraciteDelightButton" to="." method="_on_anthracite_delight_pressed"]
 [connection signal="pressed" from="HBoxContainer/RightVBox/BribeBarkeepButton" to="." method="_on_bribe_barkeep_pressed"]
 [connection signal="pressed" from="HBoxContainer/RightVBox/SecretPassageButton" to="." method="_on_secret_passage_pressed"]
 [connection signal="pressed" from="HBoxContainer/RightVBox/DeveloperFreeCoinsButton" to="." method="_on_developer_free_coins_button_pressed"]

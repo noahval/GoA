@@ -41,6 +41,32 @@ theme = ExtResource("3")
 text = "Crystal Mechanism"
 horizontal_alignment = 1
 
+[node name="BreakTimerPanel" type="Panel" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 24)
+layout_mode = 2
+
+[node name="BreakTimerBar" type="ProgressBar" parent="VBoxContainer/BreakTimerPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+value = 100.0
+show_percentage = false
+
+[node name="BreakTimer" type="Label" parent="VBoxContainer/BreakTimerPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("3")
+text = "Break Timer"
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="TakeHeartButton" type="Button" parent="VBoxContainer"]
 layout_mode = 2
 theme = ExtResource("3")

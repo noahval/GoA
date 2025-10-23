@@ -3,6 +3,7 @@ extends Control
 var break_time = 30.0
 var max_break_time = 30.0
 
+@onready var anthracite_delight_button = $HBoxContainer/RightVBox/AnthraciteDelightButton
 @onready var bribe_barkeep_button = $HBoxContainer/RightVBox/BribeBarkeepButton
 @onready var secret_passage_button = $HBoxContainer/RightVBox/SecretPassageButton
 @onready var developer_free_coins_button = $HBoxContainer/RightVBox/DeveloperFreeCoinsButton
@@ -58,6 +59,14 @@ func _on_bribe_barkeep_pressed():
 
 func _on_secret_passage_pressed():
 	Global.change_scene_with_check(get_tree(), "res://level1/secret_passage_entrance.tscn")
+
+func _on_anthracite_delight_pressed():
+	if Level1Vars.coins >= 1:
+		Level1Vars.coins -= 1
+		Level1Vars.stimulated_remaining += 60
+		Level1Vars.shown_tired_notification = false  # Reset the flag for next time
+		Global.show_stat_notification("You feel invigorated")
+		update_labels()
 
 func _on_developer_free_coins_button_pressed():
 	Level1Vars.coins += 10
