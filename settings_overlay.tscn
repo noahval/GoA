@@ -34,6 +34,8 @@ grow_horizontal = 0
 grow_vertical = 0
 theme_override_styles/normal = SubResource("StyleBoxFlat_gear")
 text = ":::"
+vertical_icon_alignment = 1
+icon_alignment = 1
 
 [node name="MenuOverlay" type="Panel" parent="."]
 visible = false
