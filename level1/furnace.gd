@@ -35,6 +35,17 @@ func _process(delta):
 			Global.show_stat_notification("You feel tired again")
 			Level1Vars.shown_tired_notification = true
 
+	# Decrease resilient_remaining by 1 per second
+	if Level1Vars.resilient_remaining > 0:
+		Level1Vars.resilient_remaining -= delta
+		if Level1Vars.resilient_remaining < 0:
+			Level1Vars.resilient_remaining = 0
+
+		# Show "lazy again" notification when dropping below 2
+		if Level1Vars.resilient_remaining < 2 and not Level1Vars.shown_lazy_notification:
+			Global.show_stat_notification("You feel lazy again")
+			Level1Vars.shown_lazy_notification = true
+
 	# Check if coal reaches coin_cost threshold
 	if Level1Vars.coal >= Level1Vars.coin_cost:
 		Level1Vars.coal -= Level1Vars.coin_cost
@@ -48,8 +59,11 @@ func _process(delta):
 	update_dev_buttons()
 
 func _on_shovel_coal_button_pressed():
-	# Reduce stamina by 1
-	Level1Vars.stamina -= 1
+	# Reduce stamina (less if resilient)
+	if Level1Vars.resilient_remaining > 1.0:
+		Level1Vars.stamina -= 0.4
+	else:
+		Level1Vars.stamina -= 1
 	update_stamina_bar()
 
 	# Check if stamina is depleted
@@ -60,11 +74,11 @@ func _on_shovel_coal_button_pressed():
 	# Increase global strength exp
 	Global.add_stat_exp("strength", 1)
 
-	var coal_gained = 1 + Level1Vars.shovel_lvl + (Level1Vars.plow_lvl * 5)
+	var coal_gained = 1 + (Level1Vars.shovel_lvl * 0.7) + (Level1Vars.plow_lvl * 3)
 
 	# Apply stimulated bonus if timer is active
 	if Level1Vars.stimulated_remaining > 1.0:
-		coal_gained *= 1.8
+		coal_gained *= 1.4
 
 	Level1Vars.coal += coal_gained
 

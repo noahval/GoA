@@ -71,28 +71,33 @@ vertical_alignment = 1
 layout_mode = 2
 text = "Anthracite Delight: 1"
 
-[node name="BribeBarkeepButton" type="Button" parent="HBoxContainer/RightVBox" index="1"]
+[node name="SteelStoutButton" type="Button" parent="HBoxContainer/RightVBox" index="1"]
+layout_mode = 2
+text = "Steel Stout: 1"
+
+[node name="BribeBarkeepButton" type="Button" parent="HBoxContainer/RightVBox" index="2"]
 layout_mode = 2
 text = "Bribe Barkeep: 10"
 
-[node name="SecretPassageButton" type="Button" parent="HBoxContainer/RightVBox" index="2"]
+[node name="SecretPassageButton" type="Button" parent="HBoxContainer/RightVBox" index="3"]
 visible = false
 layout_mode = 2
 text = "Enter Secret Passage"
 
-[node name="DeveloperFreeCoinsButton" type="Button" parent="HBoxContainer/RightVBox" index="3"]
+[node name="DeveloperFreeCoinsButton" type="Button" parent="HBoxContainer/RightVBox" index="4"]
 layout_mode = 2
 text = "Developer: Free Coins"
 
-[node name="ToBlackboreFurnaceButton" type="Button" parent="HBoxContainer/RightVBox" index="4"]
+[node name="ToBlackboreFurnaceButton" type="Button" parent="HBoxContainer/RightVBox" index="5"]
 layout_mode = 2
 text = "To Blackbore Furnace"
 
-[node name="ToCoppersmithCarriageButton" type="Button" parent="HBoxContainer/RightVBox" index="5"]
+[node name="ToCoppersmithCarriageButton" type="Button" parent="HBoxContainer/RightVBox" index="6"]
 layout_mode = 2
 text = "To Coppersmith Carriage"
 
 [connection signal="pressed" from="HBoxContainer/RightVBox/AnthraciteDelightButton" to="." method="_on_anthracite_delight_pressed"]
+[connection signal="pressed" from="HBoxContainer/RightVBox/SteelStoutButton" to="." method="_on_steel_stout_pressed"]
 [connection signal="pressed" from="HBoxContainer/RightVBox/BribeBarkeepButton" to="." method="_on_bribe_barkeep_pressed"]
 [connection signal="pressed" from="HBoxContainer/RightVBox/SecretPassageButton" to="." method="_on_secret_passage_pressed"]
 [connection signal="pressed" from="HBoxContainer/RightVBox/DeveloperFreeCoinsButton" to="." method="_on_developer_free_coins_button_pressed"]

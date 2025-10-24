@@ -68,8 +68,16 @@ func _on_anthracite_delight_pressed():
 		Global.show_stat_notification("You feel invigorated")
 		update_labels()
 
+func _on_steel_stout_pressed():
+	if Level1Vars.coins >= 1:
+		Level1Vars.coins -= 1
+		Level1Vars.resilient_remaining += 60
+		Level1Vars.shown_lazy_notification = false  # Reset the flag for next time
+		Global.show_stat_notification("You feel tenacious")
+		update_labels()
+
 func _on_developer_free_coins_button_pressed():
-	Level1Vars.coins += 10
+	Level1Vars.coins += 200
 	update_labels()
 
 func update_labels():

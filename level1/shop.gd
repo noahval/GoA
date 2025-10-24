@@ -13,6 +13,16 @@ var max_break_time = 30.0
 @onready var bribe_shopkeep_button = $HBoxContainer/RightVBox/BribeShopkeepButton
 @onready var workshop_button = $HBoxContainer/RightVBox/WorkshopButton
 
+# Cost calculation functions
+func get_shovel_cost() -> int:
+	return int(8 * pow(1.8, Level1Vars.shovel_lvl))
+
+func get_plow_cost() -> int:
+	return int(50 * pow(1.9, Level1Vars.plow_lvl))
+
+func get_auto_shovel_cost() -> int:
+	return int(200 * pow(1.6, Level1Vars.auto_shovel_lvl))
+
 func _ready():
 	# Set the actual maximum break time (not the remaining time)
 	max_break_time = Level1Vars.starting_break_time + Level1Vars.overseer_lvl
@@ -48,21 +58,21 @@ func _process(delta):
 	update_suspicion_bar()
 
 func _on_shovel_button_pressed():
-	var cost = max(1, int(5 * pow(1.6, Level1Vars.shovel_lvl)))
+	var cost = get_shovel_cost()
 	if Level1Vars.coins >= cost:
 		Level1Vars.coins -= cost
 		Level1Vars.shovel_lvl += 1
 		update_labels()
 
 func _on_plow_button_pressed():
-	var cost = max(Level1Vars.plow_lvl + 5, int(20 * pow(1.7, Level1Vars.plow_lvl)))
+	var cost = get_plow_cost()
 	if Level1Vars.coins >= cost:
 		Level1Vars.coins -= cost
-		Level1Vars.plow_lvl += 5
+		Level1Vars.plow_lvl += 1
 		update_labels()
 
 func _on_furnace_upgrade_pressed():
-	var cost = max(Level1Vars.auto_shovel_lvl + 10, int(10 * pow(1.15, Level1Vars.auto_shovel_lvl)))
+	var cost = get_auto_shovel_cost()
 	if Level1Vars.coins >= cost:
 		Level1Vars.coins -= cost
 		Level1Vars.auto_shovel_lvl += 1
@@ -86,11 +96,11 @@ func update_labels():
 	if coins_label:
 		coins_label.text = "Coins: " + str(int(Level1Vars.coins))
 	if shovel_button:
-		shovel_button.text = "Better Shovel: " + str(max(1, int(5 * pow(1.6, Level1Vars.shovel_lvl))))
+		shovel_button.text = "Better Shovel: " + str(get_shovel_cost())
 	if plow_button:
-		plow_button.text = "Coal Plow: " + str(max(Level1Vars.plow_lvl + 5, int(20 * pow(1.7, Level1Vars.plow_lvl))))
+		plow_button.text = "Coal Plow: " + str(get_plow_cost())
 	if furnace_upgrade:
-		furnace_upgrade.text = "Auto Shovel: " + str(max(Level1Vars.auto_shovel_lvl + 10, int(10 * pow(1.15, Level1Vars.auto_shovel_lvl))))
+		furnace_upgrade.text = "Auto Shovel: " + str(get_auto_shovel_cost())
 	if bribe_shopkeep_button:
 		bribe_shopkeep_button.text = "Bribe Shopkeep: 10"
 
@@ -112,6 +122,13 @@ func update_labels():
 			plow_button.visible = true
 		else:
 			plow_button.visible = false
+
+	# Show/hide auto shovel button based on plow level
+	if furnace_upgrade:
+		if Level1Vars.plow_lvl >= 4:
+			furnace_upgrade.visible = true
+		else:
+			furnace_upgrade.visible = false
 
 func _on_nap_button_pressed():
 	Global.change_scene_with_check(get_tree(), "res://level1/dream.tscn")

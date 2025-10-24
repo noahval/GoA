@@ -16,7 +16,7 @@ var pipes = 5
 var stamina = 125.0
 var max_stamina:
 	get:
-		return 125.0 + (4 * Global.constitution)
+		return 125.0 + (20 * Global.constitution)
 var pipe_puzzle_grid = []  # Saved grid state for the pipe puzzle
 var heart_taken = false
 var stolen_coal = 0
@@ -30,3 +30,7 @@ var stimulated_remaining = 0.0:
 	set(value):
 		stimulated_remaining = clamp(value, 0, 300)
 var shown_tired_notification = false
+var resilient_remaining = 0.0:
+	set(value):
+		resilient_remaining = clamp(value, 0, 300)
+var shown_lazy_notification = false

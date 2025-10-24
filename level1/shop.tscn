@@ -89,6 +89,7 @@ layout_mode = 2
 text = "Coal Plow: 5"
 
 [node name="FurnaceUpgrade" type="Button" parent="HBoxContainer/RightVBox" index="2"]
+visible = false
 layout_mode = 2
 text = "Auto Furnace: 10"
 
