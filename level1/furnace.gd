@@ -2,6 +2,7 @@ extends Control
 
 var click_count = 0
 var steal_click_count = 0
+var auto_shovel_timer = 0.0  # Timer for auto shovel interval
 @onready var left_vbox = $HBoxContainer/LeftVBox
 @onready var right_vbox = $HBoxContainer/RightVBox
 @onready var coal_label = $HBoxContainer/LeftVBox/CoalPanel/CoalLabel
@@ -21,8 +22,13 @@ func _ready():
 	update_suspicion_bar()
 
 func _process(delta):
+	# Auto shovel interval-based generation
 	if Level1Vars.auto_shovel_lvl > 0:
-		Level1Vars.coal += Level1Vars.auto_shovel_lvl * delta
+		auto_shovel_timer += delta
+		# When timer reaches the frequency interval, generate coal
+		if auto_shovel_timer >= Level1Vars.auto_shovel_freq:
+			Level1Vars.coal += Level1Vars.auto_shovel_lvl
+			auto_shovel_timer -= Level1Vars.auto_shovel_freq  # Preserve excess time for accuracy
 
 	# Decrease stimulated_remaining by 1 per second
 	if Level1Vars.stimulated_remaining > 0:
@@ -50,7 +56,7 @@ func _process(delta):
 	if Level1Vars.coal >= Level1Vars.coin_cost:
 		Level1Vars.coal -= Level1Vars.coin_cost
 		Level1Vars.coins += 1.0
-		Level1Vars.coin_cost *= 1.05
+		Level1Vars.coin_cost *= 1.04
 
 	coal_label.text = "Coal Shoveled: " + str(int(Level1Vars.coal))
 	coins_label.text = "Coins: " + str(int(Level1Vars.coins))

@@ -9,7 +9,7 @@ var max_break_time = 30.0
 @onready var coins_label = $HBoxContainer/LeftVBox/CoinsPanel/CoinsLabel
 @onready var shovel_button = $HBoxContainer/RightVBox/ShovelButton
 @onready var plow_button = $HBoxContainer/RightVBox/PlowButton
-@onready var furnace_upgrade = $HBoxContainer/RightVBox/FurnaceUpgrade
+@onready var furnace_upgrade = $HBoxContainer/RightVBox/AutoShovelButton
 @onready var bribe_shopkeep_button = $HBoxContainer/RightVBox/BribeShopkeepButton
 @onready var workshop_button = $HBoxContainer/RightVBox/WorkshopButton
 
@@ -123,9 +123,9 @@ func update_labels():
 		else:
 			plow_button.visible = false
 
-	# Show/hide auto shovel button based on plow level
+	# Show/hide auto shovel button based on shovel level
 	if furnace_upgrade:
-		if Level1Vars.plow_lvl >= 4:
+		if Level1Vars.shovel_lvl >= 2:
 			furnace_upgrade.visible = true
 		else:
 			furnace_upgrade.visible = false
