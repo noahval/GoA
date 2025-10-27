@@ -24,8 +24,12 @@ ResponsiveLayout="*res://responsive_layout.gd"
 
 [display]
 
-window/size/viewport_width=1273
-window/size/viewport_height=832
+window/size/viewport_width=1535
+window/size/viewport_height=825
+window/size/window_width_override=540
+window/size/window_height_override=960
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
 
 [gui]
 

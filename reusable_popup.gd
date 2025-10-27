@@ -76,6 +76,7 @@ func _resize_to_content() -> void:
 	var text_width = 0
 	if font:
 		# Get approximate width for wrapped text
+		@warning_ignore("confusable_local_declaration")
 		var max_width = viewport_size.x * 0.8 if is_portrait else viewport_size.x * 0.5
 		text_width = min(font.get_string_size(message_label.text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x + 60, max_width)
 

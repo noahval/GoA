@@ -12,7 +12,7 @@ script = ExtResource("2_script")
 texture = ExtResource("3_texture")
 
 [node name="TitlePanel" type="Panel" parent="HBoxContainer/LeftVBox" index="0"]
-custom_minimum_size = Vector2(0, 24)
+custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 
 [node name="TitleLabel" type="Label" parent="HBoxContainer/LeftVBox/TitlePanel" index="0"]
@@ -27,6 +27,7 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="BreakTimerPanel" type="Panel" parent="HBoxContainer/LeftVBox" index="1"]
+custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 
 [node name="BreakTimerBar" type="ProgressBar" parent="HBoxContainer/LeftVBox/BreakTimerPanel"]
@@ -52,7 +53,7 @@ vertical_alignment = 1
 
 [node name="CoinsPanel" type="Panel" parent="HBoxContainer/LeftVBox" index="2"]
 self_modulate = Color(1, 1, 1, 0.7)
-custom_minimum_size = Vector2(0, 24)
+custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 
 [node name="CoinsLabel" type="Label" parent="HBoxContainer/LeftVBox/CoinsPanel"]

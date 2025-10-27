@@ -51,8 +51,30 @@ func _ready():
 		)
 		barkeep_popup.hide_popup()
 
+	# Use ResponsiveLayout for all orientation handling
 	ResponsiveLayout.apply_to_scene(self)
+
+	# CRITICAL FIX: Hide PopupContainer when no popups are showing
+	# PopupContainer has z_index:100 and was blocking all button clicks even with mouse_filter=PASS
+	var popup_container = get_node_or_null("PopupContainer")
+	if popup_container:
+		var any_popup_visible = false
+		for child in popup_container.get_children():
+			if child is Control and child.visible:
+				any_popup_visible = true
+				break
+
+		if not any_popup_visible:
+			popup_container.visible = false
+
+	# CRITICAL: Reconnect button signals after ResponsiveLayout may have reparented them
+	call_deferred("_reconnect_button_signals")
+
 	update_labels()
+
+	# Debug: Print button states after layout (can remove this later)
+	call_deferred("_debug_button_states")
+
 
 func _process(delta):
 	break_time -= delta
@@ -133,12 +155,20 @@ func update_labels():
 func _on_follow_voice_button_pressed():
 	# Show the voice popup
 	if voice_popup:
+		# Make PopupContainer visible when showing a popup
+		var popup_container = get_node_or_null("PopupContainer")
+		if popup_container:
+			popup_container.visible = true
 		voice_popup.show_popup()
 
 func _on_voice_popup_button_pressed(button_text: String):
 	if button_text == "enter door":
 		# Show the barkeep popup
 		if barkeep_popup:
+			# Make PopupContainer visible when showing a popup
+			var popup_container = get_node_or_null("PopupContainer")
+			if popup_container:
+				popup_container.visible = true
 			barkeep_popup.show_popup()
 	elif button_text == "turn back":
 		# Popup automatically closes, nothing else to do
@@ -154,3 +184,157 @@ func _on_barkeep_popup_button_pressed(button_text: String):
 			bribe_barkeep_button.visible = true
 		if follow_voice_button:
 			follow_voice_button.visible = false
+
+func _reconnect_button_signals():
+	print("=== RECONNECTING BUTTON SIGNALS ===")
+
+	# Find buttons in their current location (might be portrait or landscape)
+	var button_container = null
+	var is_portrait = get_viewport().get_visible_rect().size.y > get_viewport().get_visible_rect().size.x
+
+	if has_node("VBoxContainer/BottomVBox/RightVBox"):
+		button_container = $"VBoxContainer/BottomVBox/RightVBox"
+		print("Found buttons in portrait location")
+	elif has_node("HBoxContainer/RightVBox"):
+		button_container = $"HBoxContainer/RightVBox"
+		print("Found buttons in landscape location")
+
+	if not button_container:
+		print("ERROR: Could not find button container!")
+		return
+
+	# CRITICAL: Manually force button container and buttons to full width in portrait
+	var viewport_size = get_viewport().get_visible_rect().size
+	print("DEBUG: is_portrait=", is_portrait, " viewport_size=", viewport_size)
+	if is_portrait:
+		var viewport_width = viewport_size.x
+		print("FORCING portrait button widths to viewport width: ", viewport_width)
+
+		# Force container to full width
+		button_container.custom_minimum_size.x = viewport_width
+		button_container.size.x = viewport_width
+
+		# Force each button to full width
+		for child in button_container.get_children():
+			if child is Button:
+				child.custom_minimum_size.x = viewport_width
+				child.size.x = viewport_width
+
+		print("Set button container width to: ", button_container.size)
+
+	# Disconnect old signals if they exist and reconnect to current button locations
+	var anthracite_btn = button_container.get_node_or_null("AnthraciteDelightButton")
+	if anthracite_btn:
+		if anthracite_btn.pressed.is_connected(_on_anthracite_delight_pressed):
+			anthracite_btn.pressed.disconnect(_on_anthracite_delight_pressed)
+		anthracite_btn.pressed.connect(_on_anthracite_delight_pressed)
+		print("Reconnected AnthraciteDelightButton")
+
+	var steel_btn = button_container.get_node_or_null("SteelStoutButton")
+	if steel_btn:
+		if steel_btn.pressed.is_connected(_on_steel_stout_pressed):
+			steel_btn.pressed.disconnect(_on_steel_stout_pressed)
+		steel_btn.pressed.connect(_on_steel_stout_pressed)
+		print("Reconnected SteelStoutButton")
+
+	var bribe_btn = button_container.get_node_or_null("BribeBarkeepButton")
+	if bribe_btn:
+		if bribe_btn.pressed.is_connected(_on_bribe_barkeep_pressed):
+			bribe_btn.pressed.disconnect(_on_bribe_barkeep_pressed)
+		bribe_btn.pressed.connect(_on_bribe_barkeep_pressed)
+		print("Reconnected BribeBarkeepButton")
+
+	var secret_btn = button_container.get_node_or_null("SecretPassageButton")
+	if secret_btn:
+		if secret_btn.pressed.is_connected(_on_secret_passage_pressed):
+			secret_btn.pressed.disconnect(_on_secret_passage_pressed)
+		secret_btn.pressed.connect(_on_secret_passage_pressed)
+		print("Reconnected SecretPassageButton")
+
+	var dev_btn = button_container.get_node_or_null("DeveloperFreeCoinsButton")
+	if dev_btn:
+		if dev_btn.pressed.is_connected(_on_developer_free_coins_button_pressed):
+			dev_btn.pressed.disconnect(_on_developer_free_coins_button_pressed)
+		dev_btn.pressed.connect(_on_developer_free_coins_button_pressed)
+		print("Reconnected DeveloperFreeCoinsButton")
+
+	var follow_btn = button_container.get_node_or_null("FollowVoiceButton")
+	if follow_btn:
+		if follow_btn.pressed.is_connected(_on_follow_voice_button_pressed):
+			follow_btn.pressed.disconnect(_on_follow_voice_button_pressed)
+		follow_btn.pressed.connect(_on_follow_voice_button_pressed)
+		print("Reconnected FollowVoiceButton")
+
+	var furnace_btn = button_container.get_node_or_null("ToBlackboreFurnaceButton")
+	if furnace_btn:
+		if furnace_btn.pressed.is_connected(_on_to_blackbore_furnace_button_pressed):
+			furnace_btn.pressed.disconnect(_on_to_blackbore_furnace_button_pressed)
+		furnace_btn.pressed.connect(_on_to_blackbore_furnace_button_pressed)
+		print("Reconnected ToBlackboreFurnaceButton")
+
+	var carriage_btn = button_container.get_node_or_null("ToCoppersmithCarriageButton")
+	if carriage_btn:
+		if carriage_btn.pressed.is_connected(_on_to_coppersmith_carriage_button_pressed):
+			carriage_btn.pressed.disconnect(_on_to_coppersmith_carriage_button_pressed)
+		carriage_btn.pressed.connect(_on_to_coppersmith_carriage_button_pressed)
+		print("Reconnected ToCoppersmithCarriageButton")
+
+func _debug_button_states():
+	print("=== BAR SCENE DEBUG ===")
+	var viewport_size = get_viewport().get_visible_rect().size
+	print("Viewport size: ", viewport_size)
+	print("Is portrait: ", viewport_size.y > viewport_size.x)
+
+	# Check which container is visible
+	if has_node("HBoxContainer"):
+		var hbox = $HBoxContainer
+		print("HBoxContainer visible: ", hbox.visible)
+		print("HBoxContainer mouse_filter: ", hbox.mouse_filter)
+
+	if has_node("VBoxContainer"):
+		var vbox = $VBoxContainer
+		print("VBoxContainer visible: ", vbox.visible)
+		print("VBoxContainer mouse_filter: ", vbox.mouse_filter)
+		print("VBoxContainer global_position: ", vbox.global_position)
+		print("VBoxContainer size: ", vbox.size)
+
+	# In portrait mode, buttons are in VBoxContainer/BottomVBox/RightVBox
+	var button_container = null
+	if has_node("VBoxContainer/BottomVBox/RightVBox"):
+		button_container = $"VBoxContainer/BottomVBox/RightVBox"
+		print("\n=== PORTRAIT MODE - Buttons in BottomVBox ===")
+	elif has_node("HBoxContainer/RightVBox"):
+		button_container = $HBoxContainer/RightVBox
+		print("\n=== LANDSCAPE MODE - Buttons in HBoxContainer ===")
+
+	if button_container:
+		print("Button container path: ", button_container.get_path())
+		print("Button container visible: ", button_container.visible)
+		print("Button container mouse_filter: ", button_container.mouse_filter)
+		print("Button container global_position: ", button_container.global_position)
+		print("Button container size: ", button_container.size)
+
+		# Check parent chain
+		var parent = button_container.get_parent()
+		print("\nParent chain:")
+		while parent:
+			var filter_text = str(parent.mouse_filter) if parent is Control else "N/A"
+			print("  ", parent.name, " - visible: ", parent.visible if parent is CanvasItem else "N/A", ", mouse_filter: ", filter_text)
+			parent = parent.get_parent()
+
+		print("\nButton count: ", button_container.get_child_count())
+		for i in range(button_container.get_child_count()):
+			var child = button_container.get_child(i)
+			if child is Button:
+				print("  Button ", i, ": ", child.name)
+				print("    text: ", child.text)
+				print("    visible: ", child.visible)
+				print("    disabled: ", child.disabled)
+				print("    mouse_filter: ", child.mouse_filter)
+				print("    global_position: ", child.global_position)
+				print("    size: ", child.size)
+
+	# Check for any nodes that might be on top
+	print("\n=== Checking z_index values ===")
+	for child in get_children():
+		print("  ", child.name, " - z_index: ", child.z_index if "z_index" in child else "N/A")

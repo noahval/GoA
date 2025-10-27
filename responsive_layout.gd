@@ -86,7 +86,7 @@ func _apply_responsive_layout_internal(scene_root: Control) -> void:
 		push_warning("ResponsiveLayout: Scene missing required container nodes")
 		return
 
-	# Set mouse filter on new areas
+	# Set mouse filter on play areas and popup container to PASS
 	if center_area:
 		center_area.mouse_filter = Control.MOUSE_FILTER_PASS
 	if middle_area:
@@ -94,8 +94,19 @@ func _apply_responsive_layout_internal(scene_root: Control) -> void:
 	if popup_container:
 		popup_container.mouse_filter = Control.MOUSE_FILTER_PASS
 
-	# CRITICAL: Ensure mouse_filter is set to PASS (2) on all containers and background
-	# This allows mouse events to reach buttons even if scenes were created before template was updated
+	# Set mouse filter on padding controls to PASS (they shouldn't block clicks)
+	var top_padding = scene_root.get_node_or_null("VBoxContainer/TopPadding")
+	var bottom_padding = scene_root.get_node_or_null("VBoxContainer/BottomPadding")
+	if top_padding:
+		top_padding.mouse_filter = Control.MOUSE_FILTER_PASS
+		print("ResponsiveLayout: Set TopPadding mouse_filter to PASS")
+	if bottom_padding:
+		bottom_padding.mouse_filter = Control.MOUSE_FILTER_PASS
+		print("ResponsiveLayout: Set BottomPadding mouse_filter to PASS")
+
+	# CRITICAL: Set correct mouse_filter values
+	# Background and play areas should PASS events through (don't block)
+	# But button/panel containers should use STOP (default) to process events for their children
 	if background:
 		background.mouse_filter = Control.MOUSE_FILTER_PASS
 		print("ResponsiveLayout: Set Background mouse_filter to PASS")
@@ -109,23 +120,27 @@ func _apply_responsive_layout_internal(scene_root: Control) -> void:
 	else:
 		print("ResponsiveLayout: WARNING - No Background node found!")
 
-	hbox.mouse_filter = Control.MOUSE_FILTER_PASS
-	vbox.mouse_filter = Control.MOUSE_FILTER_PASS
-	left_vbox.mouse_filter = Control.MOUSE_FILTER_PASS
-	right_vbox.mouse_filter = Control.MOUSE_FILTER_PASS
-	print("ResponsiveLayout: Set all container mouse_filters to PASS")
-
-	# Debug: Print buttons found
-	var button_count = 0
-	for child in right_vbox.get_children():
-		if child is Button:
-			button_count += 1
-			print("ResponsiveLayout: Found button: ", child.name, " Text: ", child.text)
-	print("ResponsiveLayout: Total buttons found: ", button_count)
+	# CRITICAL: Set mouse_filter to STOP on ALL containers
+	# They were being set to PASS somewhere, blocking all button events
+	if hbox:
+		hbox.mouse_filter = Control.MOUSE_FILTER_STOP
+	if vbox:
+		vbox.mouse_filter = Control.MOUSE_FILTER_STOP
+	if left_vbox:
+		left_vbox.mouse_filter = Control.MOUSE_FILTER_STOP
+	if right_vbox:
+		right_vbox.mouse_filter = Control.MOUSE_FILTER_STOP
+	if top_vbox:
+		top_vbox.mouse_filter = Control.MOUSE_FILTER_STOP
+	if bottom_vbox:
+		bottom_vbox.mouse_filter = Control.MOUSE_FILTER_STOP
+	print("ResponsiveLayout: Set ALL containers to STOP to allow button events")
 
 	# Check if already in correct mode
 	var currently_portrait = vbox.visible
 	var need_reparent = currently_portrait != is_portrait
+
+	print("ResponsiveLayout: currently_portrait=", currently_portrait, " is_portrait=", is_portrait, " need_reparent=", need_reparent)
 
 	if need_reparent:
 		# Reparent columns when switching modes
@@ -140,9 +155,29 @@ func _apply_responsive_layout_internal(scene_root: Control) -> void:
 			bottom_vbox.add_child(right_vbox)
 			hbox.visible = false
 			vbox.visible = true
+
+			# CRITICAL: Set size_flags AFTER reparenting so they apply in the new container
+			left_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			right_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			# Remove custom_minimum_size entirely so containers can expand
+			left_vbox.custom_minimum_size = Vector2.ZERO
+			right_vbox.custom_minimum_size = Vector2.ZERO
+			# Reset any positioning
+			left_vbox.position = Vector2.ZERO
+			right_vbox.position = Vector2.ZERO
+			print("ResponsiveLayout: AFTER reparent - Set portrait size_flags (EXPAND_FILL), removed constraints")
+
 			_reverse_button_order(right_vbox)
 		else:
 			# Landscape: side by side with CenterArea in middle
+			# Restore size_flags for landscape BEFORE adding
+			left_vbox.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+			right_vbox.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+			# Restore minimum widths from template
+			left_vbox.custom_minimum_size = Vector2(LEFT_COLUMN_WIDTH, 0)
+			right_vbox.custom_minimum_size = Vector2(RIGHT_COLUMN_WIDTH, 0)
+			print("ResponsiveLayout: BEFORE reparent - Set landscape size_flags (SHRINK_CENTER)")
+
 			# Add in correct order: LeftVBox, CenterArea (already there), RightVBox
 			if center_area and center_area.get_parent() == hbox:
 				# Get the index of CenterArea
@@ -162,11 +197,38 @@ func _apply_responsive_layout_internal(scene_root: Control) -> void:
 	# Position popups in the appropriate area
 	position_popups_in_play_area(scene_root, is_portrait, popup_container, center_area, middle_area, viewport_size)
 
+	# Remove panel backgrounds to prevent double backgrounds
+	# Panels use self_modulate for their visual appearance
+	var empty_style = StyleBoxEmpty.new()
+	for panel in left_vbox.get_children():
+		if panel is Panel:
+			panel.add_theme_stylebox_override("panel", empty_style)
+
+	# ALWAYS set size_flags based on current orientation (whether we reparented or not)
+	if is_portrait:
+		# Set size_flags on the parent containers too
+		top_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		bottom_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		# And on the child containers
+		left_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		right_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		left_vbox.custom_minimum_size = Vector2.ZERO
+		right_vbox.custom_minimum_size = Vector2.ZERO
+		left_vbox.position = Vector2.ZERO
+		right_vbox.position = Vector2.ZERO
+		print("ResponsiveLayout: Applied portrait size_flags to TopVBox, BottomVBox, LeftVBox, RightVBox")
+	else:
+		left_vbox.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+		right_vbox.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+		left_vbox.custom_minimum_size = Vector2(LEFT_COLUMN_WIDTH, 0)
+		right_vbox.custom_minimum_size = Vector2(RIGHT_COLUMN_WIDTH, 0)
+		print("ResponsiveLayout: Applied landscape size_flags (even if no reparent)")
+
 	# Always apply mode-specific styling and scaling (even if already in correct mode)
 	if is_portrait:
 		# Calculate dynamic separation based on scaled element height
 		var scaled_height = PORTRAIT_ELEMENT_HEIGHT * PORTRAIT_FONT_SCALE
-		var dynamic_separation = max(5, int(scaled_height * PORTRAIT_SEPARATION_RATIO))
+		var dynamic_separation = max(10, int(scaled_height * PORTRAIT_SEPARATION_RATIO))
 		print("ResponsiveLayout: Portrait separation = ", dynamic_separation, " (", scaled_height, " * ", PORTRAIT_SEPARATION_RATIO, ")")
 
 		# Apply portrait styling and scaling
@@ -175,18 +237,17 @@ func _apply_responsive_layout_internal(scene_root: Control) -> void:
 		_apply_portrait_styling()
 		_scale_for_portrait(left_vbox, right_vbox)
 	else:
-		# Remove portrait spacing overrides and apply landscape spacing
+		# Landscape mode - reset any portrait scaling
+		_reset_portrait_scaling(left_vbox, right_vbox)
+
+		# Remove portrait spacing overrides - template has default separation
 		left_vbox.remove_theme_constant_override("separation")
 		right_vbox.remove_theme_constant_override("separation")
-		# Add spacing between panels to prevent overlap
-		left_vbox.add_theme_constant_override("separation", BUTTON_MARGIN)
-		right_vbox.add_theme_constant_override("separation", BUTTON_MARGIN)
 
-		# Apply landscape styling and scaling
+		# Apply landscape HBox separation
 		var separation = get_dynamic_separation(viewport_size.x)
 		hbox.add_theme_constant_override("separation", separation)
-		_apply_landscape_adjustments(left_vbox, right_vbox, hbox)
-		_reset_scale(left_vbox, right_vbox)
+		print("ResponsiveLayout: Landscape mode - using template defaults")
 
 ## Apply landscape-specific adjustments (title expansion, etc.)
 ## This runs every time a landscape scene is loaded
@@ -319,31 +380,34 @@ func _scale_for_portrait(left_vbox: VBoxContainer, right_vbox: VBoxContainer) ->
 	var scaled_height = PORTRAIT_ELEMENT_HEIGHT * PORTRAIT_FONT_SCALE
 	print("ResponsiveLayout: Portrait scaled height = ", scaled_height, " (", PORTRAIT_ELEMENT_HEIGHT, " * ", PORTRAIT_FONT_SCALE, ")")
 
-	# Apply UNIVERSAL HEIGHT to all buttons
+	# Apply UNIVERSAL HEIGHT to all buttons and make them fill width
 	for button in right_vbox.get_children():
 		if button is Button:
 			button.custom_minimum_size = Vector2(0, scaled_height)
+			button.size_flags_horizontal = Control.SIZE_EXPAND_FILL  # Make buttons fill width
 			var current_size = button.get_theme_font_size("font_size")
 			if current_size <= 0:
 				current_size = 25  # Default from theme
 			button.add_theme_font_size_override("font_size", int(current_size * PORTRAIT_FONT_SCALE))
 
-	# Apply UNIVERSAL HEIGHT to all panels
+	# Apply HEIGHT to all panels (with special handling for progress bars)
 	for panel in left_vbox.get_children():
 		if panel is Panel:
-			panel.custom_minimum_size = Vector2(0, scaled_height)
-			# Set both minimum AND maximum to prevent expansion
-			panel.size_flags_vertical = Control.SIZE_FILL
+			# Check if this panel has a progress bar - if so, make it taller
+			var has_progress_bar = false
+			for child in panel.get_children():
+				if child is ProgressBar:
+					has_progress_bar = true
+					break
 
-			# Explicitly constrain the panel size
-			panel.size.y = scaled_height
+			# Progress bar panels need extra height (1.4x)
+			var panel_height = scaled_height * 1.4 if has_progress_bar else scaled_height
+			panel.custom_minimum_size = Vector2(0, panel_height)
 
-			# Remove theme background to prevent double backgrounds
-			# Panels have self_modulate in the scene which provides the background
-			var empty_style = StyleBoxEmpty.new()
-			panel.add_theme_stylebox_override("panel", empty_style)
+			# Don't constrain size too tightly - let it grow if needed
+			panel.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 
-			print("ResponsiveLayout: Set panel '", panel.name, "' size to (width, ", scaled_height, ")")
+			print("ResponsiveLayout: Set panel '", panel.name, "' size to (width, ", panel_height, ")")
 
 			# Scale labels and other children
 			for child in panel.get_children():
@@ -366,6 +430,30 @@ func _scale_for_portrait(left_vbox: VBoxContainer, right_vbox: VBoxContainer) ->
 					if bar_font_size <= 0:
 						bar_font_size = 25  # Default from theme
 					child.add_theme_font_size_override("font_size", int(bar_font_size * PORTRAIT_FONT_SCALE))
+
+## Reset portrait scaling to landscape defaults
+func _reset_portrait_scaling(left_vbox: VBoxContainer, right_vbox: VBoxContainer) -> void:
+	print("ResponsiveLayout: Resetting portrait scaling to landscape defaults")
+
+	# Reset buttons to landscape defaults
+	for button in right_vbox.get_children():
+		if button is Button:
+			button.custom_minimum_size = Vector2(0, LANDSCAPE_ELEMENT_HEIGHT)
+			button.size_flags_horizontal = Control.SIZE_FILL  # Reset to default
+			button.remove_theme_font_size_override("font_size")
+
+	# Reset panels to landscape defaults
+	for panel in left_vbox.get_children():
+		if panel is Panel:
+			# Don't reset custom_minimum_size - keep scene-specific heights
+			# Just reset the font scaling
+			panel.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+
+			for child in panel.get_children():
+				if child is Label:
+					child.remove_theme_font_size_override("font_size")
+				elif child is ProgressBar:
+					child.remove_theme_font_size_override("font_size")
 
 ## Reset UI elements to landscape/desktop defaults
 func _reset_scale(left_vbox: VBoxContainer, right_vbox: VBoxContainer) -> void:
@@ -418,12 +506,12 @@ func _reset_scale(left_vbox: VBoxContainer, right_vbox: VBoxContainer) -> void:
 
 				# Expand panel width if text is longer than column width
 				# But cap at viewport width minus some margin
-				var viewport_width = left_vbox.get_viewport().get_visible_rect().size.x
-				var max_width = viewport_width - RIGHT_COLUMN_WIDTH - 100  # Leave room for right column
+				var viewport_width_local = left_vbox.get_viewport().get_visible_rect().size.x
+				var max_width_local = viewport_width_local - RIGHT_COLUMN_WIDTH - 100  # Leave room for right column
 				var desired_width = max(LEFT_COLUMN_WIDTH, text_width)
-				desired_width = min(desired_width, max_width)
+				desired_width = min(desired_width, max_width_local)
 
-				print("ResponsiveLayout: Desired width: ", desired_width, " (min: ", LEFT_COLUMN_WIDTH, ", max: ", max_width, ")")
+				print("ResponsiveLayout: Desired width: ", desired_width, " (min: ", LEFT_COLUMN_WIDTH, ", max: ", max_width_local, ")")
 
 				# Set panel size with UNIVERSAL HEIGHT
 				panel.custom_minimum_size = Vector2(desired_width, LANDSCAPE_ELEMENT_HEIGHT)

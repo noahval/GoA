@@ -326,5 +326,94 @@ If buttons/menus still not visible:
 
 ---
 
-*Last Updated: 2025-01-26*
-*Status: IN PROGRESS - Debugging visibility issue*
+## 🎉 RESOLVED ISSUE - Buttons Not Clickable
+
+**Root Cause Found:** The scene template had `mouse_filter = 2` (PASS) set on LeftVBox and RightVBox containers. This caused mouse events to pass through these containers instead of being processed by their button children.
+
+**Fix Applied:**
+- Removed `mouse_filter = 2` from LeftVBox in scene_template.tscn
+- Removed `mouse_filter = 2` from RightVBox in scene_template.tscn
+- These containers now use default `mouse_filter = 0` (STOP), which correctly processes events for children
+- Also added `mouse_filter = 2` to reusable_popup.tscn so invisible popups don't block events
+- Updated responsive_layout.gd to not override the correct mouse_filter settings
+
+**Why This Fixes It:**
+When a container has `mouse_filter = PASS`, Godot passes mouse events through to nodes behind the container instead of processing them for the container's children. By removing this setting, the VBox containers now properly receive and process mouse events, which are then passed to their button children.
+
+---
+
+## 🎉 RESOLVED ISSUE - Portrait Mode Buttons Not Clickable
+
+**Date Resolved:** 2025-01-27
+
+**Root Cause Found:** PopupContainer was visible with `z_index: 100`, sitting on top of all buttons in portrait mode. Even though it had `mouse_filter = 2` (PASS), a visible full-screen Control node was blocking all input events from reaching buttons below it.
+
+**Symptoms:**
+- Buttons rendered correctly and were full-width in portrait mode
+- All mouse_filter values were correct (containers = STOP, buttons = STOP)
+- Signals were properly reconnected after reparenting
+- Button positions and sizes were correct
+- But buttons did NOT respond to clicks
+- `_input()` received click events but buttons' `gui_input` did not
+
+**Investigation Process:**
+1. Initially thought it was a mouse_filter issue - tried STOP, PASS, IGNORE on various containers
+2. Suspected button positioning was wrong (debug showed stale y=0 positions)
+3. Added manual click detection in `_input()` which confirmed buttons WERE at correct positions
+4. Discovered PopupContainer (z_index:100) was visible even when child popups were hidden
+
+**Fix Applied:**
+
+1. **Hide PopupContainer when empty** ([bar.gd:57-68](level1/bar.gd#L57-L68)):
+   ```gdscript
+   var popup_container = get_node_or_null("PopupContainer")
+   if popup_container:
+       var any_popup_visible = false
+       for child in popup_container.get_children():
+           if child is Control and child.visible:
+               any_popup_visible = true
+               break
+
+       if not any_popup_visible:
+           popup_container.visible = false
+   ```
+
+2. **Show PopupContainer when displaying popups** ([bar.gd](level1/bar.gd)):
+   - Added code to make PopupContainer visible before calling `show_popup()` on any popup
+   - This ensures popups work when needed
+
+3. **Set all containers to mouse_filter = STOP** ([responsive_layout.gd:123-137](responsive_layout.gd#L123-L137)):
+   - Explicitly set HBoxContainer, VBoxContainer, LeftVBox, RightVBox, TopVBox, BottomVBox to `STOP`
+   - Prevents any scene template or other code from setting them to PASS
+
+4. **Reconnect button signals after reparenting** ([bar.gd:188-260](level1/bar.gd#L188-L260)):
+   - When ResponsiveLayout reparents buttons from HBoxContainer to VBoxContainer in portrait mode
+   - Signal connections from .tscn file use paths, which break when nodes move
+   - `_reconnect_button_signals()` finds buttons in their new location and reconnects all signals
+
+5. **Force button widths in portrait mode** ([bar.gd:206-217](level1/bar.gd#L206-L217)):
+   - Manually set button and container widths to viewport width
+   - Ensures buttons are full-width and clickable across entire screen
+
+**Why This Fixes It:**
+- PopupContainer was acting as an invisible barrier over the buttons
+- Even with mouse_filter=PASS, Godot's input system can be blocked by visible Controls with high z_index
+- Hiding PopupContainer removes this barrier
+- Making it visible only when needed ensures popups still work properly
+
+**Lessons Learned:**
+1. A visible Control node with high z_index can block input even with mouse_filter=PASS
+2. PopupContainer should only be visible when actively showing a popup
+3. Signal connections using paths break when nodes are reparented
+4. Button reparenting requires signal reconnection in code
+5. Layout calculations happen asynchronously - positions shown in `_ready()` may be stale
+
+**Files Modified:**
+- `level1/bar.gd` - Added PopupContainer visibility management and signal reconnection
+- `responsive_layout.gd` - Ensured all containers use mouse_filter=STOP
+- `level1/scene_template.tscn` - Added mouse_filter=0 to TopVBox and BottomVBox
+
+---
+
+*Last Updated: 2025-01-27*
+*Status: RESOLVED - Portrait mode buttons fully functional*
