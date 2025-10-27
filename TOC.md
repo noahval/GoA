@@ -5,11 +5,13 @@
 ### Scripts (.gd)
 - [global.gd](global.gd)  
 - [responsive_layout.gd](responsive_layout.gd)  
+- [reusable_popup.gd](reusable_popup.gd)  
 - [settings_overlay.gd](settings_overlay.gd)  
 - [toc_updater.gd](toc_updater.gd)  
 - [victory.gd](victory.gd)  
 
 ### Scenes (.tscn)
+- [reusable_popup.tscn](reusable_popup.tscn)  
 - [settings_overlay.tscn](settings_overlay.tscn)  
 - [victory.tscn](victory.tscn)  
 

@@ -7,9 +7,12 @@ var max_break_time = 30.0
 @onready var bribe_barkeep_button = $HBoxContainer/RightVBox/BribeBarkeepButton
 @onready var secret_passage_button = $HBoxContainer/RightVBox/SecretPassageButton
 @onready var developer_free_coins_button = $HBoxContainer/RightVBox/DeveloperFreeCoinsButton
+@onready var follow_voice_button = $HBoxContainer/RightVBox/FollowVoiceButton
 @onready var break_timer_bar = $HBoxContainer/LeftVBox/BreakTimerPanel/BreakTimerBar
 @onready var break_timer_label = $HBoxContainer/LeftVBox/BreakTimerPanel/BreakTimer
 @onready var coins_label = $HBoxContainer/LeftVBox/CoinsPanel/CoinsLabel
+@onready var voice_popup = $PopupContainer/VoicePopup
+@onready var barkeep_popup = $PopupContainer/BarkeepPopup
 
 func _ready():
 	# Set the actual maximum break time
@@ -24,6 +27,29 @@ func _ready():
 	if break_timer_bar:
 		var progress_percent = (break_time / max_break_time) * 100.0
 		break_timer_bar.value = progress_percent
+
+	# Show bribe barkeep button if door has been discovered and not yet bribed
+	if bribe_barkeep_button:
+		bribe_barkeep_button.visible = Level1Vars.door_discovered and not Level1Vars.barkeep_bribed
+
+	# Hide follow voice button if door has already been discovered
+	if follow_voice_button:
+		follow_voice_button.visible = false
+
+	# Setup popups with messages and buttons
+	if voice_popup:
+		voice_popup.setup(
+			"The voice was coming from further up the train. There's a small door behind the bar that leads ahead.",
+			["enter door", "turn back"]
+		)
+		voice_popup.hide_popup()
+
+	if barkeep_popup:
+		barkeep_popup.setup(
+			"The barkeep sees you. He says \"That's a restricted area, I can't let you pass, although I could be convinced to turn a blind eye...\"",
+			["Ok"]
+		)
+		barkeep_popup.hide_popup()
 
 	ResponsiveLayout.apply_to_scene(self)
 	update_labels()
@@ -41,6 +67,10 @@ func _process(delta):
 	if break_timer_label:
 		break_timer_label.text = "Break Timer"
 
+	# Show follow voice button if whisper has triggered (or dev mode) and door hasn't been discovered yet
+	if follow_voice_button and not Level1Vars.door_discovered and (Level1Vars.whisper_triggered or Global.dev_speed_mode):
+		follow_voice_button.visible = true
+
 	if break_time <= 0:
 		Level1Vars.break_time_remaining = 0.0
 		Global.change_scene_with_check(get_tree(), "res://level1/furnace.tscn")
@@ -52,8 +82,8 @@ func _on_to_coppersmith_carriage_button_pressed():
 	Global.change_scene_with_check(get_tree(), "res://level1/coppersmith_carriage.tscn")
 
 func _on_bribe_barkeep_pressed():
-	if Level1Vars.coins >= 10 and not Level1Vars.barkeep_bribed:
-		Level1Vars.coins -= 10
+	if Level1Vars.coins >= 50 and not Level1Vars.barkeep_bribed:
+		Level1Vars.coins -= 50
 		Level1Vars.barkeep_bribed = true
 		update_labels()
 
@@ -86,20 +116,41 @@ func update_labels():
 		coins_label.text = "Coins: " + str(int(Level1Vars.coins))
 
 	if bribe_barkeep_button:
-		bribe_barkeep_button.text = "Bribe Barkeep: 10"
+		bribe_barkeep_button.text = "Bribe Barkeep: 50"
 
 	# Show/hide developer button based on dev_speed_mode
 	if developer_free_coins_button:
 		developer_free_coins_button.visible = Global.dev_speed_mode
 
-	# Show/hide barkeep and secret passage buttons
-	if Level1Vars.barkeep_bribed:
-		if bribe_barkeep_button:
-			bribe_barkeep_button.visible = false
-		if secret_passage_button:
-			secret_passage_button.visible = true
-	else:
+	# Show bribe barkeep button if door discovered and not yet bribed
+	if bribe_barkeep_button:
+		bribe_barkeep_button.visible = Level1Vars.door_discovered and not Level1Vars.barkeep_bribed
+
+	# Show secret passage button only if barkeep was bribed
+	if secret_passage_button:
+		secret_passage_button.visible = Level1Vars.barkeep_bribed
+
+func _on_follow_voice_button_pressed():
+	# Show the voice popup
+	if voice_popup:
+		voice_popup.show_popup()
+
+func _on_voice_popup_button_pressed(button_text: String):
+	if button_text == "enter door":
+		# Show the barkeep popup
+		if barkeep_popup:
+			barkeep_popup.show_popup()
+	elif button_text == "turn back":
+		# Popup automatically closes, nothing else to do
+		pass
+
+func _on_barkeep_popup_button_pressed(button_text: String):
+	if button_text == "Ok":
+		# Set door discovered flag
+		Level1Vars.door_discovered = true
+
+		# Make bribe barkeep button visible and hide follow voice button
 		if bribe_barkeep_button:
 			bribe_barkeep_button.visible = true
-		if secret_passage_button:
-			secret_passage_button.visible = false
+		if follow_voice_button:
+			follow_voice_button.visible = false

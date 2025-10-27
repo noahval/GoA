@@ -104,18 +104,6 @@ func update_labels():
 	if bribe_shopkeep_button:
 		bribe_shopkeep_button.text = "Bribe Shopkeep: 10"
 
-	# Show/hide shopkeep and workshop buttons
-	if Level1Vars.shopkeep_bribed:
-		if bribe_shopkeep_button:
-			bribe_shopkeep_button.visible = false
-		if workshop_button:
-			workshop_button.visible = true
-	else:
-		if bribe_shopkeep_button:
-			bribe_shopkeep_button.visible = true
-		if workshop_button:
-			workshop_button.visible = false
-
 	# Show/hide plow button based on shovel level
 	if plow_button:
 		if Level1Vars.shovel_lvl >= 5:

@@ -8,36 +8,74 @@ This project uses **scene inheritance** to maintain consistent layouts across al
 
 Location: `level1/scene_template.tscn`
 
-### Layout Structure
+### Layout Structure - Three Panel Design
 
+The template provides a **three-panel layout** that adapts to orientation:
+
+**Landscape Mode (Left-Center-Right):**
 ```
 SceneRoot (Control)
 ├── Background (TextureRect) - Full screen background - mouse_filter = PASS ⚠️
-├── HBoxContainer (Landscape layout) - mouse_filter = PASS
-│   ├── LeftVBox (220px wide) - Info panels - mouse_filter = PASS
-│   └── RightVBox (260px wide) - Buttons - mouse_filter = PASS
-└── VBoxContainer (Portrait layout - hidden by default) - mouse_filter = PASS
-    ├── TopPadding (90px)
-    ├── TopVBox - Info panels
-    ├── Spacer (flexible)
-    ├── BottomVBox - Buttons
-    └── BottomPadding (90px)
+├── HBoxContainer (Landscape layout) - Full screen - mouse_filter = PASS
+│   ├── LeftVBox (220px min) - Information Menu - mouse_filter = PASS
+│   ├── CenterArea (flexible) - Main Play Area - mouse_filter = PASS
+│   └── RightVBox (260px min) - Button Menu - mouse_filter = PASS
+├── VBoxContainer (Portrait - hidden in landscape)
+├── PopupContainer (z-index 100) - Holds all popups - mouse_filter = PASS
+└── SettingsOverlay (z-index 200)
+```
+
+**Portrait Mode (Top-Middle-Bottom):**
+```
+SceneRoot (Control)
+├── Background (TextureRect) - Full screen background
+├── HBoxContainer (Landscape - hidden in portrait)
+├── VBoxContainer (Portrait layout) - Full screen - mouse_filter = PASS
+│   ├── TopPadding (90px)
+│   ├── TopVBox - Information Menu
+│   ├── MiddleArea (flexible) - Main Play Area - mouse_filter = PASS
+│   ├── BottomVBox - Button Menu
+│   └── BottomPadding (90px)
+├── PopupContainer (z-index 100) - Holds all popups
+└── SettingsOverlay (z-index 200)
 ```
 
 **CRITICAL**: The **Background** TextureRect and all container nodes (HBoxContainer, VBoxContainer, LeftVBox, RightVBox) **MUST** have `mouse_filter = 2` (PASS) to ensure buttons are clickable. The Background is full-screen and will block ALL mouse clicks if mouse_filter is not set to PASS!
 
+### Three Panel Areas Explained
+
+1. **Information Menu** (LeftVBox / TopVBox)
+   - Displays titles, counters, progress bars, stats
+   - Fixed width in landscape (220px min), full width in portrait
+   - Contains Panels with Labels and ProgressBars
+
+2. **Main Play Area** (CenterArea / MiddleArea)
+   - For gameplay, mini-games, dialog trees, interactive content
+   - **Flexible size** - expands to fill available space
+   - Popups appear centered in this area
+   - Empty by default - add game content here
+
+3. **Button Menu** (RightVBox / BottomVBox)
+   - Navigation buttons, action buttons, purchases
+   - Fixed width in landscape (260px min), full width in portrait
+   - Contains Button nodes for user actions
+
 ### Dimensions
 
 **Landscape (HBoxContainer):**
-- Container: 500px wide × 600px tall
-- Centered using anchor preset 8 (center)
-- LeftVBox: 220px minimum width
-- RightVBox: 260px minimum width
+- Full screen (anchor preset 15)
+- LeftVBox: 220px minimum width (can expand)
+- CenterArea: Flexible (size_flags_horizontal = 3)
+- RightVBox: 260px minimum width (can expand)
+- Separation: 20px between panels
 
 **Portrait (VBoxContainer):**
 - Full screen (anchor preset 15)
-- 90px padding top and bottom
-- Flexible spacer between top and bottom sections
+- TopPadding: 90px
+- TopVBox: Auto height
+- MiddleArea: Flexible (size_flags_vertical = 3)
+- BottomVBox: Auto height
+- BottomPadding: 90px
 
 ### Theme Integration
 
@@ -202,6 +240,45 @@ text = "Info Text"
 horizontal_alignment = 1
 vertical_alignment = 1
 ```
+
+## Using Popups Correctly
+
+**IMPORTANT**: All popups must be children of `PopupContainer` to avoid overlapping with menus.
+
+### Adding Popups to Your Scene
+
+**In your .tscn file:**
+```gdscript
+[ext_resource type="PackedScene" uid="uid://reusable_popup" path="res://reusable_popup.tscn" id="popup"]
+
+[node name="MyPopup" parent="PopupContainer" instance=ExtResource("popup")]
+```
+
+**Note the parent path**: `parent="PopupContainer"` NOT `parent="."`
+
+### Why PopupContainer?
+
+The ResponsiveLayout system automatically:
+- Finds all popups in PopupContainer
+- Calculates available space in CenterArea (landscape) or MiddleArea (portrait)
+- Constrains popup width to avoid overlapping side/top/bottom menus
+- Positions popups centered in the play area
+
+**Without PopupContainer**, popups will overlap menus and look broken!
+
+### Example from Bar Scene
+
+```gdscript
+# Correct - popups are children of PopupContainer
+[node name="VoicePopup" parent="PopupContainer" instance=ExtResource("popup")]
+[node name="BarkeepPopup" parent="PopupContainer" instance=ExtResource("popup")]
+
+# In script - reference with full path
+@onready var voice_popup = $PopupContainer/VoicePopup
+@onready var barkeep_popup = $PopupContainer/BarkeepPopup
+```
+
+See [POPUP_SYSTEM_GUIDE.md](POPUP_SYSTEM_GUIDE.md) for complete popup usage documentation.
 
 ## Standard Progress Bar Pattern
 

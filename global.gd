@@ -299,6 +299,9 @@ func _process(delta):
 		Level1Vars.talk_button_cooldown -= delta
 
 func _on_whisper_timer_timeout():
+	# Set the whisper triggered flag
+	Level1Vars.whisper_triggered = true
+
 	# Only show whisper if heart hasn't been taken
 	if not Level1Vars.heart_taken:
 		show_stat_notification("A voice whispers in your mind, pleading for your help")

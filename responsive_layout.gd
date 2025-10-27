@@ -25,10 +25,12 @@ const PORTRAIT_SEPARATION_RATIO = 0.5  # Portrait separation as ratio of scaled 
 # Column widths (from template)
 const LEFT_COLUMN_WIDTH = 220
 const RIGHT_COLUMN_WIDTH = 260
+const MIN_CENTER_WIDTH = 400  # Minimum width for center play area
 
-# Container dimensions (from template)
-const CONTAINER_WIDTH = 500
-const CONTAINER_HEIGHT = 600
+# Popup constraints
+const POPUP_MAX_WIDTH_LANDSCAPE = 600  # Max popup width in landscape
+const POPUP_MAX_WIDTH_PORTRAIT = 0.9  # Max popup width as % of viewport in portrait
+const POPUP_MARGIN_FROM_MENUS = 40  # Minimum space between popup and side menus
 
 ## Calculate dynamic separation based on viewport width
 ## Shrinks from max (300) to min (20) as viewport width decreases
@@ -70,16 +72,27 @@ func _apply_responsive_layout_internal(scene_root: Control) -> void:
 	var hbox = scene_root.get_node_or_null("HBoxContainer")
 	var vbox = scene_root.get_node_or_null("VBoxContainer")
 	var left_vbox = scene_root.get_node_or_null("HBoxContainer/LeftVBox")
+	var center_area = scene_root.get_node_or_null("HBoxContainer/CenterArea")
 	var right_vbox = scene_root.get_node_or_null("HBoxContainer/RightVBox")
 	var top_vbox = scene_root.get_node_or_null("VBoxContainer/TopVBox")
+	var middle_area = scene_root.get_node_or_null("VBoxContainer/MiddleArea")
 	var bottom_vbox = scene_root.get_node_or_null("VBoxContainer/BottomVBox")
+	var popup_container = scene_root.get_node_or_null("PopupContainer")
 
 	print("ResponsiveLayout: Found nodes - Background: ", background != null, " HBox: ", hbox != null,
-		  " VBox: ", vbox != null, " LeftVBox: ", left_vbox != null, " RightVBox: ", right_vbox != null)
+		  " VBox: ", vbox != null, " CenterArea: ", center_area != null, " MiddleArea: ", middle_area != null)
 
 	if not hbox or not vbox or not left_vbox or not right_vbox or not top_vbox or not bottom_vbox:
 		push_warning("ResponsiveLayout: Scene missing required container nodes")
 		return
+
+	# Set mouse filter on new areas
+	if center_area:
+		center_area.mouse_filter = Control.MOUSE_FILTER_PASS
+	if middle_area:
+		middle_area.mouse_filter = Control.MOUSE_FILTER_PASS
+	if popup_container:
+		popup_container.mouse_filter = Control.MOUSE_FILTER_PASS
 
 	# CRITICAL: Ensure mouse_filter is set to PASS (2) on all containers and background
 	# This allows mouse events to reach buttons even if scenes were created before template was updated
@@ -129,11 +142,25 @@ func _apply_responsive_layout_internal(scene_root: Control) -> void:
 			vbox.visible = true
 			_reverse_button_order(right_vbox)
 		else:
-			# Landscape: side by side
-			hbox.add_child(left_vbox)
-			hbox.add_child(right_vbox)
+			# Landscape: side by side with CenterArea in middle
+			# Add in correct order: LeftVBox, CenterArea (already there), RightVBox
+			if center_area and center_area.get_parent() == hbox:
+				# Get the index of CenterArea
+				var center_index = center_area.get_index()
+				# Add LeftVBox before CenterArea
+				hbox.add_child(left_vbox)
+				hbox.move_child(left_vbox, center_index)
+				# Add RightVBox after CenterArea (it will be at the end)
+				hbox.add_child(right_vbox)
+			else:
+				# Fallback if CenterArea doesn't exist
+				hbox.add_child(left_vbox)
+				hbox.add_child(right_vbox)
 			hbox.visible = true
 			vbox.visible = false
+
+	# Position popups in the appropriate area
+	position_popups_in_play_area(scene_root, is_portrait, popup_container, center_area, middle_area, viewport_size)
 
 	# Always apply mode-specific styling and scaling (even if already in correct mode)
 	if is_portrait:
@@ -145,7 +172,7 @@ func _apply_responsive_layout_internal(scene_root: Control) -> void:
 		# Apply portrait styling and scaling
 		left_vbox.add_theme_constant_override("separation", dynamic_separation)
 		right_vbox.add_theme_constant_override("separation", dynamic_separation)
-		_apply_portrait_styling(left_vbox)
+		_apply_portrait_styling()
 		_scale_for_portrait(left_vbox, right_vbox)
 	else:
 		# Remove portrait spacing overrides and apply landscape spacing
@@ -173,10 +200,10 @@ func _apply_landscape_adjustments(left_vbox: VBoxContainer, right_vbox: VBoxCont
 
 	# Reset to default size first
 	left_vbox.custom_minimum_size = Vector2(LEFT_COLUMN_WIDTH, 0)
-	var default_total_width = LEFT_COLUMN_WIDTH + RIGHT_COLUMN_WIDTH + separation
-	var default_half_width = default_total_width / 2.0
-	hbox.offset_left = -default_half_width
-	hbox.offset_right = default_half_width
+
+	# NOTE: HBoxContainer is now full-screen (anchor preset 15), NOT centered
+	# So we don't manipulate offsets anymore - the container fills the screen
+	# and the three panels (LeftVBox, CenterArea, RightVBox) handle their own sizing
 
 	# Check all panels in left column and calculate widths for all labels
 	var max_desired_width = LEFT_COLUMN_WIDTH
@@ -269,22 +296,18 @@ func _apply_landscape_adjustments(left_vbox: VBoxContainer, right_vbox: VBoxCont
 		right_vbox.custom_minimum_size = Vector2(max_right_width, 0)
 		print("ResponsiveLayout: Expanded right column to: ", max_right_width)
 
-	# Expand HBoxContainer if either column needs more space
+	# Set final column widths if they need to expand
 	var final_left_width = max(LEFT_COLUMN_WIDTH, max_desired_width)
 	var final_right_width = max(RIGHT_COLUMN_WIDTH, max_right_width)
 
 	if final_left_width > LEFT_COLUMN_WIDTH or final_right_width > RIGHT_COLUMN_WIDTH:
 		left_vbox.custom_minimum_size = Vector2(final_left_width, 0)
 		right_vbox.custom_minimum_size = Vector2(final_right_width, 0)
-		var total_width = final_left_width + final_right_width + separation
-		var half_width = total_width / 2.0
-		hbox.offset_left = -half_width
-		hbox.offset_right = half_width
 		print("ResponsiveLayout: Final layout - Left: ", final_left_width, " Right: ", final_right_width)
-		print("ResponsiveLayout: Expanded HBoxContainer offsets to: ", -half_width, " to ", half_width)
+		# NOTE: HBoxContainer is full-screen, no need to adjust offsets
 
 ## Apply portrait-specific styling (title backgrounds, etc.)
-func _apply_portrait_styling(left_vbox: VBoxContainer) -> void:
+func _apply_portrait_styling() -> void:
 	print("ResponsiveLayout: Applying portrait styling")
 
 	# Panels will use the default theme background, no need to override
@@ -349,17 +372,9 @@ func _reset_scale(left_vbox: VBoxContainer, right_vbox: VBoxContainer) -> void:
 	# Reset left column to default width first
 	left_vbox.custom_minimum_size = Vector2(LEFT_COLUMN_WIDTH, 0)
 
-	# Get the HBoxContainer parent
-	var hbox = left_vbox.get_parent() as HBoxContainer
-	if not hbox:
-		print("ResponsiveLayout: ERROR - LeftVBox parent is not HBoxContainer")
-		return
-
-	# Reset HBoxContainer to default size (from template: -290 to 290 = 580px total)
-	var default_total_width = LEFT_COLUMN_WIDTH + RIGHT_COLUMN_WIDTH + hbox.get_theme_constant("separation")
-	var default_half_width = default_total_width / 2.0
-	hbox.offset_left = -default_half_width
-	hbox.offset_right = default_half_width
+	# NOTE: HBoxContainer is now full-screen (anchor preset 15)
+	# No need to reset offsets - the container fills the viewport
+	# The three panels handle their own sizing via size_flags
 
 	# Reset buttons to UNIVERSAL HEIGHT
 	for button in right_vbox.get_children():
@@ -417,13 +432,7 @@ func _reset_scale(left_vbox: VBoxContainer, right_vbox: VBoxContainer) -> void:
 				if desired_width > left_vbox.custom_minimum_size.x:
 					left_vbox.custom_minimum_size = Vector2(desired_width, 0)
 					print("ResponsiveLayout: Expanded left column to: ", desired_width)
-
-					# Expand the HBoxContainer to accommodate the new column width
-					var total_width = desired_width + RIGHT_COLUMN_WIDTH + hbox.get_theme_constant("separation")
-					var half_width = total_width / 2.0
-					hbox.offset_left = -half_width
-					hbox.offset_right = half_width
-					print("ResponsiveLayout: Expanded HBoxContainer offsets to: ", -half_width, " to ", half_width)
+					# NOTE: HBoxContainer is full-screen, no need to adjust offsets
 			else:
 				# Regular panel - use UNIVERSAL HEIGHT
 				panel.custom_minimum_size = Vector2(0, LANDSCAPE_ELEMENT_HEIGHT)
@@ -494,3 +503,92 @@ func _to_snake_case(text: String) -> String:
 			result += "_"
 		result += c.to_lower()
 	return result
+
+## Position popups within the play area to avoid overlapping with menus
+## Reparents all popups to PopupContainer and constrains their size
+func position_popups_in_play_area(scene_root: Control, is_portrait: bool, popup_container: Control,
+								  center_area: Control, middle_area: Control, viewport_size: Vector2) -> void:
+	if not popup_container:
+		print("ResponsiveLayout: No PopupContainer found, popups may overlap menus")
+		return
+
+	# Find all popup nodes in the scene (look for ReusablePopup instances)
+	var popups = []
+	_find_popups_recursive(scene_root, popups, popup_container)
+
+	if popups.size() == 0:
+		print("ResponsiveLayout: No popups found to position")
+		return
+
+	print("ResponsiveLayout: Found ", popups.size(), " popup(s) to position")
+
+	# Calculate available space for popups
+	var max_popup_width = 0.0
+	var play_area_rect = Rect2()
+
+	if is_portrait:
+		# Portrait: use middle area space
+		if middle_area:
+			play_area_rect = middle_area.get_global_rect()
+			max_popup_width = viewport_size.x * POPUP_MAX_WIDTH_PORTRAIT
+		else:
+			# Fallback to full viewport with margins
+			max_popup_width = viewport_size.x * POPUP_MAX_WIDTH_PORTRAIT
+	else:
+		# Landscape: calculate center area width
+		if center_area:
+			play_area_rect = center_area.get_global_rect()
+			max_popup_width = min(play_area_rect.size.x - (POPUP_MARGIN_FROM_MENUS * 2), float(POPUP_MAX_WIDTH_LANDSCAPE))
+		else:
+			# Fallback: viewport width minus side menus
+			var available_width = viewport_size.x - LEFT_COLUMN_WIDTH - RIGHT_COLUMN_WIDTH - (POPUP_MARGIN_FROM_MENUS * 2)
+			max_popup_width = min(available_width, float(POPUP_MAX_WIDTH_LANDSCAPE))
+
+	print("ResponsiveLayout: Max popup width: ", max_popup_width, " Play area: ", play_area_rect)
+
+	# Apply constraints to each popup
+	for popup in popups:
+		# Reparent to PopupContainer if not already there
+		if popup.get_parent() != popup_container:
+			var original_parent = popup.get_parent()
+			original_parent.remove_child(popup)
+			popup_container.add_child(popup)
+			print("ResponsiveLayout: Reparented popup '", popup.name, "' to PopupContainer")
+
+		# Constrain popup width
+		var half_width = max_popup_width / 2.0
+		popup.offset_left = -half_width
+		popup.offset_right = half_width
+
+		print("ResponsiveLayout: Constrained popup '", popup.name, "' to width: ", max_popup_width)
+
+## Recursively find all popup nodes (excluding PopupContainer itself)
+func _find_popups_recursive(node: Node, popups: Array, popup_container: Node) -> void:
+	# Skip the PopupContainer itself
+	if node == popup_container:
+		return
+
+	# Check if this node is a popup (Panel with theme_type_variation or script attached)
+	if node is Panel:
+		var is_popup = false
+
+		# Check for PopupPanel theme variation using get method
+		if node.theme_type_variation == "PopupPanel":
+			is_popup = true
+
+		# Check if it has the reusable_popup script
+		var script = node.get_script()
+		if script and str(script.resource_path).contains("reusable_popup.gd"):
+			is_popup = true
+
+		# Check if name contains "Popup"
+		if "Popup" in node.name or "popup" in node.name:
+			is_popup = true
+
+		if is_popup:
+			popups.append(node)
+			print("ResponsiveLayout: Found popup: ", node.name)
+
+	# Recurse through children
+	for child in node.get_children():
+		_find_popups_recursive(child, popups, popup_container)

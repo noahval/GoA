@@ -78,7 +78,7 @@ func _on_shovel_coal_button_pressed():
 		return
 
 	# Increase global strength exp
-	Global.add_stat_exp("strength", 1)
+	Global.add_stat_exp("strength", .4)
 
 	var coal_gained = 1 + (Level1Vars.shovel_lvl * 0.7) + (Level1Vars.plow_lvl * 3)
 
