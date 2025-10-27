@@ -415,5 +415,62 @@ When a container has `mouse_filter = PASS`, Godot passes mouse events through to
 
 ---
 
+## 🎉 RESOLVED ISSUE - Buttons Stop Working After Popup Closes (Portrait Mode)
+
+**Date Resolved:** 2025-01-27
+
+**Root Cause Found:** When popups closed after clicking "OK", the `PopupContainer` remained visible with `z_index: 100`, continuing to block button clicks even though the popup itself was hidden.
+
+**Symptoms:**
+- Buttons worked fine until popup dialog appeared
+- After completing popup interaction and clicking "OK", all buttons became unresponsive
+- Issue only occurred in portrait mode
+- PopupContainer was correctly hidden on scene load but never re-hidden after popups closed
+
+**Investigation Process:**
+1. Reviewed the previous fix for portrait mode button blocking (PopupContainer hiding on scene load)
+2. Discovered that PopupContainer was being made visible before showing popups ([bar.gd:159-162, 169-172](level1/bar.gd#L159-L162))
+3. Found that when popups closed (via `hide_popup()`), only the popup Panel became invisible
+4. PopupContainer remained visible, continuing to block all clicks underneath
+
+**Fix Applied:**
+
+Added code to hide PopupContainer when popup sequences complete:
+
+1. **Hide PopupContainer when "turn back" is clicked** ([bar.gd:173-177](level1/bar.gd#L173-L177)):
+   ```gdscript
+   elif button_text == "turn back":
+       # Popup automatically closes, hide PopupContainer since we're done
+       var popup_container = get_node_or_null("PopupContainer")
+       if popup_container:
+           popup_container.visible = false
+   ```
+
+2. **Hide PopupContainer when "Ok" is clicked** ([bar.gd:190-194](level1/bar.gd#L190-L194)):
+   ```gdscript
+   # CRITICAL: Hide PopupContainer now that popup sequence is complete
+   # This allows buttons to be clickable again in portrait mode
+   var popup_container = get_node_or_null("PopupContainer")
+   if popup_container:
+       popup_container.visible = false
+   ```
+
+**Why This Fixes It:**
+- PopupContainer is only visible when actively displaying popups
+- After the popup interaction completes, PopupContainer is hidden, removing the blocking layer
+- Buttons underneath can receive clicks again
+- The pattern is: show PopupContainer → show popup → user interacts → hide popup → hide PopupContainer
+
+**Lessons Learned:**
+1. PopupContainer must be hidden when no popups are showing, not just on scene load
+2. Each popup button handler should hide PopupContainer when the popup sequence ends
+3. For chained popups (popup A → popup B), only hide PopupContainer after the final popup closes
+4. The visibility state of PopupContainer must be actively managed throughout the popup lifecycle
+
+**Files Modified:**
+- `level1/bar.gd` - Added PopupContainer hiding logic to both popup button press handlers
+
+---
+
 *Last Updated: 2025-01-27*
-*Status: RESOLVED - Portrait mode buttons fully functional*
+*Status: RESOLVED - Portrait mode buttons fully functional (including after popup closes)*

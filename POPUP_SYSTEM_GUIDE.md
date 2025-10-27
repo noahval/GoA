@@ -49,7 +49,12 @@ func _on_my_popup_button_pressed(button_text: String):
         print("User clicked Button 1")
     elif button_text == "Button 2":
         print("User clicked Button 2")
-    # Popup automatically closes when a button is pressed
+
+    # CRITICAL: Hide PopupContainer when popup sequence is complete
+    # This ensures buttons remain clickable in portrait mode
+    var popup_container = get_node_or_null("PopupContainer")
+    if popup_container:
+        popup_container.visible = false
 ```
 
 **Show the popup:**
@@ -371,6 +376,7 @@ func _on_barkeep_popup_button_pressed(button_text: String):
 ✅ Use sequential popups for conversations
 ✅ Connect signals in the scene file or `_ready()` function
 ✅ Hide popups by default in `_ready()`
+✅ **CRITICAL**: Hide PopupContainer when popup sequences complete (see example below)
 
 ### DON'T:
 ❌ Create too many buttons (max 3-4 recommended)
@@ -378,12 +384,23 @@ func _on_barkeep_popup_button_pressed(button_text: String):
 ❌ Forget to hide popups after calling setup()
 ❌ Manually set `visible = true` (use `show_popup()` instead)
 ❌ Call `setup()` every time you show - set it once in `_ready()`
+❌ **CRITICAL**: Forget to hide PopupContainer after popups close (causes buttons to stop working in portrait mode)
 
 ## Troubleshooting
 
 **Q: My popup doesn't appear**
 - A: Make sure you called `show_popup()`, not just `visible = true`
 - A: Check that the popup's z_index is high enough (default: 200)
+
+**Q: Buttons stop working after I close a popup (portrait mode)**
+- A: **This is the most common issue!** You must hide PopupContainer after the popup closes
+- A: Add this code to your popup button handler:
+  ```gdscript
+  var popup_container = get_node_or_null("PopupContainer")
+  if popup_container:
+      popup_container.visible = false
+  ```
+- A: PopupContainer blocks clicks when visible, even if the popup itself is hidden
 
 **Q: Buttons don't have borders**
 - A: Ensure buttons use `theme_type_variation = &"PopupButton"`

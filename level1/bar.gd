@@ -171,8 +171,10 @@ func _on_voice_popup_button_pressed(button_text: String):
 				popup_container.visible = true
 			barkeep_popup.show_popup()
 	elif button_text == "turn back":
-		# Popup automatically closes, nothing else to do
-		pass
+		# Popup automatically closes, hide PopupContainer since we're done
+		var popup_container = get_node_or_null("PopupContainer")
+		if popup_container:
+			popup_container.visible = false
 
 func _on_barkeep_popup_button_pressed(button_text: String):
 	if button_text == "Ok":
@@ -184,6 +186,12 @@ func _on_barkeep_popup_button_pressed(button_text: String):
 			bribe_barkeep_button.visible = true
 		if follow_voice_button:
 			follow_voice_button.visible = false
+
+		# CRITICAL: Hide PopupContainer now that popup sequence is complete
+		# This allows buttons to be clickable again in portrait mode
+		var popup_container = get_node_or_null("PopupContainer")
+		if popup_container:
+			popup_container.visible = false
 
 func _reconnect_button_signals():
 	print("=== RECONNECTING BUTTON SIGNALS ===")
