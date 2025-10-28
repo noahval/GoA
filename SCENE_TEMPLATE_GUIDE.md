@@ -48,6 +48,11 @@ SceneRoot (Control)
    - Displays titles, counters, progress bars, stats
    - Fixed width in landscape (220px min), full width in portrait
    - Contains Panels with Labels and ProgressBars
+   - **Includes NotificationPanel**: A VBoxContainer that displays game notifications
+     - Automatically shows stat level-ups, events, whispers, etc.
+     - Notifications stack vertically and auto-remove after 3 seconds
+     - In portrait mode: notifications scale to 1.75x larger text
+     - Managed by `Global.show_stat_notification(message)`
 
 2. **Main Play Area** (CenterArea / MiddleArea)
    - For gameplay, mini-games, dialog trees, interactive content
@@ -366,6 +371,31 @@ Example scenes already using the pattern:
 ❌ Override too many properties in child scenes
 ❌ Remove nodes from template after children exist
 ❌ Forget to implement responsive layout script
+
+## Signal Connection Preservation
+
+**IMPORTANT:** ResponsiveLayout uses Godot 4's `reparent()` method when switching between portrait and landscape modes. This preserves all signal connections automatically.
+
+**What this means:**
+- Button signals defined in .tscn files work correctly in both orientations
+- No need to manually reconnect signals after orientation changes
+- Scene scripts don't need `_reconnect_button_signals()` functions
+
+**Example:**
+```gdscript
+# In your .tscn file:
+[connection signal="pressed" from="HBoxContainer/RightVBox/MyButton" to="." method="_on_my_button_pressed"]
+
+# This signal connection automatically works when button moves to:
+# VBoxContainer/BottomVBox/RightVBox/MyButton (portrait mode)
+# Thanks to reparent() preserving the connection!
+```
+
+**How it works:**
+- In landscape mode, buttons are in `HBoxContainer/RightVBox`
+- In portrait mode, ResponsiveLayout calls `right_vbox.reparent(bottom_vbox)`
+- The `reparent()` method moves the node AND preserves all signal connections
+- Your button handlers continue to work without any extra code
 
 ## Troubleshooting
 

@@ -154,8 +154,7 @@ var charisma = 1:
 		charisma = value
 
 # Notification UI
-var active_notifications: Array = []  # Array of dictionaries with {panel: Panel, timer: Timer}
-var notification_spacing: float = 10.0  # Space between stacked notifications
+var active_notifications: Array = []  # Array of dictionaries with {panel: Panel, label: Label, timer: Timer, container: Node}
 var whisper_timer: Timer = null
 var suspicion_decrease_timer: Timer = null
 var get_caught_timer: Timer = null
@@ -189,9 +188,15 @@ func _ready():
 	add_child(get_caught_timer)
 
 func show_stat_notification(message: String):
-	# Create a new notification panel
+	# Find the NotificationPanel in the current scene
+	var notification_container = _find_notification_panel()
+	if not notification_container:
+		print("Warning: No NotificationPanel found in current scene")
+		return
+
+	# Create a Panel for this notification with translucent background
 	var notification_panel = Panel.new()
-	notification_panel.z_index = 100
+	notification_panel.custom_minimum_size = Vector2(0, ResponsiveLayout.LANDSCAPE_ELEMENT_HEIGHT)
 
 	# Create a StyleBoxFlat for the grey translucent background
 	var style_box = StyleBoxFlat.new()
@@ -202,25 +207,13 @@ func show_stat_notification(message: String):
 	style_box.corner_radius_bottom_right = 8
 	notification_panel.add_theme_stylebox_override("panel", style_box)
 
-	# Position panel at bottom center of screen using percentage-based width
-	notification_panel.anchor_left = 0.1  # 10% from left
-	notification_panel.anchor_right = 0.9  # 10% from right (80% width total)
-	notification_panel.anchor_top = 1
-	notification_panel.anchor_bottom = 1
-	notification_panel.offset_left = 0
-	notification_panel.offset_right = 0
-	notification_panel.offset_top = -80
-	notification_panel.offset_bottom = -40
-
 	# Create notification label with word wrap
 	var notification_label = Label.new()
 	notification_label.text = message
 	notification_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	notification_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	notification_label.add_theme_font_size_override("font_size", 20)
 	notification_label.add_theme_color_override("font_color", Color(1, 1, 1, 1))  # White text
 	notification_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	notification_label.z_index = 101
 
 	# Position label to fill the panel with padding
 	notification_label.anchor_left = 0
@@ -244,21 +237,64 @@ func show_stat_notification(message: String):
 	# Store notification data
 	var notification_data = {
 		"panel": notification_panel,
-		"timer": notification_timer
+		"label": notification_label,
+		"timer": notification_timer,
+		"container": notification_container
 	}
 	active_notifications.append(notification_data)
 
 	# Connect timer to remove this specific notification
 	notification_timer.timeout.connect(func(): _remove_notification(notification_data))
 
-	# Add panel to scene tree
-	add_child(notification_panel)
+	# Add panel to the notification container in the scene
+	notification_container.add_child(notification_panel)
 
-	# Reposition all notifications to stack them
-	_reposition_notifications()
+	# Apply responsive scaling if in portrait mode
+	_apply_notification_scaling(notification_panel, notification_label)
 
 	# Start the timer
 	notification_timer.start()
+
+func _find_notification_panel() -> Node:
+	# Find the NotificationPanel in the current scene
+	# It could be in HBoxContainer/LeftVBox or VBoxContainer/TopVBox depending on orientation
+	var scene_tree = get_tree()
+	if not scene_tree:
+		return null
+
+	var current_scene = scene_tree.current_scene
+	if not current_scene:
+		return null
+
+	# Try landscape location first
+	var panel = current_scene.get_node_or_null("HBoxContainer/LeftVBox/NotificationPanel")
+	if panel:
+		return panel
+
+	# Try portrait location
+	panel = current_scene.get_node_or_null("VBoxContainer/TopVBox/LeftVBox/NotificationPanel")
+	if panel:
+		return panel
+
+	return null
+
+func _apply_notification_scaling(notification_panel: Panel, notification_label: Label):
+	# Check if we're in portrait mode
+	var viewport = get_viewport()
+	if not viewport:
+		return
+
+	var viewport_size = viewport.get_visible_rect().size
+	var is_portrait = viewport_size.y > viewport_size.x
+
+	if is_portrait:
+		# Apply portrait scaling from ResponsiveLayout
+		var scaled_height = ResponsiveLayout.PORTRAIT_ELEMENT_HEIGHT * ResponsiveLayout.PORTRAIT_FONT_SCALE
+		notification_panel.custom_minimum_size = Vector2(0, scaled_height)
+
+		# Scale font size
+		var default_font_size = 25  # Default from theme
+		notification_label.add_theme_font_size_override("font_size", int(default_font_size * ResponsiveLayout.PORTRAIT_FONT_SCALE))
 
 func _remove_notification(notification_data: Dictionary):
 	# Find and remove from active notifications
@@ -271,23 +307,7 @@ func _remove_notification(notification_data: Dictionary):
 		notification_data.panel.queue_free()
 	if notification_data.timer:
 		notification_data.timer.queue_free()
-
-	# Reposition remaining notifications
-	_reposition_notifications()
-
-func _reposition_notifications():
-	# Position notifications from bottom to top
-	var base_offset_top = -80
-	var notification_height = 40
-
-	for i in range(active_notifications.size()):
-		var notif_data = active_notifications[i]
-		var panel = notif_data.panel
-
-		# Calculate position - newer notifications push older ones up
-		var stack_offset = i * (notification_height + notification_spacing)
-		panel.offset_top = base_offset_top - stack_offset
-		panel.offset_bottom = base_offset_top - stack_offset + notification_height
+	# Note: No need to reposition - VBoxContainer handles stacking automatically
 
 func _process(delta):
 	# Regenerate stamina at 1 per second, up to max_stamina

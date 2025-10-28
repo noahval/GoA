@@ -1,7 +1,9 @@
-[gd_scene load_steps=3 format=3 uid="uid://reusable_popup"]
+[gd_scene load_steps=4 format=3 uid="uid://reusable_popup"]
 
 [ext_resource type="Theme" path="res://default_theme.tres" id="1"]
 [ext_resource type="Script" path="res://reusable_popup.gd" id="2"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_message_label"]
 
 [node name="ReusablePopup" type="Panel"]
 visible = false
@@ -42,6 +44,7 @@ theme_override_constants/separation = 15
 [node name="MessageLabel" type="Label" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_styles/normal = SubResource("StyleBoxEmpty_message_label")
 text = "Popup message goes here"
 horizontal_alignment = 1
 vertical_alignment = 1

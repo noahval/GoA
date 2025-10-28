@@ -72,6 +72,10 @@ layout_mode = 2
 size_flags_horizontal = 4
 theme_override_constants/separation = 10
 
+[node name="NotificationPanel" type="VBoxContainer" parent="HBoxContainer/LeftVBox"]
+layout_mode = 2
+theme_override_constants/separation = 5
+
 [node name="CenterArea" type="Control" parent="HBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
@@ -94,3 +98,4 @@ grow_vertical = 2
 mouse_filter = 2
 
 [node name="SettingsOverlay" parent="." instance=ExtResource("2")]
+z_index = 200

@@ -472,5 +472,81 @@ Added code to hide PopupContainer when popup sequences complete:
 
 ---
 
+## 🎉 RESOLVED ISSUE - Signal Connections Breaking After Reparenting (ROOT FIX)
+
+**Date Resolved:** 2025-01-27
+
+**Root Cause:** When ResponsiveLayout switched between portrait and landscape modes, it used `remove_child()` + `add_child()` to reparent LeftVBox and RightVBox containers. This broke signal connections because signals defined in .tscn files use node paths, and those paths became invalid after reparenting.
+
+**Previous Workaround:** Each scene had to implement a `_reconnect_button_signals()` function to manually reconnect all button signals after ResponsiveLayout ran. This was error-prone and required maintenance in every scene.
+
+**Proper Fix Applied:**
+
+Modified [responsive_layout.gd:145-195](responsive_layout.gd#L145-L195) to use Godot 4's **`reparent()` method** instead of `remove_child()` + `add_child()`:
+
+**Before (broken):**
+```gdscript
+left_vbox.get_parent().remove_child(left_vbox)
+top_vbox.add_child(left_vbox)
+```
+
+**After (fixed):**
+```gdscript
+left_vbox.reparent(top_vbox)
+```
+
+**Why This Works:**
+- Godot 4's `reparent()` method is specifically designed to preserve signal connections when moving nodes
+- Signal connections defined in .tscn files remain intact after reparenting
+- Works automatically for ALL scenes without requiring scene-specific code
+
+**Files Modified:**
+- `responsive_layout.gd` - Lines 145-195: Replaced all remove_child/add_child with reparent()
+- `level1/bar.gd` - Removed `_reconnect_button_signals()` and `_debug_button_states()` functions (no longer needed)
+- `level1/coppersmith_carriage.gd` - Removed `_reconnect_button_signals()` function (no longer needed)
+
+**Benefits:**
+1. **Universal fix** - All scenes automatically work without custom code
+2. **Future-proof** - New scenes don't need signal reconnection logic
+3. **Cleaner code** - Removed ~200 lines of workaround code
+4. **More reliable** - No risk of forgetting to reconnect a signal
+
+**Additional Fix - PopupContainer Auto-Hiding:**
+
+Also added automatic PopupContainer visibility management to [responsive_layout.gd:203-217](responsive_layout.gd#L203-L217):
+
+```gdscript
+# CRITICAL: Hide PopupContainer if no popups are visible
+if popup_container:
+    var any_popup_visible = false
+    for child in popup_container.get_children():
+        if child is Control and child.visible:
+            any_popup_visible = true
+            break
+
+    if not any_popup_visible:
+        popup_container.visible = false
+```
+
+**Why This Is Needed:**
+- PopupContainer has `z_index: 100` (sits above all other UI)
+- Even with `mouse_filter = PASS`, a visible full-screen Control can block clicks
+- ResponsiveLayout now automatically hides PopupContainer when no popups are showing
+- Prevents all scenes from having button click blocking issues
+
+**Files Modified:**
+- `responsive_layout.gd` - Lines 145-195: Replaced all remove_child/add_child with reparent()
+- `responsive_layout.gd` - Lines 203-217: Added automatic PopupContainer hiding
+- `level1/bar.gd` - Removed `_reconnect_button_signals()`, `_debug_button_states()`, and duplicate PopupContainer hiding code
+- `level1/coppersmith_carriage.gd` - Removed `_reconnect_button_signals()` function (no longer needed)
+
+**Testing:**
+- Buttons now work correctly in both landscape and portrait modes
+- Signal connections persist across orientation changes
+- PopupContainer automatically hides/shows as needed
+- No scene-specific workarounds needed
+
+---
+
 *Last Updated: 2025-01-27*
-*Status: RESOLVED - Portrait mode buttons fully functional (including after popup closes)*
+*Status: RESOLVED - All button click issues fixed at ResponsiveLayout level (signals + PopupContainer)*

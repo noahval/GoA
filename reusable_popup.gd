@@ -31,14 +31,40 @@ func setup(message: String, button_texts: Array, auto_resize: bool = true) -> vo
 	for child in button_container.get_children():
 		child.queue_free()
 
+	# Detect portrait mode and get appropriate scaling
+	var viewport_size = get_viewport().get_visible_rect().size
+	var is_portrait = viewport_size.y > viewport_size.x
+
+	# Calculate scaled button height based on orientation
+	var button_height = ResponsiveLayout.LANDSCAPE_ELEMENT_HEIGHT
+	if is_portrait:
+		button_height = ResponsiveLayout.PORTRAIT_ELEMENT_HEIGHT * ResponsiveLayout.PORTRAIT_FONT_SCALE
+
 	# Create new buttons
 	for button_text in button_texts:
 		var button = Button.new()
 		button.text = button_text
 		button.theme_type_variation = &"PopupButton"
-		button.custom_minimum_size = Vector2(100, 40)
+		button.custom_minimum_size = Vector2(100, button_height)
 		button_container.add_child(button)
 		button.pressed.connect(_on_button_pressed.bind(button_text))
+
+		# Apply font scaling in portrait mode
+		if is_portrait:
+			var default_font_size = button.get_theme_font_size("font_size")
+			if default_font_size <= 0:
+				default_font_size = 25  # Default from theme
+			button.add_theme_font_size_override("font_size", int(default_font_size * ResponsiveLayout.PORTRAIT_FONT_SCALE))
+
+	# Apply font scaling to message label in portrait mode
+	if is_portrait:
+		var label_font_size = message_label.get_theme_font_size("font_size")
+		if label_font_size <= 0:
+			label_font_size = 25  # Default from theme
+		message_label.add_theme_font_size_override("font_size", int(label_font_size * ResponsiveLayout.PORTRAIT_FONT_SCALE))
+	else:
+		# Reset font scaling in landscape mode
+		message_label.remove_theme_font_size_override("font_size")
 
 	# Auto-resize to fit content
 	if auto_resize:
@@ -68,9 +94,15 @@ func _resize_to_content() -> void:
 
 	# Calculate required size based on message and buttons
 	var font = message_label.get_theme_font("font")
+
+	# Get the ACTUAL font size being used (after scaling)
 	var font_size = message_label.get_theme_font_size("font_size")
 	if font_size <= 0:
 		font_size = 25
+
+	# Account for portrait mode scaling
+	if is_portrait:
+		font_size = int(font_size * ResponsiveLayout.PORTRAIT_FONT_SCALE)
 
 	# Calculate text dimensions
 	var text_width = 0

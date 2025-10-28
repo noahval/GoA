@@ -341,13 +341,34 @@ A: Call `ResponsiveLayout.apply_to_scene(self)` first, then add custom adjustmen
 A: No, they're constants. You'd need scene-specific logic for dynamic changes.
 
 **Q: Buttons aren't clickable in my scene**
-A: **FIXED AUTOMATICALLY!** As of the latest update, `ResponsiveLayout.apply_to_scene()` automatically sets `mouse_filter = PASS` on the Background and all container nodes at runtime. Just call `ResponsiveLayout.apply_to_scene(self)` in your `_ready()` function and buttons will work!
+A: **FIXED AUTOMATICALLY!** As of the latest update, `ResponsiveLayout.apply_to_scene()` automatically:
+  1. Sets `mouse_filter = PASS` on the Background and all container nodes at runtime
+  2. Uses Godot 4's `reparent()` method to preserve signal connections when switching orientations
+  3. Hides PopupContainer when no popups are visible (prevents click blocking)
+
+  Just call `ResponsiveLayout.apply_to_scene(self)` in your `_ready()` function and buttons will work in both portrait and landscape modes!
 
   If you're NOT using ResponsiveLayout for some reason, you can manually set:
   - Background → Inspector → Mouse → Filter → "Pass"
   - HBoxContainer, VBoxContainer, LeftVBox, RightVBox → same setting
 
-  **Root cause**: The Background TextureRect is full-screen and blocks ALL mouse events unless mouse_filter is set to PASS.
+  **Root causes fixed**:
+  1. The Background TextureRect is full-screen and blocks ALL mouse events unless mouse_filter is set to PASS
+  2. Signal connections break when using `remove_child()` + `add_child()` to reparent - now using `reparent()` which preserves signals
+  3. PopupContainer (z_index: 100) blocks clicks even when empty - now automatically hidden when no popups are showing
+
+**Q: Do button signals work after switching between portrait and landscape?**
+A: **YES!** ResponsiveLayout uses Godot 4's `reparent()` method which preserves signal connections automatically. You don't need to manually reconnect signals in your scene code.
+
+**Q: How do notifications work with ResponsiveLayout?**
+A: **AUTOMATIC SCALING!** The scene template includes a NotificationPanel in LeftVBox that automatically:
+  1. Displays notifications when `Global.show_stat_notification(message)` is called
+  2. Scales to 1.75x larger text in portrait mode (same as other UI elements)
+  3. Stacks notifications vertically with proper spacing
+  4. Auto-removes notifications after 3 seconds
+  5. Works in both landscape (in LeftVBox) and portrait (in TopVBox after reparenting)
+
+  No special code needed - notifications just work and scale properly!
 
 ## Future Enhancements
 

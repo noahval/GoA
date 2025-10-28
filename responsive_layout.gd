@@ -120,12 +120,14 @@ func _apply_responsive_layout_internal(scene_root: Control) -> void:
 	else:
 		print("ResponsiveLayout: WARNING - No Background node found!")
 
-	# CRITICAL: Set mouse_filter to STOP on ALL containers
-	# They were being set to PASS somewhere, blocking all button events
+	# CRITICAL: Set mouse_filter correctly on containers
+	# Main containers (HBox/VBox) should PASS events through (they're full-screen layout containers)
+	# This allows SettingsOverlay (z_index: 200) to receive clicks even when VBox is visible in portrait mode
+	# But menu containers (LeftVBox/RightVBox/TopVBox/BottomVBox) should STOP to allow their button children to receive events
 	if hbox:
-		hbox.mouse_filter = Control.MOUSE_FILTER_STOP
+		hbox.mouse_filter = Control.MOUSE_FILTER_PASS
 	if vbox:
-		vbox.mouse_filter = Control.MOUSE_FILTER_STOP
+		vbox.mouse_filter = Control.MOUSE_FILTER_PASS
 	if left_vbox:
 		left_vbox.mouse_filter = Control.MOUSE_FILTER_STOP
 	if right_vbox:
@@ -134,7 +136,7 @@ func _apply_responsive_layout_internal(scene_root: Control) -> void:
 		top_vbox.mouse_filter = Control.MOUSE_FILTER_STOP
 	if bottom_vbox:
 		bottom_vbox.mouse_filter = Control.MOUSE_FILTER_STOP
-	print("ResponsiveLayout: Set ALL containers to STOP to allow button events")
+	print("ResponsiveLayout: Set main containers to PASS, menu containers to STOP")
 
 	# Check if already in correct mode
 	var currently_portrait = vbox.visible
@@ -143,20 +145,11 @@ func _apply_responsive_layout_internal(scene_root: Control) -> void:
 	print("ResponsiveLayout: currently_portrait=", currently_portrait, " is_portrait=", is_portrait, " need_reparent=", need_reparent)
 
 	if need_reparent:
-		# Reparent columns when switching modes
-		if left_vbox.get_parent():
-			left_vbox.get_parent().remove_child(left_vbox)
-		if right_vbox.get_parent():
-			right_vbox.get_parent().remove_child(right_vbox)
-
+		# CRITICAL: Use reparent() instead of remove_child/add_child to preserve signal connections
+		# This prevents button click signals from breaking when switching orientations
 		if is_portrait:
 			# Portrait: stack vertically
-			top_vbox.add_child(left_vbox)
-			bottom_vbox.add_child(right_vbox)
-			hbox.visible = false
-			vbox.visible = true
-
-			# CRITICAL: Set size_flags AFTER reparenting so they apply in the new container
+			# Set size_flags BEFORE reparenting for proper layout
 			left_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			right_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			# Remove custom_minimum_size entirely so containers can expand
@@ -165,37 +158,65 @@ func _apply_responsive_layout_internal(scene_root: Control) -> void:
 			# Reset any positioning
 			left_vbox.position = Vector2.ZERO
 			right_vbox.position = Vector2.ZERO
-			print("ResponsiveLayout: AFTER reparent - Set portrait size_flags (EXPAND_FILL), removed constraints")
+
+			# CRITICAL: Use reparent() to preserve signal connections
+			left_vbox.reparent(top_vbox)
+			right_vbox.reparent(bottom_vbox)
+
+			hbox.visible = false
+			vbox.visible = true
+			print("ResponsiveLayout: Reparented to portrait using reparent() - signals preserved")
 
 			_reverse_button_order(right_vbox)
 		else:
 			# Landscape: side by side with CenterArea in middle
-			# Restore size_flags for landscape BEFORE adding
+			# Restore size_flags for landscape BEFORE reparenting
 			left_vbox.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 			right_vbox.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 			# Restore minimum widths from template
 			left_vbox.custom_minimum_size = Vector2(LEFT_COLUMN_WIDTH, 0)
 			right_vbox.custom_minimum_size = Vector2(RIGHT_COLUMN_WIDTH, 0)
-			print("ResponsiveLayout: BEFORE reparent - Set landscape size_flags (SHRINK_CENTER)")
+			print("ResponsiveLayout: Set landscape size_flags (SHRINK_CENTER)")
 
-			# Add in correct order: LeftVBox, CenterArea (already there), RightVBox
+			# CRITICAL: Use reparent() to preserve signal connections
+			# Reparent in correct order: LeftVBox, CenterArea (already there), RightVBox
 			if center_area and center_area.get_parent() == hbox:
-				# Get the index of CenterArea
+				# Reparent LeftVBox first, then move it before CenterArea
+				left_vbox.reparent(hbox)
 				var center_index = center_area.get_index()
-				# Add LeftVBox before CenterArea
-				hbox.add_child(left_vbox)
 				hbox.move_child(left_vbox, center_index)
-				# Add RightVBox after CenterArea (it will be at the end)
-				hbox.add_child(right_vbox)
+				# Reparent RightVBox (it will be at the end after CenterArea)
+				right_vbox.reparent(hbox)
 			else:
 				# Fallback if CenterArea doesn't exist
-				hbox.add_child(left_vbox)
-				hbox.add_child(right_vbox)
+				left_vbox.reparent(hbox)
+				right_vbox.reparent(hbox)
+
 			hbox.visible = true
 			vbox.visible = false
+			print("ResponsiveLayout: Reparented to landscape using reparent() - signals preserved")
 
 	# Position popups in the appropriate area
 	position_popups_in_play_area(scene_root, is_portrait, popup_container, center_area, middle_area, viewport_size)
+
+	# Apply font scaling to popups
+	apply_popup_font_scaling(popup_container, is_portrait)
+
+	# CRITICAL: Hide PopupContainer if no popups are visible
+	# PopupContainer has z_index:100 and blocks ALL clicks even with mouse_filter=PASS
+	if popup_container:
+		var any_popup_visible = false
+		for child in popup_container.get_children():
+			if child is Control and child.visible:
+				any_popup_visible = true
+				break
+
+		if not any_popup_visible:
+			popup_container.visible = false
+			print("ResponsiveLayout: Hid PopupContainer (no visible popups)")
+		else:
+			popup_container.visible = true
+			print("ResponsiveLayout: PopupContainer visible (has active popups)")
 
 	# Remove panel backgrounds to prevent double backgrounds
 	# Panels use self_modulate for their visual appearance
@@ -680,3 +701,84 @@ func _find_popups_recursive(node: Node, popups: Array, popup_container: Node) ->
 	# Recurse through children
 	for child in node.get_children():
 		_find_popups_recursive(child, popups, popup_container)
+
+## Apply font scaling to all popups in the PopupContainer
+## This ensures popup text is properly sized for portrait mode
+func apply_popup_font_scaling(popup_container: Control, is_portrait: bool) -> void:
+	if not popup_container:
+		return
+
+	var popups = []
+	_find_popups_recursive(popup_container, popups, popup_container)
+
+	if popups.size() == 0:
+		return
+
+	print("ResponsiveLayout: Applying font scaling to ", popups.size(), " popup(s)")
+
+	for popup in popups:
+		# Find the message label (typically in MarginContainer/VBoxContainer/MessageLabel)
+		var message_label = _find_label_in_popup(popup)
+		if message_label:
+			if is_portrait:
+				var label_font_size = message_label.get_theme_font_size("font_size")
+				if label_font_size <= 0:
+					label_font_size = 25  # Default from theme
+				message_label.add_theme_font_size_override("font_size", int(label_font_size * PORTRAIT_FONT_SCALE))
+				print("ResponsiveLayout: Scaled popup label '", message_label.name, "' to ", int(label_font_size * PORTRAIT_FONT_SCALE))
+			else:
+				message_label.remove_theme_font_size_override("font_size")
+
+		# Find and scale buttons
+		_scale_popup_buttons(popup, is_portrait)
+
+## Find the message label in a popup node
+func _find_label_in_popup(popup: Node) -> Label:
+	# Common path: MarginContainer/VBoxContainer/MessageLabel
+	if popup.has_node("MarginContainer/VBoxContainer/MessageLabel"):
+		return popup.get_node("MarginContainer/VBoxContainer/MessageLabel")
+
+	# Fallback: search recursively for any Label
+	return _find_first_label_recursive(popup)
+
+## Recursively find the first Label node
+func _find_first_label_recursive(node: Node) -> Label:
+	if node is Label:
+		return node
+
+	for child in node.get_children():
+		var result = _find_first_label_recursive(child)
+		if result:
+			return result
+
+	return null
+
+## Scale buttons in a popup
+func _scale_popup_buttons(popup: Node, is_portrait: bool) -> void:
+	# Find button container (typically MarginContainer/VBoxContainer/ButtonContainer)
+	var button_container = null
+	if popup.has_node("MarginContainer/VBoxContainer/ButtonContainer"):
+		button_container = popup.get_node("MarginContainer/VBoxContainer/ButtonContainer")
+
+	if not button_container:
+		return
+
+	# Calculate scaled button height
+	var button_height = LANDSCAPE_ELEMENT_HEIGHT
+	if is_portrait:
+		button_height = PORTRAIT_ELEMENT_HEIGHT * PORTRAIT_FONT_SCALE
+
+	# Scale all buttons
+	for child in button_container.get_children():
+		if child is Button:
+			child.custom_minimum_size.y = button_height
+
+			if is_portrait:
+				var button_font_size = child.get_theme_font_size("font_size")
+				if button_font_size <= 0:
+					button_font_size = 25  # Default from theme
+				child.add_theme_font_size_override("font_size", int(button_font_size * PORTRAIT_FONT_SCALE))
+			else:
+				child.remove_theme_font_size_override("font_size")
+
+			print("ResponsiveLayout: Scaled popup button '", child.name, "' to height ", button_height)

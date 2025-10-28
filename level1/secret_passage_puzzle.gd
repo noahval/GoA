@@ -33,179 +33,58 @@ func _ready():
 
 	puzzle_container = $PuzzleContainer
 
-	# Apply custom layout first, then setup puzzle
-	# We need to wait for the scene to be fully ready
+	# Use ResponsiveLayout for orientation handling
+	ResponsiveLayout.apply_to_scene(self)
+
+	# Setup puzzle after layout is applied
 	call_deferred("_delayed_setup")
 
 
 func _delayed_setup():
-	var viewport_size = get_viewport().get_visible_rect().size
-	var is_portrait = viewport_size.y > viewport_size.x
-
 	print("=== Secret Passage Puzzle Setup ===")
-	print("Viewport size: ", viewport_size)
-	print("Is portrait: ", is_portrait)
 	print("Puzzle container exists: ", puzzle_container != null)
 
-	# Setup puzzle first (creates the visual elements)
+	# Setup puzzle (creates the visual elements)
 	setup_puzzle()
 	update_place_pipe_button()
 	add_developer_skip_button()
 
-	# Then apply layout
+	# Position puzzle in the play area
+	position_puzzle_in_play_area()
+
+func position_puzzle_in_play_area():
+	# Position the puzzle in the center/middle area depending on orientation
+	var viewport_size = get_viewport().get_visible_rect().size
+	var is_portrait = viewport_size.y > viewport_size.x
+
+	# Calculate puzzle size
+	var puzzle_total_size = GRID_SIZE * CELL_SIZE + 80  # Grid + indicator space
+
+	# Make sure puzzle container is visible
+	puzzle_container.visible = true
+
 	if is_portrait:
-		# Portrait mode: custom portrait layout
-		apply_custom_portrait_layout()
+		# Portrait: center in MiddleArea
+		var middle_area = get_node_or_null("VBoxContainer/MiddleArea")
+		if middle_area:
+			# Center horizontally in viewport
+			var puzzle_x = (viewport_size.x - puzzle_total_size) / 2
+			# Position vertically to be in middle area (approximate)
+			var puzzle_y = viewport_size.y * 0.35  # Roughly in middle of screen
+			puzzle_container.position = Vector2(puzzle_x, puzzle_y)
+			print("Positioned puzzle in portrait mode at ", puzzle_container.position)
 	else:
-		# Landscape mode: custom layout for this scene
-		apply_custom_landscape_layout()
+		# Landscape: center in CenterArea
+		var center_area = get_node_or_null("HBoxContainer/CenterArea")
+		if center_area:
+			var center_rect = center_area.get_global_rect()
+			# Center the puzzle in the center area
+			var puzzle_x = center_rect.position.x + (center_rect.size.x - puzzle_total_size) / 2
+			var puzzle_y = center_rect.position.y + (center_rect.size.y - puzzle_total_size) / 2
+			puzzle_container.position = Vector2(puzzle_x, puzzle_y)
+			print("Positioned puzzle in landscape mode at ", puzzle_container.position)
 
-func apply_custom_portrait_layout():
-	var viewport_size = get_viewport().get_visible_rect().size
-	var hbox = $HBoxContainer
-	var vbox = $VBoxContainer
-	var top_vbox = $VBoxContainer/TopVBox
-	var bottom_vbox = $VBoxContainer/BottomVBox
-	var left_vbox = $HBoxContainer/LeftVBox
-	var right_vbox = $HBoxContainer/RightVBox
-
-	# Make sure VBoxContainer is visible and HBoxContainer is hidden
-	vbox.visible = true
-	hbox.visible = false
-
-	# Move all children from LeftVBox and RightVBox to TopVBox
-	var left_children = left_vbox.get_children().duplicate()
-	for child in left_children:
-		left_vbox.remove_child(child)
-		top_vbox.add_child(child)
-
-	var right_children = right_vbox.get_children().duplicate()
-	for child in right_children:
-		right_vbox.remove_child(child)
-		top_vbox.add_child(child)
-
-	# Set proper sizing for all elements
-	for child in top_vbox.get_children():
-		if child is Panel:
-			child.custom_minimum_size = Vector2(0, 40)
-		elif child is Button:
-			child.custom_minimum_size = Vector2(0, 40)
-
-	# Add spacing between elements
-	top_vbox.add_theme_constant_override("separation", 5)
-
-	# Calculate puzzle size
-	var puzzle_total_size = GRID_SIZE * CELL_SIZE + 80  # Grid + indicator space
-
-	# Make sure puzzle container is visible
-	puzzle_container.visible = true
-
-	# Calculate menu height (approximate based on number of children)
-	var menu_height = top_vbox.get_child_count() * 45 + 50  # ~45px per item + padding
-
-	# Calculate equal spacing: total_height = gap + menu_height + gap + puzzle_size + gap
-	# So: gap = (total_height - menu_height - puzzle_size) / 3
-	var total_content_height = menu_height + puzzle_total_size
-	var gap = (viewport_size.y - total_content_height) / 3.0
-
-	# Position TopVBox at the top with gap spacing
-	var top_padding = $VBoxContainer/TopPadding
-	top_padding.custom_minimum_size = Vector2(0, gap)
-
-	# Add spacing between menu and puzzle
-	var spacer = $VBoxContainer/Spacer
-	spacer.custom_minimum_size = Vector2(0, gap)
-	spacer.size_flags_vertical = 0  # Don't expand
-
-	# Position puzzle centered horizontally
-	var puzzle_x = (viewport_size.x - puzzle_total_size) / 2
-	var puzzle_y = gap + menu_height + gap  # top_gap + menu + middle_gap
-	puzzle_container.position = Vector2(puzzle_x, puzzle_y)
-
-	# Set bottom padding
-	var bottom_padding = $VBoxContainer/BottomPadding
-	bottom_padding.custom_minimum_size = Vector2(0, gap)
-
-	print("Portrait layout applied:")
-	print("  Viewport: ", viewport_size)
-	print("  Menu height: ", menu_height)
-	print("  Puzzle size: ", puzzle_total_size)
-	print("  Calculated gap: ", gap)
-	print("  Puzzle position: ", puzzle_container.position)
-	print("  Bottom gap check: ", viewport_size.y - (puzzle_y + puzzle_total_size))
-	print("  TopVBox children count: ", top_vbox.get_child_count())
-
-func apply_custom_landscape_layout():
-	var viewport_size = get_viewport().get_visible_rect().size
-	var hbox = $HBoxContainer
-	var vbox = $VBoxContainer
-	var left_vbox = $HBoxContainer/LeftVBox
-	var right_vbox = $HBoxContainer/RightVBox
-
-	# Make sure HBoxContainer is visible and VBoxContainer is hidden
-	hbox.visible = true
-	vbox.visible = false
-
-	# Move all children from RightVBox to LeftVBox to stack them
-	var right_children = right_vbox.get_children().duplicate()
-	for child in right_children:
-		right_vbox.remove_child(child)
-		left_vbox.add_child(child)
-
-	# Hide the now-empty RightVBox so it doesn't take up space
-	right_vbox.visible = false
-
-	# Set proper sizing for all panels to prevent overlap
-	for child in left_vbox.get_children():
-		if child is Panel:
-			child.custom_minimum_size = Vector2(0, 40)
-		elif child is Button:
-			child.custom_minimum_size = Vector2(0, 40)
-
-	# Add spacing between elements
-	left_vbox.add_theme_constant_override("separation", 5)
-
-	# Set a reasonable width for the menu
-	var menu_width = 300
-	left_vbox.custom_minimum_size = Vector2(menu_width, 0)
-
-	# Calculate puzzle size
-	var puzzle_total_size = GRID_SIZE * CELL_SIZE + 80  # Grid + indicator space
-
-	# Calculate equal spacing: total_width = gap + menu_width + gap + puzzle_size + gap
-	# So: gap = (total_width - menu_width - puzzle_size) / 3
-	var total_content_width = menu_width + puzzle_total_size
-	var gap = (viewport_size.x - total_content_width) / 3.0
-
-	# Position the menu with gap spacing from left edge
-	hbox.anchor_left = 0
-	hbox.anchor_top = 0.5
-	hbox.anchor_right = 0
-	hbox.anchor_bottom = 0.5
-	hbox.offset_left = gap
-	hbox.offset_top = -300  # Half of approximate menu height (centers it)
-	hbox.offset_right = gap + menu_width
-	hbox.offset_bottom = 300  # Half of approximate menu height
-
-	# Make sure puzzle container is visible
-	puzzle_container.visible = true
-
-	# Position puzzle: left_gap + menu_width + middle_gap
-	var puzzle_x = gap + menu_width + gap
-	var puzzle_y = (viewport_size.y - puzzle_total_size) / 2  # Centered vertically
-	puzzle_container.position = Vector2(puzzle_x, puzzle_y)
-
-	print("Landscape layout applied:")
-	print("  Viewport: ", viewport_size)
-	print("  Menu width: ", menu_width)
-	print("  Puzzle size: ", puzzle_total_size)
-	print("  Calculated gap: ", gap)
-	print("  Menu position: ", hbox.position)
-	print("  Menu offset_left: ", hbox.offset_left)
-	print("  Puzzle position: ", puzzle_container.position)
-	print("  Right gap check: ", viewport_size.x - (puzzle_x + puzzle_total_size))
-	print("  LeftVBox children count: ", left_vbox.get_child_count())
-	print("  Puzzle children count: ", puzzle_container.get_child_count())
+	print("Puzzle positioning complete. Size: ", puzzle_total_size)
 
 func find_node_recursive(node: Node, node_name: String) -> Node:
 	if node.name == node_name:

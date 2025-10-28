@@ -4,7 +4,7 @@
 
 GoA now has a professional, reusable popup dialog system that provides consistent, beautiful popups across all scenes. The system features:
 
-- **Professional styling** with semi-transparent dark backgrounds (85% opacity)
+- **Professional styling** with semi-transparent dark backgrounds (30% opacity - lets you see the background)
 - **Outlined buttons** with borders that distinguish them clearly
 - **Automatic responsive sizing** that adapts to landscape and portrait orientations
 - **Easy-to-use API** for creating popups with custom messages and buttons

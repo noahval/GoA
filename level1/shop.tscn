@@ -10,13 +10,23 @@ script = ExtResource("2_script")
 [node name="Background" parent="." index="0"]
 texture = ExtResource("3_bg")
 
-[node name="ShopTitle" type="Label" parent="HBoxContainer/LeftVBox" index="0"]
+[node name="TitlePanel" type="Panel" parent="HBoxContainer/LeftVBox" index="0"]
+custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
+
+[node name="ShopTitle" type="Label" parent="HBoxContainer/LeftVBox/TitlePanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 text = "Crankshaft's"
 horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="BreakTimerPanel" type="Panel" parent="HBoxContainer/LeftVBox" index="1"]
+custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 
 [node name="BreakTimerBar" type="ProgressBar" parent="HBoxContainer/LeftVBox/BreakTimerPanel"]
@@ -42,6 +52,7 @@ vertical_alignment = 1
 
 [node name="SuspicionPanel" type="Panel" parent="HBoxContainer/LeftVBox" index="2"]
 visible = false
+custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 
 [node name="SuspicionBar" type="ProgressBar" parent="HBoxContainer/LeftVBox/SuspicionPanel"]
@@ -66,6 +77,7 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="CoinsPanel" type="Panel" parent="HBoxContainer/LeftVBox" index="3"]
+custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 
 [node name="CoinsLabel" type="Label" parent="HBoxContainer/LeftVBox/CoinsPanel"]

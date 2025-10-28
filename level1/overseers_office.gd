@@ -10,9 +10,9 @@ var max_break_time = 30.0
 @onready var coins_label = $HBoxContainer/LeftVBox/CoinsPanel/CoinsLabel
 @onready var talk_button = $HBoxContainer/RightVBox/TalkButton
 @onready var steal_writ_button = $HBoxContainer/RightVBox/StealWritButton
-@onready var confirmation_popup = $ConfirmationPopup
-@onready var talk_questions_panel = $TalkQuestionsPanel
-@onready var question_label = $TalkQuestionsPanel/VBoxContainer/QuestionLabel
+@onready var confirmation_popup = $PopupContainer/ConfirmationPopup
+@onready var talk_questions_panel = $PopupContainer/TalkQuestionsPanel
+@onready var question_label = $PopupContainer/TalkQuestionsPanel/QuizVBox/QuestionLabel
 
 # Quiz state variables
 var current_correct_answer = ""
@@ -146,10 +146,10 @@ func fetch_question():
 
 	# Display the question
 	question_label.text = question_data["question"]
-	$TalkQuestionsPanel/VBoxContainer/AnswerA.text = "A) " + question_data["answers"]["A"]
-	$TalkQuestionsPanel/VBoxContainer/AnswerB.text = "B) " + question_data["answers"]["B"]
-	$TalkQuestionsPanel/VBoxContainer/AnswerC.text = "C) " + question_data["answers"]["C"]
-	$TalkQuestionsPanel/VBoxContainer/AnswerD.text = "D) " + question_data["answers"]["D"]
+	$PopupContainer/TalkQuestionsPanel/QuizVBox/AnswerA.text = "A) " + question_data["answers"]["A"]
+	$PopupContainer/TalkQuestionsPanel/QuizVBox/AnswerB.text = "B) " + question_data["answers"]["B"]
+	$PopupContainer/TalkQuestionsPanel/QuizVBox/AnswerC.text = "C) " + question_data["answers"]["C"]
+	$PopupContainer/TalkQuestionsPanel/QuizVBox/AnswerD.text = "D) " + question_data["answers"]["D"]
 
 	# Store the correct answer
 	current_correct_answer = question_data["correct"]
@@ -161,10 +161,10 @@ func fetch_question():
 	set_answer_buttons_enabled(true)
 
 func set_answer_buttons_enabled(enabled: bool):
-	$TalkQuestionsPanel/VBoxContainer/AnswerA.disabled = !enabled
-	$TalkQuestionsPanel/VBoxContainer/AnswerB.disabled = !enabled
-	$TalkQuestionsPanel/VBoxContainer/AnswerC.disabled = !enabled
-	$TalkQuestionsPanel/VBoxContainer/AnswerD.disabled = !enabled
+	$PopupContainer/TalkQuestionsPanel/QuizVBox/AnswerA.disabled = !enabled
+	$PopupContainer/TalkQuestionsPanel/QuizVBox/AnswerB.disabled = !enabled
+	$PopupContainer/TalkQuestionsPanel/QuizVBox/AnswerC.disabled = !enabled
+	$PopupContainer/TalkQuestionsPanel/QuizVBox/AnswerD.disabled = !enabled
 
 func _on_answer_selected(selected_answer: String):
 	if selected_answer == current_correct_answer:
@@ -210,10 +210,10 @@ func resize_talk_panel():
 
 	# Check all answer button widths
 	var answer_buttons = [
-		$TalkQuestionsPanel/VBoxContainer/AnswerA,
-		$TalkQuestionsPanel/VBoxContainer/AnswerB,
-		$TalkQuestionsPanel/VBoxContainer/AnswerC,
-		$TalkQuestionsPanel/VBoxContainer/AnswerD
+		$PopupContainer/TalkQuestionsPanel/QuizVBox/AnswerA,
+		$PopupContainer/TalkQuestionsPanel/QuizVBox/AnswerB,
+		$PopupContainer/TalkQuestionsPanel/QuizVBox/AnswerC,
+		$PopupContainer/TalkQuestionsPanel/QuizVBox/AnswerD
 	]
 
 	for button in answer_buttons:
