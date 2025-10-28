@@ -682,7 +682,7 @@ func _find_popups_recursive(node: Node, popups: Array, popup_container: Node) ->
 		var is_popup = false
 
 		# Check for PopupPanel theme variation using get method
-		if node.theme_type_variation == "PopupPanel":
+		if node.theme_type_variation == "StyledPopup":
 			is_popup = true
 
 		# Check if it has the reusable_popup script

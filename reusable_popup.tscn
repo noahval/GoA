@@ -22,7 +22,7 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 theme = ExtResource("1")
-theme_type_variation = &"PopupPanel"
+theme_type_variation = &"StyledPopup"
 script = ExtResource("2")
 
 [node name="MarginContainer" type="MarginContainer" parent="."]
