@@ -10,8 +10,8 @@ extends Node
 # Portrait mode - one universal height for ALL menu elements
 const PORTRAIT_ELEMENT_HEIGHT = 30
 const PORTRAIT_FONT_SCALE = 1.75
-const PORTRAIT_TOP_PADDING = 150
-const PORTRAIT_BOTTOM_PADDING = 90
+const PORTRAIT_TOP_PADDING = 100  # Two buttons worth of padding (scaled element height ~52px each)
+const PORTRAIT_BOTTOM_PADDING = 100  # Two buttons worth of padding (scaled element height ~52px each)
 
 # Landscape mode - one universal height for ALL menu elements
 const LANDSCAPE_ELEMENT_HEIGHT = 40
@@ -97,18 +97,35 @@ func _apply_responsive_layout_internal(scene_root: Control) -> void:
 		center_area.mouse_filter = Control.MOUSE_FILTER_PASS
 	if middle_area:
 		middle_area.mouse_filter = Control.MOUSE_FILTER_PASS
+		# CRITICAL: Enable clipping on MiddleArea in portrait mode to prevent popups from overflowing
+		if is_portrait:
+			middle_area.clip_contents = true
+			print("ResponsiveLayout: Enabled clip_contents on MiddleArea for portrait")
+		else:
+			middle_area.clip_contents = false
 	if popup_container:
 		popup_container.mouse_filter = Control.MOUSE_FILTER_PASS
 
 	# Set mouse filter on padding controls to PASS (they shouldn't block clicks)
+	# AND apply the padding heights based on orientation
 	var top_padding = scene_root.get_node_or_null("VBoxContainer/TopPadding")
 	var bottom_padding = scene_root.get_node_or_null("VBoxContainer/BottomPadding")
 	if top_padding:
 		top_padding.mouse_filter = Control.MOUSE_FILTER_PASS
-		print("ResponsiveLayout: Set TopPadding mouse_filter to PASS")
+		# Set padding height based on orientation
+		if is_portrait:
+			top_padding.custom_minimum_size = Vector2(0, PORTRAIT_TOP_PADDING)
+		else:
+			top_padding.custom_minimum_size = Vector2(0, 0)  # No padding in landscape
+		print("ResponsiveLayout: Set TopPadding mouse_filter to PASS, height: ", top_padding.custom_minimum_size.y)
 	if bottom_padding:
 		bottom_padding.mouse_filter = Control.MOUSE_FILTER_PASS
-		print("ResponsiveLayout: Set BottomPadding mouse_filter to PASS")
+		# Set padding height based on orientation
+		if is_portrait:
+			bottom_padding.custom_minimum_size = Vector2(0, PORTRAIT_BOTTOM_PADDING)
+		else:
+			bottom_padding.custom_minimum_size = Vector2(0, 0)  # No padding in landscape
+		print("ResponsiveLayout: Set BottomPadding mouse_filter to PASS, height: ", bottom_padding.custom_minimum_size.y)
 
 	# CRITICAL: Set correct mouse_filter values
 	# Background and play areas should PASS events through (don't block)
@@ -722,21 +739,73 @@ func position_popups_in_play_area(scene_root: Control, is_portrait: bool, popup_
 
 	print("ResponsiveLayout: Max popup width: ", max_popup_width, " Play area: ", play_area_rect)
 
+	# Calculate max popup height - can be generous since popup is reparented to MiddleArea
+	var max_popup_height = 0.0
+	if is_portrait:
+		# Portrait: Popup will be reparented to MiddleArea, so use most of viewport height
+		# The MiddleArea will naturally constrain it
+		max_popup_height = viewport_size.y * 0.6  # 60% of viewport height
+	else:
+		# Landscape: constrain to center area height with margins
+		if center_area:
+			max_popup_height = play_area_rect.size.y * 0.9  # 90% of center area
+		else:
+			# Fallback: 70% of viewport height
+			max_popup_height = viewport_size.y * 0.7
+
+	print("ResponsiveLayout: Max popup height: ", max_popup_height)
+
 	# Apply constraints to each popup
 	for popup in popups:
-		# Reparent to PopupContainer if not already there
-		if popup.get_parent() != popup_container:
+		# CRITICAL: In portrait mode, reparent popup to MiddleArea so it's physically constrained
+		# and can't block buttons in TopVBox/BottomVBox
+		var target_parent = popup_container
+		if is_portrait and middle_area:
+			target_parent = middle_area
+			print("ResponsiveLayout: Will reparent popup '", popup.name, "' to MiddleArea for portrait")
+
+		# Reparent if needed
+		if popup.get_parent() != target_parent:
 			var original_parent = popup.get_parent()
-			original_parent.remove_child(popup)
-			popup_container.add_child(popup)
-			print("ResponsiveLayout: Reparented popup '", popup.name, "' to PopupContainer")
+			if original_parent:
+				original_parent.remove_child(popup)
+			target_parent.add_child(popup)
+			print("ResponsiveLayout: Reparented popup '", popup.name, "' to ", target_parent.name)
 
-		# Constrain popup width
-		var half_width = max_popup_width / 2.0
-		popup.offset_left = -half_width
-		popup.offset_right = half_width
+		# Position popup based on parent
+		if is_portrait and middle_area and popup.get_parent() == middle_area:
+			# Portrait: popup is child of MiddleArea, so center it within MiddleArea
+			# Coordinate system is now relative to MiddleArea, not viewport
+			popup.anchor_left = 0.5
+			popup.anchor_right = 0.5
+			popup.anchor_top = 0.5
+			popup.anchor_bottom = 0.5
 
-		print("ResponsiveLayout: Constrained popup '", popup.name, "' to width: ", max_popup_width)
+			# Set size constraints (offsets from center of MiddleArea)
+			var half_width = max_popup_width / 2.0
+			var half_height = max_popup_height / 2.0
+			popup.offset_left = -half_width
+			popup.offset_right = half_width
+			popup.offset_top = -half_height
+			popup.offset_bottom = half_height
+
+			print("ResponsiveLayout: Positioned popup '", popup.name, "' centered in MiddleArea")
+		else:
+			# Landscape or popup in PopupContainer: center on screen (default behavior)
+			popup.anchor_left = 0.5
+			popup.anchor_right = 0.5
+			popup.anchor_top = 0.5
+			popup.anchor_bottom = 0.5
+
+			# Constrain popup width and height
+			var half_width = max_popup_width / 2.0
+			var half_height = max_popup_height / 2.0
+			popup.offset_left = -half_width
+			popup.offset_right = half_width
+			popup.offset_top = -half_height
+			popup.offset_bottom = half_height
+
+		print("ResponsiveLayout: Constrained popup '", popup.name, "' to size: ", max_popup_width, "x", max_popup_height)
 
 ## Recursively find all popup nodes (excluding PopupContainer itself)
 func _find_popups_recursive(node: Node, popups: Array, popup_container: Node) -> void:
@@ -784,68 +853,42 @@ func apply_popup_font_scaling(popup_container: Control, is_portrait: bool) -> vo
 	print("ResponsiveLayout: Applying font scaling to ", popups.size(), " popup(s)")
 
 	for popup in popups:
-		# Find the message label (typically in MarginContainer/VBoxContainer/MessageLabel)
-		var message_label = _find_label_in_popup(popup)
-		if message_label:
-			if is_portrait:
-				var label_font_size = message_label.get_theme_font_size("font_size")
-				if label_font_size <= 0:
-					label_font_size = 25  # Default from theme
-				message_label.add_theme_font_size_override("font_size", int(label_font_size * PORTRAIT_FONT_SCALE))
-				print("ResponsiveLayout: Scaled popup label '", message_label.name, "' to ", int(label_font_size * PORTRAIT_FONT_SCALE))
-			else:
-				message_label.remove_theme_font_size_override("font_size")
+		# Scale ALL labels and buttons recursively in the popup
+		_scale_popup_controls_recursive(popup, is_portrait)
 
-		# Find and scale buttons
-		_scale_popup_buttons(popup, is_portrait)
-
-## Find the message label in a popup node
-func _find_label_in_popup(popup: Node) -> Label:
-	# Common path: MarginContainer/VBoxContainer/MessageLabel
-	if popup.has_node("MarginContainer/VBoxContainer/MessageLabel"):
-		return popup.get_node("MarginContainer/VBoxContainer/MessageLabel")
-
-	# Fallback: search recursively for any Label
-	return _find_first_label_recursive(popup)
-
-## Recursively find the first Label node
-func _find_first_label_recursive(node: Node) -> Label:
+## Recursively scale all labels and buttons in a popup
+## This works for any popup structure, not just the standard reusable_popup template
+func _scale_popup_controls_recursive(node: Node, is_portrait: bool) -> void:
+	# Scale labels
 	if node is Label:
-		return node
+		if is_portrait:
+			var label_font_size = node.get_theme_font_size("font_size")
+			if label_font_size <= 0:
+				label_font_size = 25  # Default from theme
+			node.add_theme_font_size_override("font_size", int(label_font_size * PORTRAIT_FONT_SCALE))
+			print("ResponsiveLayout: Scaled popup label '", node.name, "' to ", int(label_font_size * PORTRAIT_FONT_SCALE))
+		else:
+			node.remove_theme_font_size_override("font_size")
 
+	# Scale buttons
+	elif node is Button:
+		# Calculate scaled button height
+		var button_height = LANDSCAPE_ELEMENT_HEIGHT
+		if is_portrait:
+			button_height = PORTRAIT_ELEMENT_HEIGHT * PORTRAIT_FONT_SCALE
+
+		node.custom_minimum_size.y = button_height
+
+		if is_portrait:
+			var button_font_size = node.get_theme_font_size("font_size")
+			if button_font_size <= 0:
+				button_font_size = 25  # Default from theme
+			node.add_theme_font_size_override("font_size", int(button_font_size * PORTRAIT_FONT_SCALE))
+		else:
+			node.remove_theme_font_size_override("font_size")
+
+		print("ResponsiveLayout: Scaled popup button '", node.name, "' to height ", button_height)
+
+	# Recurse through children
 	for child in node.get_children():
-		var result = _find_first_label_recursive(child)
-		if result:
-			return result
-
-	return null
-
-## Scale buttons in a popup
-func _scale_popup_buttons(popup: Node, is_portrait: bool) -> void:
-	# Find button container (typically MarginContainer/VBoxContainer/ButtonContainer)
-	var button_container = null
-	if popup.has_node("MarginContainer/VBoxContainer/ButtonContainer"):
-		button_container = popup.get_node("MarginContainer/VBoxContainer/ButtonContainer")
-
-	if not button_container:
-		return
-
-	# Calculate scaled button height
-	var button_height = LANDSCAPE_ELEMENT_HEIGHT
-	if is_portrait:
-		button_height = PORTRAIT_ELEMENT_HEIGHT * PORTRAIT_FONT_SCALE
-
-	# Scale all buttons
-	for child in button_container.get_children():
-		if child is Button:
-			child.custom_minimum_size.y = button_height
-
-			if is_portrait:
-				var button_font_size = child.get_theme_font_size("font_size")
-				if button_font_size <= 0:
-					button_font_size = 25  # Default from theme
-				child.add_theme_font_size_override("font_size", int(button_font_size * PORTRAIT_FONT_SCALE))
-			else:
-				child.remove_theme_font_size_override("font_size")
-
-			print("ResponsiveLayout: Scaled popup button '", child.name, "' to height ", button_height)
+		_scale_popup_controls_recursive(child, is_portrait)

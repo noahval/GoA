@@ -19,7 +19,7 @@ var max_stamina:
 	get:
 		return 125.0 + (20 * Global.constitution)
 var pipe_puzzle_grid = []  # Saved grid state for the pipe puzzle
-var heart_taken = false
+var heart_taken = true
 var whisper_triggered = false
 var door_discovered = false
 var stolen_coal = 0

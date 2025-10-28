@@ -13,7 +13,7 @@ var max_break_time = 30.0
 @onready var back_button = $HBoxContainer/RightVBox/BackButton
 @onready var confirmation_popup = $PopupContainer/ConfirmationPopup
 @onready var talk_questions_panel = $PopupContainer/TalkQuestionsPanel
-@onready var question_label = $PopupContainer/TalkQuestionsPanel/QuizVBox/QuestionLabel
+@onready var question_label = $PopupContainer/TalkQuestionsPanel/ScrollContainer/QuizVBox/QuestionLabel
 @onready var popup_container = $PopupContainer
 @onready var right_vbox = $HBoxContainer/RightVBox
 @onready var left_vbox = $HBoxContainer/LeftVBox
@@ -208,10 +208,10 @@ func fetch_question():
 
 	# Display the question
 	question_label.text = question_data["question"]
-	$PopupContainer/TalkQuestionsPanel/QuizVBox/AnswerA.text = "A) " + question_data["answers"]["A"]
-	$PopupContainer/TalkQuestionsPanel/QuizVBox/AnswerB.text = "B) " + question_data["answers"]["B"]
-	$PopupContainer/TalkQuestionsPanel/QuizVBox/AnswerC.text = "C) " + question_data["answers"]["C"]
-	$PopupContainer/TalkQuestionsPanel/QuizVBox/AnswerD.text = "D) " + question_data["answers"]["D"]
+	$PopupContainer/TalkQuestionsPanel/ScrollContainer/QuizVBox/AnswerA.text = "A) " + question_data["answers"]["A"]
+	$PopupContainer/TalkQuestionsPanel/ScrollContainer/QuizVBox/AnswerB.text = "B) " + question_data["answers"]["B"]
+	$PopupContainer/TalkQuestionsPanel/ScrollContainer/QuizVBox/AnswerC.text = "C) " + question_data["answers"]["C"]
+	$PopupContainer/TalkQuestionsPanel/ScrollContainer/QuizVBox/AnswerD.text = "D) " + question_data["answers"]["D"]
 
 	# Store the correct answer
 	current_correct_answer = question_data["correct"]
@@ -223,10 +223,10 @@ func fetch_question():
 	set_answer_buttons_enabled(true)
 
 func set_answer_buttons_enabled(enabled: bool):
-	$PopupContainer/TalkQuestionsPanel/QuizVBox/AnswerA.disabled = !enabled
-	$PopupContainer/TalkQuestionsPanel/QuizVBox/AnswerB.disabled = !enabled
-	$PopupContainer/TalkQuestionsPanel/QuizVBox/AnswerC.disabled = !enabled
-	$PopupContainer/TalkQuestionsPanel/QuizVBox/AnswerD.disabled = !enabled
+	$PopupContainer/TalkQuestionsPanel/ScrollContainer/QuizVBox/AnswerA.disabled = !enabled
+	$PopupContainer/TalkQuestionsPanel/ScrollContainer/QuizVBox/AnswerB.disabled = !enabled
+	$PopupContainer/TalkQuestionsPanel/ScrollContainer/QuizVBox/AnswerC.disabled = !enabled
+	$PopupContainer/TalkQuestionsPanel/ScrollContainer/QuizVBox/AnswerD.disabled = !enabled
 
 func _on_answer_selected(selected_answer: String):
 	if selected_answer == current_correct_answer:
@@ -254,75 +254,19 @@ func _on_answer_selected(selected_answer: String):
 		Level1Vars.talk_button_cooldown = randf_range(45.0, 65.0)
 
 func resize_talk_panel():
-	# Get viewport dimensions
-	var viewport_size = get_viewport().get_visible_rect().size
-	var viewport_width = viewport_size.x
+	# ResponsiveLayout now handles sizing automatically via position_popups_in_play_area()
+	# Just ensure word wrapping is enabled for the question label and answer buttons
+	question_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 
-	# Define constants for panel sizing
-	const MIN_PANEL_WIDTH = 300  # Minimum panel width
-	const PANEL_PADDING = 60  # Padding for panel content
-	const MARGIN_FROM_EDGE = 20  # Margin from screen edges
-
-	# Maximum panel width - leave margin from screen edges
-	var max_panel_width = viewport_width - (MARGIN_FROM_EDGE * 2)
-
-	# Calculate required width based on text content
-	var max_required_width = MIN_PANEL_WIDTH
-
-	# Check question label width
-	var question_width = calculate_text_width(question_label)
-	max_required_width = max(max_required_width, question_width)
-
-	# Check all answer button widths
 	var answer_buttons = [
-		$PopupContainer/TalkQuestionsPanel/QuizVBox/AnswerA,
-		$PopupContainer/TalkQuestionsPanel/QuizVBox/AnswerB,
-		$PopupContainer/TalkQuestionsPanel/QuizVBox/AnswerC,
-		$PopupContainer/TalkQuestionsPanel/QuizVBox/AnswerD
+		$PopupContainer/TalkQuestionsPanel/ScrollContainer/QuizVBox/AnswerA,
+		$PopupContainer/TalkQuestionsPanel/ScrollContainer/QuizVBox/AnswerB,
+		$PopupContainer/TalkQuestionsPanel/ScrollContainer/QuizVBox/AnswerC,
+		$PopupContainer/TalkQuestionsPanel/ScrollContainer/QuizVBox/AnswerD
 	]
 
 	for button in answer_buttons:
-		var button_width = calculate_text_width(button)
-		max_required_width = max(max_required_width, button_width)
-
-	# Clamp to min and max bounds
-	var desired_width = clamp(max_required_width, MIN_PANEL_WIDTH, max_panel_width)
-
-	# Apply the width to the panel (centered)
-	var half_width = desired_width / 2.0
-	talk_questions_panel.offset_left = -half_width
-	talk_questions_panel.offset_right = half_width
-
-	# Enable word wrapping on question label and buttons
-	question_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	for button in answer_buttons:
 		button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-
-func calculate_text_width(control: Control) -> float:
-	# Get text based on control type
-	var text = ""
-	if control is Label:
-		text = control.text
-	elif control is Button:
-		text = control.text
-
-	if text.is_empty():
-		return 0.0
-
-	# Get font and font size
-	var font = control.get_theme_font("font")
-	var font_size = control.get_theme_font_size("font_size")
-	if font_size <= 0:
-		font_size = 25  # Default font size
-
-	# Calculate text width
-	var text_width = 0.0
-	if font:
-		text_width = font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
-
-	# Add padding
-	const CONTROL_PADDING = 60
-	return text_width + CONTROL_PADDING
 
 func _on_steal_writ_button_pressed():
 	# Increase stolen writs by 1

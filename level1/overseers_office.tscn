@@ -6,11 +6,23 @@
 [ext_resource type="PackedScene" uid="uid://reusable_popup" path="res://reusable_popup.tscn" id="4_popup"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_DarkPanel"]
-bg_color = Color(0.25, 0.25, 0.25, 0.3)
-corner_radius_top_left = 4
-corner_radius_top_right = 4
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 4
+content_margin_left = 20.0
+content_margin_top = 20.0
+content_margin_right = 20.0
+content_margin_bottom = 20.0
+bg_color = Color(0.25, 0.25, 0.25, 0.15)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.6, 0.6, 0.6, 0.5)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+shadow_color = Color(0, 0, 0, 0.1)
+shadow_size = 8
+shadow_offset = Vector2(0, 4)
 
 [node name="OverseersOffice" instance=ExtResource("1_base")]
 script = ExtResource("2_script")
@@ -124,22 +136,29 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -300.0
-offset_top = -200.0
+offset_top = -150.0
 offset_right = 300.0
-offset_bottom = 100.0
+offset_bottom = 150.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_DarkPanel")
 
-[node name="QuizVBox" type="VBoxContainer" parent="PopupContainer/TalkQuestionsPanel"]
+[node name="ScrollContainer" type="ScrollContainer" parent="PopupContainer/TalkQuestionsPanel"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+follow_focus = true
+horizontal_scroll_mode = 0
 
-[node name="QuestionLabel" type="Label" parent="PopupContainer/TalkQuestionsPanel/QuizVBox"]
+[node name="QuizVBox" type="VBoxContainer" parent="PopupContainer/TalkQuestionsPanel/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 15
+
+[node name="QuestionLabel" type="Label" parent="PopupContainer/TalkQuestionsPanel/ScrollContainer/QuizVBox"]
 layout_mode = 2
 size_flags_vertical = 3
 text = "Loading question..."
@@ -147,27 +166,31 @@ horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 3
 
-[node name="AnswerA" type="Button" parent="PopupContainer/TalkQuestionsPanel/QuizVBox"]
+[node name="AnswerA" type="Button" parent="PopupContainer/TalkQuestionsPanel/ScrollContainer/QuizVBox"]
 layout_mode = 2
+theme_type_variation = &"PopupButton"
 text = "A) Loading..."
 
-[node name="AnswerB" type="Button" parent="PopupContainer/TalkQuestionsPanel/QuizVBox"]
+[node name="AnswerB" type="Button" parent="PopupContainer/TalkQuestionsPanel/ScrollContainer/QuizVBox"]
 layout_mode = 2
+theme_type_variation = &"PopupButton"
 text = "B) Loading..."
 
-[node name="AnswerC" type="Button" parent="PopupContainer/TalkQuestionsPanel/QuizVBox"]
+[node name="AnswerC" type="Button" parent="PopupContainer/TalkQuestionsPanel/ScrollContainer/QuizVBox"]
 layout_mode = 2
+theme_type_variation = &"PopupButton"
 text = "C) Loading..."
 
-[node name="AnswerD" type="Button" parent="PopupContainer/TalkQuestionsPanel/QuizVBox"]
+[node name="AnswerD" type="Button" parent="PopupContainer/TalkQuestionsPanel/ScrollContainer/QuizVBox"]
 layout_mode = 2
+theme_type_variation = &"PopupButton"
 text = "D) Loading..."
 
 [connection signal="pressed" from="HBoxContainer/RightVBox/TalkButton" to="." method="_on_talk_button_pressed"]
 [connection signal="pressed" from="HBoxContainer/RightVBox/StealWritButton" to="." method="_on_steal_writ_button_pressed"]
 [connection signal="pressed" from="HBoxContainer/RightVBox/BackButton" to="." method="_on_back_button_pressed"]
 [connection signal="button_pressed" from="PopupContainer/ConfirmationPopup" to="." method="_on_confirmation_popup_button_pressed"]
-[connection signal="pressed" from="PopupContainer/TalkQuestionsPanel/QuizVBox/AnswerA" to="." method="_on_answer_selected" binds= ["A"]]
-[connection signal="pressed" from="PopupContainer/TalkQuestionsPanel/QuizVBox/AnswerB" to="." method="_on_answer_selected" binds= ["B"]]
-[connection signal="pressed" from="PopupContainer/TalkQuestionsPanel/QuizVBox/AnswerC" to="." method="_on_answer_selected" binds= ["C"]]
-[connection signal="pressed" from="PopupContainer/TalkQuestionsPanel/QuizVBox/AnswerD" to="." method="_on_answer_selected" binds= ["D"]]
+[connection signal="pressed" from="PopupContainer/TalkQuestionsPanel/ScrollContainer/QuizVBox/AnswerA" to="." method="_on_answer_selected" binds= ["A"]]
+[connection signal="pressed" from="PopupContainer/TalkQuestionsPanel/ScrollContainer/QuizVBox/AnswerB" to="." method="_on_answer_selected" binds= ["B"]]
+[connection signal="pressed" from="PopupContainer/TalkQuestionsPanel/ScrollContainer/QuizVBox/AnswerC" to="." method="_on_answer_selected" binds= ["C"]]
+[connection signal="pressed" from="PopupContainer/TalkQuestionsPanel/ScrollContainer/QuizVBox/AnswerD" to="." method="_on_answer_selected" binds= ["D"]]
