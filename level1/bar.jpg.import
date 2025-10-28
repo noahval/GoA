@@ -16,9 +16,9 @@ dest_files=["res://.godot/imported/bar.jpg-58a8645643ab6af9f0816875428b0cf2.s3tc
 
 [params]
 
-compress/mode=2
+compress/mode=1
 compress/high_quality=false
-compress/lossy_quality=0.5
+compress/lossy_quality=0.3
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0
 compress/hdr_compression=1

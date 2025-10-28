@@ -16,9 +16,9 @@ dest_files=["res://.godot/imported/Shop.jpg-8dbaf55d6c2dab8905b333c8768c043d.s3t
 
 [params]
 
-compress/mode=2
+compress/mode=1
 compress/high_quality=false
-compress/lossy_quality=0.5
+compress/lossy_quality=0.3
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0
 compress/hdr_compression=1

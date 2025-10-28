@@ -16,9 +16,9 @@ dest_files=["res://.godot/imported/empty_heart.jpg-a3d978395ff39c838d683da59fe2e
 
 [params]
 
-compress/mode=2
+compress/mode=1
 compress/high_quality=false
-compress/lossy_quality=0.5
+compress/lossy_quality=0.3
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0
 compress/hdr_compression=1

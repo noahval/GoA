@@ -16,9 +16,9 @@ dest_files=["res://.godot/imported/coppersmith_carriage.jpg-c7542c7cbf0c3f821bfd
 
 [params]
 
-compress/mode=2
+compress/mode=1
 compress/high_quality=false
-compress/lossy_quality=0.5
+compress/lossy_quality=0.3
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0
 compress/hdr_compression=1
