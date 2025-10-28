@@ -3,15 +3,16 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bx7tbp4c6fh13"
-path="res://.godot/imported/Train_Heart.jpg-1983b768e20978afde29dd1c6f6106ed.ctex"
+path.s3tc="res://.godot/imported/Train_Heart.jpg-1983b768e20978afde29dd1c6f6106ed.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://level1/Train_Heart.jpg"
-dest_files=["res://.godot/imported/Train_Heart.jpg-1983b768e20978afde29dd1c6f6106ed.ctex"]
+dest_files=["res://.godot/imported/Train_Heart.jpg-1983b768e20978afde29dd1c6f6106ed.s3tc.ctex"]
 
 [params]
 
@@ -36,5 +37,5 @@ process/premult_alpha=false
 process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
-process/size_limit=2048
+process/size_limit=0
 detect_3d/compress_to=1
