@@ -1,6 +1,6 @@
 extends Control
 
-var minimum_display_time = 3.0  # seconds
+var minimum_display_time = 0.5  # seconds
 var fade_duration = 1.0  # seconds
 var elapsed_time = 0.0
 var state = "loading"  # States: loading, fading_out

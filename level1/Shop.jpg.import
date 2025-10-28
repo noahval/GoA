@@ -3,21 +3,21 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://k7el0t30mkvr"
-path="res://.godot/imported/shop.jpg-17a5c4b8dcea94f3c5f63a2dd55114c1.ctex"
+path="res://.godot/imported/Shop.jpg-8dbaf55d6c2dab8905b333c8768c043d.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://level1/shop.jpg"
-dest_files=["res://.godot/imported/shop.jpg-17a5c4b8dcea94f3c5f63a2dd55114c1.ctex"]
+source_file="res://level1/Shop.jpg"
+dest_files=["res://.godot/imported/Shop.jpg-8dbaf55d6c2dab8905b333c8768c043d.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
-compress/lossy_quality=0.7
+compress/lossy_quality=0.5
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0
 compress/hdr_compression=1
@@ -36,5 +36,5 @@ process/premult_alpha=false
 process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
-process/size_limit=0
+process/size_limit=2048
 detect_3d/compress_to=1

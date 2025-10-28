@@ -14,7 +14,7 @@ config/name="GoA"
 run/main_scene="res://level1/loading_screen.tscn"
 config/features=PackedStringArray("4.5", "GL Compatibility")
 boot_splash/bg_color=Color(0, 0, 0, 1)
-boot_splash/minimum_display_time=3000
+boot_splash/minimum_display_time=500
 
 [autoload]
 
