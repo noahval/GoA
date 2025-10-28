@@ -42,7 +42,7 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="TopPadding" type="Control" parent="VBoxContainer"]
-custom_minimum_size = Vector2(0, 90)
+custom_minimum_size = Vector2(0, 20)
 layout_mode = 2
 
 [node name="TopVBox" type="VBoxContainer" parent="VBoxContainer"]
@@ -52,8 +52,10 @@ mouse_filter = 0
 theme_override_constants/separation = 20
 
 [node name="MiddleArea" type="Control" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 200)
 layout_mode = 2
 size_flags_vertical = 3
+size_flags_stretch_ratio = 0.5
 mouse_filter = 2
 
 [node name="BottomVBox" type="VBoxContainer" parent="VBoxContainer"]
@@ -63,7 +65,7 @@ mouse_filter = 0
 theme_override_constants/separation = 20
 
 [node name="BottomPadding" type="Control" parent="VBoxContainer"]
-custom_minimum_size = Vector2(0, 90)
+custom_minimum_size = Vector2(0, 0)
 layout_mode = 2
 
 [node name="LeftVBox" type="VBoxContainer" parent="HBoxContainer"]

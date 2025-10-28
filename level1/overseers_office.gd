@@ -10,9 +10,13 @@ var max_break_time = 30.0
 @onready var coins_label = $HBoxContainer/LeftVBox/CoinsPanel/CoinsLabel
 @onready var talk_button = $HBoxContainer/RightVBox/TalkButton
 @onready var steal_writ_button = $HBoxContainer/RightVBox/StealWritButton
+@onready var back_button = $HBoxContainer/RightVBox/BackButton
 @onready var confirmation_popup = $PopupContainer/ConfirmationPopup
 @onready var talk_questions_panel = $PopupContainer/TalkQuestionsPanel
 @onready var question_label = $PopupContainer/TalkQuestionsPanel/QuizVBox/QuestionLabel
+@onready var popup_container = $PopupContainer
+@onready var right_vbox = $HBoxContainer/RightVBox
+@onready var left_vbox = $HBoxContainer/LeftVBox
 
 # Quiz state variables
 var current_correct_answer = ""
@@ -20,6 +24,18 @@ var questions_data = []
 var used_question_indices = []
 
 func _ready():
+	ResponsiveLayout.apply_to_scene(self)
+
+	# CRITICAL: Ensure PopupContainer is hidden at start
+	popup_container.visible = false
+
+	# Setup confirmation popup using reusable popup system
+	confirmation_popup.setup(
+		"Nothing to do on your break? Want to chat?",
+		["Sure", "Maybe Later"]
+	)
+	confirmation_popup.hide_popup()
+
 	# Set the actual maximum break time (not the remaining time)
 	max_break_time = Level1Vars.starting_break_time + Level1Vars.overseer_lvl
 
@@ -34,10 +50,57 @@ func _ready():
 
 	update_labels()
 	update_suspicion_bar()
-	ResponsiveLayout.apply_to_scene(self)
 
 	# Load questions from file
 	load_questions()
+
+	# Debug: Detailed button and container info
+	await get_tree().process_frame
+	await get_tree().process_frame
+	print("\n=== OVERSEER'S OFFICE DEBUG ===")
+	var viewport = get_viewport().get_visible_rect().size
+	print("Viewport: ", viewport, " | Portrait: ", viewport.y > viewport.x)
+	print("\n--- Container Visibility ---")
+	print("VBoxContainer visible: ", $VBoxContainer.visible, " | mouse_filter: ", $VBoxContainer.mouse_filter)
+	print("HBoxContainer visible: ", $HBoxContainer.visible, " | mouse_filter: ", $HBoxContainer.mouse_filter)
+	print("BottomVBox visible: ", $VBoxContainer/BottomVBox.visible if $VBoxContainer.visible else "N/A", " | mouse_filter: ", $VBoxContainer/BottomVBox.mouse_filter if $VBoxContainer.visible else "N/A")
+	print("\n--- Padding Check (from template) ---")
+	var top_pad = get_node_or_null("VBoxContainer/TopPadding")
+	var bottom_pad = get_node_or_null("VBoxContainer/BottomPadding")
+	var middle_area = get_node_or_null("VBoxContainer/MiddleArea")
+	print("TopPadding custom_minimum_size: ", top_pad.custom_minimum_size if top_pad else "NULL")
+	print("BottomPadding custom_minimum_size: ", bottom_pad.custom_minimum_size if bottom_pad else "NULL")
+	print("MiddleArea custom_minimum_size: ", middle_area.custom_minimum_size if middle_area else "NULL")
+	print("MiddleArea size: ", middle_area.size if middle_area else "NULL")
+	print("\n--- RightVBox Info ---")
+	print("RightVBox parent: ", right_vbox.get_parent().name)
+	print("RightVBox visible: ", right_vbox.visible)
+	print("RightVBox mouse_filter: ", right_vbox.mouse_filter, " (0=STOP, 1=PASS, 2=IGNORE)")
+	print("RightVBox global_position: ", right_vbox.global_position)
+	print("RightVBox size: ", right_vbox.size)
+	print("RightVBox rect (global): ", Rect2(right_vbox.global_position, right_vbox.size))
+	print("\n--- Button States ---")
+	for i in range(right_vbox.get_child_count()):
+		var child = right_vbox.get_child(i)
+		if child is Button:
+			print("Button [", i, "]: ", child.name)
+			print("  - visible: ", child.visible)
+			print("  - disabled: ", child.disabled)
+			print("  - global_position: ", child.global_position)
+			print("  - size: ", child.size)
+			print("  - in viewport: ", child.global_position.y >= 0 and child.global_position.y + child.size.y <= viewport.y)
+			print("  - mouse_filter: ", child.mouse_filter)
+	print("\n--- PopupContainer ---")
+	print("PopupContainer visible: ", popup_container.visible)
+	print("PopupContainer z_index: ", popup_container.z_index)
+	print("PopupContainer mouse_filter: ", popup_container.mouse_filter)
+	print("PopupContainer covers buttons: ", popup_container.visible and popup_container.z_index > 0)
+	print("\n--- Other Overlays ---")
+	var settings = get_node_or_null("SettingsOverlay")
+	if settings:
+		print("SettingsOverlay z_index: ", settings.z_index)
+		print("SettingsOverlay visible: ", settings.visible if settings.has_method("get") else "unknown")
+	print("=== END DEBUG ===\n")
 
 func _process(delta):
 	break_time -= delta
@@ -103,22 +166,21 @@ func update_talk_button_visibility(delta):
 	steal_writ_button.visible = Level1Vars.correct_answers >= 3
 
 func _on_talk_button_pressed():
-	# Show confirmation popup
-	confirmation_popup.visible = true
+	# Show confirmation popup using reusable popup system
+	popup_container.visible = true
+	confirmation_popup.show_popup()
 
-func _on_maybe_later_button_pressed():
-	# Close the confirmation popup
-	confirmation_popup.visible = false
+func _on_confirmation_popup_button_pressed(button_text: String):
+	if button_text == "Sure":
+		# Show talk questions panel
+		talk_questions_panel.visible = true
 
-func _on_sure_button_pressed():
-	# Close confirmation popup
-	confirmation_popup.visible = false
-
-	# Show talk questions panel
-	talk_questions_panel.visible = true
-
-	# Fetch first question
-	fetch_question()
+		# Fetch first question
+		fetch_question()
+	elif button_text == "Maybe Later":
+		# Just close the popup (already closed automatically by reusable popup)
+		# Hide popup container to ensure buttons remain clickable
+		popup_container.visible = false
 
 func fetch_question():
 	if questions_data.size() == 0:
@@ -184,6 +246,9 @@ func _on_answer_selected(selected_answer: String):
 
 		# Close the talk questions panel
 		talk_questions_panel.visible = false
+
+		# Hide popup container to ensure buttons remain clickable
+		popup_container.visible = false
 
 		# Set cooldown to random time ~1min
 		Level1Vars.talk_button_cooldown = randf_range(45.0, 65.0)

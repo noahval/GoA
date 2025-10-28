@@ -1,51 +1,35 @@
 [gd_scene load_steps=4 format=3 uid="uid://5fx8wv1di6ks"]
 
-[ext_resource type="Script" uid="uid://du6jlvjawa835" path="res://level1/train_heart.gd" id="1"]
-[ext_resource type="Texture2D" uid="uid://bx7tbp4c6fh13" path="res://level1/Train_Heart.jpg" id="2"]
-[ext_resource type="Theme" path="res://default_theme.tres" id="3"]
+[ext_resource type="PackedScene" uid="uid://base_scene_template" path="res://level1/scene_template.tscn" id="1_base"]
+[ext_resource type="Script" uid="uid://du6jlvjawa835" path="res://level1/train_heart.gd" id="2_script"]
+[ext_resource type="Texture2D" uid="uid://bx7tbp4c6fh13" path="res://level1/Train_Heart.jpg" id="3_bg"]
 
-[node name="TrainHeart" type="Control"]
-layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-script = ExtResource("1")
+[node name="TrainHeart" instance=ExtResource("1_base")]
+script = ExtResource("2_script")
 
-[node name="Background" type="TextureRect" parent="."]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-texture = ExtResource("2")
-expand_mode = 1
-stretch_mode = 6
+[node name="Background" parent="." index="0"]
+texture = ExtResource("3_bg")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="."]
-layout_mode = 1
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -100.0
-offset_top = 10.0
-offset_right = 100.0
-offset_bottom = 150.0
-grow_horizontal = 2
-
-[node name="Label" type="Label" parent="VBoxContainer"]
+[node name="TitlePanel" type="Panel" parent="HBoxContainer/LeftVBox" index="0"]
+custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
-theme = ExtResource("3")
+
+[node name="TitleLabel" type="Label" parent="HBoxContainer/LeftVBox/TitlePanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 text = "Crystal Mechanism"
 horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="BreakTimerPanel" type="Panel" parent="VBoxContainer"]
-custom_minimum_size = Vector2(0, 24)
+[node name="BreakTimerPanel" type="Panel" parent="HBoxContainer/LeftVBox" index="1"]
+custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 
-[node name="BreakTimerBar" type="ProgressBar" parent="VBoxContainer/BreakTimerPanel"]
+[node name="BreakTimerBar" type="ProgressBar" parent="HBoxContainer/LeftVBox/BreakTimerPanel"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -55,27 +39,24 @@ grow_vertical = 2
 value = 100.0
 show_percentage = false
 
-[node name="BreakTimer" type="Label" parent="VBoxContainer/BreakTimerPanel"]
+[node name="BreakTimer" type="Label" parent="HBoxContainer/LeftVBox/BreakTimerPanel"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme = ExtResource("3")
 text = "Break Timer"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="TakeHeartButton" type="Button" parent="VBoxContainer"]
+[node name="TakeHeartButton" type="Button" parent="HBoxContainer/RightVBox" index="0"]
 layout_mode = 2
-theme = ExtResource("3")
 text = "Take Whispering Crystal"
 
-[node name="BackButton" type="Button" parent="VBoxContainer"]
+[node name="BackButton" type="Button" parent="HBoxContainer/RightVBox" index="1"]
 layout_mode = 2
-theme = ExtResource("3")
 text = "Back to Pipes"
 
-[connection signal="pressed" from="VBoxContainer/TakeHeartButton" to="." method="_on_take_heart_button_pressed"]
-[connection signal="pressed" from="VBoxContainer/BackButton" to="." method="_on_back_button_pressed"]
+[connection signal="pressed" from="HBoxContainer/RightVBox/TakeHeartButton" to="." method="_on_take_heart_button_pressed"]
+[connection signal="pressed" from="HBoxContainer/RightVBox/BackButton" to="." method="_on_back_button_pressed"]
