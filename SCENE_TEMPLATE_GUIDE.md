@@ -8,24 +8,25 @@ This project uses **scene inheritance** to maintain consistent layouts across al
 
 Location: `level1/scene_template.tscn`
 
-### Layout Structure - Three Panel Design
+### Layout Structure - Four Container Design
 
-The template provides a **three-panel layout** that adapts to orientation:
+The template provides a **four-container layout** (three panels + notification bar) that adapts to orientation:
 
-**Landscape Mode (Left-Center-Right):**
+**Landscape Mode (Left-Center-Right + Bottom NotificationBar):**
 ```
 SceneRoot (Control)
 ├── Background (TextureRect) - Full screen background - mouse_filter = PASS ⚠️
-├── HBoxContainer (Landscape layout) - Full screen - mouse_filter = PASS
+├── HBoxContainer (Landscape layout) - Centered vertically (700px) - mouse_filter = PASS
 │   ├── LeftVBox (220px min) - Information Menu - mouse_filter = PASS
 │   ├── CenterArea (flexible) - Main Play Area - mouse_filter = PASS
 │   └── RightVBox (260px min) - Button Menu - mouse_filter = PASS
+├── NotificationBar (VBoxContainer) - Full width, anchored to bottom (100px) - mouse_filter = PASS
 ├── VBoxContainer (Portrait - hidden in landscape)
 ├── PopupContainer (z-index 100) - Holds all popups - mouse_filter = PASS
 └── SettingsOverlay (z-index 200)
 ```
 
-**Portrait Mode (Top-Middle-Bottom):**
+**Portrait Mode (Top-NotificationBar-Middle-Bottom):**
 ```
 SceneRoot (Control)
 ├── Background (TextureRect) - Full screen background
@@ -33,6 +34,7 @@ SceneRoot (Control)
 ├── VBoxContainer (Portrait layout) - Full screen - mouse_filter = PASS
 │   ├── TopPadding (90px)
 │   ├── TopVBox - Information Menu
+│   ├── NotificationBar (VBoxContainer) - Full width (auto-height) - reparented here in portrait
 │   ├── MiddleArea (flexible) - Main Play Area - mouse_filter = PASS
 │   ├── BottomVBox - Button Menu
 │   └── BottomPadding (90px)
@@ -42,17 +44,15 @@ SceneRoot (Control)
 
 **CRITICAL**: The **Background** TextureRect and all container nodes (HBoxContainer, VBoxContainer, LeftVBox, RightVBox) **MUST** have `mouse_filter = 2` (PASS) to ensure buttons are clickable. The Background is full-screen and will block ALL mouse clicks if mouse_filter is not set to PASS!
 
-### Three Panel Areas Explained
+### Four Container Areas Explained
 
 1. **Information Menu** (LeftVBox / TopVBox)
    - Displays titles, counters, progress bars, stats
    - Fixed width in landscape (220px min), full width in portrait
    - Contains Panels with Labels and ProgressBars
-   - **Includes NotificationPanel**: A VBoxContainer that displays game notifications
-     - Automatically shows stat level-ups, events, whispers, etc.
-     - Notifications stack vertically and auto-remove after 3 seconds
-     - In portrait mode: notifications scale to 1.75x larger text
-     - Managed by `Global.show_stat_notification(message)`
+   - **Includes NotificationPanel** (legacy): A VBoxContainer for backwards compatibility
+     - Can be used for scene-specific notifications if needed
+     - Most notifications now use NotificationBar (see #4 below)
 
 2. **Main Play Area** (CenterArea / MiddleArea)
    - For gameplay, mini-games, dialog trees, interactive content
@@ -64,6 +64,19 @@ SceneRoot (Control)
    - Navigation buttons, action buttons, purchases
    - Fixed width in landscape (260px min), full width in portrait
    - Contains Button nodes for user actions
+
+4. **NotificationBar** (NEW - 4th Container) ⭐ **Primary Notification Area**
+   - **Landscape mode**: Full width at bottom of screen (100px height, anchored to bottom)
+   - **Portrait mode**: Full width between TopVBox and MiddleArea (auto-height)
+   - Automatically reparented by ResponsiveLayout based on orientation
+   - **Primary use**: All game notifications via `Global.show_stat_notification(message)`
+     - Stat level-ups ("You feel stronger", etc.)
+     - Events and whispers
+     - System messages
+     - Notifications stack vertically and auto-remove after 3 seconds
+     - Automatically scales in portrait mode (1.75x larger text)
+   - **Additional uses**: persistent notifications, status messages, alerts, tutorials, hints
+   - VBoxContainer - notifications are added dynamically by Global.gd
 
 ### Dimensions
 

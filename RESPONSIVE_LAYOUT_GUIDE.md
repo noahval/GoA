@@ -38,9 +38,9 @@ const PORTRAIT_SEPARATION_RATIO = 0.5  # Spacing between items as % of scaled he
 const LEFT_COLUMN_WIDTH = 220
 const RIGHT_COLUMN_WIDTH = 260
 
-# Container dimensions (from template)
-const CONTAINER_WIDTH = 500
-const CONTAINER_HEIGHT = 600
+# Container dimensions
+const LANDSCAPE_CONTAINER_HEIGHT = 700  # Height of centered HBoxContainer in landscape
+const NOTIFICATION_BAR_HEIGHT = 100  # Height of notification bar (bottom in landscape, between menus in portrait)
 ```
 
 ### Usage in Scene Scripts
@@ -58,8 +58,10 @@ func _ready():
 That's it! The ResponsiveLayout autoload handles everything:
 - ✅ Detects portrait vs landscape
 - ✅ Reparents columns to correct containers
+- ✅ **Reparents NotificationBar** - bottom of screen in landscape, between menus in portrait
 - ✅ Scales buttons, panels, and fonts
 - ✅ Resets everything when switching orientations
+- ✅ **Centers content vertically in landscape mode** (700px height container centered on screen)
 - ✅ Automatically adds settings overlay (gear button in bottom-right)
 - ✅ **Uses call_deferred to ensure scene tree is fully ready** (critical for inherited scenes!)
 - ✅ **Ensures mouse_filter is PASS on Background and all containers at runtime** (fixes button clicks!)
@@ -238,10 +240,10 @@ func custom_portrait_adjustments():
 | `PORTRAIT_TOP_PADDING` | 150 | Top padding for portrait layout (px) |
 | `PORTRAIT_BOTTOM_PADDING` | 90 | Bottom padding for portrait layout (px) |
 | `LANDSCAPE_ELEMENT_HEIGHT` | 40 | **UNIVERSAL** height for ALL menu elements in landscape (buttons, panels, counters, titles) |
+| `LANDSCAPE_CONTAINER_HEIGHT` | 700 | Height of vertically-centered HBoxContainer in landscape mode (px) - adjust for more/less vertical space |
+| `NOTIFICATION_BAR_HEIGHT` | 100 | Height of NotificationBar (bottom of screen in landscape, between menus in portrait) |
 | `LEFT_COLUMN_WIDTH` | 220 | Minimum width for left column (px) - increase for longer text |
 | `RIGHT_COLUMN_WIDTH` | 260 | Minimum width for right column (px) - increase for longer text |
-| `CONTAINER_WIDTH` | 500 | HBoxContainer width in landscape (px) - adjust to fit columns |
-| `CONTAINER_HEIGHT` | 600 | HBoxContainer height in landscape (px) |
 
 ### Common Adjustments
 
@@ -273,10 +275,11 @@ const PORTRAIT_SEPARATION_RATIO = 0.4  # was 0.5 - less spacing (40% of panel he
 const LANDSCAPE_ELEMENT_HEIGHT = 50  # was 40 - increases ALL elements uniformly
 ```
 
-**Change landscape container size:**
+**Change landscape container height (vertical centering):**
 ```gdscript
-const CONTAINER_WIDTH = 600   # was 500 (wider - adjust for column widths)
-const CONTAINER_HEIGHT = 700  # was 600 (taller)
+const LANDSCAPE_CONTAINER_HEIGHT = 900  # was 700 (taller centered container)
+# This controls the height of the vertically-centered HBoxContainer in landscape mode
+# Adjust this if your UI elements need more vertical space
 ```
 
 **Accommodate longer text:**

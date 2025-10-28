@@ -3,16 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cp7apj2bk2m06"
-path.s3tc="res://.godot/imported/workshop.jpg-83e0a02a44f5e6fce48c446a7570481a.s3tc.ctex"
+path="res://.godot/imported/workshop.jpg-83e0a02a44f5e6fce48c446a7570481a.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
-"vram_texture": true
+"vram_texture": false
 }
 
 [deps]
 
 source_file="res://level1/workshop.jpg"
-dest_files=["res://.godot/imported/workshop.jpg-83e0a02a44f5e6fce48c446a7570481a.s3tc.ctex"]
+dest_files=["res://.godot/imported/workshop.jpg-83e0a02a44f5e6fce48c446a7570481a.ctex"]
 
 [params]
 

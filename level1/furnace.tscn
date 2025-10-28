@@ -28,24 +28,31 @@ stretch_mode = 6
 
 [node name="HBoxContainer" type="HBoxContainer" parent="."]
 layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -250.0
-offset_top = -300.0
-offset_right = 250.0
-offset_bottom = 300.0
+anchors_preset = 15
+anchor_left = 0.0
+anchor_top = 0.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 0.0
+offset_bottom = 0.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_constants/separation = 20
 
 [node name="LeftVBox" type="VBoxContainer" parent="HBoxContainer"]
-custom_minimum_size = Vector2(260, 0)
+custom_minimum_size = Vector2(220, 0)
 layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/separation = 10
+
+[node name="NotificationPanel" type="VBoxContainer" parent="HBoxContainer/LeftVBox"]
+layout_mode = 2
+theme_override_constants/separation = 5
 
 [node name="TitlePanel" type="Panel" parent="HBoxContainer/LeftVBox"]
-custom_minimum_size = Vector2(0, 24)
+custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 
 [node name="TitleLabel" type="Label" parent="HBoxContainer/LeftVBox/TitlePanel"]
@@ -61,7 +68,7 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="StaminaPanel" type="Panel" parent="HBoxContainer/LeftVBox"]
-custom_minimum_size = Vector2(0, 24)
+custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxEmpty_panel")
 
@@ -91,7 +98,7 @@ vertical_alignment = 1
 [node name="SuspicionPanel" type="Panel" parent="HBoxContainer/LeftVBox"]
 visible = false
 self_modulate = Color(1, 1, 1, 0.7)
-custom_minimum_size = Vector2(0, 24)
+custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 
 [node name="SuspicionBar" type="ProgressBar" parent="HBoxContainer/LeftVBox/SuspicionPanel"]
@@ -118,7 +125,7 @@ vertical_alignment = 1
 
 [node name="CoalPanel" type="Panel" parent="HBoxContainer/LeftVBox"]
 self_modulate = Color(1, 1, 1, 0.7)
-custom_minimum_size = Vector2(0, 24)
+custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 
 [node name="CoalLabel" type="Label" parent="HBoxContainer/LeftVBox/CoalPanel"]
@@ -135,7 +142,7 @@ vertical_alignment = 1
 
 [node name="CoinsPanel" type="Panel" parent="HBoxContainer/LeftVBox"]
 self_modulate = Color(1, 1, 1, 0.7)
-custom_minimum_size = Vector2(0, 24)
+custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 
 [node name="CoinsLabel" type="Label" parent="HBoxContainer/LeftVBox/CoinsPanel"]
@@ -150,9 +157,16 @@ text = "Coins: 0"
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="CenterArea" type="Control" parent="HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
 [node name="RightVBox" type="VBoxContainer" parent="HBoxContainer"]
 custom_minimum_size = Vector2(260, 0)
 layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/separation = 10
 
 [node name="ShovelCoalButton" type="Button" parent="HBoxContainer/RightVBox"]
 layout_mode = 2
@@ -187,18 +201,33 @@ layout_mode = 2
 [node name="TopVBox" type="VBoxContainer" parent="VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 0
+mouse_filter = 0
+theme_override_constants/separation = 20
 
-[node name="Spacer" type="Control" parent="VBoxContainer"]
+[node name="MiddleArea" type="Control" parent="VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
+mouse_filter = 2
 
 [node name="BottomVBox" type="VBoxContainer" parent="VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 0
+mouse_filter = 0
+theme_override_constants/separation = 20
 
 [node name="BottomPadding" type="Control" parent="VBoxContainer"]
 custom_minimum_size = Vector2(0, 90)
 layout_mode = 2
+
+[node name="PopupContainer" type="Control" parent="."]
+z_index = 100
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
 
 [connection signal="pressed" from="HBoxContainer/RightVBox/ShovelCoalButton" to="." method="_on_shovel_coal_button_pressed"]
 [connection signal="pressed" from="HBoxContainer/RightVBox/ShopButton" to="." method="_on_shop_button_pressed"]

@@ -3,16 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bywkbdy5yi2h"
-path.s3tc="res://.godot/imported/coppersmith_carriage.jpg-c7542c7cbf0c3f821bfdf7205fc73366.s3tc.ctex"
+path="res://.godot/imported/coppersmith_carriage.jpg-c7542c7cbf0c3f821bfdf7205fc73366.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
-"vram_texture": true
+"vram_texture": false
 }
 
 [deps]
 
 source_file="res://level1/coppersmith_carriage.jpg"
-dest_files=["res://.godot/imported/coppersmith_carriage.jpg-c7542c7cbf0c3f821bfdf7205fc73366.s3tc.ctex"]
+dest_files=["res://.godot/imported/coppersmith_carriage.jpg-c7542c7cbf0c3f821bfdf7205fc73366.ctex"]
 
 [params]
 

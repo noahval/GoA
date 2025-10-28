@@ -3,16 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dsrnv7h3utneg"
-path.s3tc="res://.godot/imported/overseers_office.jpg-29a48c0d97a65a8697208db929f610fd.s3tc.ctex"
+path="res://.godot/imported/overseers_office.jpg-29a48c0d97a65a8697208db929f610fd.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
-"vram_texture": true
+"vram_texture": false
 }
 
 [deps]
 
 source_file="res://level1/overseers_office.jpg"
-dest_files=["res://.godot/imported/overseers_office.jpg-29a48c0d97a65a8697208db929f610fd.s3tc.ctex"]
+dest_files=["res://.godot/imported/overseers_office.jpg-29a48c0d97a65a8697208db929f610fd.ctex"]
 
 [params]
 

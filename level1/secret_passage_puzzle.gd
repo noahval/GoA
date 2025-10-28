@@ -1,5 +1,11 @@
 extends Control
 
+# Scene follows formatting guidelines from:
+# - RESPONSIVE_LAYOUT_GUIDE.md (element heights, spacing, responsive behavior)
+# - SCENE_TEMPLATE_GUIDE.md (three-panel layout structure)
+# - POPUP_SYSTEM_GUIDE.md (popup usage if needed)
+# All menu elements use LANDSCAPE_ELEMENT_HEIGHT = 40px (see RESPONSIVE_LAYOUT_GUIDE.md)
+
 var break_time = 0.0
 var max_break_time = 30.0
 
@@ -31,8 +37,6 @@ func _ready():
 	if break_timer_bar:
 		break_timer_bar.value = progress_percent
 
-	puzzle_container = $PuzzleContainer
-
 	# Use ResponsiveLayout for orientation handling
 	ResponsiveLayout.apply_to_scene(self)
 
@@ -42,49 +46,146 @@ func _ready():
 
 func _delayed_setup():
 	print("=== Secret Passage Puzzle Setup ===")
+
+	# Get reference to puzzle container (it's now in CenterArea or MiddleArea depending on orientation)
+	var viewport_size = get_viewport().get_visible_rect().size
+	var is_portrait = viewport_size.y > viewport_size.x
+
+	# Calculate puzzle base size (grid + indicators)
+	var puzzle_base_size = GRID_SIZE * CELL_SIZE + 80  # 480px total
+
+	# Find puzzle container in the appropriate location and scale it
+	if is_portrait:
+		# In portrait, reparent to MiddleArea if not already there
+		puzzle_container = get_node_or_null("VBoxContainer/MiddleArea/PuzzleContainer")
+		if not puzzle_container:
+			# It's still in CenterArea, need to move it
+			puzzle_container = get_node_or_null("HBoxContainer/CenterArea/PuzzleContainer")
+			if puzzle_container:
+				var middle_area = get_node_or_null("VBoxContainer/MiddleArea")
+				if middle_area:
+					# Reset all transforms BEFORE reparenting to avoid accumulated offsets
+					puzzle_container.rotation = 0
+					puzzle_container.scale = Vector2.ONE
+					puzzle_container.position = Vector2.ZERO
+					puzzle_container.pivot_offset = Vector2.ZERO
+
+					puzzle_container.reparent(middle_area)
+					print("Reparented PuzzleContainer to MiddleArea for portrait mode")
+
+		# Calculate available space in portrait mode
+		# Use 85% of smaller dimension (width or available height) to leave margin
+		var available_width = viewport_size.x * 0.85
+		var available_height = viewport_size.y * 0.5  # Rough estimate of MiddleArea height
+		var available_size = min(available_width, available_height)
+
+		# Calculate scale factor
+		var scale_factor = available_size / puzzle_base_size
+		scale_factor = clamp(scale_factor, 0.8, 2.0)  # Min 0.8x, max 2x
+
+		# Completely reset layout mode to manual positioning
+		puzzle_container.set_anchors_preset(Control.PRESET_CENTER, false)  # false = don't resize
+
+		# Manually set all anchors to 0.5 (center)
+		puzzle_container.anchor_left = 0.5
+		puzzle_container.anchor_top = 0.5
+		puzzle_container.anchor_right = 0.5
+		puzzle_container.anchor_bottom = 0.5
+
+		# The visual content spans from (-40,-40) to (440, 440) inside the container
+		# Visual center is at (200, 200), container geometric center would be at (240, 240)
+		# Total offset needed: -40 in both directions
+
+		# Set the container size to match puzzle_base_size
+		var half_base = puzzle_base_size / 2.0
+		puzzle_container.offset_left = -half_base
+		puzzle_container.offset_top = -half_base
+		puzzle_container.offset_right = half_base
+		puzzle_container.offset_bottom = half_base
+
+		# Set pivot for scaling from the geometric center of the container
+		puzzle_container.pivot_offset = Vector2(half_base, half_base)
+
+		# Apply scale
+		puzzle_container.scale = Vector2(scale_factor, scale_factor)
+
+		# Adjust position to compensate for off-center visual content
+		# Visual center is at (200, 200) but container center is at (240, 240)
+		# Experimenting with offset - if still too far right, increase the negative X value
+		var x_offset = -60.0  # Try more leftward shift
+		var y_offset = -40.0
+		puzzle_container.position = Vector2(x_offset, y_offset) * scale_factor
+		puzzle_container.rotation = 0
+
+		puzzle_container.grow_horizontal = Control.GROW_DIRECTION_BOTH
+		puzzle_container.grow_vertical = Control.GROW_DIRECTION_BOTH
+
+		print("Portrait mode: scale factor = ", scale_factor, " (available: ", available_size, "px)")
+		print("Portrait mode: anchors = ", puzzle_container.anchor_left, ",", puzzle_container.anchor_top)
+		print("Portrait mode: offsets = ", puzzle_container.offset_left, ",", puzzle_container.offset_top, " to ", puzzle_container.offset_right, ",", puzzle_container.offset_bottom)
+		print("Portrait mode: position = ", puzzle_container.position)
+		print("Portrait mode: scale = ", puzzle_container.scale)
+	else:
+		# In landscape, make sure it's in CenterArea
+		puzzle_container = get_node_or_null("HBoxContainer/CenterArea/PuzzleContainer")
+		if not puzzle_container:
+			# It's in MiddleArea, need to move it back
+			puzzle_container = get_node_or_null("VBoxContainer/MiddleArea/PuzzleContainer")
+			if puzzle_container:
+				var center_area = get_node_or_null("HBoxContainer/CenterArea")
+				if center_area:
+					puzzle_container.reparent(center_area)
+					print("Reparented PuzzleContainer to CenterArea for landscape mode")
+
+		# Use PRESET_CENTER to properly center the container
+		puzzle_container.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+
+		# Set size directly
+		puzzle_container.size = Vector2(puzzle_base_size, puzzle_base_size)
+		puzzle_container.custom_minimum_size = Vector2(puzzle_base_size, puzzle_base_size)
+
+		# Set pivot for scaling from the geometric center
+		puzzle_container.pivot_offset = Vector2(puzzle_base_size / 2.0, puzzle_base_size / 2.0)
+
+		# In landscape, use CenterArea size to determine scale
+		var center_area = get_node_or_null("HBoxContainer/CenterArea")
+		var scale_factor = 1.0
+		if center_area:
+			# Wait one frame for layout to settle
+			await get_tree().process_frame
+			var center_rect = center_area.get_rect()
+			var available_size = min(center_rect.size.x, center_rect.size.y) * 0.85
+			scale_factor = available_size / puzzle_base_size
+			scale_factor = clamp(scale_factor, 0.8, 1.5)  # Smaller max for landscape
+
+			print("Landscape mode: scale factor = ", scale_factor, " (center area: ", center_rect.size, ")")
+		else:
+			# Fallback: use default scale
+			scale_factor = 1.0
+
+		# Apply scale
+		puzzle_container.scale = Vector2(scale_factor, scale_factor)
+
+		# Adjust position to compensate for off-center visual content
+		puzzle_container.position = Vector2(-40, -40) * scale_factor
+		puzzle_container.rotation = 0
+
+		puzzle_container.grow_horizontal = Control.GROW_DIRECTION_BOTH
+		puzzle_container.grow_vertical = Control.GROW_DIRECTION_BOTH
+
 	print("Puzzle container exists: ", puzzle_container != null)
+	if puzzle_container:
+		print("Puzzle container parent: ", puzzle_container.get_parent().name)
+		print("Puzzle container scale: ", puzzle_container.scale)
+		print("Puzzle container anchors: ", puzzle_container.anchor_left, ", ", puzzle_container.anchor_top)
+		print("Puzzle container offsets: ", puzzle_container.offset_left, ", ", puzzle_container.offset_top)
 
 	# Setup puzzle (creates the visual elements)
 	setup_puzzle()
 	update_place_pipe_button()
 	add_developer_skip_button()
 
-	# Position puzzle in the play area
-	position_puzzle_in_play_area()
-
-func position_puzzle_in_play_area():
-	# Position the puzzle in the center/middle area depending on orientation
-	var viewport_size = get_viewport().get_visible_rect().size
-	var is_portrait = viewport_size.y > viewport_size.x
-
-	# Calculate puzzle size
-	var puzzle_total_size = GRID_SIZE * CELL_SIZE + 80  # Grid + indicator space
-
-	# Make sure puzzle container is visible
-	puzzle_container.visible = true
-
-	if is_portrait:
-		# Portrait: center in MiddleArea
-		var middle_area = get_node_or_null("VBoxContainer/MiddleArea")
-		if middle_area:
-			# Center horizontally in viewport
-			var puzzle_x = (viewport_size.x - puzzle_total_size) / 2
-			# Position vertically to be in middle area (approximate)
-			var puzzle_y = viewport_size.y * 0.35  # Roughly in middle of screen
-			puzzle_container.position = Vector2(puzzle_x, puzzle_y)
-			print("Positioned puzzle in portrait mode at ", puzzle_container.position)
-	else:
-		# Landscape: center in CenterArea
-		var center_area = get_node_or_null("HBoxContainer/CenterArea")
-		if center_area:
-			var center_rect = center_area.get_global_rect()
-			# Center the puzzle in the center area
-			var puzzle_x = center_rect.position.x + (center_rect.size.x - puzzle_total_size) / 2
-			var puzzle_y = center_rect.position.y + (center_rect.size.y - puzzle_total_size) / 2
-			puzzle_container.position = Vector2(puzzle_x, puzzle_y)
-			print("Positioned puzzle in landscape mode at ", puzzle_container.position)
-
-	print("Puzzle positioning complete. Size: ", puzzle_total_size)
+# Removed manual positioning - puzzle now uses anchors in CenterArea/MiddleArea for automatic centering
 
 func find_node_recursive(node: Node, node_name: String) -> Node:
 	if node.name == node_name:
@@ -150,6 +251,8 @@ func update_pipes_label():
 	var pipes_label = find_node_recursive(self, "PipesLabel")
 	if pipes_label:
 		pipes_label.text = "Pipes: " + str(Level1Vars.pipes)
+	else:
+		print("WARNING: PipesLabel not found")
 
 func save_grid_state():
 	# Deep copy the grid to Level1Vars
@@ -496,10 +599,27 @@ func show_train_heart_button():
 	# Create a button to enter the train heart
 	var enter_button = Button.new()
 	enter_button.text = "Enter Train Heart"
-	enter_button.custom_minimum_size = Vector2(200, 40)
 	enter_button.pressed.connect(_on_enter_train_heart_pressed)
 
-	# Find the appropriate parent container (could be in RightVBox or TopVBox depending on orientation)
+	# Get the theme
+	var theme_resource = load("res://default_theme.tres")
+	enter_button.theme = theme_resource
+
+	# Apply ResponsiveLayout scaling based on current orientation
+	var viewport_size = get_viewport().get_visible_rect().size
+	var is_portrait = viewport_size.y > viewport_size.x
+
+	if is_portrait:
+		# Match ResponsiveLayout portrait scaling
+		var scaled_height = ResponsiveLayout.PORTRAIT_ELEMENT_HEIGHT * ResponsiveLayout.PORTRAIT_FONT_SCALE
+		enter_button.custom_minimum_size = Vector2(0, scaled_height)
+		enter_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		enter_button.add_theme_font_size_override("font_size", int(25 * ResponsiveLayout.PORTRAIT_FONT_SCALE))
+	else:
+		# Landscape mode
+		enter_button.custom_minimum_size = Vector2(0, ResponsiveLayout.LANDSCAPE_ELEMENT_HEIGHT)
+
+	# Find the appropriate parent container (could be in RightVBox or BottomVBox depending on orientation)
 	var back_button = find_node_recursive(self, "BackButton")
 	if back_button and back_button.get_parent():
 		var parent = back_button.get_parent()
@@ -564,13 +684,28 @@ func add_developer_skip_button():
 	var skip_button = Button.new()
 	skip_button.name = "DeveloperSkipButton"
 	skip_button.text = "Developer: Skip Puzzle"
-	skip_button.custom_minimum_size = Vector2(200, 40)
 	skip_button.visible = Global.dev_speed_mode
 	skip_button.pressed.connect(_on_developer_skip_pressed)
 
 	# Get the theme
 	var theme_resource = load("res://default_theme.tres")
 	skip_button.theme = theme_resource
+
+	# Apply ResponsiveLayout scaling based on current orientation
+	var viewport_size = get_viewport().get_visible_rect().size
+	var is_portrait = viewport_size.y > viewport_size.x
+
+	if is_portrait:
+		# Match ResponsiveLayout portrait scaling
+		var scaled_height = ResponsiveLayout.PORTRAIT_ELEMENT_HEIGHT * ResponsiveLayout.PORTRAIT_FONT_SCALE
+		skip_button.custom_minimum_size = Vector2(0, scaled_height)
+		skip_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		skip_button.add_theme_font_size_override("font_size", int(25 * ResponsiveLayout.PORTRAIT_FONT_SCALE))
+		print("Developer skip button: portrait mode, height=", scaled_height, " font=", int(25 * ResponsiveLayout.PORTRAIT_FONT_SCALE))
+	else:
+		# Landscape mode
+		skip_button.custom_minimum_size = Vector2(0, ResponsiveLayout.LANDSCAPE_ELEMENT_HEIGHT)
+		print("Developer skip button: landscape mode, height=", ResponsiveLayout.LANDSCAPE_ELEMENT_HEIGHT)
 
 	# Add the button before the back button (works for any layout)
 	var back_button = find_node_recursive(self, "BackButton")

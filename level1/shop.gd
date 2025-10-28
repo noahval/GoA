@@ -103,6 +103,16 @@ func update_labels():
 		furnace_upgrade.text = "Auto Shovel: " + str(get_auto_shovel_cost())
 	if bribe_shopkeep_button:
 		bribe_shopkeep_button.text = "Bribe Shopkeep: 10"
+		# Hide if already bribed, otherwise disable if not enough coins
+		if Level1Vars.shopkeep_bribed:
+			bribe_shopkeep_button.visible = false
+		else:
+			bribe_shopkeep_button.visible = true
+			bribe_shopkeep_button.disabled = Level1Vars.coins < 10
+
+	# Show/hide workshop button based on bribe status
+	if workshop_button:
+		workshop_button.visible = Level1Vars.shopkeep_bribed
 
 	# Show/hide plow button based on shovel level
 	if plow_button:

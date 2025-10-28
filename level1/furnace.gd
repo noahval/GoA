@@ -1,5 +1,12 @@
 extends Control
 
+# Scene follows formatting guidelines from:
+# - RESPONSIVE_LAYOUT_GUIDE.md (element heights, spacing, responsive behavior)
+# - SCENE_TEMPLATE_GUIDE.md (three-panel layout structure)
+# - POPUP_SYSTEM_GUIDE.md (popup usage if needed)
+# All menu elements use LANDSCAPE_ELEMENT_HEIGHT = 40px (see RESPONSIVE_LAYOUT_GUIDE.md)
+# NOTE: This scene needs migration to scene_template.tscn for proper layout support
+
 var click_count = 0
 var steal_click_count = 0
 var auto_shovel_timer = 0.0  # Timer for auto shovel interval

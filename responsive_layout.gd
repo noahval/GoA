@@ -27,6 +27,10 @@ const LEFT_COLUMN_WIDTH = 220
 const RIGHT_COLUMN_WIDTH = 260
 const MIN_CENTER_WIDTH = 400  # Minimum width for center play area
 
+# Landscape container dimensions
+const LANDSCAPE_CONTAINER_HEIGHT = 700  # Total height of HBoxContainer in landscape (centered vertically)
+const NOTIFICATION_BAR_HEIGHT = 100  # Height of the notification bar at bottom (landscape) or between menus (portrait)
+
 # Popup constraints
 const POPUP_MAX_WIDTH_LANDSCAPE = 600  # Max popup width in landscape
 const POPUP_MAX_WIDTH_PORTRAIT = 0.9  # Max popup width as % of viewport in portrait
@@ -78,9 +82,11 @@ func _apply_responsive_layout_internal(scene_root: Control) -> void:
 	var middle_area = scene_root.get_node_or_null("VBoxContainer/MiddleArea")
 	var bottom_vbox = scene_root.get_node_or_null("VBoxContainer/BottomVBox")
 	var popup_container = scene_root.get_node_or_null("PopupContainer")
+	var notification_bar = scene_root.get_node_or_null("NotificationBar")
 
 	print("ResponsiveLayout: Found nodes - Background: ", background != null, " HBox: ", hbox != null,
-		  " VBox: ", vbox != null, " CenterArea: ", center_area != null, " MiddleArea: ", middle_area != null)
+		  " VBox: ", vbox != null, " CenterArea: ", center_area != null, " MiddleArea: ", middle_area != null,
+		  " NotificationBar: ", notification_bar != null)
 
 	if not hbox or not vbox or not left_vbox or not right_vbox or not top_vbox or not bottom_vbox:
 		push_warning("ResponsiveLayout: Scene missing required container nodes")
@@ -163,6 +169,18 @@ func _apply_responsive_layout_internal(scene_root: Control) -> void:
 			left_vbox.reparent(top_vbox)
 			right_vbox.reparent(bottom_vbox)
 
+			# Reparent NotificationBar into VBoxContainer between TopVBox and MiddleArea
+			if notification_bar:
+				notification_bar.reparent(vbox)
+				# Move it to position after TopVBox (index 1, since TopPadding is index 0 and TopVBox is index 1)
+				# We want: TopPadding, TopVBox, NotificationBar, MiddleArea, BottomVBox, BottomPadding
+				if top_vbox:
+					var top_vbox_index = top_vbox.get_index()
+					vbox.move_child(notification_bar, top_vbox_index + 1)
+				notification_bar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+				notification_bar.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+				print("ResponsiveLayout: Reparented NotificationBar to VBoxContainer for portrait")
+
 			hbox.visible = false
 			vbox.visible = true
 			print("ResponsiveLayout: Reparented to portrait using reparent() - signals preserved")
@@ -191,6 +209,22 @@ func _apply_responsive_layout_internal(scene_root: Control) -> void:
 				# Fallback if CenterArea doesn't exist
 				left_vbox.reparent(hbox)
 				right_vbox.reparent(hbox)
+
+			# Reparent NotificationBar back to root (scene_root) for landscape
+			if notification_bar:
+				notification_bar.reparent(scene_root)
+				# Anchor to bottom of screen, full width
+				notification_bar.anchor_left = 0.0
+				notification_bar.anchor_right = 1.0
+				notification_bar.anchor_top = 1.0
+				notification_bar.anchor_bottom = 1.0
+				notification_bar.offset_left = 0
+				notification_bar.offset_right = 0
+				notification_bar.offset_top = -NOTIFICATION_BAR_HEIGHT  # Anchored to bottom
+				notification_bar.offset_bottom = 0
+				notification_bar.grow_horizontal = Control.GROW_DIRECTION_BOTH
+				notification_bar.grow_vertical = Control.GROW_DIRECTION_BEGIN
+				print("ResponsiveLayout: Reparented NotificationBar to root for landscape (height: ", NOTIFICATION_BAR_HEIGHT, ")")
 
 			hbox.visible = true
 			vbox.visible = false
@@ -227,6 +261,17 @@ func _apply_responsive_layout_internal(scene_root: Control) -> void:
 
 	# ALWAYS set size_flags based on current orientation (whether we reparented or not)
 	if is_portrait:
+		# Portrait mode: VBoxContainer fills entire screen
+		vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
+		vbox.anchor_left = 0.0
+		vbox.anchor_top = 0.0
+		vbox.anchor_right = 1.0
+		vbox.anchor_bottom = 1.0
+		vbox.offset_left = 0
+		vbox.offset_top = 0
+		vbox.offset_right = 0
+		vbox.offset_bottom = 0
+
 		# Set size_flags on the parent containers too
 		top_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		bottom_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -239,11 +284,29 @@ func _apply_responsive_layout_internal(scene_root: Control) -> void:
 		right_vbox.position = Vector2.ZERO
 		print("ResponsiveLayout: Applied portrait size_flags to TopVBox, BottomVBox, LeftVBox, RightVBox")
 	else:
+		# Landscape mode: HBoxContainer centered vertically, full width horizontally
+		# Set anchors for vertical centering with full horizontal width
+		hbox.anchor_left = 0.0
+		hbox.anchor_right = 1.0
+		hbox.anchor_top = 0.5
+		hbox.anchor_bottom = 0.5
+
+		# Set offsets to create height using LANDSCAPE_CONTAINER_HEIGHT constant
+		# This will center the content vertically on screen
+		var container_half_height = LANDSCAPE_CONTAINER_HEIGHT / 2.0
+		hbox.offset_left = 0
+		hbox.offset_right = 0
+		hbox.offset_top = -container_half_height
+		hbox.offset_bottom = container_half_height
+
+		hbox.grow_horizontal = Control.GROW_DIRECTION_BOTH
+		hbox.grow_vertical = Control.GROW_DIRECTION_BOTH
+
 		left_vbox.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 		right_vbox.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 		left_vbox.custom_minimum_size = Vector2(LEFT_COLUMN_WIDTH, 0)
 		right_vbox.custom_minimum_size = Vector2(RIGHT_COLUMN_WIDTH, 0)
-		print("ResponsiveLayout: Applied landscape size_flags (even if no reparent)")
+		print("ResponsiveLayout: Applied landscape centered layout - HBox anchored at vertical center")
 
 	# Always apply mode-specific styling and scaling (even if already in correct mode)
 	if is_portrait:
@@ -268,7 +331,11 @@ func _apply_responsive_layout_internal(scene_root: Control) -> void:
 		# Apply landscape HBox separation
 		var separation = get_dynamic_separation(viewport_size.x)
 		hbox.add_theme_constant_override("separation", separation)
-		print("ResponsiveLayout: Landscape mode - using template defaults")
+
+		# Apply landscape-specific adjustments (panel sizing, word wrapping, etc.)
+		_apply_landscape_adjustments(left_vbox, right_vbox, hbox)
+
+		print("ResponsiveLayout: Landscape mode - applied landscape adjustments")
 
 ## Apply landscape-specific adjustments (title expansion, etc.)
 ## This runs every time a landscape scene is loaded

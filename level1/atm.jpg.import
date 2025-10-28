@@ -3,16 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://c41ffodvkp552"
-path.s3tc="res://.godot/imported/atm.jpg-4b958a75ac97819a0807d094801fc391.s3tc.ctex"
+path="res://.godot/imported/atm.jpg-4b958a75ac97819a0807d094801fc391.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
-"vram_texture": true
+"vram_texture": false
 }
 
 [deps]
 
 source_file="res://level1/atm.jpg"
-dest_files=["res://.godot/imported/atm.jpg-4b958a75ac97819a0807d094801fc391.s3tc.ctex"]
+dest_files=["res://.godot/imported/atm.jpg-4b958a75ac97819a0807d094801fc391.ctex"]
 
 [params]
 

@@ -188,10 +188,10 @@ func _ready():
 	add_child(get_caught_timer)
 
 func show_stat_notification(message: String):
-	# Find the NotificationPanel in the current scene
-	var notification_container = _find_notification_panel()
+	# Find the NotificationBar in the current scene
+	var notification_container = _find_notification_bar()
 	if not notification_container:
-		print("Warning: No NotificationPanel found in current scene")
+		print("Warning: No NotificationBar found in current scene")
 		return
 
 	# Create a Panel for this notification with translucent background
@@ -205,6 +205,17 @@ func show_stat_notification(message: String):
 	style_box.corner_radius_top_right = 8
 	style_box.corner_radius_bottom_left = 8
 	style_box.corner_radius_bottom_right = 8
+
+	# Add margins to prevent overlapping between notifications
+	style_box.content_margin_top = 5
+	style_box.content_margin_bottom = 5
+	style_box.content_margin_left = 10
+	style_box.content_margin_right = 10
+
+	# Add expand margins to create space between notifications
+	style_box.expand_margin_top = 3
+	style_box.expand_margin_bottom = 3
+
 	notification_panel.add_theme_stylebox_override("panel", style_box)
 
 	# Create notification label with word wrap
@@ -215,15 +226,15 @@ func show_stat_notification(message: String):
 	notification_label.add_theme_color_override("font_color", Color(1, 1, 1, 1))  # White text
 	notification_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 
-	# Position label to fill the panel with padding
+	# Position label to fill the panel (padding is handled by StyleBoxFlat content margins)
 	notification_label.anchor_left = 0
 	notification_label.anchor_right = 1
 	notification_label.anchor_top = 0
 	notification_label.anchor_bottom = 1
-	notification_label.offset_left = 10  # Left padding
-	notification_label.offset_right = -10  # Right padding
-	notification_label.offset_top = 5  # Top padding
-	notification_label.offset_bottom = -5  # Bottom padding
+	notification_label.offset_left = 0
+	notification_label.offset_right = 0
+	notification_label.offset_top = 0
+	notification_label.offset_bottom = 0
 
 	# Add label as child of panel
 	notification_panel.add_child(notification_label)
@@ -255,9 +266,10 @@ func show_stat_notification(message: String):
 	# Start the timer
 	notification_timer.start()
 
-func _find_notification_panel() -> Node:
-	# Find the NotificationPanel in the current scene
-	# It could be in HBoxContainer/LeftVBox or VBoxContainer/TopVBox depending on orientation
+func _find_notification_bar() -> Node:
+	# Find the NotificationBar in the current scene
+	# In landscape: direct child of SceneRoot
+	# In portrait: child of VBoxContainer (reparented by ResponsiveLayout)
 	var scene_tree = get_tree()
 	if not scene_tree:
 		return null
@@ -266,15 +278,15 @@ func _find_notification_panel() -> Node:
 	if not current_scene:
 		return null
 
-	# Try landscape location first
-	var panel = current_scene.get_node_or_null("HBoxContainer/LeftVBox/NotificationPanel")
-	if panel:
-		return panel
+	# Try landscape location first (direct child of root)
+	var notification_bar = current_scene.get_node_or_null("NotificationBar")
+	if notification_bar:
+		return notification_bar
 
-	# Try portrait location
-	panel = current_scene.get_node_or_null("VBoxContainer/TopVBox/LeftVBox/NotificationPanel")
-	if panel:
-		return panel
+	# Try portrait location (reparented into VBoxContainer)
+	notification_bar = current_scene.get_node_or_null("VBoxContainer/NotificationBar")
+	if notification_bar:
+		return notification_bar
 
 	return null
 

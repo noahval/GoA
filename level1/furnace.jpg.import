@@ -3,16 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bwdj1q5ox86nm"
-path.s3tc="res://.godot/imported/furnace.jpg-6cc1b2666489b7d2a28984617334a256.s3tc.ctex"
+path="res://.godot/imported/furnace.jpg-6cc1b2666489b7d2a28984617334a256.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
-"vram_texture": true
+"vram_texture": false
 }
 
 [deps]
 
 source_file="res://level1/furnace.jpg"
-dest_files=["res://.godot/imported/furnace.jpg-6cc1b2666489b7d2a28984617334a256.s3tc.ctex"]
+dest_files=["res://.godot/imported/furnace.jpg-6cc1b2666489b7d2a28984617334a256.ctex"]
 
 [params]
 
