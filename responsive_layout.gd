@@ -10,6 +10,7 @@ extends Node
 # Portrait mode - one universal height for ALL menu elements
 const PORTRAIT_ELEMENT_HEIGHT = 30
 const PORTRAIT_FONT_SCALE = 1.75
+const PORTRAIT_POPUP_BUTTON_FONT_SCALE = 1.75  # Same as regular menu fonts for better readability
 const PORTRAIT_TOP_PADDING = 100  # Two buttons worth of padding (scaled element height ~52px each)
 const PORTRAIT_BOTTOM_PADDING = 100  # Two buttons worth of padding (scaled element height ~52px each)
 
@@ -250,8 +251,8 @@ func _apply_responsive_layout_internal(scene_root: Control) -> void:
 	# Position popups in the appropriate area
 	position_popups_in_play_area(scene_root, is_portrait, popup_container, center_area, middle_area, viewport_size)
 
-	# Apply font scaling to popups
-	apply_popup_font_scaling(popup_container, is_portrait)
+	# Apply font scaling to popups - search from scene_root to catch popups that were reparented
+	apply_popup_font_scaling(scene_root, is_portrait)
 
 	# CRITICAL: Hide PopupContainer if no popups are visible
 	# PopupContainer has z_index:100 and blocks ALL clicks even with mouse_filter=PASS
@@ -770,7 +771,11 @@ func position_popups_in_play_area(scene_root: Control, is_portrait: bool, popup_
 			if original_parent:
 				original_parent.remove_child(popup)
 			target_parent.add_child(popup)
-			print("ResponsiveLayout: Reparented popup '", popup.name, "' to ", target_parent.name)
+			# CRITICAL: Boost z_index when reparenting to MiddleArea to ensure popup appears above everything
+			# MiddleArea is nested, so popup needs much higher z_index than SettingsOverlay (200)
+			if is_portrait and target_parent == middle_area:
+				popup.z_index = 300
+			print("ResponsiveLayout: Reparented popup '", popup.name, "' to ", target_parent.name, " with z_index ", popup.z_index)
 
 		# Position popup based on parent
 		if is_portrait and middle_area and popup.get_parent() == middle_area:
@@ -809,12 +814,9 @@ func position_popups_in_play_area(scene_root: Control, is_portrait: bool, popup_
 
 ## Recursively find all popup nodes (excluding PopupContainer itself)
 func _find_popups_recursive(node: Node, popups: Array, popup_container: Node) -> void:
-	# Skip the PopupContainer itself
-	if node == popup_container:
-		return
-
 	# Check if this node is a popup (Panel with theme_type_variation or script attached)
-	if node is Panel:
+	# Skip the PopupContainer itself (if specified), but still recurse into its children
+	if node is Panel and (popup_container == null or node != popup_container):
 		var is_popup = false
 
 		# Check for PopupPanel theme variation using get method
@@ -838,14 +840,16 @@ func _find_popups_recursive(node: Node, popups: Array, popup_container: Node) ->
 	for child in node.get_children():
 		_find_popups_recursive(child, popups, popup_container)
 
-## Apply font scaling to all popups in the PopupContainer
+## Apply font scaling to all popups in the scene
 ## This ensures popup text is properly sized for portrait mode
-func apply_popup_font_scaling(popup_container: Control, is_portrait: bool) -> void:
-	if not popup_container:
+## Searches from the given node (usually scene_root) to find all popups
+func apply_popup_font_scaling(search_root: Control, is_portrait: bool) -> void:
+	if not search_root:
 		return
 
 	var popups = []
-	_find_popups_recursive(popup_container, popups, popup_container)
+	# Pass null as popup_container since we want to find all popup panels
+	_find_popups_recursive(search_root, popups, null)
 
 	if popups.size() == 0:
 		return
@@ -875,7 +879,7 @@ func _scale_popup_controls_recursive(node: Node, is_portrait: bool) -> void:
 		# Calculate scaled button height
 		var button_height = LANDSCAPE_ELEMENT_HEIGHT
 		if is_portrait:
-			button_height = PORTRAIT_ELEMENT_HEIGHT * PORTRAIT_FONT_SCALE
+			button_height = PORTRAIT_ELEMENT_HEIGHT * PORTRAIT_POPUP_BUTTON_FONT_SCALE
 
 		node.custom_minimum_size.y = button_height
 
@@ -883,7 +887,7 @@ func _scale_popup_controls_recursive(node: Node, is_portrait: bool) -> void:
 			var button_font_size = node.get_theme_font_size("font_size")
 			if button_font_size <= 0:
 				button_font_size = 25  # Default from theme
-			node.add_theme_font_size_override("font_size", int(button_font_size * PORTRAIT_FONT_SCALE))
+			node.add_theme_font_size_override("font_size", int(button_font_size * PORTRAIT_POPUP_BUTTON_FONT_SCALE))
 		else:
 			node.remove_theme_font_size_override("font_size")
 

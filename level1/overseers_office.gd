@@ -12,8 +12,8 @@ var max_break_time = 30.0
 @onready var steal_writ_button = $HBoxContainer/RightVBox/StealWritButton
 @onready var back_button = $HBoxContainer/RightVBox/BackButton
 @onready var confirmation_popup = $PopupContainer/ConfirmationPopup
-@onready var talk_questions_panel = $PopupContainer/TalkQuestionsPanel
-@onready var question_label = $PopupContainer/TalkQuestionsPanel/ScrollContainer/QuizVBox/QuestionLabel
+@onready var talk_questions_panel = $PopupContainer/TalkQuestionsPopup
+@onready var question_label = $PopupContainer/TalkQuestionsPopup/ScrollContainer/QuizVBox/QuestionLabel
 @onready var popup_container = $PopupContainer
 @onready var right_vbox = $HBoxContainer/RightVBox
 @onready var left_vbox = $HBoxContainer/LeftVBox
@@ -95,6 +95,21 @@ func _ready():
 	print("PopupContainer z_index: ", popup_container.z_index)
 	print("PopupContainer mouse_filter: ", popup_container.mouse_filter)
 	print("PopupContainer covers buttons: ", popup_container.visible and popup_container.z_index > 0)
+	print("\n--- MiddleArea (where popups are in portrait) ---")
+	var middle_area_node = get_node_or_null("VBoxContainer/MiddleArea")
+	if middle_area_node:
+		print("MiddleArea visible: ", middle_area_node.visible)
+		print("MiddleArea mouse_filter: ", middle_area_node.mouse_filter)
+		print("MiddleArea clip_contents: ", middle_area_node.clip_contents)
+		print("MiddleArea global_position: ", middle_area_node.global_position)
+		print("MiddleArea size: ", middle_area_node.size)
+		print("MiddleArea children count: ", middle_area_node.get_child_count())
+		for i in range(middle_area_node.get_child_count()):
+			var child = middle_area_node.get_child(i)
+			print("  Child[", i, "]: ", child.name, " visible=", child.visible, " z_index=", child.z_index, " mouse_filter=", child.mouse_filter if child is Control else "N/A")
+			if "Popup" in child.name and child.visible:
+				print("    Popup global_position: ", child.global_position if child is Control else "N/A")
+				print("    Popup size: ", child.size if child is Control else "N/A")
 	print("\n--- Other Overlays ---")
 	var settings = get_node_or_null("SettingsOverlay")
 	if settings:
@@ -157,7 +172,7 @@ func load_questions():
 	else:
 		print("Error: questions.json not found. Quiz feature will not work.")
 
-func update_talk_button_visibility(delta):
+func update_talk_button_visibility(_delta):
 	# Show Talk button only if heart_taken is true, cooldown is over, and question panel is not visible
 	var panel_is_visible = talk_questions_panel != null and talk_questions_panel.visible
 	talk_button.visible = Level1Vars.heart_taken and Level1Vars.talk_button_cooldown <= 0 and not panel_is_visible
@@ -167,8 +182,40 @@ func update_talk_button_visibility(delta):
 
 func _on_talk_button_pressed():
 	# Show confirmation popup using reusable popup system
-	popup_container.visible = true
+	# NOTE: In portrait mode, popups are reparented to MiddleArea, so don't need to show PopupContainer
+	var viewport = get_viewport().get_visible_rect().size
+	var is_portrait = viewport.y > viewport.x
+	if not is_portrait:
+		popup_container.visible = true
 	confirmation_popup.show_popup()
+
+	# Debug: Check popup state after showing
+	await get_tree().process_frame
+	print("\n=== POPUP DEBUG (after Talk button pressed) ===")
+	print("PopupContainer visible: ", popup_container.visible)
+	print("PopupContainer global_position: ", popup_container.global_position)
+	print("PopupContainer size: ", popup_container.size)
+	print("PopupContainer mouse_filter: ", popup_container.mouse_filter)
+	print("PopupContainer z_index: ", popup_container.z_index)
+	print("\nconfirmation_popup parent: ", confirmation_popup.get_parent().name)
+	print("confirmation_popup visible: ", confirmation_popup.visible)
+	print("confirmation_popup z_index: ", confirmation_popup.z_index)
+	print("confirmation_popup mouse_filter: ", confirmation_popup.mouse_filter)
+	print("confirmation_popup global_position: ", confirmation_popup.global_position)
+	print("confirmation_popup size: ", confirmation_popup.size)
+	print("confirmation_popup anchors: L=", confirmation_popup.anchor_left, " T=", confirmation_popup.anchor_top, " R=", confirmation_popup.anchor_right, " B=", confirmation_popup.anchor_bottom)
+	print("confirmation_popup offsets: L=", confirmation_popup.offset_left, " T=", confirmation_popup.offset_top, " R=", confirmation_popup.offset_right, " B=", confirmation_popup.offset_bottom)
+
+	# Check buttons inside popup
+	var button_container = confirmation_popup.get_node_or_null("MarginContainer/VBoxContainer/ButtonContainer")
+	if button_container:
+		print("\nButtons in popup:")
+		for i in range(button_container.get_child_count()):
+			var btn = button_container.get_child(i)
+			if btn is Button:
+				print("  Button '", btn.text, "': visible=", btn.visible, " disabled=", btn.disabled, " mouse_filter=", btn.mouse_filter)
+				print("    global_position=", btn.global_position, " size=", btn.size)
+	print("=== END POPUP DEBUG ===\n")
 
 func _on_confirmation_popup_button_pressed(button_text: String):
 	if button_text == "Sure":
@@ -179,8 +226,11 @@ func _on_confirmation_popup_button_pressed(button_text: String):
 		fetch_question()
 	elif button_text == "Maybe Later":
 		# Just close the popup (already closed automatically by reusable popup)
-		# Hide popup container to ensure buttons remain clickable
-		popup_container.visible = false
+		# Hide popup container to ensure buttons remain clickable (only in landscape)
+		var viewport = get_viewport().get_visible_rect().size
+		var is_portrait = viewport.y > viewport.x
+		if not is_portrait:
+			popup_container.visible = false
 
 func fetch_question():
 	if questions_data.size() == 0:
@@ -208,10 +258,15 @@ func fetch_question():
 
 	# Display the question
 	question_label.text = question_data["question"]
-	$PopupContainer/TalkQuestionsPanel/ScrollContainer/QuizVBox/AnswerA.text = "A) " + question_data["answers"]["A"]
-	$PopupContainer/TalkQuestionsPanel/ScrollContainer/QuizVBox/AnswerB.text = "B) " + question_data["answers"]["B"]
-	$PopupContainer/TalkQuestionsPanel/ScrollContainer/QuizVBox/AnswerC.text = "C) " + question_data["answers"]["C"]
-	$PopupContainer/TalkQuestionsPanel/ScrollContainer/QuizVBox/AnswerD.text = "D) " + question_data["answers"]["D"]
+	var answer_a = talk_questions_panel.get_node("ScrollContainer/QuizVBox/AnswerA")
+	var answer_b = talk_questions_panel.get_node("ScrollContainer/QuizVBox/AnswerB")
+	var answer_c = talk_questions_panel.get_node("ScrollContainer/QuizVBox/AnswerC")
+	var answer_d = talk_questions_panel.get_node("ScrollContainer/QuizVBox/AnswerD")
+
+	if answer_a: answer_a.text = "A) " + question_data["answers"]["A"]
+	if answer_b: answer_b.text = "B) " + question_data["answers"]["B"]
+	if answer_c: answer_c.text = "C) " + question_data["answers"]["C"]
+	if answer_d: answer_d.text = "D) " + question_data["answers"]["D"]
 
 	# Store the correct answer
 	current_correct_answer = question_data["correct"]
@@ -223,10 +278,15 @@ func fetch_question():
 	set_answer_buttons_enabled(true)
 
 func set_answer_buttons_enabled(enabled: bool):
-	$PopupContainer/TalkQuestionsPanel/ScrollContainer/QuizVBox/AnswerA.disabled = !enabled
-	$PopupContainer/TalkQuestionsPanel/ScrollContainer/QuizVBox/AnswerB.disabled = !enabled
-	$PopupContainer/TalkQuestionsPanel/ScrollContainer/QuizVBox/AnswerC.disabled = !enabled
-	$PopupContainer/TalkQuestionsPanel/ScrollContainer/QuizVBox/AnswerD.disabled = !enabled
+	var answer_a = talk_questions_panel.get_node("ScrollContainer/QuizVBox/AnswerA")
+	var answer_b = talk_questions_panel.get_node("ScrollContainer/QuizVBox/AnswerB")
+	var answer_c = talk_questions_panel.get_node("ScrollContainer/QuizVBox/AnswerC")
+	var answer_d = talk_questions_panel.get_node("ScrollContainer/QuizVBox/AnswerD")
+
+	if answer_a: answer_a.disabled = !enabled
+	if answer_b: answer_b.disabled = !enabled
+	if answer_c: answer_c.disabled = !enabled
+	if answer_d: answer_d.disabled = !enabled
 
 func _on_answer_selected(selected_answer: String):
 	if selected_answer == current_correct_answer:
@@ -247,8 +307,11 @@ func _on_answer_selected(selected_answer: String):
 		# Close the talk questions panel
 		talk_questions_panel.visible = false
 
-		# Hide popup container to ensure buttons remain clickable
-		popup_container.visible = false
+		# Hide popup container to ensure buttons remain clickable (only in landscape)
+		var viewport = get_viewport().get_visible_rect().size
+		var is_portrait = viewport.y > viewport.x
+		if not is_portrait:
+			popup_container.visible = false
 
 		# Set cooldown to random time ~1min
 		Level1Vars.talk_button_cooldown = randf_range(45.0, 65.0)
@@ -258,15 +321,15 @@ func resize_talk_panel():
 	# Just ensure word wrapping is enabled for the question label and answer buttons
 	question_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 
-	var answer_buttons = [
-		$PopupContainer/TalkQuestionsPanel/ScrollContainer/QuizVBox/AnswerA,
-		$PopupContainer/TalkQuestionsPanel/ScrollContainer/QuizVBox/AnswerB,
-		$PopupContainer/TalkQuestionsPanel/ScrollContainer/QuizVBox/AnswerC,
-		$PopupContainer/TalkQuestionsPanel/ScrollContainer/QuizVBox/AnswerD
-	]
+	var answer_a = talk_questions_panel.get_node_or_null("ScrollContainer/QuizVBox/AnswerA")
+	var answer_b = talk_questions_panel.get_node_or_null("ScrollContainer/QuizVBox/AnswerB")
+	var answer_c = talk_questions_panel.get_node_or_null("ScrollContainer/QuizVBox/AnswerC")
+	var answer_d = talk_questions_panel.get_node_or_null("ScrollContainer/QuizVBox/AnswerD")
 
-	for button in answer_buttons:
-		button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	if answer_a: answer_a.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	if answer_b: answer_b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	if answer_c: answer_c.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	if answer_d: answer_d.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 
 func _on_steal_writ_button_pressed():
 	# Increase stolen writs by 1

@@ -25,11 +25,18 @@ func _apply_responsive_sizing():
 		settings_button.offset_bottom = -10.0
 		settings_button.add_theme_font_size_override("font_size", 40)
 
-		# Larger menu overlay
-		menu_overlay.offset_left = -340.0
-		menu_overlay.offset_top = -280.0
+		# Larger menu overlay (25% bigger in portrait mode)
+		menu_overlay.offset_left = -425.0
+		menu_overlay.offset_top = -350.0
 		menu_overlay.offset_right = -10.0
 		menu_overlay.offset_bottom = -10.0
+
+		# Make fonts 25% bigger in portrait mode (default_theme.tres base is 25)
+		var base_font_size = 25  # Default font size from theme
+		var scaled_font_size = int(base_font_size * 1.25)  # 25% bigger = 31
+		for child in menu_overlay.get_node("VBoxContainer").get_children():
+			if child is Label or child is Button:
+				child.add_theme_font_size_override("font_size", scaled_font_size)
 	else:
 		# Desktop size
 		settings_button.offset_left = -40.0
@@ -43,6 +50,11 @@ func _apply_responsive_sizing():
 		menu_overlay.offset_top = -210.0
 		menu_overlay.offset_right = -10.0
 		menu_overlay.offset_bottom = -10.0
+
+		# Reset fonts to default size in desktop mode
+		for child in menu_overlay.get_node("VBoxContainer").get_children():
+			if child is Label or child is Button:
+				child.remove_theme_font_size_override("font_size")
 
 func _on_settings_button_pressed():
 	# Toggle the menu overlay visibility
