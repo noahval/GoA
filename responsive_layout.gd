@@ -9,18 +9,17 @@ extends Node
 
 # Portrait mode - one universal height for ALL menu elements
 const PORTRAIT_ELEMENT_HEIGHT = 30
-const PORTRAIT_FONT_SCALE = 1.75
-const PORTRAIT_POPUP_BUTTON_FONT_SCALE = 1.75  # Same as regular menu fonts for better readability
-const PORTRAIT_TOP_PADDING = 100  # Two buttons worth of padding (scaled element height ~52px each)
-const PORTRAIT_BOTTOM_PADDING = 100  # Two buttons worth of padding (scaled element height ~52px each)
+const PORTRAIT_FONT_SCALE = 1.4  # Reduced from 1.75 to save space and prevent overlap
+const PORTRAIT_POPUP_BUTTON_FONT_SCALE = 1.4  # Reduced from 1.75 for better fit
+const PORTRAIT_TOP_PADDING = 60  # Reduced from 100 to give more space to middle area
+const PORTRAIT_BOTTOM_PADDING = 60  # Reduced from 100 to give more space to middle area
 
 # Landscape mode - one universal height for ALL menu elements
 const LANDSCAPE_ELEMENT_HEIGHT = 40
 
 # Spacing settings
 const BUTTON_MARGIN = 5  # Spacing between buttons
-const LANDSCAPE_HBOX_SEPARATION_MAX = 300  # Maximum gap between left and right columns
-const LANDSCAPE_HBOX_SEPARATION_MIN = 20  # Minimum gap to maintain
+const LANDSCAPE_HBOX_SEPARATION = 20  # Fixed gap between columns in landscape (reduced from dynamic 20-300)
 const PORTRAIT_SEPARATION_RATIO = 0.5  # Portrait separation as ratio of scaled element height (50%)
 
 # Column widths (from template)
@@ -31,22 +30,15 @@ const MIN_CENTER_WIDTH = 400  # Minimum width for center play area
 # Landscape container dimensions
 const LANDSCAPE_CONTAINER_HEIGHT = 700  # Total height of HBoxContainer in landscape (centered vertically)
 const NOTIFICATION_BAR_HEIGHT = 100  # Height of the notification bar at bottom (landscape) or between menus (portrait)
+const LANDSCAPE_TOP_PADDING = 100  # Optional top padding for center area in landscape (when space available)
+const LANDSCAPE_MIN_HEIGHT_FOR_PADDING = 900  # Minimum viewport height to enable top padding
 
 # Popup constraints
-const POPUP_MAX_WIDTH_LANDSCAPE = 600  # Max popup width in landscape
+const POPUP_MIN_WIDTH_LANDSCAPE = 400  # Min popup width in landscape
+const POPUP_WIDTH_RATIO_LANDSCAPE = 0.9  # Use 90% of available CenterArea width
 const POPUP_MAX_WIDTH_PORTRAIT = 0.9  # Max popup width as % of viewport in portrait
-const POPUP_MARGIN_FROM_MENUS = 40  # Minimum space between popup and side menus
+const POPUP_MARGIN_FROM_MENUS = 20  # Minimum space between popup and side menus (reduced from 40)
 
-## Calculate dynamic separation based on viewport width
-## Shrinks from max (300) to min (20) as viewport width decreases
-func get_dynamic_separation(viewport_width: float) -> int:
-	# Calculate required width for content
-	var content_width = LEFT_COLUMN_WIDTH + RIGHT_COLUMN_WIDTH
-	# Available space for separation
-	var available_space = viewport_width - content_width
-	# Calculate separation (clamped between min and max)
-	var separation = clamp(available_space / 2.0, LANDSCAPE_HBOX_SEPARATION_MIN, LANDSCAPE_HBOX_SEPARATION_MAX)
-	return int(separation)
 
 ## Apply responsive layout to a scene
 ## Call this from _ready() in your scene script
@@ -93,19 +85,30 @@ func _apply_responsive_layout_internal(scene_root: Control) -> void:
 		push_warning("ResponsiveLayout: Scene missing required container nodes")
 		return
 
-	# Set mouse filter on play areas and popup container to PASS
+	# Set mouse filter on play areas and popup container to IGNORE
+	# IGNORE means the container itself doesn't handle events, but children can receive them
+	# This allows popups inside these areas to receive clicks
 	if center_area:
-		center_area.mouse_filter = Control.MOUSE_FILTER_PASS
+		center_area.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		# CRITICAL: Enable clipping to prevent popups from overflowing and blocking side menus
+		if not is_portrait:
+			center_area.clip_contents = true
+			print("ResponsiveLayout: Enabled clip_contents on CenterArea for landscape")
+		else:
+			center_area.clip_contents = false
+		print("ResponsiveLayout: Set CenterArea mouse_filter to IGNORE")
 	if middle_area:
-		middle_area.mouse_filter = Control.MOUSE_FILTER_PASS
+		middle_area.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		# CRITICAL: Enable clipping on MiddleArea in portrait mode to prevent popups from overflowing
 		if is_portrait:
 			middle_area.clip_contents = true
 			print("ResponsiveLayout: Enabled clip_contents on MiddleArea for portrait")
 		else:
 			middle_area.clip_contents = false
+		print("ResponsiveLayout: Set MiddleArea mouse_filter to IGNORE")
 	if popup_container:
-		popup_container.mouse_filter = Control.MOUSE_FILTER_PASS
+		popup_container.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		print("ResponsiveLayout: Set PopupContainer mouse_filter to IGNORE")
 
 	# Set mouse filter on padding controls to PASS (they shouldn't block clicks)
 	# AND apply the padding heights based on orientation
@@ -254,21 +257,24 @@ func _apply_responsive_layout_internal(scene_root: Control) -> void:
 	# Apply font scaling to popups - search from scene_root to catch popups that were reparented
 	apply_popup_font_scaling(scene_root, is_portrait)
 
-	# CRITICAL: Hide PopupContainer if no popups are visible
-	# PopupContainer has z_index:100 and blocks ALL clicks even with mouse_filter=PASS
+	# CRITICAL: Hide PopupContainer after reparenting popups
+	# PopupContainer should be empty now (popups moved to CenterArea/MiddleArea)
+	# Even with mouse_filter=IGNORE, it's safer to hide it completely
 	if popup_container:
-		var any_popup_visible = false
+		var any_popup_in_container = false
 		for child in popup_container.get_children():
 			if child is Control and child.visible:
-				any_popup_visible = true
+				any_popup_in_container = true
 				break
 
-		if not any_popup_visible:
+		# Hide PopupContainer if empty OR if popups were reparented to play areas
+		# In landscape/portrait modes, popups should be in CenterArea/MiddleArea, not PopupContainer
+		if not any_popup_in_container:
 			popup_container.visible = false
-			print("ResponsiveLayout: Hid PopupContainer (no visible popups)")
+			print("ResponsiveLayout: Hid PopupContainer (empty - popups reparented to play areas)")
 		else:
 			popup_container.visible = true
-			print("ResponsiveLayout: PopupContainer visible (has active popups)")
+			print("ResponsiveLayout: WARNING - PopupContainer still has visible children!")
 
 	# Remove panel backgrounds to prevent double backgrounds
 	# Panels use self_modulate for their visual appearance
@@ -302,20 +308,26 @@ func _apply_responsive_layout_internal(scene_root: Control) -> void:
 		right_vbox.position = Vector2.ZERO
 		print("ResponsiveLayout: Applied portrait size_flags to TopVBox, BottomVBox, LeftVBox, RightVBox")
 	else:
-		# Landscape mode: HBoxContainer centered vertically, full width horizontally
-		# Set anchors for vertical centering with full horizontal width
+		# Landscape mode: HBoxContainer stretches from top to notification bar
+		# Full width horizontally, full height minus notification bar vertically
 		hbox.anchor_left = 0.0
 		hbox.anchor_right = 1.0
-		hbox.anchor_top = 0.5
-		hbox.anchor_bottom = 0.5
+		hbox.anchor_top = 0.0
+		hbox.anchor_bottom = 1.0
 
-		# Set offsets to create height using LANDSCAPE_CONTAINER_HEIGHT constant
-		# This will center the content vertically on screen
-		var container_half_height = LANDSCAPE_CONTAINER_HEIGHT / 2.0
+		# Calculate top offset - add padding if viewport is tall enough
+		var top_offset = 10  # Default small margin
+		if viewport_size.y >= LANDSCAPE_MIN_HEIGHT_FOR_PADDING:
+			top_offset = LANDSCAPE_TOP_PADDING
+			print("ResponsiveLayout: Viewport height (", viewport_size.y, ") >= ", LANDSCAPE_MIN_HEIGHT_FOR_PADDING, " - using top padding: ", top_offset)
+		else:
+			print("ResponsiveLayout: Viewport height (", viewport_size.y, ") < ", LANDSCAPE_MIN_HEIGHT_FOR_PADDING, " - using minimal top offset: ", top_offset)
+
+		# Set offsets
 		hbox.offset_left = 0
 		hbox.offset_right = 0
-		hbox.offset_top = -container_half_height
-		hbox.offset_bottom = container_half_height
+		hbox.offset_top = top_offset
+		hbox.offset_bottom = -NOTIFICATION_BAR_HEIGHT  # Leave room for notification bar
 
 		hbox.grow_horizontal = Control.GROW_DIRECTION_BOTH
 		hbox.grow_vertical = Control.GROW_DIRECTION_BOTH
@@ -324,7 +336,22 @@ func _apply_responsive_layout_internal(scene_root: Control) -> void:
 		right_vbox.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 		left_vbox.custom_minimum_size = Vector2(LEFT_COLUMN_WIDTH, 0)
 		right_vbox.custom_minimum_size = Vector2(RIGHT_COLUMN_WIDTH, 0)
-		print("ResponsiveLayout: Applied landscape centered layout - HBox anchored at vertical center")
+
+		# Vertically center menu items in left and right columns
+		left_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+		right_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+		print("ResponsiveLayout: Set left/right menu vertical alignment to CENTER")
+
+		# Ensure CenterArea expands to fill available space vertically
+		if center_area:
+			center_area.size_flags_vertical = Control.SIZE_EXPAND_FILL
+			center_area.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			print("ResponsiveLayout: Set CenterArea to expand vertically and horizontally")
+
+			# Debug: wait a frame and print CenterArea's actual size
+			call_deferred("_debug_print_center_area_size", center_area)
+
+		print("ResponsiveLayout: Applied landscape full-height layout - HBox from top to notification bar")
 
 	# Always apply mode-specific styling and scaling (even if already in correct mode)
 	if is_portrait:
@@ -346,9 +373,8 @@ func _apply_responsive_layout_internal(scene_root: Control) -> void:
 		left_vbox.remove_theme_constant_override("separation")
 		right_vbox.remove_theme_constant_override("separation")
 
-		# Apply landscape HBox separation
-		var separation = get_dynamic_separation(viewport_size.x)
-		hbox.add_theme_constant_override("separation", separation)
+		# Apply landscape HBox separation - use fixed small separation to maximize CenterArea
+		hbox.add_theme_constant_override("separation", LANDSCAPE_HBOX_SEPARATION)
 
 		# Apply landscape-specific adjustments (panel sizing, word wrapping, etc.)
 		_apply_landscape_adjustments(left_vbox, right_vbox, hbox)
@@ -360,10 +386,8 @@ func _apply_responsive_layout_internal(scene_root: Control) -> void:
 func _apply_landscape_adjustments(left_vbox: VBoxContainer, right_vbox: VBoxContainer, hbox: HBoxContainer) -> void:
 	print("ResponsiveLayout: Applying landscape adjustments")
 
-	# Get current separation value
-	var separation = hbox.get_theme_constant("separation")
-	if separation == 0:
-		separation = 40  # Default from template
+	# Use fixed separation value
+	var separation = LANDSCAPE_HBOX_SEPARATION
 
 	# Reset to default size first
 	left_vbox.custom_minimum_size = Vector2(LEFT_COLUMN_WIDTH, 0)
@@ -496,24 +520,16 @@ func _scale_for_portrait(left_vbox: VBoxContainer, right_vbox: VBoxContainer) ->
 				current_size = 25  # Default from theme
 			button.add_theme_font_size_override("font_size", int(current_size * PORTRAIT_FONT_SCALE))
 
-	# Apply HEIGHT to all panels (with special handling for progress bars)
+	# Apply HEIGHT to all panels (uniform height for visual consistency)
 	for panel in left_vbox.get_children():
 		if panel is Panel:
-			# Check if this panel has a progress bar - if so, make it taller
-			var has_progress_bar = false
-			for child in panel.get_children():
-				if child is ProgressBar:
-					has_progress_bar = true
-					break
-
-			# Progress bar panels need extra height (1.4x)
-			var panel_height = scaled_height * 1.4 if has_progress_bar else scaled_height
-			panel.custom_minimum_size = Vector2(0, panel_height)
+			# All panels use the same scaled height for consistent spacing and alignment
+			panel.custom_minimum_size = Vector2(0, scaled_height)
 
 			# Don't constrain size too tightly - let it grow if needed
 			panel.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 
-			print("ResponsiveLayout: Set panel '", panel.name, "' size to (width, ", panel_height, ")")
+			print("ResponsiveLayout: Set panel '", panel.name, "' size to (width, ", scaled_height, ")")
 
 			# Scale labels and other children
 			for child in panel.get_children():
@@ -729,23 +745,48 @@ func position_popups_in_play_area(scene_root: Control, is_portrait: bool, popup_
 			# Fallback to full viewport with margins
 			max_popup_width = viewport_size.x * POPUP_MAX_WIDTH_PORTRAIT
 	else:
-		# Landscape: calculate center area width
+		# Landscape: use most of the center area width (90% by default)
 		if center_area:
 			play_area_rect = center_area.get_global_rect()
-			max_popup_width = min(play_area_rect.size.x - (POPUP_MARGIN_FROM_MENUS * 2), float(POPUP_MAX_WIDTH_LANDSCAPE))
+			# Use a percentage of the center area width, respecting margins
+			var available_width = play_area_rect.size.x - (POPUP_MARGIN_FROM_MENUS * 2)
+			max_popup_width = max(float(POPUP_MIN_WIDTH_LANDSCAPE), available_width * POPUP_WIDTH_RATIO_LANDSCAPE)
+			print("ResponsiveLayout: CenterArea width: ", play_area_rect.size.x, " Available width: ", available_width, " Popup max width: ", max_popup_width)
 		else:
 			# Fallback: viewport width minus side menus
 			var available_width = viewport_size.x - LEFT_COLUMN_WIDTH - RIGHT_COLUMN_WIDTH - (POPUP_MARGIN_FROM_MENUS * 2)
-			max_popup_width = min(available_width, float(POPUP_MAX_WIDTH_LANDSCAPE))
+			max_popup_width = max(float(POPUP_MIN_WIDTH_LANDSCAPE), available_width * POPUP_WIDTH_RATIO_LANDSCAPE)
 
 	print("ResponsiveLayout: Max popup width: ", max_popup_width, " Play area: ", play_area_rect)
 
-	# Calculate max popup height - can be generous since popup is reparented to MiddleArea
+	# Calculate max popup height - MUST fit within actual MiddleArea space
 	var max_popup_height = 0.0
 	if is_portrait:
-		# Portrait: Popup will be reparented to MiddleArea, so use most of viewport height
-		# The MiddleArea will naturally constrain it
-		max_popup_height = viewport_size.y * 0.6  # 60% of viewport height
+		# Portrait: Calculate actual available space in MiddleArea
+		# MiddleArea gets the remaining space after TopPadding, TopVBox, NotificationBar, BottomVBox, BottomPadding
+		var used_height = PORTRAIT_TOP_PADDING + PORTRAIT_BOTTOM_PADDING + NOTIFICATION_BAR_HEIGHT
+
+		# Get actual heights of TopVBox and BottomVBox
+		var scene_root_node = scene_root  # Access the scene_root parameter
+		var top_vbox_node = scene_root_node.get_node_or_null("VBoxContainer/TopVBox")
+		var bottom_vbox_node = scene_root_node.get_node_or_null("VBoxContainer/BottomVBox")
+
+		if top_vbox_node:
+			# Force layout update to get accurate size
+			top_vbox_node.force_update_transform()
+			used_height += top_vbox_node.size.y
+
+		if bottom_vbox_node:
+			# Force layout update to get accurate size
+			bottom_vbox_node.force_update_transform()
+			used_height += bottom_vbox_node.size.y
+
+		# Available space for MiddleArea
+		var middle_area_height = max(100, viewport_size.y - used_height)
+		# Use 85% of MiddleArea space to leave margin and prevent overlap
+		max_popup_height = middle_area_height * 0.85
+
+		print("ResponsiveLayout: Portrait - used_height: ", used_height, " middle_area_height: ", middle_area_height, " max_popup_height: ", max_popup_height)
 	else:
 		# Landscape: constrain to center area height with margins
 		if center_area:
@@ -758,12 +799,16 @@ func position_popups_in_play_area(scene_root: Control, is_portrait: bool, popup_
 
 	# Apply constraints to each popup
 	for popup in popups:
-		# CRITICAL: In portrait mode, reparent popup to MiddleArea so it's physically constrained
-		# and can't block buttons in TopVBox/BottomVBox
-		var target_parent = popup_container
+		# CRITICAL: Reparent popup to the appropriate play area to physically constrain it
+		# Portrait: MiddleArea (between menus) - prevents blocking top/bottom buttons
+		# Landscape: CenterArea (between side menus) - prevents blocking left/right buttons
+		var target_parent = popup_container  # Default fallback
 		if is_portrait and middle_area:
 			target_parent = middle_area
 			print("ResponsiveLayout: Will reparent popup '", popup.name, "' to MiddleArea for portrait")
+		elif not is_portrait and center_area:
+			target_parent = center_area
+			print("ResponsiveLayout: Will reparent popup '", popup.name, "' to CenterArea for landscape")
 
 		# Reparent if needed
 		if popup.get_parent() != target_parent:
@@ -771,22 +816,35 @@ func position_popups_in_play_area(scene_root: Control, is_portrait: bool, popup_
 			if original_parent:
 				original_parent.remove_child(popup)
 			target_parent.add_child(popup)
-			# CRITICAL: Boost z_index when reparenting to MiddleArea to ensure popup appears above everything
-			# MiddleArea is nested, so popup needs much higher z_index than SettingsOverlay (200)
-			if is_portrait and target_parent == middle_area:
+			# CRITICAL: Boost z_index when reparenting to play areas to ensure popup appears above everything
+			# Play areas are nested, so popup needs much higher z_index than SettingsOverlay (200)
+			if (is_portrait and target_parent == middle_area) or (not is_portrait and target_parent == center_area):
 				popup.z_index = 300
+			else:
+				popup.z_index = 200  # Default for PopupContainer
 			print("ResponsiveLayout: Reparented popup '", popup.name, "' to ", target_parent.name, " with z_index ", popup.z_index)
 
-		# Position popup based on parent
-		if is_portrait and middle_area and popup.get_parent() == middle_area:
-			# Portrait: popup is child of MiddleArea, so center it within MiddleArea
-			# Coordinate system is now relative to MiddleArea, not viewport
+		# CRITICAL: Ensure popup has STOP mouse filter so it can receive clicks
+		# Without this, clicks will pass through the popup
+		popup.mouse_filter = Control.MOUSE_FILTER_STOP
+
+		# Debug: print popup state
+		print("ResponsiveLayout: Set popup '", popup.name, "' mouse_filter to STOP")
+		print("  - Parent: ", popup.get_parent().name if popup.get_parent() else "null")
+		print("  - Visible: ", popup.visible)
+		print("  - Z-index: ", popup.z_index)
+
+		# Position popup based on parent - center it within its parent container
+		if (is_portrait and popup.get_parent() == middle_area) or (not is_portrait and popup.get_parent() == center_area):
+			# Popup is child of play area (MiddleArea or CenterArea)
+			# Center it within the play area - coordinates are relative to parent
 			popup.anchor_left = 0.5
 			popup.anchor_right = 0.5
 			popup.anchor_top = 0.5
 			popup.anchor_bottom = 0.5
 
-			# Set size constraints (offsets from center of MiddleArea)
+			# Set size constraints (offsets from center of play area)
+			# Use most of the available width
 			var half_width = max_popup_width / 2.0
 			var half_height = max_popup_height / 2.0
 			popup.offset_left = -half_width
@@ -794,9 +852,15 @@ func position_popups_in_play_area(scene_root: Control, is_portrait: bool, popup_
 			popup.offset_top = -half_height
 			popup.offset_bottom = half_height
 
-			print("ResponsiveLayout: Positioned popup '", popup.name, "' centered in MiddleArea")
+			var parent_name = middle_area.name if popup.get_parent() == middle_area else center_area.name
+			print("ResponsiveLayout: Positioned popup '", popup.name, "' in ", parent_name, " - max width: ", max_popup_width, " max height: ", max_popup_height)
+
+			# CRITICAL: Force popup to recalculate its size now that it's in the play area
+			# The popup will check its parent and resize to use available space
+			if popup.has_method("_check_and_resize_for_play_area"):
+				popup.call_deferred("_check_and_resize_for_play_area")
 		else:
-			# Landscape or popup in PopupContainer: center on screen (default behavior)
+			# Fallback: popup in PopupContainer - center on viewport
 			popup.anchor_left = 0.5
 			popup.anchor_right = 0.5
 			popup.anchor_top = 0.5
@@ -810,7 +874,23 @@ func position_popups_in_play_area(scene_root: Control, is_portrait: bool, popup_
 			popup.offset_top = -half_height
 			popup.offset_bottom = half_height
 
+			print("ResponsiveLayout: Positioned popup '", popup.name, "' centered on viewport (fallback)")
+
 		print("ResponsiveLayout: Constrained popup '", popup.name, "' to size: ", max_popup_width, "x", max_popup_height)
+
+## Debug function to print CenterArea size after layout
+func _debug_print_center_area_size(center_area: Control) -> void:
+	await get_tree().process_frame
+	print("=== DEBUG: CenterArea size after layout ===")
+	print("CenterArea size: ", center_area.size)
+	print("CenterArea position: ", center_area.position)
+	print("CenterArea global_position: ", center_area.global_position)
+	print("CenterArea rect: ", center_area.get_rect())
+	print("CenterArea global_rect: ", center_area.get_global_rect())
+	print("CenterArea size_flags_horizontal: ", center_area.size_flags_horizontal)
+	print("CenterArea size_flags_vertical: ", center_area.size_flags_vertical)
+	print("===========================================")
+	print("")
 
 ## Recursively find all popup nodes (excluding PopupContainer itself)
 func _find_popups_recursive(node: Node, popups: Array, popup_container: Node) -> void:

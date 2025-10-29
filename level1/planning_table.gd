@@ -3,8 +3,6 @@ extends Control
 var break_time = 30.0
 var max_break_time = 30.0
 
-@onready var suspicion_panel = $HBoxContainer/LeftVBox/SuspicionPanel
-@onready var suspicion_bar = $HBoxContainer/LeftVBox/SuspicionPanel/SuspicionBar
 @onready var stolen_coal_panel = $HBoxContainer/LeftVBox/StolenCoalPanel
 @onready var stolen_coal_label = $HBoxContainer/LeftVBox/StolenCoalPanel/StolenCoalLabel
 @onready var stolen_writs_panel = $HBoxContainer/LeftVBox/StolenWritsPanel
@@ -34,7 +32,6 @@ func _ready():
 	break_timer_bar.value = progress_percent
 
 	update_labels()
-	update_suspicion_bar()
 
 func _process(delta):
 	break_time -= delta
@@ -49,21 +46,16 @@ func _process(delta):
 		Global.change_scene_with_check(get_tree(), "res://level1/furnace.tscn")
 
 	update_labels()
-	update_suspicion_bar()
 
 func update_labels():
-	stolen_coal_panel.visible = Level1Vars.stolen_coal > 0
+	stolen_coal_panel.visible = true
 	stolen_coal_label.text = "Stolen Coal: " + str(Level1Vars.stolen_coal)
 
-	stolen_writs_panel.visible = Level1Vars.stolen_writs > 0
+	stolen_writs_panel.visible = true
 	stolen_writs_label.text = "Stolen Writs: " + str(Level1Vars.stolen_writs)
 
-	mechanisms_panel.visible = Level1Vars.mechanisms > 0
+	mechanisms_panel.visible = true
 	mechanisms_label.text = "Mechanisms: " + str(Level1Vars.mechanisms)
 
 func _on_back_to_workshop_button_pressed():
 	Global.change_scene_with_check(get_tree(), "res://level1/workshop.tscn")
-
-func update_suspicion_bar():
-	suspicion_panel.visible = Level1Vars.suspicion > 0
-	suspicion_bar.value = Level1Vars.suspicion

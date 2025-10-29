@@ -45,8 +45,6 @@ func _ready():
 
 
 func _delayed_setup():
-	print("=== Secret Passage Puzzle Setup ===")
-
 	# Get reference to puzzle container (it's now in CenterArea or MiddleArea depending on orientation)
 	var viewport_size = get_viewport().get_visible_rect().size
 	var is_portrait = viewport_size.y > viewport_size.x
@@ -71,7 +69,6 @@ func _delayed_setup():
 					puzzle_container.pivot_offset = Vector2.ZERO
 
 					puzzle_container.reparent(middle_area)
-					print("Reparented PuzzleContainer to MiddleArea for portrait mode")
 
 		# Calculate available space in portrait mode
 		# Use 85% of smaller dimension (width or available height) to leave margin
@@ -83,48 +80,35 @@ func _delayed_setup():
 		var scale_factor = available_size / puzzle_base_size
 		scale_factor = clamp(scale_factor, 0.8, 2.0)  # Min 0.8x, max 2x
 
-		# Completely reset layout mode to manual positioning
-		puzzle_container.set_anchors_preset(Control.PRESET_CENTER, false)  # false = don't resize
+		# CRITICAL: Reset ALL transforms first to clear any inherited state
+		puzzle_container.position = Vector2.ZERO
+		puzzle_container.rotation = 0
+		puzzle_container.scale = Vector2.ONE
+		puzzle_container.pivot_offset = Vector2.ZERO
+		puzzle_container.size = Vector2.ZERO
+		puzzle_container.custom_minimum_size = Vector2.ZERO
 
-		# Manually set all anchors to 0.5 (center)
+		# Set anchors to center
 		puzzle_container.anchor_left = 0.5
 		puzzle_container.anchor_top = 0.5
 		puzzle_container.anchor_right = 0.5
 		puzzle_container.anchor_bottom = 0.5
 
-		# The visual content spans from (-40,-40) to (440, 440) inside the container
-		# Visual center is at (200, 200), container geometric center would be at (240, 240)
-		# Total offset needed: -40 in both directions
-
-		# Set the container size to match puzzle_base_size
+		# Set offsets to define size around center point
 		var half_base = puzzle_base_size / 2.0
 		puzzle_container.offset_left = -half_base
-		puzzle_container.offset_top = -half_base
 		puzzle_container.offset_right = half_base
+		puzzle_container.offset_top = -half_base
 		puzzle_container.offset_bottom = half_base
 
-		# Set pivot for scaling from the geometric center of the container
+		# Set pivot to geometric center
 		puzzle_container.pivot_offset = Vector2(half_base, half_base)
 
 		# Apply scale
 		puzzle_container.scale = Vector2(scale_factor, scale_factor)
 
-		# Adjust position to compensate for off-center visual content
-		# Visual center is at (200, 200) but container center is at (240, 240)
-		# Experimenting with offset - if still too far right, increase the negative X value
-		var x_offset = -60.0  # Try more leftward shift
-		var y_offset = -40.0
-		puzzle_container.position = Vector2(x_offset, y_offset) * scale_factor
-		puzzle_container.rotation = 0
-
 		puzzle_container.grow_horizontal = Control.GROW_DIRECTION_BOTH
 		puzzle_container.grow_vertical = Control.GROW_DIRECTION_BOTH
-
-		print("Portrait mode: scale factor = ", scale_factor, " (available: ", available_size, "px)")
-		print("Portrait mode: anchors = ", puzzle_container.anchor_left, ",", puzzle_container.anchor_top)
-		print("Portrait mode: offsets = ", puzzle_container.offset_left, ",", puzzle_container.offset_top, " to ", puzzle_container.offset_right, ",", puzzle_container.offset_bottom)
-		print("Portrait mode: position = ", puzzle_container.position)
-		print("Portrait mode: scale = ", puzzle_container.scale)
 	else:
 		# In landscape, make sure it's in CenterArea
 		puzzle_container = get_node_or_null("HBoxContainer/CenterArea/PuzzleContainer")
@@ -135,17 +119,30 @@ func _delayed_setup():
 				var center_area = get_node_or_null("HBoxContainer/CenterArea")
 				if center_area:
 					puzzle_container.reparent(center_area)
-					print("Reparented PuzzleContainer to CenterArea for landscape mode")
 
-		# Use PRESET_CENTER to properly center the container
-		puzzle_container.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+		# CRITICAL: Reset ALL transforms first to clear any inherited state
+		puzzle_container.position = Vector2.ZERO
+		puzzle_container.rotation = 0
+		puzzle_container.scale = Vector2.ONE
+		puzzle_container.pivot_offset = Vector2.ZERO
+		puzzle_container.size = Vector2.ZERO
+		puzzle_container.custom_minimum_size = Vector2.ZERO
 
-		# Set size directly
-		puzzle_container.size = Vector2(puzzle_base_size, puzzle_base_size)
-		puzzle_container.custom_minimum_size = Vector2(puzzle_base_size, puzzle_base_size)
+		# Set anchors to center
+		puzzle_container.anchor_left = 0.5
+		puzzle_container.anchor_top = 0.5
+		puzzle_container.anchor_right = 0.5
+		puzzle_container.anchor_bottom = 0.5
 
-		# Set pivot for scaling from the geometric center
-		puzzle_container.pivot_offset = Vector2(puzzle_base_size / 2.0, puzzle_base_size / 2.0)
+		# Set offsets to define size around center point
+		var half_base = puzzle_base_size / 2.0
+		puzzle_container.offset_left = -half_base
+		puzzle_container.offset_right = half_base
+		puzzle_container.offset_top = -half_base
+		puzzle_container.offset_bottom = half_base
+
+		# Set pivot to geometric center
+		puzzle_container.pivot_offset = Vector2(half_base, half_base)
 
 		# In landscape, use CenterArea size to determine scale
 		var center_area = get_node_or_null("HBoxContainer/CenterArea")
@@ -157,8 +154,6 @@ func _delayed_setup():
 			var available_size = min(center_rect.size.x, center_rect.size.y) * 0.85
 			scale_factor = available_size / puzzle_base_size
 			scale_factor = clamp(scale_factor, 0.8, 1.5)  # Smaller max for landscape
-
-			print("Landscape mode: scale factor = ", scale_factor, " (center area: ", center_rect.size, ")")
 		else:
 			# Fallback: use default scale
 			scale_factor = 1.0
@@ -166,26 +161,13 @@ func _delayed_setup():
 		# Apply scale
 		puzzle_container.scale = Vector2(scale_factor, scale_factor)
 
-		# Adjust position to compensate for off-center visual content
-		puzzle_container.position = Vector2(-40, -40) * scale_factor
-		puzzle_container.rotation = 0
-
 		puzzle_container.grow_horizontal = Control.GROW_DIRECTION_BOTH
 		puzzle_container.grow_vertical = Control.GROW_DIRECTION_BOTH
-
-	print("Puzzle container exists: ", puzzle_container != null)
-	if puzzle_container:
-		print("Puzzle container parent: ", puzzle_container.get_parent().name)
-		print("Puzzle container scale: ", puzzle_container.scale)
-		print("Puzzle container anchors: ", puzzle_container.anchor_left, ", ", puzzle_container.anchor_top)
-		print("Puzzle container offsets: ", puzzle_container.offset_left, ", ", puzzle_container.offset_top)
 
 	# Setup puzzle (creates the visual elements)
 	setup_puzzle()
 	update_place_pipe_button()
 	add_developer_skip_button()
-
-# Removed manual positioning - puzzle now uses anchors in CenterArea/MiddleArea for automatic centering
 
 func find_node_recursive(node: Node, node_name: String) -> Node:
 	if node.name == node_name:
@@ -264,11 +246,15 @@ func save_grid_state():
 		Level1Vars.pipe_puzzle_grid.append(row)
 
 func create_visual_grid():
+	# CRITICAL: Offset all visual content by 40px to center it within the container
+	# This shifts the visual center from (200, 200) to (240, 240) = geometric center
+	var visual_offset = Vector2(40, 40)
+
 	for y in range(GRID_SIZE):
 		for x in range(GRID_SIZE):
 			var cell = Panel.new()
 			cell.custom_minimum_size = Vector2(CELL_SIZE - 4, CELL_SIZE - 4)
-			cell.position = Vector2(x * CELL_SIZE, y * CELL_SIZE)
+			cell.position = Vector2(x * CELL_SIZE, y * CELL_SIZE) + visual_offset
 			cell.size = Vector2(CELL_SIZE - 4, CELL_SIZE - 4)
 
 			# Add pipe visual
@@ -293,10 +279,13 @@ func create_visual_grid():
 			update_pipe_visual(x, y)
 
 func create_corner_indicators():
+	# CRITICAL: Offset indicators by 40px to match the grid offset
+	var visual_offset = Vector2(40, 40)
+
 	# Create top-left indicator (outside the grid)
 	var top_left_indicator = Control.new()
 	top_left_indicator.custom_minimum_size = Vector2(30, 30)
-	top_left_indicator.position = Vector2(-40, -40)  # Outside the grid, top-left
+	top_left_indicator.position = Vector2(-40, -40) + visual_offset  # Now at (0, 0)
 	top_left_indicator.size = Vector2(30, 30)
 	top_left_indicator.draw.connect(_draw_top_left_indicator.bind(top_left_indicator))
 	puzzle_container.add_child(top_left_indicator)
@@ -305,7 +294,7 @@ func create_corner_indicators():
 	# Create bottom-right indicator (outside the grid)
 	var bottom_right_indicator = Control.new()
 	bottom_right_indicator.custom_minimum_size = Vector2(30, 30)
-	bottom_right_indicator.position = Vector2(GRID_SIZE * CELL_SIZE + 10, GRID_SIZE * CELL_SIZE + 10)  # Outside the grid, bottom-right
+	bottom_right_indicator.position = Vector2(GRID_SIZE * CELL_SIZE + 10, GRID_SIZE * CELL_SIZE + 10) + visual_offset  # Shifted right/down
 	bottom_right_indicator.size = Vector2(30, 30)
 	bottom_right_indicator.draw.connect(_draw_bottom_right_indicator.bind(bottom_right_indicator))
 	puzzle_container.add_child(bottom_right_indicator)

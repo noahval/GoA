@@ -55,6 +55,11 @@ func _ready():
 	# ResponsiveLayout automatically hides PopupContainer when empty
 	ResponsiveLayout.apply_to_scene(self)
 
+	# CRITICAL: Ensure PopupContainer starts hidden to prevent click blocking
+	var popup_container = get_node_or_null("PopupContainer")
+	if popup_container:
+		popup_container.visible = false
+
 	update_labels()
 
 
@@ -137,25 +142,30 @@ func update_labels():
 func _on_follow_voice_button_pressed():
 	# Show the voice popup
 	if voice_popup:
-		# Make PopupContainer visible when showing a popup
+		# CRITICAL: Only show PopupContainer in landscape mode
+		# In portrait mode, popups are reparented to MiddleArea, so PopupContainer must stay hidden
+		var viewport_size = get_viewport().get_visible_rect().size
+		var is_portrait = viewport_size.y > viewport_size.x
 		var popup_container = get_node_or_null("PopupContainer")
-		if popup_container:
+		if popup_container and not is_portrait:
 			popup_container.visible = true
 		voice_popup.show_popup()
 
 func _on_voice_popup_button_pressed(button_text: String):
+	var viewport_size = get_viewport().get_visible_rect().size
+	var is_portrait = viewport_size.y > viewport_size.x
+	var popup_container = get_node_or_null("PopupContainer")
+
 	if button_text == "enter door":
 		# Show the barkeep popup
 		if barkeep_popup:
-			# Make PopupContainer visible when showing a popup
-			var popup_container = get_node_or_null("PopupContainer")
-			if popup_container:
+			# CRITICAL: Only show PopupContainer in landscape mode
+			if popup_container and not is_portrait:
 				popup_container.visible = true
 			barkeep_popup.show_popup()
 	elif button_text == "turn back":
-		# Popup automatically closes, hide PopupContainer since we're done
-		var popup_container = get_node_or_null("PopupContainer")
-		if popup_container:
+		# Popup automatically closes, hide PopupContainer (only matters in landscape)
+		if popup_container and not is_portrait:
 			popup_container.visible = false
 
 func _on_barkeep_popup_button_pressed(button_text: String):
@@ -169,8 +179,9 @@ func _on_barkeep_popup_button_pressed(button_text: String):
 		if follow_voice_button:
 			follow_voice_button.visible = false
 
-		# CRITICAL: Hide PopupContainer now that popup sequence is complete
-		# This allows buttons to be clickable again in portrait mode
+		# CRITICAL: Hide PopupContainer now that popup sequence is complete (only matters in landscape)
+		var viewport_size = get_viewport().get_visible_rect().size
+		var is_portrait = viewport_size.y > viewport_size.x
 		var popup_container = get_node_or_null("PopupContainer")
-		if popup_container:
+		if popup_container and not is_portrait:
 			popup_container.visible = false
