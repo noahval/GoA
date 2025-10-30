@@ -46,3 +46,33 @@ GoA/
 3. **Notifications**: Use `Global.show_stat_notification()` for user feedback
 4. **Scene Changes**: Use `Global.change_scene_with_check()` to respect game mechanics
 5. **Timers**: Game uses multiple global timers - be cautious when modifying
+
+## Documentation System (BIBLE)
+
+**The BIBLE system provides keyword-based documentation access**
+
+### Quick Access
+When working on specific systems, consult the BIBLE:
+- **Main Index**: [.claude/docs/BIBLE.md](.claude/docs/BIBLE.md)
+
+### Documentation Files
+- **[debug-system.md](.claude/docs/debug-system.md)** - Testing, logging, autonomous validation
+- **[game-systems.md](.claude/docs/game-systems.md)** - Stats, shop, timers, victory, resources
+- **[godot-dev.md](.claude/docs/godot-dev.md)** - Godot 4.5 patterns, best practices
+
+### When to Read Docs
+**Keywords trigger doc reads**:
+- `debug`, `test`, `logging` → Read debug-system.md
+- `stats`, `experience`, `shop` → Read game-systems.md
+- `godot`, `scene`, `node` → Read godot-dev.md
+
+**Before making changes**:
+- Modifying stats/exp? → Read game-systems.md#experience-system
+- Testing features? → Read debug-system.md
+- Working with Godot? → Read godot-dev.md
+
+### Hooks & Skills
+- **Hooks**: [.claude/hooks/](.claude/hooks/) - Event-triggered automation
+- **Skills**: [.claude/skills/](.claude/skills/) - Reusable procedures
+
+See respective README files for details.
