@@ -189,6 +189,106 @@ For Windows PowerShell:
 
 ---
 
+### GDScript Validator Hook ⭐
+
+**Files**: `stop/gdscript-validator.sh` (Bash) / `stop/gdscript-validator.ps1` (PowerShell)
+
+**Purpose**: Validates GDScript syntax after Claude finishes editing to catch errors immediately.
+
+**How It Works**:
+1. Hook runs after Claude finishes responding (Stop event)
+2. Detects all `.gd` files modified in the last 5 minutes
+3. Runs `godot --headless --check-only --script` on each file
+4. Shows errors immediately so Claude can fix them
+5. Prevents broken scripts from sitting unnoticed
+
+**Example Output**:
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔍 GDScript Validator
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📝 Modified GDScript files detected:
+   → global.gd
+   → level1/shop.gd
+
+🔧 Running syntax validation...
+
+❌ global.gd:1
+   ERROR: Parse Error at line 42
+
+✅ level1/shop.gd
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+❌ Found GDScript errors in 1 file(s)
+
+💡 Action Required:
+   Claude should fix these errors before proceeding
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+**Benefits**:
+- Catches syntax errors immediately (no more finding errors hours later)
+- Works like TypeScript build checker from the Reddit post
+- Non-blocking if Godot isn't in PATH
+- Zero tolerance for broken code
+
+---
+
+### Game Mechanics Safety Check Hook ⭐
+
+**Files**: `stop/game-mechanics-check.sh` (Bash) / `stop/game-mechanics-check.ps1` (PowerShell)
+
+**Purpose**: Gentle reminder about GoA game mechanics patterns to ensure Claude follows best practices.
+
+**How It Works**:
+1. Hook runs after Claude finishes responding (Stop event)
+2. Scans recently modified `.gd` files for risky patterns
+3. Detects scene changes, timer modifications, and stat changes
+4. Shows gentle reminders (non-blocking awareness system)
+5. Claude self-assesses whether patterns were followed correctly
+
+**Patterns Detected**:
+- **Scene Changes**: `get_tree().change_scene*` → Remind about `Global.change_scene_with_check()`
+- **Timer Modifications**: Timer creation/modifications → Warn about global timer dependencies
+- **Direct Stat Assignment**: `Global.strength =` → Suggest using `Global.add_stat_exp()`
+- **Stat-Related Code**: Stats without `add_stat_exp()` → Remind about proper API usage
+
+**Example Output**:
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📋 GAME MECHANICS SELF-CHECK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⚠️  GoA Game Mechanics Detected
+
+   📊 Direct Stat Assignment Detected
+   ❓ Should you use Global.add_stat_exp() instead?
+   💡 Direct assignment bypasses experience system
+
+   📈 Stat-Related Code Detected
+   ❓ Did you use Global.add_stat_exp()?
+   ❓ Did you use Global.show_stat_notification()?
+   💡 These ensure proper stat changes & user feedback
+
+   📚 Quick Reference:
+      → Global.add_stat_exp(stat_name, amount)
+      → Global.show_stat_notification(stat_name, amount)
+      → Global.change_scene_with_check(scene_path)
+
+   📖 See: game-systems.md for details
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+**Benefits**:
+- Protects core game mechanics from being bypassed
+- Inspired by "Error Handling Reminder" hook from Reddit post
+- Non-blocking, just awareness (philosophy hook approach)
+- Reduces implementation mistakes significantly
+
+---
+
 ### Potential Future Hooks
 
 ### Testing Hook

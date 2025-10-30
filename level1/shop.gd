@@ -60,28 +60,36 @@ func _process(delta):
 func _on_shovel_button_pressed():
 	var cost = get_shovel_cost()
 	if Level1Vars.coins >= cost:
+		DebugLogger.log_resource_change("coins", Level1Vars.coins, Level1Vars.coins - cost, "Shovel purchase")
 		Level1Vars.coins -= cost
 		Level1Vars.shovel_lvl += 1
+		DebugLogger.log_shop_purchase("Shovel", cost, Level1Vars.shovel_lvl)
 		update_labels()
 
 func _on_plow_button_pressed():
 	var cost = get_plow_cost()
 	if Level1Vars.coins >= cost:
+		DebugLogger.log_resource_change("coins", Level1Vars.coins, Level1Vars.coins - cost, "Plow purchase")
 		Level1Vars.coins -= cost
 		Level1Vars.plow_lvl += 1
+		DebugLogger.log_shop_purchase("Coal Plow", cost, Level1Vars.plow_lvl)
 		update_labels()
 
 func _on_furnace_upgrade_pressed():
 	var cost = get_auto_shovel_cost()
 	if Level1Vars.coins >= cost:
+		DebugLogger.log_resource_change("coins", Level1Vars.coins, Level1Vars.coins - cost, "Auto Shovel purchase")
 		Level1Vars.coins -= cost
 		Level1Vars.auto_shovel_lvl += 1
+		DebugLogger.log_shop_purchase("Auto Shovel", cost, Level1Vars.auto_shovel_lvl)
 		update_labels()
 
 func _on_bribe_shopkeep_pressed():
 	if Level1Vars.coins >= 10 and not Level1Vars.shopkeep_bribed:
+		DebugLogger.log_resource_change("coins", Level1Vars.coins, Level1Vars.coins - 10, "Bribe Shopkeep")
 		Level1Vars.coins -= 10
 		Level1Vars.shopkeep_bribed = true
+		DebugLogger.log_shop_purchase("Bribe Shopkeep", 10, 1)
 		update_labels()
 
 func _on_workshop_button_pressed():

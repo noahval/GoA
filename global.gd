@@ -33,25 +33,38 @@ func get_xp_for_level(level: int) -> float:
 
 # Add experience to a stat and handle level ups
 func add_stat_exp(stat_name: String, amount: float):
+	var old_value = 0.0
 	match stat_name:
 		"strength":
+			old_value = strength
 			strength_exp += amount
 			_check_level_up("strength", strength, strength_exp)
+			DebugLogger.log_stat_change(stat_name, old_value, strength, amount)
 		"constitution":
+			old_value = constitution
 			constitution_exp += amount
 			_check_level_up("constitution", constitution, constitution_exp)
+			DebugLogger.log_stat_change(stat_name, old_value, constitution, amount)
 		"dexterity":
+			old_value = dexterity
 			dexterity_exp += amount
 			_check_level_up("dexterity", dexterity, dexterity_exp)
+			DebugLogger.log_stat_change(stat_name, old_value, dexterity, amount)
 		"wisdom":
+			old_value = wisdom
 			wisdom_exp += amount
 			_check_level_up("wisdom", wisdom, wisdom_exp)
+			DebugLogger.log_stat_change(stat_name, old_value, wisdom, amount)
 		"intelligence":
+			old_value = intelligence
 			intelligence_exp += amount
 			_check_level_up("intelligence", intelligence, intelligence_exp)
+			DebugLogger.log_stat_change(stat_name, old_value, intelligence, amount)
 		"charisma":
+			old_value = charisma
 			charisma_exp += amount
 			_check_level_up("charisma", charisma, charisma_exp)
+			DebugLogger.log_stat_change(stat_name, old_value, charisma, amount)
 
 # Check if a stat should level up
 func _check_level_up(stat_name: String, current_stat_value: float, current_exp: float):
@@ -331,6 +344,7 @@ func _process(delta):
 		Level1Vars.talk_button_cooldown -= delta
 
 func _on_whisper_timer_timeout():
+	DebugLogger.log_timer_event("whisper_timer", "triggered")
 	# Set the whisper triggered flag
 	Level1Vars.whisper_triggered = true
 
@@ -341,7 +355,9 @@ func _on_whisper_timer_timeout():
 func _on_suspicion_decrease_timeout():
 	# Decrease suspicion by 1 every 3 seconds
 	if Level1Vars.suspicion > 0:
+		var old_suspicion = Level1Vars.suspicion
 		Level1Vars.suspicion -= 1
+		DebugLogger.log_timer_event("suspicion_decrease", "decreased", Level1Vars.suspicion)
 
 # Check if player gets caught based on suspicion level
 # Returns true if player was caught, false otherwise
@@ -352,6 +368,7 @@ func check_get_caught() -> bool:
 		var caught_chance = (Level1Vars.suspicion / 100.0) / 3.0
 		if randf() < caught_chance:
 			# Player got caught!
+			DebugLogger.warn("Player caught! Suspicion: %d" % Level1Vars.suspicion, "GET_CAUGHT")
 			Level1Vars.stolen_coal = 0
 			Level1Vars.suspicion = 0
 			Level1Vars.coins = 0
@@ -364,18 +381,23 @@ func _on_get_caught_timeout():
 
 # Wrapper function for changing scenes with get caught check
 func change_scene_with_check(scene_tree: SceneTree, scene_path: String):
+	var current_scene = scene_tree.current_scene.scene_file_path if scene_tree.current_scene else "unknown"
+
 	# Check for victory conditions first
 	if check_victory_conditions():
+		DebugLogger.log_scene_change(current_scene, "res://victory.tscn", "Victory conditions met")
 		scene_tree.change_scene_to_file("res://victory.tscn")
 		return
 
 	# Check if player gets caught before scene change
 	if not check_get_caught():
 		# If not caught, proceed with scene change
+		DebugLogger.log_scene_change(current_scene, scene_path, "Normal scene transition")
 		scene_tree.change_scene_to_file(scene_path)
 
 # Check if victory conditions have been met
 func check_victory_conditions() -> bool:
+	var current_progress = {}
 	# Check all configured victory conditions
 	for condition in victory_conditions:
 		var required_amount = victory_conditions[condition]
@@ -385,11 +407,15 @@ func check_victory_conditions() -> bool:
 		if condition in Level1Vars:
 			current_amount = Level1Vars.get(condition)
 
+		current_progress[condition] = "%d/%d" % [current_amount, required_amount]
+
 		# If any condition is not met, return false
 		if current_amount < required_amount:
+			DebugLogger.log_victory_check(false, current_progress)
 			return false
 
 	# All conditions met!
+	DebugLogger.log_victory_check(true, current_progress)
 	return true
 
 # Call this after any change that might trigger victory

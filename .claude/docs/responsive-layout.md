@@ -92,139 +92,41 @@ static func is_portrait_mode(viewport: Viewport) -> bool:
 
 ## Layout Transformations
 
-### Landscape → Portrait
+**Portrait**: Containers reparented to VBoxContainer, elements scaled by `PORTRAIT_FONT_SCALE`, HBox hidden
+**Landscape**: Containers in HBoxContainer, standard sizing (40px), VBox hidden
 
-**Reparenting**:
-- `LeftVBox` → `VBoxContainer/TopVBox`
-- `CenterArea` → `VBoxContainer/MiddleArea`
-- `RightVBox` → `VBoxContainer/BottomVBox/RightVBox`
-- `NotificationBar` → `VBoxContainer/NotificationBar` (between TopVBox and MiddleArea)
-
-**Scaling**:
-- All buttons: `custom_minimum_size.y = PORTRAIT_ELEMENT_HEIGHT * PORTRAIT_FONT_SCALE`
-- All panels: `custom_minimum_size.y = PORTRAIT_ELEMENT_HEIGHT * PORTRAIT_FONT_SCALE`
-- All button fonts: `font_size *= PORTRAIT_FONT_SCALE`
-- All label fonts: `font_size *= PORTRAIT_FONT_SCALE`
-- VBox separation: `Panel Height * PORTRAIT_SEPARATION_RATIO`
-
-**Visibility**:
-- HBoxContainer: hidden
-- VBoxContainer: shown
-
-### Portrait → Landscape
-
-**Reparenting** (back to original):
-- `TopVBox/LeftVBox` → `HBoxContainer/LeftVBox`
-- `MiddleArea/CenterArea` → `HBoxContainer/CenterArea`
-- `BottomVBox/RightVBox` → `HBoxContainer/RightVBox`
-- `NotificationBar` → Root (anchored to bottom)
-
-**Scaling Reset**:
-- All elements: `custom_minimum_size.y = LANDSCAPE_ELEMENT_HEIGHT`
-- All fonts: Reset to default theme size (25px)
-- HBox separation: 20px
-
-**Visibility**:
-- HBoxContainer: shown
-- VBoxContainer: hidden
+Key reparenting: LeftVBox/CenterArea/RightVBox move between HBox and VBox structures. NotificationBar moves between root and VBox.
 
 ---
 
 ## Signal Preservation
 
-**Uses Godot 4's `reparent()` method**
-
-**Benefits**:
-- All signal connections preserved automatically
-- No manual reconnection needed
-- Buttons keep working after orientation changes
-
-**Example**:
-```gdscript
-# .tscn connection:
-[connection signal="pressed" from="HBoxContainer/RightVBox/MyButton" to="." method="_on_button_pressed"]
-
-# After portrait switch:
-# Button path changes to: VBoxContainer/BottomVBox/RightVBox/MyButton
-# But signal connection STILL WORKS ✅
-```
+Uses Godot 4's `reparent()` - all signal connections preserved automatically during orientation changes. No manual reconnection needed.
 
 ---
 
 ## Background Auto-Loading
 
-### How It Works
+Automatically loads background image based on root node name:
+1. Converts root name to snake_case (e.g., "Bar" → "bar")
+2. Loads `level1/<snake_case_name>.jpg`
+3. Sets as Background texture
 
-1. Gets root node name (e.g., "Bar", "CoppersmithCarriage")
-2. Converts to snake_case (e.g., "bar", "coppersmith_carriage")
-3. Tries to load `res://level1/<snake_case_name>.jpg`
-4. Sets as Background texture if successful
-
-### Requirements
-
-**Root node name**: MUST be unique (NOT "SceneRoot")
-
-**Image file**: `level1/<scene_name>.jpg` where scene_name is snake_case version
-
-**Examples**:
-- "Bar" → `level1/bar.jpg`
-- "CoppersmithCarriage" → `level1/coppersmith_carriage.jpg`
-- "LoadingScreen" → `level1/loading_screen.jpg`
-
-**Debug**: Check console for messages:
-```
-ResponsiveLayout: Background texture: null
-ResponsiveLayout: Attempting to auto-load background...
-ResponsiveLayout: Trying to load background from: res://level1/bar.jpg
-ResponsiveLayout: Successfully auto-loaded background texture!
-```
+**Requirements**: Root node must have unique name (not "SceneRoot"), image must exist in level1/
 
 ---
 
 ## Mouse Filter Management
 
-### Problem
-
-Background TextureRect is full-screen and blocks ALL mouse events by default.
-
-### Solution
-
-`apply_to_scene()` automatically sets `mouse_filter = PASS (2)` on:
-- Background
-- HBoxContainer
-- VBoxContainer
-- LeftVBox
-- RightVBox
-- CenterArea
-- MiddleArea
-- TopVBox
-- BottomVBox
-
-**Result**: Buttons clickable in both orientations
+`apply_to_scene()` sets `mouse_filter = PASS` on Background and all containers (HBox, VBox, LeftVBox, RightVBox, CenterArea, etc.) to prevent full-screen background from blocking button clicks.
 
 ---
 
 ## Popup Constraint System
 
-### Problem
-
-Popups can overflow and overlap side menus if not constrained.
-
-### Solution
-
-`apply_to_scene()` finds all popups in PopupContainer and constrains width:
-
-**Landscape**:
-```gdscript
-max_width = min(600, center_area_width - 40)  # 40px margins
-```
-
-**Portrait**:
-```gdscript
-max_width = viewport_width * 0.9  # 90% of screen
-```
-
-**Result**: Popups never overlap menus, always fit in play area
+`apply_to_scene()` constrains popup width to prevent overlap with side menus:
+- **Landscape**: `min(600, center_area_width - 40)`
+- **Portrait**: `viewport_width * 0.9`
 
 ---
 
@@ -260,69 +162,21 @@ max_width = viewport_width * 0.9  # 90% of screen
 
 ## Making Global Changes
 
-### Example 1: Increase Portrait UI Size
+Change constants in [responsive_layout.gd](../../responsive_layout.gd) to affect ALL scenes:
+- Increase `PORTRAIT_FONT_SCALE` → larger fonts + panels
+- Adjust `PORTRAIT_SEPARATION_RATIO` → tighter/looser spacing
+- Change `LANDSCAPE_CONTAINER_HEIGHT` → more vertical room
 
-**Change**:
-```gdscript
-const PORTRAIT_ELEMENT_HEIGHT = 50   # was 40
-const PORTRAIT_FONT_SCALE = 2.0      # was 1.75
-```
-
-**Result**:
-- Panel height: 50 * 2.0 = **100px** (was 70px)
-- Font size: 25 * 2.0 = **50px** (was 43.75px)
-- Separation: 100 * 0.5 = **50px** (was 35px)
-
-**Applies to**: ALL scenes automatically
-
-### Example 2: Adjust Landscape Container Height
-
-**Change**:
-```gdscript
-const LANDSCAPE_CONTAINER_HEIGHT = 900  # was 700
-```
-
-**Result**:
-- HBoxContainer vertically centered in 900px area instead of 700px
-- More room for tall menus
-
-### Example 3: Reduce Portrait Spacing
-
-**Change**:
-```gdscript
-const PORTRAIT_SEPARATION_RATIO = 0.3  # was 0.5
-```
-
-**Result**:
-- Separation: Panel Height * 0.3 = **21px** (was 35px)
-- Tighter UI, more items visible on screen
+Restart Godot after changing constants (autoload scripts are cached).
 
 ---
 
 ## Common Issues
 
-### Issue: Changes don't appear
-**Cause**: Autoload scripts cached
-
-**Solution**: Restart Godot
-
-### Issue: Scene doesn't scale
-**Causes**:
-1. Didn't call `apply_to_scene(self)` in `_ready()`
-2. Scene structure doesn't match requirements
-3. Node names wrong (not LeftVBox, RightVBox, etc.)
-
-**Debug**: Check console for warnings about missing nodes
-
-### Issue: Buttons not clickable
-**Cause**: Background mouse_filter not PASS
-
-**Solution**: `apply_to_scene()` fixes automatically (if called)
-
-### Issue: Signals broken after orientation change
-**Shouldn't happen**: Using `reparent()` preserves signals
-
-**If it does**: Check using Godot 4 signal syntax
+- **Changes don't appear**: Restart Godot (autoload scripts cached)
+- **Scene doesn't scale**: Call `apply_to_scene(self)` in `_ready()`, verify scene structure matches requirements
+- **Buttons not clickable**: `apply_to_scene()` sets mouse_filter automatically
+- **Signals broken**: Shouldn't happen with `reparent()` - check Godot 4 signal syntax
 
 ---
 
@@ -372,30 +226,15 @@ SceneRoot (Control)
 
 ## Testing Checklist
 
-When working with responsive layout:
-1. [ ] Called `apply_to_scene(self)` in `_ready()`?
-2. [ ] Scene inherits from scene_template.tscn?
-3. [ ] Background image exists in level1/?
-4. [ ] Root node has unique name?
-5. [ ] Tested in landscape mode?
-6. [ ] Tested in portrait mode?
-7. [ ] Buttons clickable in both orientations?
-8. [ ] Fonts scale correctly?
-9. [ ] No UI overlapping?
-10. [ ] Settings overlay appears?
+- [ ] Called `apply_to_scene(self)` in `_ready()`, scene inherits from scene_template.tscn, background image exists
+- [ ] Tested both landscape & portrait: buttons clickable, fonts scale correctly, no overlapping
 
 ---
 
 ## Utility Functions
 
-```gdscript
-# Check if portrait
-if ResponsiveLayout.is_portrait_mode(get_viewport()):
-    # Portrait-specific logic
-
-# Get current font scale (1.0 or 1.75)
-var scale = ResponsiveLayout.get_font_scale(get_viewport())
-```
+`ResponsiveLayout.is_portrait_mode(viewport)` - Returns true if portrait
+`ResponsiveLayout.get_font_scale(viewport)` - Returns current font scale (1.0 or 1.75)
 
 ---
 
