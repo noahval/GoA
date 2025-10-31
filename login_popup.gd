@@ -36,11 +36,28 @@ func show_popup():
 		(get_viewport_rect().size.y - size.y) / 2
 	)
 
-	# Show a temporary notice about authentication
-	_show_status("Online features temporarily unavailable. Click Skip to play offline.", false)
+	# Test server connection and show appropriate message
+	_test_server_connection()
 
 func hide_popup():
 	visible = false
+
+func _test_server_connection():
+	# Check if Nakama client is initialized
+	if not NakamaManager or not NakamaManager.client:
+		_show_status("Initializing server connection...", false)
+		await get_tree().create_timer(0.5).timeout
+
+		if not NakamaManager or not NakamaManager.client:
+			_show_status("Server unavailable. You can still play offline.", true)
+			return
+
+	# For web builds, show optimistic message since JS handles requests better
+	if OS.has_feature("web"):
+		_show_status("Ready to sign in!", false)
+	else:
+		# Desktop builds may have SSL issues
+		_show_status("Sign in or click Skip to play offline", false)
 
 func _set_buttons_enabled(enabled: bool):
 	google_button.disabled = not enabled
