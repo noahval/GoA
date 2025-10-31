@@ -105,9 +105,38 @@ func authenticate_with_device():
 - Creates account automatically if doesn't exist
 - Same device = same account
 
-### Method 2: Google OAuth (Production)
+### Method 2: Email/Password (Production)
 
-**Use case**: Production, cross-device sync, social features
+**Use case**: Simple user accounts, cross-device sync, no external dependencies
+
+```gdscript
+func authenticate_with_email():
+    # Create new account
+    var success = await NakamaClient.authenticate_email("username", "password123", true)
+    if success:
+        print("Account created!")
+
+    # Login to existing account
+    var success = await NakamaClient.authenticate_email("username", "password123", false)
+    if success:
+        print("Logged in!")
+        print("User: ", NakamaClient.username)
+```
+
+**How it works:**
+- Uses email as username identifier
+- Password stored securely by Nakama
+- Set `create` parameter to `true` for new accounts, `false` for login
+- Username displayed in game comes from email field
+
+**Requirements:**
+- Username: 3+ characters
+- Password: 6+ characters (recommended)
+- No external dependencies needed
+
+### Method 3: Google OAuth (Production)
+
+**Use case**: Social features, web-based authentication
 
 ```gdscript
 func authenticate_with_google():
@@ -434,6 +463,7 @@ curl https://nakama.goasso.xyz/v2/status
 | Method | Parameters | Returns | Description |
 |--------|------------|---------|-------------|
 | `authenticate_device(device_id)` | `String` (optional) | `bool` | Auth with device ID |
+| `authenticate_email(email, password, create)` | `String, String, bool` | `bool` | Auth with username/password |
 | `authenticate_google(token)` | `String` | `bool` | Auth with Google OAuth |
 | `connect_socket()` | - | `bool` | Connect realtime socket |
 | `write_storage(collection, key, value)` | `String, String, Dictionary` | `Object` | Write data |

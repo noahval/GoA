@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
+	<title>GoA</title>
+	<style>
+		body {
+			margin: 0;
+			padding: 0;
+			background-color: #000000;
+			overflow: hidden;
+		}
+		#canvas {
+			display: block;
+			margin: 0;
+			color: white;
+		}
+		#status {
+			position: absolute;
+			left: 0;
+			top: 0;
+			right: 0;
+			bottom: 0;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			background-color: #000000;
+			color: white;
+			font-family: 'Noto Sans', 'Droid Sans', Arial, sans-serif;
+			font-size: 14px;
+			z-index: 9999;
+		}
+	</style>
+</head>
+<body>
+	<canvas id="canvas">
+		Your browser does not support the canvas element.
+	</canvas>
+
+	<div id="status">
+		<div id="status-progress" style="display: none;">
+			<div style="margin-bottom: 10px;">Loading...</div>
+			<div style="background-color: #333; padding: 2px;">
+				<div id="status-progress-inner" style="height: 20px; background-color: #4CAF50; width: 0%;"></div>
+			</div>
+		</div>
+		<div id="status-indeterminate" style="display: none;">
+			Loading...
+		</div>
+		<div id="status-notice" style="display: none;"></div>
+	</div>
+
+	<!-- Google Sign-In Platform Library -->
+	<script src="https://apis.google.com/js/platform.js" async defer></script>
+
+	<!-- Google Auth Integration -->
+	<script src="google_auth.js"></script>
+
+	<!-- Godot Engine -->
+	<script src="$GODOT_BASENAME.js"></script>
+	<script>
+		const GODOT_CONFIG = $GODOT_CONFIG;
+		const engine = new Engine(GODOT_CONFIG);
+
+		(function() {
+			const statusProgress = document.getElementById('status-progress');
+			const statusProgressInner = document.getElementById('status-progress-inner');
+			const statusIndeterminate = document.getElementById('status-indeterminate');
+			const statusNotice = document.getElementById('status-notice');
+
+			let initializing = true;
+			let statusMode = 'hidden';
+
+			function setStatusMode(mode) {
+				if (statusMode === mode || !initializing) {
+					return;
+				}
+				[statusProgress, statusIndeterminate, statusNotice].forEach((elem) => {
+					elem.style.display = 'none';
+				});
+				switch (mode) {
+					case 'progress':
+						statusProgress.style.display = 'block';
+						break;
+					case 'indeterminate':
+						statusIndeterminate.style.display = 'block';
+						break;
+					case 'notice':
+						statusNotice.style.display = 'block';
+						break;
+					default:
+						break;
+				}
+				statusMode = mode;
+			}
+
+			function setStatusNotice(text) {
+				while (statusNotice.lastChild) {
+					statusNotice.removeChild(statusNotice.lastChild);
+				}
+				const lines = text.split('\n');
+				lines.forEach((line) => {
+					statusNotice.appendChild(document.createTextNode(line));
+					statusNotice.appendChild(document.createElement('br'));
+				});
+			}
+
+			function displayFailureNotice(err) {
+				console.error(err);
+				if (err instanceof Error) {
+					setStatusNotice(err.message);
+				} else if (typeof err === 'string') {
+					setStatusNotice(err);
+				} else {
+					setStatusNotice('An unknown error occurred');
+				}
+				setStatusMode('notice');
+				initializing = false;
+			}
+
+			if (!Engine.isWebGLAvailable()) {
+				displayFailureNotice('WebGL not available');
+			} else {
+				setStatusMode('indeterminate');
+				engine.startGame({
+					'onProgress': function(current, total) {
+						if (current > 0 && total > 0) {
+							setStatusMode('progress');
+							statusProgressInner.style.width = (current / total * 100) + '%';
+							setStatusMode('indeterminate');
+						}
+					}
+				}).then(() => {
+					setStatusMode('hidden');
+					initializing = false;
+
+					// Setup Godot <-> JavaScript bridge for Google Auth
+					setupGodotGoogleBridge();
+
+				}, displayFailureNotice);
+			}
+		})();
+
+		// Setup bridge between Godot and Google Auth
+		function setupGodotGoogleBridge() {
+			console.log('[Bridge] Setting up Godot-Google bridge...');
+
+			// Expose function that Godot can call
+			window.triggerGoogleSignIn = function() {
+				console.log('[Bridge] Godot requested Google Sign-In');
+				signInWithGoogle();
+			};
+
+			// Callback for successful authentication
+			window.godotGoogleAuthCallback = function(idToken) {
+				console.log('[Bridge] Sending ID token to Godot');
+
+				// Call Godot function via JavaScriptBridge
+				if (window.godot && window.godot.GodotWebAuth) {
+					window.godot.GodotWebAuth.on_google_token_received(idToken);
+				} else {
+					console.error('[Bridge] Godot WebAuth interface not found');
+				}
+			};
+
+			// Callback for authentication errors
+			window.godotGoogleAuthErrorCallback = function(error) {
+				console.log('[Bridge] Sending auth error to Godot');
+
+				if (window.godot && window.godot.GodotWebAuth) {
+					window.godot.GodotWebAuth.on_google_auth_failed(error);
+				}
+			};
+
+			console.log('[Bridge] Bridge setup complete');
+		}
+	</script>
+</body>
+</html>

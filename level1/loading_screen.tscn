@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://loading_screen_001"]
+[gd_scene load_steps=3 format=3 uid="uid://loading_screen_001"]
 
 [ext_resource type="Script" path="res://level1/loading_screen.gd" id="2_script"]
+[ext_resource type="PackedScene" uid="uid://login_popup_001" path="res://login_popup.tscn" id="3_login"]
 
 [node name="LoadingScreen" type="Control"]
 layout_mode = 3
@@ -39,3 +40,16 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 color = Color(0, 0, 0, 1)
+
+[node name="PopupContainer" type="Control" parent="."]
+visible = false
+z_index = 100
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="LoginPopup" parent="PopupContainer" instance=ExtResource("3_login")]

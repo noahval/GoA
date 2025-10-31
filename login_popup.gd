@@ -1,0 +1,176 @@
+extends Panel
+## Login Popup
+## Handles user authentication via Google SSO or username/password
+
+signal authentication_completed(success: bool)
+signal skip_login()
+
+@onready var google_button = $MarginContainer/VBoxContainer/GoogleButton
+@onready var create_account_button = $MarginContainer/VBoxContainer/ButtonContainer/CreateAccountButton
+@onready var login_button = $MarginContainer/VBoxContainer/ButtonContainer/LoginButton
+@onready var skip_button = $MarginContainer/VBoxContainer/SkipButton
+@onready var username_input = $MarginContainer/VBoxContainer/UsernameContainer/UsernameInput
+@onready var password_input = $MarginContainer/VBoxContainer/PasswordContainer/PasswordInput
+@onready var status_label = $MarginContainer/VBoxContainer/StatusLabel
+
+func _ready():
+	# Connect signals
+	google_button.pressed.connect(_on_google_button_pressed)
+	create_account_button.pressed.connect(_on_create_account_pressed)
+	login_button.pressed.connect(_on_login_pressed)
+	skip_button.pressed.connect(_on_skip_pressed)
+
+	# Listen for Nakama authentication events
+	NakamaClient.authentication_succeeded.connect(_on_auth_success)
+	NakamaClient.authentication_failed.connect(_on_auth_failed)
+
+	# Clear status
+	status_label.text = ""
+
+func show_popup():
+	visible = true
+	z_index = 200
+	# Center the popup
+	position = Vector2(
+		(get_viewport_rect().size.x - size.x) / 2,
+		(get_viewport_rect().size.y - size.y) / 2
+	)
+
+func hide_popup():
+	visible = false
+
+func _set_buttons_enabled(enabled: bool):
+	google_button.disabled = not enabled
+	create_account_button.disabled = not enabled
+	login_button.disabled = not enabled
+	skip_button.disabled = not enabled
+
+func _show_status(message: String, is_error: bool = false):
+	status_label.text = message
+	if is_error:
+		status_label.add_theme_color_override("font_color", Color(1, 0.3, 0.3))
+	else:
+		status_label.add_theme_color_override("font_color", Color(0.3, 1, 0.3))
+
+func _on_google_button_pressed():
+	_set_buttons_enabled(false)
+	_show_status("Opening Google Sign-In...")
+
+	# For web builds, we need to use JavaScript to trigger Google OAuth
+	if OS.has_feature("web"):
+		_trigger_web_google_auth()
+	else:
+		_show_status("Google Sign-In is only available in web builds", true)
+		_set_buttons_enabled(true)
+
+func _trigger_web_google_auth():
+	# Use JavaScriptBridge to call the Google Sign-In function
+	if JavaScriptBridge.eval("typeof window.triggerGoogleSignIn === 'function'", true):
+		DebugLogger.log_info("GoogleAuth", "Triggering Google Sign-In via JavaScript")
+		JavaScriptBridge.eval("window.triggerGoogleSignIn()", true)
+	else:
+		_show_status("Google Sign-In not initialized. Check console.", true)
+		_set_buttons_enabled(true)
+		DebugLogger.log_error("GoogleAuth", "triggerGoogleSignIn function not found in JavaScript")
+
+# Called from JavaScript when Google token is received
+func on_google_token_received(token: String):
+	DebugLogger.log_info("GoogleAuth", "Received Google ID token from JavaScript")
+	_show_status("Authenticating with server...")
+
+	# Authenticate with Nakama using the Google token
+	var success = await NakamaClient.authenticate_google(token)
+
+	if not success:
+		_set_buttons_enabled(true)
+
+# Called from JavaScript when Google auth fails
+func on_google_auth_failed(error: String):
+	DebugLogger.log_error("GoogleAuth", "Google auth failed: " + error)
+	_show_status("Google Sign-In failed: " + error, true)
+	_set_buttons_enabled(true)
+
+func _on_create_account_pressed():
+	var username = username_input.text.strip_edges()
+	var password = password_input.text
+
+	# Validate input
+	if username.is_empty():
+		_show_status("Please enter a username", true)
+		return
+
+	if password.is_empty():
+		_show_status("Please enter a password", true)
+		return
+
+	if username.length < 3:
+		_show_status("Username must be at least 3 characters", true)
+		return
+
+	if password.length < 6:
+		_show_status("Password must be at least 6 characters", true)
+		return
+
+	_set_buttons_enabled(false)
+	_show_status("Creating account...")
+
+	# Authenticate with Nakama (create = true)
+	var success = await NakamaClient.authenticate_email(username, password, true)
+
+	if not success:
+		_set_buttons_enabled(true)
+
+func _on_login_pressed():
+	var username = username_input.text.strip_edges()
+	var password = password_input.text
+
+	# Validate input
+	if username.is_empty():
+		_show_status("Please enter a username", true)
+		return
+
+	if password.is_empty():
+		_show_status("Please enter a password", true)
+		return
+
+	_set_buttons_enabled(false)
+	_show_status("Logging in...")
+
+	# Authenticate with Nakama (create = false)
+	var success = await NakamaClient.authenticate_email(username, password, false)
+
+	if not success:
+		_set_buttons_enabled(true)
+
+func _on_skip_pressed():
+	_show_status("Continuing offline...")
+	await get_tree().create_timer(0.5).timeout
+	skip_login.emit()
+	hide_popup()
+
+func _on_auth_success(session_data):
+	_show_status("Welcome, " + session_data.username + "!")
+
+	# Try to load cloud save
+	var loaded = await NakamaClient.load_player_stats()
+	if loaded:
+		DebugLogger.log_success("Login", "Cloud save loaded")
+	else:
+		DebugLogger.log_info("Login", "No cloud save found, starting fresh")
+
+	await get_tree().create_timer(1.0).timeout
+	authentication_completed.emit(true)
+	hide_popup()
+
+func _on_auth_failed(error: String):
+	DebugLogger.log_error("Login", "Authentication failed: " + error)
+
+	# Parse error message for user-friendly display
+	if "already exists" in error.to_lower():
+		_show_status("Username already taken. Try logging in instead.", true)
+	elif "not found" in error.to_lower() or "invalid" in error.to_lower():
+		_show_status("Invalid username or password", true)
+	else:
+		_show_status("Authentication failed: " + error, true)
+
+	_set_buttons_enabled(true)

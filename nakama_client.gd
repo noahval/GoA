@@ -99,6 +99,43 @@ func authenticate_google(google_token: String):
 
 	return true
 
+## Authenticate with email/username and password
+func authenticate_email(email: String, password: String, create: bool = false):
+	if create:
+		DebugLogger.log_info("NakamaClient", "Creating account with username: %s" % email)
+	else:
+		DebugLogger.log_info("NakamaClient", "Authenticating with username: %s" % email)
+
+	# authenticate_email_async(email, password, username, create)
+	var auth_result = await client.authenticate_email_async(email, password, email, create)
+
+	if auth_result.is_exception():
+		var error = auth_result.get_exception().message
+		DebugLogger.log_error("NakamaClient", "Email authentication failed: %s" % error)
+		authentication_failed.emit(error)
+		return false
+
+	session = auth_result as NakamaSession
+	is_authenticated = true
+	user_id = session.user_id
+	username = session.username
+
+	if create:
+		DebugLogger.log_success("NakamaClient", "Account created successfully!")
+	else:
+		DebugLogger.log_success("NakamaClient", "Email authentication successful!")
+
+	DebugLogger.log_info("NakamaClient", "User ID: %s" % user_id)
+	DebugLogger.log_info("NakamaClient", "Username: %s" % username)
+
+	authentication_succeeded.emit({
+		"user_id": user_id,
+		"username": username,
+		"session": session
+	})
+
+	return true
+
 ## Connect to realtime socket
 func connect_socket():
 	if not is_authenticated:

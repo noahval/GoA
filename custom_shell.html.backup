@@ -101,12 +101,6 @@
 		</div>
 	</div>
 
-	<!-- Google Sign-In Platform Library -->
-	<script src="https://apis.google.com/js/platform.js" async defer></script>
-
-	<!-- Google Auth Integration -->
-	<script src="google_auth.js"></script>
-
 	<script src="$GODOT_URL"></script>
 	<script>
 		const GODOT_CONFIG = $GODOT_CONFIG;
@@ -170,10 +164,6 @@
 				setTimeout(() => {
 					statusElement.classList.add('hidden');
 				}, 3000);
-
-				// Setup Godot <-> JavaScript bridge for Google Auth
-				setupGodotGoogleBridge();
-
 			}, (err) => {
 				console.error(err);
 				statusElement.innerHTML = '<p style="color: red;">Error: ' + err.message + '</p>';
@@ -183,40 +173,6 @@
 		// Add click handlers for start button
 		startButton.addEventListener('click', startGame);
 		startOverlay.addEventListener('click', startGame);
-
-		// Setup bridge between Godot and Google Auth
-		function setupGodotGoogleBridge() {
-			console.log('[Bridge] Setting up Godot-Google bridge...');
-
-			// Expose function that Godot can call
-			window.triggerGoogleSignIn = function() {
-				console.log('[Bridge] Godot requested Google Sign-In');
-				signInWithGoogle();
-			};
-
-			// Callback for successful authentication
-			window.godotGoogleAuthCallback = function(idToken) {
-				console.log('[Bridge] Sending ID token to Godot');
-
-				// Call Godot function via JavaScriptBridge
-				if (window.godot && window.godot.GodotWebAuth) {
-					window.godot.GodotWebAuth.on_google_token_received(idToken);
-				} else {
-					console.error('[Bridge] Godot WebAuth interface not found');
-				}
-			};
-
-			// Callback for authentication errors
-			window.godotGoogleAuthErrorCallback = function(error) {
-				console.log('[Bridge] Sending auth error to Godot');
-
-				if (window.godot && window.godot.GodotWebAuth) {
-					window.godot.GodotWebAuth.on_google_auth_failed(error);
-				}
-			};
-
-			console.log('[Bridge] Bridge setup complete');
-		}
 	</script>
 </body>
 </html>

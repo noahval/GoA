@@ -23,6 +23,7 @@ Level1Vars="*res://level1/level_1_vars.gd"
 ResponsiveLayout="*res://responsive_layout.gd"
 DebugLogger="*res://debug_logger.gd"
 NakamaClient="*res://nakama_client.gd"
+GodotWebAuth="*res://godot_web_auth.gd"
 
 [display]
 

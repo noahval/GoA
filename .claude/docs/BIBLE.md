@@ -19,7 +19,8 @@ The BIBLE Check Hook auto-triggers on development keywords (scene, stats, popup,
 | Doc | Keywords | Contents |
 |-----|----------|----------|
 | **[game-systems.md](game-systems.md)** | stats, experience, shop, timer, victory, suspicion, coins | Experience/leveling, shop mechanics, timers (whisper, suspicion, stamina), victory conditions, notifications |
-| **[nakama-integration.md](nakama-integration.md)** | nakama, server, auth, authentication, cloud, save, multiplayer, online | Nakama server setup, NakamaClient API, authentication, cloud saves, storage |
+| **[nakama-integration.md](nakama-integration.md)** | nakama, server, auth, authentication, cloud, save, multiplayer, online, login | Nakama server setup, NakamaClient API, authentication (email/password, Google OAuth), cloud saves, storage, login system |
+| **[deployment.md](deployment.md)** | deploy, github, actions, workflow, build, export, pages | GitHub Actions workflow, automated builds, deployment process, export settings |
 | **[scene-template.md](scene-template.md)** | scene, template, layout, container, background | Four-container layout, scene inheritance, container structure, background auto-loading |
 | **[responsive-layout.md](responsive-layout.md)** | responsive, portrait, landscape, scaling, mobile | UI scaling, orientation handling, ResponsiveLayout system, mouse_filter management |
 | **[popup-system.md](popup-system.md)** | popup, dialog, modal, PopupContainer | Popup API, PopupContainer requirement, implementation patterns |
@@ -33,7 +34,8 @@ The BIBLE Check Hook auto-triggers on development keywords (scene, stats, popup,
 ## 🎯 Common Tasks → Docs
 
 - **Modify stats/shop/timers/victory** → [game-systems.md](game-systems.md)
-- **Online features/cloud saves/authentication** → [nakama-integration.md](nakama-integration.md)
+- **Online features/cloud saves/authentication/login** → [nakama-integration.md](nakama-integration.md)
+- **Deploy to GitHub Pages/setup workflow** → [deployment.md](deployment.md)
 - **Create/modify scenes** → [scene-template.md](scene-template.md) + [responsive-layout.md](responsive-layout.md)
 - **Add popup/dialog** → [popup-system.md](popup-system.md)
 - **Display notifications** → [notifications.md](notifications.md)
@@ -59,4 +61,4 @@ The BIBLE Check Hook auto-triggers on development keywords (scene, stats, popup,
 
 **Workflow**: Check keywords → Find docs in table above → Read them → Follow documented patterns
 
-**Version**: 2.2 (Added Nakama) | **Updated**: 2025-10-31
+**Version**: 2.3 (Added login system & deployment docs) | **Updated**: 2025-10-31
