@@ -36,6 +36,9 @@ func show_popup():
 		(get_viewport_rect().size.y - size.y) / 2
 	)
 
+	# Show a temporary notice about authentication
+	_show_status("Online features temporarily unavailable. Click Skip to play offline.", false)
+
 func hide_popup():
 	visible = false
 
@@ -43,7 +46,8 @@ func _set_buttons_enabled(enabled: bool):
 	google_button.disabled = not enabled
 	create_account_button.disabled = not enabled
 	login_button.disabled = not enabled
-	skip_button.disabled = not enabled
+	# Skip button should ALWAYS be enabled as a fallback
+	skip_button.disabled = false
 
 func _show_status(message: String, is_error: bool = false):
 	status_label.text = message
@@ -94,6 +98,8 @@ func _on_create_account_pressed():
 	var username = username_input.text.strip_edges()
 	var password = password_input.text
 
+	DebugLogger.log_info("LoginPopup", "Create account button pressed")
+
 	# Validate input
 	if username.is_empty():
 		_show_status("Please enter a username", true)
@@ -103,19 +109,28 @@ func _on_create_account_pressed():
 		_show_status("Please enter a password", true)
 		return
 
-	if username.length < 3:
+	if username.length() < 3:
 		_show_status("Username must be at least 3 characters", true)
 		return
 
-	if password.length < 6:
+	if password.length() < 6:
 		_show_status("Password must be at least 6 characters", true)
 		return
 
 	_set_buttons_enabled(false)
 	_show_status("Creating account...")
 
+	# Check if NakamaManager is ready
+	if not NakamaManager.client:
+		DebugLogger.log_error("LoginPopup", "Nakama client not initialized")
+		_show_status("Server connection not ready, please try again", true)
+		_set_buttons_enabled(true)
+		return
+
 	# Authenticate with Nakama (create = true)
+	DebugLogger.log_info("LoginPopup", "Calling authenticate_email with username: " + username)
 	var success = await NakamaManager.authenticate_email(username, password, true)
+	DebugLogger.log_info("LoginPopup", "authenticate_email returned: " + str(success))
 
 	if not success:
 		_set_buttons_enabled(true)
@@ -123,6 +138,8 @@ func _on_create_account_pressed():
 func _on_login_pressed():
 	var username = username_input.text.strip_edges()
 	var password = password_input.text
+
+	DebugLogger.log_info("LoginPopup", "Login button pressed")
 
 	# Validate input
 	if username.is_empty():
@@ -136,13 +153,23 @@ func _on_login_pressed():
 	_set_buttons_enabled(false)
 	_show_status("Logging in...")
 
+	# Check if NakamaManager is ready
+	if not NakamaManager.client:
+		DebugLogger.log_error("LoginPopup", "Nakama client not initialized")
+		_show_status("Server connection not ready, please try again", true)
+		_set_buttons_enabled(true)
+		return
+
 	# Authenticate with Nakama (create = false)
+	DebugLogger.log_info("LoginPopup", "Calling authenticate_email with username: " + username)
 	var success = await NakamaManager.authenticate_email(username, password, false)
+	DebugLogger.log_info("LoginPopup", "authenticate_email returned: " + str(success))
 
 	if not success:
 		_set_buttons_enabled(true)
 
 func _on_skip_pressed():
+	DebugLogger.log_info("LoginPopup", "Skip button pressed")
 	_show_status("Continuing offline...")
 	await get_tree().create_timer(0.5).timeout
 	skip_login.emit()

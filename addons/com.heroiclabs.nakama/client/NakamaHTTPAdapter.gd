@@ -8,7 +8,7 @@ class_name NakamaHTTPAdapter
 var logger : RefCounted = NakamaLogger.new()
 
 ## The timeout for requests
-var timeout : int = 3
+var timeout : int = 10
 
 ## If request should be automatically retried when a network error occurs.
 var auto_retry : bool = true
@@ -71,11 +71,14 @@ class AsyncRequest:
 		return await make_request()
 
 	func make_request():
+		logger.debug("Making request %d to: %s" % [id, uri])
+		logger.debug("Headers: %s" % [headers])
 		var err = request.request(uri, headers, method, body.get_string_from_utf8())
 		if err != OK:
 			await request.get_tree().process_frame
 			result = HTTPRequest.RESULT_CANT_CONNECT
-			logger.debug("Request %d failed to start, error: %d" % [id, err])
+			logger.debug("Request %d failed to start with error code: %d" % [id, err])
+			logger.debug("Error names: OK=0, FAILED=1, CANT_CONNECT=2, CANT_RESOLVE=3, CONNECTION_ERROR=4")
 			return
 
 		var args = await request.request_completed
@@ -150,6 +153,10 @@ func send_async(p_method : String, p_uri : String, p_headers : Dictionary, p_bod
 	req.timeout = timeout
 	if use_threads and OS.get_name() != 'Web':
 		req.use_threads = true # Threads not available nor needed on the web.
+
+	# Disable SSL verification for self-signed certificates (development only)
+	var tls_options = TLSOptions.client_unsafe()
+	req.set_tls_options(tls_options)
 
 	# Parse method
 	var method = HTTPClient.METHOD_GET

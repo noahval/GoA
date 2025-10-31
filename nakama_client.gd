@@ -11,7 +11,7 @@ var socket: NakamaSocket
 const SERVER_KEY = "hijbtdhbgiunhyojunbghijnhytgfrde"  # Match your config.yml
 const SERVER_HOST = "nakama.goasso.xyz"
 const SERVER_PORT = 443
-const SERVER_SCHEME = "https"
+const SERVER_SCHEME = "https"  # Using HTTPS with unsafe TLS (accepts self-signed certs)
 
 # Authentication state
 var is_authenticated = false
@@ -101,6 +101,11 @@ func authenticate_google(google_token: String):
 
 ## Authenticate with username and password using custom authentication
 func authenticate_email(username_input: String, password: String, create: bool = false):
+	if not client:
+		DebugLogger.log_error("NakamaClient", "Client not initialized")
+		authentication_failed.emit("Server connection not initialized")
+		return false
+
 	if create:
 		DebugLogger.log_info("NakamaClient", "Creating account with username: %s" % username_input)
 	else:
@@ -110,8 +115,12 @@ func authenticate_email(username_input: String, password: String, create: bool =
 	# Custom ID format: username:password_hash for uniqueness
 	var custom_id = username_input + ":" + password.sha256_text()
 
+	DebugLogger.log_info("NakamaClient", "Calling authenticate_custom_async...")
+
 	# authenticate_custom_async(id, username, create)
 	var auth_result = await client.authenticate_custom_async(custom_id, username_input, create)
+
+	DebugLogger.log_info("NakamaClient", "Received auth response")
 
 	if auth_result.is_exception():
 		var error = auth_result.get_exception().message

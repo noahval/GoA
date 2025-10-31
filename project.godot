@@ -39,6 +39,10 @@ window/stretch/aspect="expand"
 
 theme/custom="res://default_theme.tres"
 
+[network]
+
+ssl/certificates=""
+
 [rendering]
 
 renderer/rendering_method="gl_compatibility"
