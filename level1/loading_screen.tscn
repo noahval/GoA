@@ -50,6 +50,6 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-mouse_filter = 2
+mouse_filter = 0
 
 [node name="LoginPopup" parent="PopupContainer" instance=ExtResource("3_login")]
