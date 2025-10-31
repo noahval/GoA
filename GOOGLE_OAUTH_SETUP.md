@@ -198,7 +198,7 @@ php -S localhost:8000
    ↓
 8. GodotWebAuth finds login_popup and calls login_popup.on_google_token_received(token)
    ↓
-9. login_popup calls NakamaClient.authenticate_google(token)
+9. login_popup calls NakamaManager.authenticate_google(token)
    ↓
 10. Nakama validates token with Google, creates/loads user session
    ↓

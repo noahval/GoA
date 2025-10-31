@@ -21,8 +21,8 @@ func _ready():
 	skip_button.pressed.connect(_on_skip_pressed)
 
 	# Listen for Nakama authentication events
-	NakamaClient.authentication_succeeded.connect(_on_auth_success)
-	NakamaClient.authentication_failed.connect(_on_auth_failed)
+	NakamaManager.authentication_succeeded.connect(_on_auth_success)
+	NakamaManager.authentication_failed.connect(_on_auth_failed)
 
 	# Clear status
 	status_label.text = ""
@@ -79,7 +79,7 @@ func on_google_token_received(token: String):
 	_show_status("Authenticating with server...")
 
 	# Authenticate with Nakama using the Google token
-	var success = await NakamaClient.authenticate_google(token)
+	var success = await NakamaManager.authenticate_google(token)
 
 	if not success:
 		_set_buttons_enabled(true)
@@ -115,7 +115,7 @@ func _on_create_account_pressed():
 	_show_status("Creating account...")
 
 	# Authenticate with Nakama (create = true)
-	var success = await NakamaClient.authenticate_email(username, password, true)
+	var success = await NakamaManager.authenticate_email(username, password, true)
 
 	if not success:
 		_set_buttons_enabled(true)
@@ -137,7 +137,7 @@ func _on_login_pressed():
 	_show_status("Logging in...")
 
 	# Authenticate with Nakama (create = false)
-	var success = await NakamaClient.authenticate_email(username, password, false)
+	var success = await NakamaManager.authenticate_email(username, password, false)
 
 	if not success:
 		_set_buttons_enabled(true)
@@ -152,7 +152,7 @@ func _on_auth_success(session_data):
 	_show_status("Welcome, " + session_data.username + "!")
 
 	# Try to load cloud save
-	var loaded = await NakamaClient.load_player_stats()
+	var loaded = await NakamaManager.load_player_stats()
 	if loaded:
 		DebugLogger.log_success("Login", "Cloud save loaded")
 	else:

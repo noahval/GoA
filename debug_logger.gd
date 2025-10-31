@@ -78,6 +78,10 @@ func warn(message: String, category: String = "WARN"):
 func error(message: String, category: String = "ERROR"):
 	write_log(message, category, LogLevel.ERROR)
 
+# Alternative log_info with category first (for Nakama integration compatibility)
+func log_info(category: String, message: String):
+	write_log(message, category, LogLevel.INFO)
+
 # Track stat changes
 func log_stat_change(stat_name: String, old_value: float, new_value: float, exp_gained: float):
 	var message = "Stat '%s': %.2f -> %.2f (exp: +%.2f)" % [stat_name, old_value, new_value, exp_gained]

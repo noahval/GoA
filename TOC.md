@@ -5,6 +5,9 @@
 ### Scripts (.gd)
 - [debug_logger.gd](debug_logger.gd)  
 - [global.gd](global.gd)  
+- [godot_web_auth.gd](godot_web_auth.gd)  
+- [login_popup.gd](login_popup.gd)  
+- [nakama_client.gd](nakama_client.gd)  
 - [responsive_layout.gd](responsive_layout.gd)  
 - [reusable_popup.gd](reusable_popup.gd)  
 - [settings_overlay.gd](settings_overlay.gd)  
@@ -12,9 +15,79 @@
 - [victory.gd](victory.gd)  
 
 ### Scenes (.tscn)
+- [login_popup.tscn](login_popup.tscn)  
 - [reusable_popup.tscn](reusable_popup.tscn)  
 - [settings_overlay.tscn](settings_overlay.tscn)  
 - [victory.tscn](victory.tscn)  
+
+---
+
+## Addons > Com.heroiclabs.nakama >
+
+### Scripts (.gd)
+- [addons/com.heroiclabs.nakama/Nakama.gd](addons/com.heroiclabs.nakama/Nakama.gd)  
+- [addons/com.heroiclabs.nakama/Satori.gd](addons/com.heroiclabs.nakama/Satori.gd)  
+
+---
+
+## Addons > Com.heroiclabs.nakama > Satori >
+
+### Scripts (.gd)
+- [addons/com.heroiclabs.nakama/Satori/Event.gd](addons/com.heroiclabs.nakama/Satori/Event.gd)  
+- [addons/com.heroiclabs.nakama/Satori/SatoriAPI.gd](addons/com.heroiclabs.nakama/Satori/SatoriAPI.gd)  
+- [addons/com.heroiclabs.nakama/Satori/SatoriClient.gd](addons/com.heroiclabs.nakama/Satori/SatoriClient.gd)  
+- [addons/com.heroiclabs.nakama/Satori/SatoriHttpAdapter.gd](addons/com.heroiclabs.nakama/Satori/SatoriHttpAdapter.gd)  
+- [addons/com.heroiclabs.nakama/Satori/SatoriSession.gd](addons/com.heroiclabs.nakama/Satori/SatoriSession.gd)  
+
+---
+
+## Addons > Com.heroiclabs.nakama > Satori > Utils >
+
+### Scripts (.gd)
+- [addons/com.heroiclabs.nakama/Satori/utils/SatoriAsyncResult.gd](addons/com.heroiclabs.nakama/Satori/utils/SatoriAsyncResult.gd)  
+- [addons/com.heroiclabs.nakama/Satori/utils/SatoriException.gd](addons/com.heroiclabs.nakama/Satori/utils/SatoriException.gd)  
+- [addons/com.heroiclabs.nakama/Satori/utils/SatoriLogger.gd](addons/com.heroiclabs.nakama/Satori/utils/SatoriLogger.gd)  
+- [addons/com.heroiclabs.nakama/Satori/utils/SatoriSerializer.gd](addons/com.heroiclabs.nakama/Satori/utils/SatoriSerializer.gd)  
+
+---
+
+## Addons > Com.heroiclabs.nakama > Api >
+
+### Scripts (.gd)
+- [addons/com.heroiclabs.nakama/api/NakamaAPI.gd](addons/com.heroiclabs.nakama/api/NakamaAPI.gd)  
+- [addons/com.heroiclabs.nakama/api/NakamaRTAPI.gd](addons/com.heroiclabs.nakama/api/NakamaRTAPI.gd)  
+- [addons/com.heroiclabs.nakama/api/NakamaRTMessage.gd](addons/com.heroiclabs.nakama/api/NakamaRTMessage.gd)  
+- [addons/com.heroiclabs.nakama/api/NakamaSession.gd](addons/com.heroiclabs.nakama/api/NakamaSession.gd)  
+- [addons/com.heroiclabs.nakama/api/NakamaStorageObjectId.gd](addons/com.heroiclabs.nakama/api/NakamaStorageObjectId.gd)  
+- [addons/com.heroiclabs.nakama/api/NakamaWriteStorageObject.gd](addons/com.heroiclabs.nakama/api/NakamaWriteStorageObject.gd)  
+
+---
+
+## Addons > Com.heroiclabs.nakama > Client >
+
+### Scripts (.gd)
+- [addons/com.heroiclabs.nakama/client/NakamaClient.gd](addons/com.heroiclabs.nakama/client/NakamaClient.gd)  
+- [addons/com.heroiclabs.nakama/client/NakamaHTTPAdapter.gd](addons/com.heroiclabs.nakama/client/NakamaHTTPAdapter.gd)  
+
+---
+
+## Addons > Com.heroiclabs.nakama > Socket >
+
+### Scripts (.gd)
+- [addons/com.heroiclabs.nakama/socket/NakamaSocket.gd](addons/com.heroiclabs.nakama/socket/NakamaSocket.gd)  
+- [addons/com.heroiclabs.nakama/socket/NakamaSocketAdapter.gd](addons/com.heroiclabs.nakama/socket/NakamaSocketAdapter.gd)  
+
+---
+
+## Addons > Com.heroiclabs.nakama > Utils >
+
+### Scripts (.gd)
+- [addons/com.heroiclabs.nakama/utils/NakamaAsyncResult.gd](addons/com.heroiclabs.nakama/utils/NakamaAsyncResult.gd)  
+- [addons/com.heroiclabs.nakama/utils/NakamaException.gd](addons/com.heroiclabs.nakama/utils/NakamaException.gd)  
+- [addons/com.heroiclabs.nakama/utils/NakamaLogger.gd](addons/com.heroiclabs.nakama/utils/NakamaLogger.gd)  
+- [addons/com.heroiclabs.nakama/utils/NakamaMultiplayerBridge.gd](addons/com.heroiclabs.nakama/utils/NakamaMultiplayerBridge.gd)  
+- [addons/com.heroiclabs.nakama/utils/NakamaMultiplayerPeer.gd](addons/com.heroiclabs.nakama/utils/NakamaMultiplayerPeer.gd)  
+- [addons/com.heroiclabs.nakama/utils/NakamaSerializer.gd](addons/com.heroiclabs.nakama/utils/NakamaSerializer.gd)  
 
 ---
 

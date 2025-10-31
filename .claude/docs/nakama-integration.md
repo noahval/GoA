@@ -64,14 +64,14 @@ The `NakamaClient` autoload provides centralized access to Nakama features.
 
 ```gdscript
 # Connection state
-NakamaClient.is_authenticated: bool
-NakamaClient.user_id: String
-NakamaClient.username: String
+NakamaManager.is_authenticated: bool
+NakamaManager.user_id: String
+NakamaManager.username: String
 
 # Nakama objects
-NakamaClient.client: NakamaClient
-NakamaClient.session: NakamaSession
-NakamaClient.socket: NakamaSocket
+NakamaManager.client: NakamaClient
+NakamaManager.session: NakamaSession
+NakamaManager.socket: NakamaSocket
 ```
 
 ### Signals
@@ -93,9 +93,9 @@ signal connection_failed(error: String)
 
 ```gdscript
 func authenticate_with_device():
-    var success = await NakamaClient.authenticate_device()
+    var success = await NakamaManager.authenticate_device()
     if success:
-        print("Authenticated! User ID: ", NakamaClient.user_id)
+        print("Authenticated! User ID: ", NakamaManager.user_id)
     else:
         print("Authentication failed")
 ```
@@ -112,15 +112,15 @@ func authenticate_with_device():
 ```gdscript
 func authenticate_with_email():
     # Create new account
-    var success = await NakamaClient.authenticate_email("username", "password123", true)
+    var success = await NakamaManager.authenticate_email("username", "password123", true)
     if success:
         print("Account created!")
 
     # Login to existing account
-    var success = await NakamaClient.authenticate_email("username", "password123", false)
+    var success = await NakamaManager.authenticate_email("username", "password123", false)
     if success:
         print("Logged in!")
-        print("User: ", NakamaClient.username)
+        print("User: ", NakamaManager.username)
 ```
 
 **How it works:**
@@ -144,11 +144,11 @@ func authenticate_with_google():
     var google_token = await get_google_id_token()
 
     # 2. Authenticate with Nakama
-    var success = await NakamaClient.authenticate_google(google_token)
+    var success = await NakamaManager.authenticate_google(google_token)
 
     if success:
         print("Google auth successful!")
-        print("User: ", NakamaClient.username)
+        print("User: ", NakamaManager.username)
 ```
 
 **Requirements:**
@@ -160,13 +160,13 @@ func authenticate_with_google():
 
 ```gdscript
 func _ready():
-    NakamaClient.authentication_succeeded.connect(_on_auth_success)
-    NakamaClient.authentication_failed.connect(_on_auth_failed)
+    NakamaManager.authentication_succeeded.connect(_on_auth_success)
+    NakamaManager.authentication_failed.connect(_on_auth_failed)
 
 func _on_auth_success(session_data):
     print("Logged in as: ", session_data.username)
     # Load player data from cloud
-    await NakamaClient.load_player_stats()
+    await NakamaManager.load_player_stats()
 
 func _on_auth_failed(error):
     print("Login failed: ", error)
@@ -193,10 +193,10 @@ Collection: "player_data"
 ```gdscript
 # Generic write
 var data = {"level": 5, "coins": 1000}
-await NakamaClient.write_storage("player_data", "progress", data)
+await NakamaManager.write_storage("player_data", "progress", data)
 
 # Helper for player stats
-await NakamaClient.save_player_stats()
+await NakamaManager.save_player_stats()
 ```
 
 **What `save_player_stats()` saves:**
@@ -208,13 +208,13 @@ await NakamaClient.save_player_stats()
 
 ```gdscript
 # Generic read
-var progress = await NakamaClient.read_storage("player_data", "progress")
+var progress = await NakamaManager.read_storage("player_data", "progress")
 if progress:
     print("Level: ", progress.level)
     print("Coins: ", progress.coins)
 
 # Helper for player stats
-var loaded = await NakamaClient.load_player_stats()
+var loaded = await NakamaManager.load_player_stats()
 if loaded:
     print("Stats loaded from cloud!")
     # Global stats are now updated
@@ -238,8 +238,8 @@ func purchase_upgrade():
     Global.add_stat_exp("strength", 50)
 
     # Save to cloud after significant changes
-    if NakamaClient.is_authenticated:
-        await NakamaClient.save_player_stats()
+    if NakamaManager.is_authenticated:
+        await NakamaManager.save_player_stats()
 ```
 
 ### Pattern 2: Load on Game Start
@@ -248,11 +248,11 @@ func purchase_upgrade():
 # In loading_screen.gd or main menu
 func _ready():
     # Authenticate first
-    var auth_success = await NakamaClient.authenticate_device()
+    var auth_success = await NakamaManager.authenticate_device()
 
     if auth_success:
         # Try to load cloud save
-        var loaded = await NakamaClient.load_player_stats()
+        var loaded = await NakamaManager.load_player_stats()
 
         if loaded:
             print("Cloud save loaded!")
@@ -268,8 +268,8 @@ func _ready():
 ```gdscript
 func go_to_next_level():
     # Save current progress before changing scenes
-    if NakamaClient.is_authenticated:
-        await NakamaClient.save_player_stats()
+    if NakamaManager.is_authenticated:
+        await NakamaManager.save_player_stats()
 
     Global.change_scene_with_check("res://level2/scene.tscn")
 ```
@@ -287,8 +287,8 @@ func _ready():
     add_child(timer)
 
 func _auto_save():
-    if NakamaClient.is_authenticated:
-        await NakamaClient.save_player_stats()
+    if NakamaManager.is_authenticated:
+        await NakamaManager.save_player_stats()
         DebugLogger.log_info("AutoSave", "Progress saved to cloud")
 ```
 
@@ -300,7 +300,7 @@ func _auto_save():
 
 ```gdscript
 func safe_authenticate():
-    var success = await NakamaClient.authenticate_device()
+    var success = await NakamaManager.authenticate_device()
 
     if not success:
         # Show user-friendly error
@@ -315,7 +315,7 @@ func safe_authenticate():
 
 ```gdscript
 func safe_save():
-    var result = await NakamaClient.save_player_stats()
+    var result = await NakamaManager.save_player_stats()
 
     if result == null:
         # Save failed - data not authenticated or network issue
@@ -331,7 +331,7 @@ func safe_save():
 ```gdscript
 # Set timeout for operations
 func save_with_timeout():
-    var save_task = NakamaClient.save_player_stats()
+    var save_task = NakamaManager.save_player_stats()
     var timeout_task = get_tree().create_timer(10.0).timeout
 
     var result = await race([save_task, timeout_task])
@@ -373,19 +373,19 @@ func save_with_timeout():
 
 ```gdscript
 # Force authentication
-await NakamaClient.authenticate_device("test-user-123")
+await NakamaManager.authenticate_device("test-user-123")
 
 # Manually trigger save
-await NakamaClient.save_player_stats()
+await NakamaManager.save_player_stats()
 
 # Check auth status
-print("Authenticated: ", NakamaClient.is_authenticated)
-print("User ID: ", NakamaClient.user_id)
+print("Authenticated: ", NakamaManager.is_authenticated)
+print("User ID: ", NakamaManager.user_id)
 
 # Test storage read/write
 var test_data = {"test": "value", "number": 42}
-await NakamaClient.write_storage("test", "data", test_data)
-var loaded = await NakamaClient.read_storage("test", "data")
+await NakamaManager.write_storage("test", "data", test_data)
+var loaded = await NakamaManager.read_storage("test", "data")
 print("Loaded: ", loaded)
 ```
 
@@ -497,7 +497,7 @@ curl https://nakama.goasso.xyz/v2/status
 1. Authenticated before storage operation?
 2. Correct collection/key names?
 3. Data is valid JSON?
-4. Check `NakamaClient.is_authenticated` before operations
+4. Check `NakamaManager.is_authenticated` before operations
 
 ---
 

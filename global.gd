@@ -355,7 +355,7 @@ func _on_whisper_timer_timeout():
 func _on_suspicion_decrease_timeout():
 	# Decrease suspicion by 1 every 3 seconds
 	if Level1Vars.suspicion > 0:
-		var old_suspicion = Level1Vars.suspicion
+		var _old_suspicion = Level1Vars.suspicion
 		Level1Vars.suspicion -= 1
 		DebugLogger.log_timer_event("suspicion_decrease", "decreased", Level1Vars.suspicion)
 

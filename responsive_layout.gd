@@ -383,7 +383,7 @@ func _apply_responsive_layout_internal(scene_root: Control) -> void:
 
 ## Apply landscape-specific adjustments (title expansion, etc.)
 ## This runs every time a landscape scene is loaded
-func _apply_landscape_adjustments(left_vbox: VBoxContainer, right_vbox: VBoxContainer, hbox: HBoxContainer) -> void:
+func _apply_landscape_adjustments(left_vbox: VBoxContainer, right_vbox: VBoxContainer, _hbox: HBoxContainer) -> void:
 	print("ResponsiveLayout: Applying landscape adjustments")
 
 	# Use fixed separation value
