@@ -951,8 +951,16 @@ func _scale_popup_controls_recursive(node: Node, is_portrait: bool) -> void:
 				label_font_size = 25  # Default from theme
 			node.add_theme_font_size_override("font_size", int(label_font_size * PORTRAIT_FONT_SCALE))
 			print("ResponsiveLayout: Scaled popup label '", node.name, "' to ", int(label_font_size * PORTRAIT_FONT_SCALE))
+
+			# Enable word wrapping on title labels to prevent cutoff
+			if node.name == "TitleLabel" or node.name == "Title":
+				node.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+				print("ResponsiveLayout: Enabled autowrap on popup title '", node.name, "'")
 		else:
 			node.remove_theme_font_size_override("font_size")
+			# Reset autowrap in landscape mode
+			if node.name == "TitleLabel" or node.name == "Title":
+				node.autowrap_mode = TextServer.AUTOWRAP_OFF
 
 	# Scale buttons
 	elif node is Button:

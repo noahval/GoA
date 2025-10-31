@@ -72,6 +72,9 @@ func setup(message: String, button_texts: Array, auto_resize: bool = true) -> vo
 
 ## Show the popup
 func show_popup() -> void:
+	# First, hide any other visible popups in the same container
+	_hide_other_popups()
+
 	visible = true
 	# If we're in a play area, resize to use available space
 	call_deferred("_check_and_resize_for_play_area")
@@ -79,6 +82,22 @@ func show_popup() -> void:
 ## Hide the popup
 func hide_popup() -> void:
 	visible = false
+
+## Internal: Hide all other visible popups in the same parent
+func _hide_other_popups() -> void:
+	var parent = get_parent()
+	if not parent:
+		return
+
+	# Hide all sibling popups except this one
+	for sibling in parent.get_children():
+		# Check if it's a popup (Panel node) and not this popup
+		if sibling != self and sibling is Panel and sibling.visible:
+			# Hide using hide_popup() if available, otherwise just set visible = false
+			if sibling.has_method("hide_popup"):
+				sibling.hide_popup()
+			else:
+				sibling.visible = false
 
 ## Internal: Handle button press
 func _on_button_pressed(button_text: String) -> void:

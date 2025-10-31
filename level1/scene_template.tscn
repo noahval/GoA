@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3 uid="uid://base_scene_template"]
+[gd_scene load_steps=4 format=3 uid="uid://base_scene_template"]
 
 [ext_resource type="Theme" path="res://default_theme.tres" id="1"]
 [ext_resource type="PackedScene" path="res://settings_overlay.tscn" id="2"]
+[ext_resource type="Script" path="res://popup_container.gd" id="popup_container_script"]
 
 [node name="SceneRoot" type="Control"]
 layout_mode = 3
@@ -102,6 +103,7 @@ mouse_filter = 2
 theme_override_constants/separation = 10
 
 [node name="PopupContainer" type="Control" parent="."]
+script = ExtResource("popup_container_script")
 z_index = 100
 layout_mode = 1
 anchors_preset = 15

@@ -28,6 +28,9 @@ func _ready():
 	status_label.text = ""
 
 func show_popup():
+	# First, hide any other visible popups in the same container
+	_hide_other_popups()
+
 	visible = true
 	z_index = 200
 	# Center the popup
@@ -41,6 +44,21 @@ func show_popup():
 
 func hide_popup():
 	visible = false
+
+func _hide_other_popups() -> void:
+	var parent = get_parent()
+	if not parent:
+		return
+
+	# Hide all sibling popups except this one
+	for sibling in parent.get_children():
+		# Check if it's a popup (Panel node) and not this popup
+		if sibling != self and sibling is Panel and sibling.visible:
+			# Hide using hide_popup() if available, otherwise just set visible = false
+			if sibling.has_method("hide_popup"):
+				sibling.hide_popup()
+			else:
+				sibling.visible = false
 
 func _test_server_connection():
 	# Check if Nakama client is initialized

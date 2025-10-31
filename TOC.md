@@ -8,6 +8,7 @@
 - [godot_web_auth.gd](godot_web_auth.gd)  
 - [login_popup.gd](login_popup.gd)  
 - [nakama_client.gd](nakama_client.gd)  
+- [popup_container.gd](popup_container.gd)  
 - [responsive_layout.gd](responsive_layout.gd)  
 - [reusable_popup.gd](reusable_popup.gd)  
 - [settings_overlay.gd](settings_overlay.gd)  

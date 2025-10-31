@@ -6,9 +6,11 @@
 
 ## System Architecture
 
-**File**: [reusable_popup.tscn](../../reusable_popup.tscn) + [reusable_popup.gd](../../reusable_popup.gd)
+**Files**:
+- [reusable_popup.tscn](../../reusable_popup.tscn) + [reusable_popup.gd](../../reusable_popup.gd) - Reusable popup component
+- [popup_container.gd](../../popup_container.gd) - Auto-managing container script
 
-**Purpose**: Provide consistent, themed modal dialogs across all scenes
+**Purpose**: Provide consistent, themed modal dialogs across all scenes with automatic overlap prevention
 
 **Key Characteristics**:
 - Semi-transparent panel (30% opacity dark background)
@@ -16,6 +18,7 @@
 - Responsive sizing (landscape vs portrait)
 - Shadow effects for depth
 - Z-index: 200 (above all game content)
+- **Automatic single-popup enforcement** - Only one popup visible at a time
 
 ---
 
@@ -35,9 +38,25 @@
 
 **Why**: ResponsiveLayout calculates available space in CenterArea/MiddleArea to prevent menu overlap. Only works if popup is in PopupContainer.
 
-### Rule 2: Hide PopupContainer After Use
+### Rule 2: Auto-Hiding Behavior
 
-**CRITICAL**: PopupContainer blocks clicks even when popups are hidden!
+**NEW**: PopupContainer automatically hides other popups!
+
+The PopupContainer is managed by [popup_container.gd](../../popup_container.gd) which **automatically ensures only one popup is visible at a time**. The script continuously monitors popups in:
+- PopupContainer itself
+- CenterArea (landscape mode - after ResponsiveLayout reparents)
+- MiddleArea (portrait mode - after ResponsiveLayout reparents)
+
+When multiple popups become visible, the system automatically hides all except the newest one.
+
+**Benefits**:
+- No overlapping popups
+- Works with both reusable_popup.gd and custom popups
+- No manual hiding required in most cases
+- Works across orientation changes and popup reparenting
+- Triggered by visibility changes, works with any popup display method
+
+**Still Required**: Hide PopupContainer after popup sequence completes
 
 ```gdscript
 func _on_popup_button_pressed(button_text: String):
