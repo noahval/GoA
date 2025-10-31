@@ -191,16 +191,16 @@ func _on_popup2_pressed(btn: String):
 
 **File**: [default_theme.tres](../../default_theme.tres)
 
-### PopupPanel Variation
+### StyledPopup Variation
 
 ```gdscript
-PopupPanel/base_type = &"Panel"
-PopupPanel/styles/panel = StyleBoxFlat_popup_panel
+StyledPopup/base_type = &"Panel"
+StyledPopup/styles/panel = StyleBoxFlat_popup_panel
 ```
 
 **Properties**:
-- Background: `Color(0.15, 0.15, 0.15, 0.85)` (dark gray, 85% opacity)
-- Border: 2px gray, 90% opacity
+- Background: `Color(0.25, 0.25, 0.25, 0.15)` (dark gray, 15% opacity)
+- Border: 2px gray, 50% opacity
 - Corner radius: 8px
 - Shadow: 8px blur, 4px offset
 - Content margin: 20px all sides
@@ -218,6 +218,16 @@ PopupButton/styles/pressed = StyleBoxFlat_popup_button_pressed
 - Normal: Medium gray + 2px border
 - Hover: Lighter background + bright border
 - Pressed: Darker background + subtle border
+
+### PopupVBox Variation
+
+```gdscript
+PopupVBox/base_type = &"VBoxContainer"
+PopupVBox/constants/separation = 15
+```
+
+**Purpose**: Provides consistent spacing between popup elements
+**Usage**: Apply to VBoxContainers inside custom popups
 
 ---
 
@@ -273,21 +283,75 @@ func _on_popup_button_pressed(btn: String):
 
 ---
 
+## Creating Custom Popups
+
+**When to use custom popups instead of reusable_popup**:
+- Need persistent UI elements (not just buttons)
+- Complex layouts (multiple columns, grids, etc.)
+- Interactive elements (sliders, text input, etc.)
+
+**Required Structure for Custom Popups**:
+
+```gdscript
+[node name="CustomPopup" type="Panel" parent="PopupContainer"]
+theme_type_variation = &"StyledPopup"  # REQUIRED: Themed panel
+visible = false
+
+[node name="MarginContainer" type="MarginContainer" parent="PopupContainer/CustomPopup"]
+# REQUIRED: 10px margins on all sides
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PopupContainer/CustomPopup/MarginContainer"]
+theme_type_variation = &"PopupVBox"  # REQUIRED: 15px separation between elements
+
+# Your content goes here (labels, buttons, etc.)
+```
+
+**Example** (from shop.tscn):
+```gdscript
+[node name="ShovelUpgradesPopup" type="Panel" parent="PopupContainer"]
+theme_type_variation = &"StyledPopup"
+# ... positioning ...
+
+[node name="MarginContainer" type="MarginContainer" parent="PopupContainer/ShovelUpgradesPopup"]
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PopupContainer/ShovelUpgradesPopup/MarginContainer"]
+theme_type_variation = &"PopupVBox"
+
+[node name="TitleLabel" type="Label" parent="PopupContainer/ShovelUpgradesPopup/MarginContainer/VBoxContainer"]
+text = "Title"
+
+[node name="Button1" type="Button" parent="PopupContainer/ShovelUpgradesPopup/MarginContainer/VBoxContainer"]
+theme_type_variation = &"PopupButton"
+```
+
+---
+
 ## When Creating/Modifying Popups
 
 **Do**:
 - ✅ Put all popups in PopupContainer
+- ✅ Use StyledPopup theme variation for Panel
+- ✅ Wrap content in MarginContainer (10px margins)
+- ✅ Use PopupVBox theme for VBoxContainers
+- ✅ Use PopupButton theme for all buttons
 - ✅ Setup once in `_ready()`, hide by default
-- ✅ Use `show_popup()` / `hide_popup()` methods
 - ✅ Hide PopupContainer when sequence completes
 - ✅ Use descriptive button labels ("Save and Quit" not "OK")
-- ✅ Keep messages concise (word-wrap enabled)
 
 **Don't**:
 - ❌ Add popups as direct children of root
-- ❌ Call `setup()` every time you show the popup
+- ❌ Forget MarginContainer or VBoxContainer spacing
+- ❌ Skip theme variations (causes visual inconsistency)
 - ❌ Forget to hide PopupContainer after closing
-- ❌ Use `visible = true/false` directly
+- ❌ Use `visible = true/false` directly for reusable_popup
 - ❌ Create more than 3-4 buttons (UI gets cramped)
 
 ---
@@ -296,20 +360,26 @@ func _on_popup_button_pressed(btn: String):
 
 When implementing popups:
 1. [ ] Popup in PopupContainer?
-2. [ ] Setup called in `_ready()`?
-3. [ ] Hidden by default?
-4. [ ] Signal connected?
-5. [ ] PopupContainer hidden after sequence?
-6. [ ] Tested in landscape mode?
-7. [ ] Tested in portrait mode?
-8. [ ] Buttons clickable after closing?
+2. [ ] StyledPopup theme applied to Panel?
+3. [ ] MarginContainer with 10px margins?
+4. [ ] PopupVBox theme applied to VBoxContainer?
+5. [ ] PopupButton theme applied to all buttons?
+6. [ ] Setup called in `_ready()` (if using reusable_popup)?
+7. [ ] Hidden by default?
+8. [ ] Signal connected (if using reusable_popup)?
+9. [ ] PopupContainer hidden after sequence?
+10. [ ] Tested in landscape mode?
+11. [ ] Tested in portrait mode?
+12. [ ] Buttons clickable after closing?
+13. [ ] No overlapping elements (title, buttons)?
 
 ---
 
 **Related Docs**:
 - [scene-template.md](scene-template.md) - Scene structure
 - [responsive-layout.md](responsive-layout.md) - Responsive scaling
+- [theme-system.md](theme-system.md) - Theme variations
 - [godot-dev.md](godot-dev.md) - Godot patterns
 
-**Version**: 2.0 (Claude-focused)
-**Last Updated**: 2025-10-29
+**Version**: 2.1 (Added custom popup guidelines & PopupVBox theme)
+**Last Updated**: 2025-10-30

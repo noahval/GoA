@@ -34,7 +34,8 @@ func _process(delta):
 		auto_shovel_timer += delta
 		# When timer reaches the frequency interval, generate coal
 		if auto_shovel_timer >= Level1Vars.auto_shovel_freq:
-			Level1Vars.coal += Level1Vars.auto_shovel_lvl
+			# Multiply quantity of auto-shovels by coal per tick
+			Level1Vars.coal += Level1Vars.auto_shovel_lvl * Level1Vars.auto_shovel_coal_per_tick
 			auto_shovel_timer -= Level1Vars.auto_shovel_freq  # Preserve excess time for accuracy
 
 	# Decrease stimulated_remaining by 1 per second

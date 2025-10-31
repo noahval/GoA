@@ -3,6 +3,7 @@
 ## Root
 
 ### Scripts (.gd)
+- [debug_logger.gd](debug_logger.gd)  
 - [global.gd](global.gd)  
 - [responsive_layout.gd](responsive_layout.gd)  
 - [reusable_popup.gd](reusable_popup.gd)  
@@ -52,6 +53,20 @@
 - [level1/test.tscn](level1/test.tscn)  
 - [level1/train_heart.tscn](level1/train_heart.tscn)  
 - [level1/workshop.tscn](level1/workshop.tscn)  
+
+---
+
+## Test Scenes >
+
+### Scripts (.gd)
+- [test_scenes/shop_test.gd](test_scenes/shop_test.gd)  
+- [test_scenes/stat_test.gd](test_scenes/stat_test.gd)  
+- [test_scenes/victory_test.gd](test_scenes/victory_test.gd)  
+
+### Scenes (.tscn)
+- [test_scenes/shop_test.tscn](test_scenes/shop_test.tscn)  
+- [test_scenes/stat_test.tscn](test_scenes/stat_test.tscn)  
+- [test_scenes/victory_test.tscn](test_scenes/victory_test.tscn)  
 
 ---
 

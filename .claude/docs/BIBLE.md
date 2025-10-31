@@ -19,6 +19,7 @@ The BIBLE Check Hook auto-triggers on development keywords (scene, stats, popup,
 | Doc | Keywords | Contents |
 |-----|----------|----------|
 | **[game-systems.md](game-systems.md)** | stats, experience, shop, timer, victory, suspicion, coins | Experience/leveling, shop mechanics, timers (whisper, suspicion, stamina), victory conditions, notifications |
+| **[nakama-integration.md](nakama-integration.md)** | nakama, server, auth, authentication, cloud, save, multiplayer, online | Nakama server setup, NakamaClient API, authentication, cloud saves, storage |
 | **[scene-template.md](scene-template.md)** | scene, template, layout, container, background | Four-container layout, scene inheritance, container structure, background auto-loading |
 | **[responsive-layout.md](responsive-layout.md)** | responsive, portrait, landscape, scaling, mobile | UI scaling, orientation handling, ResponsiveLayout system, mouse_filter management |
 | **[popup-system.md](popup-system.md)** | popup, dialog, modal, PopupContainer | Popup API, PopupContainer requirement, implementation patterns |
@@ -32,6 +33,7 @@ The BIBLE Check Hook auto-triggers on development keywords (scene, stats, popup,
 ## 🎯 Common Tasks → Docs
 
 - **Modify stats/shop/timers/victory** → [game-systems.md](game-systems.md)
+- **Online features/cloud saves/authentication** → [nakama-integration.md](nakama-integration.md)
 - **Create/modify scenes** → [scene-template.md](scene-template.md) + [responsive-layout.md](responsive-layout.md)
 - **Add popup/dialog** → [popup-system.md](popup-system.md)
 - **Display notifications** → [notifications.md](notifications.md)
@@ -51,9 +53,10 @@ The BIBLE Check Hook auto-triggers on development keywords (scene, stats, popup,
 - **Popups**: Place in `PopupContainer`
 - **Responsive**: Call `ResponsiveLayout.apply_to_scene(self)` in `_ready()`
 - **Timers**: Use Global timers (not scene-local)
+- **Nakama**: Use `NakamaClient` autoload (authenticate before storage operations)
 
 ---
 
 **Workflow**: Check keywords → Find docs in table above → Read them → Follow documented patterns
 
-**Version**: 2.1 (Optimized) | **Updated**: 2025-10-29
+**Version**: 2.2 (Added Nakama) | **Updated**: 2025-10-31

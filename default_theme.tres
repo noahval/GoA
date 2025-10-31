@@ -1,4 +1,4 @@
-[gd_resource type="Theme" load_steps=8 format=3 uid="uid://d3j86yyfijc68"]
+[gd_resource type="Theme" load_steps=12 format=3 uid="uid://d3j86yyfijc68"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_hover"]
 content_margin_left = 8.0
@@ -40,39 +40,21 @@ corner_radius_top_right = 4
 corner_radius_bottom_right = 4
 corner_radius_bottom_left = 4
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_progress_bg"]
-content_margin_top = 4.0
-content_margin_bottom = 4.0
-bg_color = Color(0.2, 0.2, 0.2, 0)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_progress_fill"]
-content_margin_top = 4.0
-content_margin_bottom = 4.0
-bg_color = Color(0, 1, 0, 0.3)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_progress_fill_red"]
-content_margin_top = 4.0
-content_margin_bottom = 4.0
-bg_color = Color(1, 0, 0, 0.3)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_popup_panel"]
-content_margin_left = 20.0
-content_margin_top = 20.0
-content_margin_right = 20.0
-content_margin_bottom = 20.0
-bg_color = Color(0.25, 0.25, 0.25, 0.15)
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_popup_button_hover"]
+content_margin_left = 12.0
+content_margin_top = 8.0
+content_margin_right = 12.0
+content_margin_bottom = 8.0
+bg_color = Color(0.4, 0.4, 0.4, 0.25)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
-border_color = Color(0.6, 0.6, 0.6, 0.5)
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
-shadow_color = Color(0, 0, 0, 0.1)
-shadow_size = 8
-shadow_offset = Vector2(0, 4)
+border_color = Color(0.7, 0.7, 0.7, 0.8)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_popup_button_normal"]
 content_margin_left = 12.0
@@ -85,22 +67,6 @@ border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
 border_color = Color(0.5, 0.5, 0.5, 0.6)
-corner_radius_top_left = 4
-corner_radius_top_right = 4
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 4
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_popup_button_hover"]
-content_margin_left = 12.0
-content_margin_top = 8.0
-content_margin_right = 12.0
-content_margin_bottom = 8.0
-bg_color = Color(0.4, 0.4, 0.4, 0.25)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.7, 0.7, 0.7, 0.8)
 corner_radius_top_left = 4
 corner_radius_top_right = 4
 corner_radius_bottom_right = 4
@@ -122,6 +88,40 @@ corner_radius_top_right = 4
 corner_radius_bottom_right = 4
 corner_radius_bottom_left = 4
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_progress_bg"]
+content_margin_top = 4.0
+content_margin_bottom = 4.0
+bg_color = Color(0.2, 0.2, 0.2, 0)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_progress_fill"]
+content_margin_top = 4.0
+content_margin_bottom = 4.0
+bg_color = Color(0, 1, 0, 0.3)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_popup_panel"]
+content_margin_left = 20.0
+content_margin_top = 20.0
+content_margin_right = 20.0
+content_margin_bottom = 20.0
+bg_color = Color(0.25, 0.25, 0.25, 0.15)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.6, 0.6, 0.6, 0.5)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+shadow_color = Color(0, 0, 0, 0.1)
+shadow_size = 8
+shadow_offset = Vector2(0, 4)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_progress_fill_red"]
+content_margin_top = 4.0
+content_margin_bottom = 4.0
+bg_color = Color(1, 0, 0, 0.3)
+
 [resource]
 default_font_size = 25
 Button/colors/font_color = Color(1, 1, 1, 1)
@@ -133,19 +133,21 @@ Label/colors/font_color = Color(1, 1, 1, 1)
 Label/constants/line_spacing = 2
 Label/styles/normal = SubResource("StyleBoxFlat_label")
 Panel/styles/panel = SubResource("StyleBoxFlat_panel")
-ProgressBar/colors/font_color = Color(1, 1, 1, 1)
-ProgressBar/styles/background = SubResource("StyleBoxFlat_progress_bg")
-ProgressBar/styles/fill = SubResource("StyleBoxFlat_progress_fill")
-SuspicionProgressBar/base_type = &"ProgressBar"
-SuspicionProgressBar/colors/font_color = Color(1, 1, 1, 1)
-SuspicionProgressBar/styles/background = SubResource("StyleBoxFlat_progress_bg")
-SuspicionProgressBar/styles/fill = SubResource("StyleBoxFlat_progress_fill_red")
-StyledPopup/base_type = &"Panel"
-StyledPopup/styles/panel = SubResource("StyleBoxFlat_popup_panel")
 PopupButton/base_type = &"Button"
 PopupButton/colors/font_color = Color(1, 1, 1, 1)
 PopupButton/colors/font_hover_color = Color(1, 1, 0.9, 1)
 PopupButton/colors/font_pressed_color = Color(0.9, 0.9, 0.9, 1)
-PopupButton/styles/normal = SubResource("StyleBoxFlat_popup_button_normal")
 PopupButton/styles/hover = SubResource("StyleBoxFlat_popup_button_hover")
+PopupButton/styles/normal = SubResource("StyleBoxFlat_popup_button_normal")
 PopupButton/styles/pressed = SubResource("StyleBoxFlat_popup_button_pressed")
+ProgressBar/colors/font_color = Color(1, 1, 1, 1)
+ProgressBar/styles/background = SubResource("StyleBoxFlat_progress_bg")
+ProgressBar/styles/fill = SubResource("StyleBoxFlat_progress_fill")
+StyledPopup/base_type = &"Panel"
+StyledPopup/styles/panel = SubResource("StyleBoxFlat_popup_panel")
+PopupVBox/base_type = &"VBoxContainer"
+PopupVBox/constants/separation = 15
+SuspicionProgressBar/base_type = &"ProgressBar"
+SuspicionProgressBar/colors/font_color = Color(1, 1, 1, 1)
+SuspicionProgressBar/styles/background = SubResource("StyleBoxFlat_progress_bg")
+SuspicionProgressBar/styles/fill = SubResource("StyleBoxFlat_progress_fill_red")

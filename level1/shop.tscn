@@ -91,36 +91,143 @@ text = "Coins: 0"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="ShovelButton" type="Button" parent="HBoxContainer/RightVBox" index="0"]
+[node name="ShovelsButton" type="Button" parent="HBoxContainer/RightVBox" index="0"]
 layout_mode = 2
-text = "Improve Shovel: 1"
+text = "Shovels"
 
-[node name="PlowButton" type="Button" parent="HBoxContainer/RightVBox" index="1"]
-visible = false
+[node name="AutoShovelsButton" type="Button" parent="HBoxContainer/RightVBox" index="1"]
 layout_mode = 2
-text = "Coal Plow: 5"
+text = "Auto-Shovels"
 
-[node name="AutoShovelButton" type="Button" parent="HBoxContainer/RightVBox" index="2"]
-visible = false
-layout_mode = 2
-text = "Auto Furnace: 10"
-
-[node name="BribeShopkeepButton" type="Button" parent="HBoxContainer/RightVBox" index="3"]
+[node name="BribeShopkeepButton" type="Button" parent="HBoxContainer/RightVBox" index="2"]
 layout_mode = 2
 text = "Bribe Shopkeep: 10"
 
-[node name="WorkshopButton" type="Button" parent="HBoxContainer/RightVBox" index="4"]
+[node name="WorkshopButton" type="Button" parent="HBoxContainer/RightVBox" index="3"]
 visible = false
 layout_mode = 2
 text = "To Workshop"
 
-[node name="ToCoppersmithCarriageButton" type="Button" parent="HBoxContainer/RightVBox" index="5"]
+[node name="ToCoppersmithCarriageButton" type="Button" parent="HBoxContainer/RightVBox" index="4"]
 layout_mode = 2
 text = "To Coppersmith Carriage"
 
-[connection signal="pressed" from="HBoxContainer/RightVBox/ShovelButton" to="." method="_on_shovel_button_pressed"]
-[connection signal="pressed" from="HBoxContainer/RightVBox/PlowButton" to="." method="_on_plow_button_pressed"]
-[connection signal="pressed" from="HBoxContainer/RightVBox/AutoShovelButton" to="." method="_on_furnace_upgrade_pressed"]
+[node name="ShovelsPopup" type="Panel" parent="PopupContainer" index="0"]
+visible = false
+theme_type_variation = &"StyledPopup"
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -150.0
+offset_right = 200.0
+offset_bottom = 150.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="PopupContainer/ShovelsPopup"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PopupContainer/ShovelsPopup/MarginContainer"]
+layout_mode = 2
+theme_type_variation = &"PopupVBox"
+
+[node name="TitleLabel" type="Label" parent="PopupContainer/ShovelsPopup/MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "Shovels"
+horizontal_alignment = 1
+
+[node name="ShovelButton" type="Button" parent="PopupContainer/ShovelsPopup/MarginContainer/VBoxContainer"]
+theme_type_variation = &"PopupButton"
+layout_mode = 2
+text = "Better Shovel: 8"
+
+[node name="PlowButton" type="Button" parent="PopupContainer/ShovelsPopup/MarginContainer/VBoxContainer"]
+theme_type_variation = &"PopupButton"
+layout_mode = 2
+text = "Coal Plow: 50"
+
+[node name="CloseButton" type="Button" parent="PopupContainer/ShovelsPopup/MarginContainer/VBoxContainer"]
+theme_type_variation = &"PopupButton"
+layout_mode = 2
+text = "Close"
+
+[node name="AutoShovelsPopup" type="Panel" parent="PopupContainer" index="1"]
+visible = false
+theme_type_variation = &"StyledPopup"
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -150.0
+offset_right = 200.0
+offset_bottom = 150.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="PopupContainer/AutoShovelsPopup"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PopupContainer/AutoShovelsPopup/MarginContainer"]
+layout_mode = 2
+theme_type_variation = &"PopupVBox"
+
+[node name="TitleLabel" type="Label" parent="PopupContainer/AutoShovelsPopup/MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "Auto-Shovels"
+horizontal_alignment = 1
+
+[node name="AutoShovelButton" type="Button" parent="PopupContainer/AutoShovelsPopup/MarginContainer/VBoxContainer"]
+theme_type_variation = &"PopupButton"
+layout_mode = 2
+text = "Buy Auto Shovel: 200"
+
+[node name="CoalPerTickButton" type="Button" parent="PopupContainer/AutoShovelsPopup/MarginContainer/VBoxContainer"]
+theme_type_variation = &"PopupButton"
+layout_mode = 2
+text = "Enhance Scoop: 50"
+
+[node name="FrequencyButton" type="Button" parent="PopupContainer/AutoShovelsPopup/MarginContainer/VBoxContainer"]
+theme_type_variation = &"PopupButton"
+layout_mode = 2
+text = "Tune Clockwork: 75"
+
+[node name="CloseButton" type="Button" parent="PopupContainer/AutoShovelsPopup/MarginContainer/VBoxContainer"]
+theme_type_variation = &"PopupButton"
+layout_mode = 2
+text = "Close"
+
+[connection signal="pressed" from="HBoxContainer/RightVBox/ShovelsButton" to="." method="_on_shovels_button_pressed"]
+[connection signal="pressed" from="HBoxContainer/RightVBox/AutoShovelsButton" to="." method="_on_auto_shovels_button_pressed"]
 [connection signal="pressed" from="HBoxContainer/RightVBox/BribeShopkeepButton" to="." method="_on_bribe_shopkeep_pressed"]
 [connection signal="pressed" from="HBoxContainer/RightVBox/WorkshopButton" to="." method="_on_workshop_button_pressed"]
 [connection signal="pressed" from="HBoxContainer/RightVBox/ToCoppersmithCarriageButton" to="." method="_on_to_coppersmith_carriage_button_pressed"]
+[connection signal="pressed" from="PopupContainer/ShovelsPopup/MarginContainer/VBoxContainer/ShovelButton" to="." method="_on_shovel_button_pressed"]
+[connection signal="pressed" from="PopupContainer/ShovelsPopup/MarginContainer/VBoxContainer/PlowButton" to="." method="_on_plow_button_pressed"]
+[connection signal="pressed" from="PopupContainer/ShovelsPopup/MarginContainer/VBoxContainer/CloseButton" to="." method="_on_close_shovels_popup_pressed"]
+[connection signal="pressed" from="PopupContainer/AutoShovelsPopup/MarginContainer/VBoxContainer/AutoShovelButton" to="." method="_on_furnace_upgrade_pressed"]
+[connection signal="pressed" from="PopupContainer/AutoShovelsPopup/MarginContainer/VBoxContainer/CoalPerTickButton" to="." method="_on_coal_per_tick_upgrade_pressed"]
+[connection signal="pressed" from="PopupContainer/AutoShovelsPopup/MarginContainer/VBoxContainer/FrequencyButton" to="." method="_on_frequency_upgrade_pressed"]
+[connection signal="pressed" from="PopupContainer/AutoShovelsPopup/MarginContainer/VBoxContainer/CloseButton" to="." method="_on_close_auto_shovels_popup_pressed"]

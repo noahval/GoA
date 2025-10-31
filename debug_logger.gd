@@ -2,7 +2,7 @@ extends Node
 
 # ===== DEBUG LOGGER AUTOLOAD =====
 # Provides comprehensive logging for autonomous testing and debugging
-# Usage: DebugLogger.log("message", "CATEGORY")
+# Usage: DebugLogger.write_log("message", "CATEGORY") or use convenience methods: debug(), info(), warn(), error()
 
 var log_file: FileAccess = null
 var log_file_path: String = "user://debug.log"
@@ -48,7 +48,7 @@ func _write_footer():
 		log_file.flush()
 
 # Main logging function
-func log(message: String, category: String = "DEBUG", level: int = LogLevel.DEBUG):
+func write_log(message: String, category: String = "DEBUG", level: int = LogLevel.DEBUG):
 	if level < log_level:
 		return
 
@@ -67,16 +67,16 @@ func log(message: String, category: String = "DEBUG", level: int = LogLevel.DEBU
 
 # Convenience functions for different log levels
 func debug(message: String, category: String = "DEBUG"):
-	log(message, category, LogLevel.DEBUG)
+	write_log(message, category, LogLevel.DEBUG)
 
 func info(message: String, category: String = "INFO"):
-	log(message, category, LogLevel.INFO)
+	write_log(message, category, LogLevel.INFO)
 
 func warn(message: String, category: String = "WARN"):
-	log(message, category, LogLevel.WARN)
+	write_log(message, category, LogLevel.WARN)
 
 func error(message: String, category: String = "ERROR"):
-	log(message, category, LogLevel.ERROR)
+	write_log(message, category, LogLevel.ERROR)
 
 # Track stat changes
 func log_stat_change(stat_name: String, old_value: float, new_value: float, exp_gained: float):
