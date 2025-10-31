@@ -99,19 +99,23 @@ func authenticate_google(google_token: String):
 
 	return true
 
-## Authenticate with email/username and password
-func authenticate_email(email: String, password: String, create: bool = false):
+## Authenticate with username and password using custom authentication
+func authenticate_email(username_input: String, password: String, create: bool = false):
 	if create:
-		DebugLogger.log_info("NakamaClient", "Creating account with username: %s" % email)
+		DebugLogger.log_info("NakamaClient", "Creating account with username: %s" % username_input)
 	else:
-		DebugLogger.log_info("NakamaClient", "Authenticating with username: %s" % email)
+		DebugLogger.log_info("NakamaClient", "Authenticating with username: %s" % username_input)
 
-	# authenticate_email_async(email, password, username, create)
-	var auth_result = await client.authenticate_email_async(email, password, email, create)
+	# Use custom authentication which accepts any username format
+	# Custom ID format: username:password_hash for uniqueness
+	var custom_id = username_input + ":" + password.sha256_text()
+
+	# authenticate_custom_async(id, username, create)
+	var auth_result = await client.authenticate_custom_async(custom_id, username_input, create)
 
 	if auth_result.is_exception():
 		var error = auth_result.get_exception().message
-		DebugLogger.log_error("NakamaClient", "Email authentication failed: %s" % error)
+		DebugLogger.log_error("NakamaClient", "Authentication failed: %s" % error)
 		authentication_failed.emit(error)
 		return false
 
@@ -123,7 +127,7 @@ func authenticate_email(email: String, password: String, create: bool = false):
 	if create:
 		DebugLogger.log_success("NakamaClient", "Account created successfully!")
 	else:
-		DebugLogger.log_success("NakamaClient", "Email authentication successful!")
+		DebugLogger.log_success("NakamaClient", "Authentication successful!")
 
 	DebugLogger.log_info("NakamaClient", "User ID: %s" % user_id)
 	DebugLogger.log_info("NakamaClient", "Username: %s" % username)
