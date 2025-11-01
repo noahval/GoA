@@ -61,6 +61,37 @@ The BIBLE Check Hook auto-triggers on development keywords (scene, stats, popup,
 
 ---
 
+## 🔧 Development Skills (Superpowers)
+
+**Purpose**: Systematic workflows for testing, debugging, planning, and code quality
+
+| Skill | Keywords | When to Use |
+|-------|----------|-------------|
+| **[test-driven-development](../skills/test-driven-development.md)** | test, testing, TDD, feature, bug fix, new code | Writing new features, fixing bugs, refactoring |
+| **[systematic-debugging](../skills/systematic-debugging.md)** | debug, debugging, error, bug, failure, crash | Encountering bugs, errors, test failures |
+| **[verification-before-completion](../skills/verification-before-completion.md)** | verification, verify, complete, done, finished | Before claiming work is complete or tests pass |
+| **[brainstorming](../skills/brainstorming.md)** | brainstorm, design, planning, architecture | Turning ideas into designs, planning features |
+| **[writing-plans](../skills/writing-plans.md)** | plan, implementation plan, roadmap | Creating detailed implementation plans |
+| **[executing-plans](../skills/executing-plans.md)** | execute plan, implementation, batch execution | Implementing detailed plans with checkpoints |
+| **[root-cause-tracing](../skills/root-cause-tracing.md)** | root cause, trace, call stack, data flow | Deep errors, long stack traces, unclear origins |
+| **[defense-in-depth](../skills/defense-in-depth.md)** | validation, guards, error prevention | Implementing validation, hardening code |
+| **[condition-based-waiting](../skills/condition-based-waiting.md)** | async, asynchronous, waiting, polling, flaky | Async operations, flaky tests, race conditions |
+| **[testing-anti-patterns](../skills/testing-anti-patterns.md)** | test anti-pattern, mocking, test quality | Writing or reviewing test code |
+| **[dispatching-parallel-agents](../skills/dispatching-parallel-agents.md)** | parallel agents, concurrent debugging | Multiple independent failures or subsystems |
+| **[requesting-code-review](../skills/requesting-code-review.md)** | code review, review request, peer review | After completing tasks or major features |
+| **[receiving-code-review](../skills/receiving-code-review.md)** | review feedback, handling feedback | Processing code review feedback |
+| **[using-git-worktrees](../skills/using-git-worktrees.md)** | git worktree, parallel development | Working on multiple branches simultaneously |
+| **[finishing-a-development-branch](../skills/finishing-a-development-branch.md)** | finish branch, merge, pull request, PR | Completing feature development, integration |
+| **[subagent-driven-development](../skills/subagent-driven-development.md)** | subagent development, task execution | Executing plans with quality gates |
+| **[writing-skills](../skills/writing-skills.md)** | skill creation, writing skills, skill development | Creating new skill documentation |
+| **[sharing-skills](../skills/sharing-skills.md)** | skill sharing, contributing skills | Contributing skills to upstream |
+| **[testing-skills-with-subagents](../skills/testing-skills-with-subagents.md)** | skill testing, skill validation | Validating skill documentation |
+| **[using-superpowers](../skills/using-superpowers.md)** | skill usage, using skills, workflow selection | Beginning any task (first response checklist) |
+
+**See also**: [.claude/skills/README.md](../skills/README.md) for full skill documentation
+
+---
+
 **Workflow**: Check keywords → Find docs in table above → Read them → Follow documented patterns
 
-**Version**: 2.4 (Added local browser save system) | **Updated**: 2025-10-31
+**Version**: 2.5 (Added Superpowers skills) | **Updated**: 2025-11-01

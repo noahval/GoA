@@ -59,7 +59,7 @@ default_font_size = 25
 
 **Normal State** (`StyleBoxFlat_button_normal`):
 ```
-background: Color(0.25, 0.25, 0.25, 0.3)  # Dark grey, 30% opacity
+background: Color(0.58, 0.247, 0.012, 0.3)  # Dark orange (#943f03), 30% opacity
 corner_radius: 3px (all corners)
 content_margin: 8px left/right, 4px top/bottom
 font_color: White (1, 1, 1, 1)
@@ -67,7 +67,7 @@ font_color: White (1, 1, 1, 1)
 
 **Hover State** (`StyleBoxFlat_button_hover`):
 ```
-background: Color(0.35, 0.35, 0.35, 0.3)  # Lighter grey, 30% opacity
+background: Color(0.68, 0.35, 0.1, 0.3)  # Light orange, 30% opacity
 corner_radius: 3px (all corners)
 content_margin: 8px left/right, 4px top/bottom
 font_hover_color: Light yellow (1, 1, 0.8, 1)
@@ -79,15 +79,17 @@ font_pressed_color: Light grey (0.9, 0.9, 0.9, 1)
 ```
 
 **Visual States**:
-- Normal: Dark grey, white text
-- Hover: Lighter grey, yellow-white text
+- Normal: Dark orange, white text
+- Hover: Light orange, yellow-white text
 - Pressed: Same background, slightly dimmed text
+
+**Usage**: Default for negative/cancel/neutral actions. For affirmative actions, use `AffirmativeButton` variation.
 
 ### Label
 
 **Normal State** (`StyleBoxFlat_label`):
 ```
-background: Color(0.25, 0.25, 0.25, 0.3)  # Dark grey, 30% opacity
+background: Color(0.58, 0.247, 0.012, 0.3)  # Dark orange (#943f03), 30% opacity
 corner_radius: 3px (all corners)
 content_margin: 8px left/right, 4px top/bottom
 font_color: White (1, 1, 1, 1)
@@ -100,7 +102,7 @@ line_spacing: 2px
 
 **Normal State** (`StyleBoxFlat_panel`):
 ```
-background: Color(0.5, 0.5, 0.5, 0.3)  # Medium grey, 30% opacity
+background: Color(0.58, 0.247, 0.012, 0.3)  # Dark orange (#943f03), 30% opacity
 corner_radius: 4px (all corners)
 ```
 
@@ -123,13 +125,13 @@ font_color: White (1, 1, 1, 1)
 
 **Fill - Suspicion** (`StyleBoxFlat_progress_fill_red`):
 ```
-background: Color(1, 0, 0, 0.3)  # Red, 30% opacity
+background: Color(0.9, 0.4, 0.05, 0.3)  # Orange, 30% opacity
 content_margin: 4px top/bottom
 ```
 
 **Usage**:
 - Standard (green): Health, stamina, resources
-- Suspicion (red): Danger meters, negative meters
+- Suspicion (orange): Danger meters, negative meters
 
 ---
 
@@ -228,6 +230,53 @@ button.theme_type_variation = &"PopupButton"
 ```
 
 **Used by**: [reusable_popup.gd](../../reusable_popup.gd) (auto-applies to buttons)
+
+### AffirmativeButton
+
+**Type**: Button variant
+
+**Usage**: Buttons for affirmative/positive actions (Yes, OK, Confirm, Accept, etc.)
+
+**Normal State** (`StyleBoxFlat_affirmative_button_normal`):
+```
+background: Color(0.008, 0.416, 0.62, 0.3)  # Blue (#026a9e), 30% opacity
+corner_radius: 3px (all corners)
+content_margin: 8px left/right, 4px top/bottom
+font_color: White (1, 1, 1, 1)
+```
+
+**Hover State** (`StyleBoxFlat_affirmative_button_hover`):
+```
+background: Color(0.1, 0.52, 0.75, 0.3)  # Light blue, 30% opacity
+corner_radius: 3px (all corners)
+font_hover_color: Light yellow (1, 1, 0.9, 1)
+```
+
+**Pressed State** (`StyleBoxFlat_affirmative_button_pressed`):
+```
+background: Color(0.006, 0.33, 0.5, 0.35)  # Dark blue, 35% opacity
+corner_radius: 3px (all corners)
+font_pressed_color: Light grey (0.9, 0.9, 0.9, 1)
+```
+
+**Visual Features**:
+- Blue background for positive/affirmative actions
+- Contrasts with orange default buttons (negative/cancel actions)
+- Matches blue accent theme used in borders and trim
+
+**How to Use**:
+```gdscript
+# In .tscn file:
+[node name="ConfirmButton" type="Button"]
+theme_type_variation = "AffirmativeButton"
+
+# In code:
+confirm_button.theme_type_variation = &"AffirmativeButton"
+```
+
+**Design Pattern**:
+- Use **AffirmativeButton** (blue) for: Yes, OK, Confirm, Accept, Save, Submit
+- Use **Default Button** (orange) for: No, Cancel, Back, Close, Delete
 
 ---
 
@@ -559,19 +608,41 @@ When modifying themes:
 
 ## Color Palette Reference
 
-**GoA Standard Colors**:
+**GoA Color Scheme**: Dark orange (#943f03) base with blue (#026a9e) accents
 
-| Element | Color | RGB | Alpha | Notes |
-|---------|-------|-----|-------|-------|
-| **Buttons Normal** | Dark grey | (0.25, 0.25, 0.25) | 30% | Subtle background |
-| **Buttons Hover** | Medium grey | (0.35, 0.35, 0.35) | 30% | Brighter on hover |
-| **Panels** | Medium grey | (0.5, 0.5, 0.5) | 30% | Slightly brighter than buttons |
-| **Progress Fill** | Green | (0, 1, 0) | 30% | Health/positive |
-| **Suspicion Fill** | Red | (1, 0, 0) | 30% | Danger/negative |
-| **Popup Panel** | Dark grey | (0.25, 0.25, 0.25) | 15% | More translucent |
-| **Popup Border** | Light grey | (0.6, 0.6, 0.6) | 50% | Visible outline |
+| Element | Color | Hex / RGB | Alpha | Notes |
+|---------|-------|-----------|-------|-------|
+| **Buttons Normal** | Dark orange | #943f03 / (0.58, 0.247, 0.012) | 30% | Base negative/neutral |
+| **Buttons Hover** | Light orange | (0.68, 0.35, 0.1) | 30% | Brighter on hover |
+| **Affirmative Button** | Blue | #026a9e / (0.008, 0.416, 0.62) | 30% | Positive/confirm actions |
+| **Affirmative Hover** | Light blue | (0.1, 0.52, 0.75) | 30% | Brighter blue hover |
+| **Panels** | Dark orange | (0.58, 0.247, 0.012) | 30% | Background panels |
+| **Labels** | Dark orange | (0.58, 0.247, 0.012) | 30% | Info displays |
+| **Progress Fill** | Green | (0, 1, 0) | 30% | Health/positive resources |
+| **Suspicion Fill** | Orange | (0.9, 0.4, 0.05) | 30% | Danger/negative |
+| **Popup Panel** | Dark orange | (0.58, 0.247, 0.012) | 15% | More translucent |
+| **Popup/Trim Border** | Blue | #026a9e / (0.008, 0.416, 0.62) | 50-80% | Accent borders |
 | **Text** | White | (1, 1, 1) | 100% | High contrast |
 | **Text Hover** | Light yellow | (1, 1, 0.8) | 100% | Warm hover effect |
+
+### Using AffirmativeButton Variation
+
+For positive actions like "Yes", "Confirm", "OK", "Accept":
+
+```gdscript
+# In .tscn file:
+[node name="ConfirmButton" type="Button"]
+theme_type_variation = "AffirmativeButton"
+
+# In code:
+confirm_button.theme_type_variation = &"AffirmativeButton"
+```
+
+**Visual Design Philosophy**:
+- **Orange buttons** = Negative, cancel, or neutral actions
+- **Blue buttons** = Affirmative, confirm, or positive actions
+- **Blue borders** = Visual trim and special element highlights
+- **30% opacity** = Maintains translucent overlay aesthetic
 
 ---
 
@@ -581,5 +652,5 @@ When modifying themes:
 - [godot-dev.md](godot-dev.md) - Theme application patterns
 - [responsive-layout.md](responsive-layout.md) - Font scaling system
 
-**Version**: 1.0
-**Last Updated**: 2025-10-29
+**Version**: 1.1 (Updated to orange/blue color scheme)
+**Last Updated**: 2025-10-31

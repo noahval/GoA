@@ -1,11 +1,11 @@
-[gd_resource type="Theme" load_steps=12 format=3 uid="uid://d3j86yyfijc68"]
+[gd_resource type="Theme" load_steps=15 format=3 uid="uid://d3j86yyfijc68"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_hover"]
 content_margin_left = 8.0
 content_margin_top = 4.0
 content_margin_right = 8.0
 content_margin_bottom = 4.0
-bg_color = Color(0.35, 0.35, 0.35, 0.3)
+bg_color = Color(0.68, 0.35, 0.1, 0.3)
 corner_radius_top_left = 3
 corner_radius_top_right = 3
 corner_radius_bottom_right = 3
@@ -16,7 +16,40 @@ content_margin_left = 8.0
 content_margin_top = 4.0
 content_margin_right = 8.0
 content_margin_bottom = 4.0
-bg_color = Color(0.25, 0.25, 0.25, 0.3)
+bg_color = Color(0.58, 0.247, 0.012, 0.3)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_affirmative_button_normal"]
+content_margin_left = 8.0
+content_margin_top = 4.0
+content_margin_right = 8.0
+content_margin_bottom = 4.0
+bg_color = Color(0.008, 0.416, 0.62, 0.3)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_affirmative_button_hover"]
+content_margin_left = 8.0
+content_margin_top = 4.0
+content_margin_right = 8.0
+content_margin_bottom = 4.0
+bg_color = Color(0.1, 0.52, 0.75, 0.3)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_affirmative_button_pressed"]
+content_margin_left = 8.0
+content_margin_top = 4.0
+content_margin_right = 8.0
+content_margin_bottom = 4.0
+bg_color = Color(0.006, 0.33, 0.5, 0.35)
 corner_radius_top_left = 3
 corner_radius_top_right = 3
 corner_radius_bottom_right = 3
@@ -27,14 +60,14 @@ content_margin_left = 8.0
 content_margin_top = 4.0
 content_margin_right = 8.0
 content_margin_bottom = 4.0
-bg_color = Color(0.25, 0.25, 0.25, 0.3)
+bg_color = Color(0.58, 0.247, 0.012, 0.3)
 corner_radius_top_left = 3
 corner_radius_top_right = 3
 corner_radius_bottom_right = 3
 corner_radius_bottom_left = 3
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
-bg_color = Color(0.5, 0.5, 0.5, 0.3)
+bg_color = Color(0.58, 0.247, 0.012, 0.3)
 corner_radius_top_left = 4
 corner_radius_top_right = 4
 corner_radius_bottom_right = 4
@@ -45,12 +78,12 @@ content_margin_left = 12.0
 content_margin_top = 8.0
 content_margin_right = 12.0
 content_margin_bottom = 8.0
-bg_color = Color(0.4, 0.4, 0.4, 0.25)
+bg_color = Color(0.68, 0.35, 0.1, 0.25)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
-border_color = Color(0.7, 0.7, 0.7, 0.8)
+border_color = Color(0.008, 0.416, 0.62, 0.8)
 corner_radius_top_left = 4
 corner_radius_top_right = 4
 corner_radius_bottom_right = 4
@@ -61,12 +94,12 @@ content_margin_left = 12.0
 content_margin_top = 8.0
 content_margin_right = 12.0
 content_margin_bottom = 8.0
-bg_color = Color(0.3, 0.3, 0.3, 0.15)
+bg_color = Color(0.58, 0.247, 0.012, 0.15)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
-border_color = Color(0.5, 0.5, 0.5, 0.6)
+border_color = Color(0.008, 0.416, 0.62, 0.6)
 corner_radius_top_left = 4
 corner_radius_top_right = 4
 corner_radius_bottom_right = 4
@@ -77,12 +110,12 @@ content_margin_left = 12.0
 content_margin_top = 8.0
 content_margin_right = 12.0
 content_margin_bottom = 8.0
-bg_color = Color(0.25, 0.25, 0.25, 0.35)
+bg_color = Color(0.48, 0.2, 0.01, 0.35)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
-border_color = Color(0.4, 0.4, 0.4, 0.7)
+border_color = Color(0.008, 0.416, 0.62, 0.7)
 corner_radius_top_left = 4
 corner_radius_top_right = 4
 corner_radius_bottom_right = 4
@@ -103,12 +136,12 @@ content_margin_left = 20.0
 content_margin_top = 20.0
 content_margin_right = 20.0
 content_margin_bottom = 20.0
-bg_color = Color(0.25, 0.25, 0.25, 0.15)
+bg_color = Color(0.58, 0.247, 0.012, 0.15)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
-border_color = Color(0.6, 0.6, 0.6, 0.5)
+border_color = Color(0.008, 0.416, 0.62, 0.5)
 corner_radius_top_left = 8
 corner_radius_top_right = 8
 corner_radius_bottom_right = 8
@@ -120,7 +153,7 @@ shadow_offset = Vector2(0, 4)
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_progress_fill_red"]
 content_margin_top = 4.0
 content_margin_bottom = 4.0
-bg_color = Color(1, 0, 0, 0.3)
+bg_color = Color(0.9, 0.4, 0.05, 0.3)
 
 [resource]
 default_font_size = 25
@@ -151,3 +184,10 @@ SuspicionProgressBar/base_type = &"ProgressBar"
 SuspicionProgressBar/colors/font_color = Color(1, 1, 1, 1)
 SuspicionProgressBar/styles/background = SubResource("StyleBoxFlat_progress_bg")
 SuspicionProgressBar/styles/fill = SubResource("StyleBoxFlat_progress_fill_red")
+AffirmativeButton/base_type = &"Button"
+AffirmativeButton/colors/font_color = Color(1, 1, 1, 1)
+AffirmativeButton/colors/font_hover_color = Color(1, 1, 0.9, 1)
+AffirmativeButton/colors/font_pressed_color = Color(0.9, 0.9, 0.9, 1)
+AffirmativeButton/styles/normal = SubResource("StyleBoxFlat_affirmative_button_normal")
+AffirmativeButton/styles/hover = SubResource("StyleBoxFlat_affirmative_button_hover")
+AffirmativeButton/styles/pressed = SubResource("StyleBoxFlat_affirmative_button_pressed")

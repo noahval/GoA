@@ -13,14 +13,64 @@ Skills are pre-defined procedures that give Claude specialized capabilities for 
 ## How Skills Work
 
 1. **User requests task** that matches a skill's domain
-2. **Claude invokes skill** by name
+2. **Claude invokes skill** by name (or automatically via keywords)
 3. **Skill loads** with detailed instructions
 4. **Claude executes** the skill's procedure
 5. **Result returned** to main conversation
 
 ---
 
-## Potential Skills for GoA
+## 🌟 Superpowers Skills Library
+
+**Source**: [obra/superpowers](https://github.com/obra/superpowers)
+
+This project includes 18 general-purpose development skills organized into 4 categories:
+
+### Testing & Debugging Skills
+
+| Skill | Purpose | Keywords |
+|-------|---------|----------|
+| [test-driven-development.md](test-driven-development.md) | RED-GREEN-REFACTOR cycle, write tests first | test, testing, TDD, feature, bug fix |
+| [systematic-debugging.md](systematic-debugging.md) | 4-phase root cause analysis | debug, error, bug, failure, crash |
+| [verification-before-completion.md](verification-before-completion.md) | Evidence-based completion claims | verify, complete, done, finished |
+| [root-cause-tracing.md](root-cause-tracing.md) | Trace errors backward through call chains | root cause, trace, call stack |
+| [defense-in-depth.md](defense-in-depth.md) | Multi-layer validation | validation, guards, error prevention |
+| [condition-based-waiting.md](condition-based-waiting.md) | Polling over arbitrary timeouts | async, polling, flaky tests |
+| [testing-anti-patterns.md](testing-anti-patterns.md) | Common testing mistakes to avoid | test anti-pattern, mocking |
+
+### Collaboration & Planning Skills
+
+| Skill | Purpose | Keywords |
+|-------|---------|----------|
+| [brainstorming.md](brainstorming.md) | Socratic design refinement | brainstorm, design, planning |
+| [writing-plans.md](writing-plans.md) | Detailed implementation roadmaps | plan, roadmap, task breakdown |
+| [executing-plans.md](executing-plans.md) | Batch execution with checkpoints | execute plan, implementation |
+| [dispatching-parallel-agents.md](dispatching-parallel-agents.md) | Concurrent task management | parallel agents, concurrent |
+| [requesting-code-review.md](requesting-code-review.md) | Initiate code reviews | code review, review request |
+| [receiving-code-review.md](receiving-code-review.md) | Process review feedback | review feedback, handling feedback |
+| [subagent-driven-development.md](subagent-driven-development.md) | Plan execution with quality gates | subagent development, task execution |
+
+### Development Workflow Skills
+
+| Skill | Purpose | Keywords |
+|-------|---------|----------|
+| [using-git-worktrees.md](using-git-worktrees.md) | Isolated parallel workspaces | git worktree, parallel development |
+| [finishing-a-development-branch.md](finishing-a-development-branch.md) | Merge/PR workflow completion | finish branch, merge, PR |
+
+### Meta Skills
+
+| Skill | Purpose | Keywords |
+|-------|---------|----------|
+| [using-superpowers.md](using-superpowers.md) | First-response skill selection protocol | skill usage, workflow selection |
+| [writing-skills.md](writing-skills.md) | TDD for process documentation | skill creation, skill development |
+| [sharing-skills.md](sharing-skills.md) | Contributing skills upstream | skill sharing, contributing |
+| [testing-skills-with-subagents.md](testing-skills-with-subagents.md) | Validate skill effectiveness | skill testing, skill validation |
+
+**See also**: [BIBLE.md](../docs/BIBLE.md) for keyword-based skill activation
+
+---
+
+## 🎮 GoA-Specific Skills (Future)
 
 ### `test-stats`
 **Purpose**: Test the experience and stats system
@@ -151,9 +201,15 @@ Validate the experience and leveling system
 
 ---
 
-## Invoking Skills
+## How to Invoke Skills
 
-Skills are invoked via the Skill tool:
+### Automatic Activation
+
+Skills activate automatically when keywords are detected. The [using-superpowers](using-superpowers.md) skill enforces a **First Response Checklist** where Claude checks available skills before responding.
+
+### Manual Invocation
+
+Skills can be invoked directly via the Skill tool:
 
 ```
 User: "Test the stats system"
@@ -161,6 +217,10 @@ Claude: [Uses Skill tool with command: "test-stats"]
 Claude: [Skill loads and executes procedure]
 Claude: "Stats test complete! All scenarios passed. Strength leveling works correctly, notifications appear as expected."
 ```
+
+### BIBLE Integration
+
+The [BIBLE.md](../docs/BIBLE.md) indexes all skills with keywords. When you use certain keywords in your request, Claude automatically checks for relevant skills.
 
 ---
 
