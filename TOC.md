@@ -13,6 +13,7 @@
 - [responsive_layout.gd](responsive_layout.gd)  
 - [reusable_popup.gd](reusable_popup.gd)  
 - [settings_overlay.gd](settings_overlay.gd)  
+- [test_progress_bar_theme.gd](test_progress_bar_theme.gd)  
 - [toc_updater.gd](toc_updater.gd)  
 - [victory.gd](victory.gd)  
 

@@ -11,6 +11,7 @@ script = ExtResource("2_script")
 texture = ExtResource("3_bg")
 
 [node name="BreakTimerPanel" type="Panel" parent="HBoxContainer/LeftVBox" index="0"]
+theme_type_variation = &"ProgressPanel"
 custom_minimum_size = Vector2(0, 24)
 layout_mode = 2
 self_modulate = Color(1, 1, 1, 0.7)
@@ -35,6 +36,7 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="SuspicionPanel" type="Panel" parent="HBoxContainer/LeftVBox" index="1"]
+theme_type_variation = &"ProgressPanel"
 visible = false
 self_modulate = Color(1, 1, 1, 0.7)
 custom_minimum_size = Vector2(0, 24)

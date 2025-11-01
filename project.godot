@@ -18,10 +18,10 @@ boot_splash/minimum_display_time=3000
 
 [autoload]
 
-Nakama="*res://addons/com.heroiclabs.nakama/Nakama.gd"
 Global="*res://global.gd"
 Level1Vars="*res://level1/level_1_vars.gd"
 ResponsiveLayout="*res://responsive_layout.gd"
+Nakama="*res://addons/com.heroiclabs.nakama/Nakama.gd"
 DebugLogger="*res://debug_logger.gd"
 NakamaManager="*res://nakama_client.gd"
 GodotWebAuth="*res://godot_web_auth.gd"
@@ -29,8 +29,8 @@ LocalSaveManager="*res://local_save_manager.gd"
 
 [display]
 
-window/size/viewport_width=1535
-window/size/viewport_height=825
+window/size/viewport_width=485
+window/size/viewport_height=895
 window/size/window_width_override=540
 window/size/window_height_override=960
 window/stretch/mode="canvas_items"
