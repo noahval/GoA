@@ -12,9 +12,10 @@
 2. [NakamaClient API](#nakamaclient-api)
 3. [Authentication](#authentication)
 4. [Cloud Storage](#cloud-storage)
-5. [Common Patterns](#common-patterns)
-6. [Error Handling](#error-handling)
-7. [Testing](#testing)
+5. [Local Browser Storage](#local-browser-storage)
+6. [Common Patterns](#common-patterns)
+7. [Error Handling](#error-handling)
+8. [Testing](#testing)
 
 ---
 
@@ -225,6 +226,255 @@ if loaded:
 - **Read**: 2 (Owner read)
 - **Write**: 1 (Owner write)
 - User can only access their own data
+
+---
+
+## Local Browser Storage
+
+**Purpose**: Offline save/load system for players who skip cloud authentication
+**Autoload**: `LocalSaveManager`
+**Storage**: Browser IndexedDB via Godot's FileAccess API
+**File**: `user://local_save.json`
+
+### When to Use Local vs Cloud Saves
+
+| Feature | Cloud Saves | Local Browser Saves |
+|---------|-------------|---------------------|
+| **Cross-device sync** | ✅ Yes | ❌ No |
+| **Requires authentication** | ✅ Yes | ❌ No |
+| **Survives browser clear** | ✅ Yes | ⚠️ No (clears with IndexedDB) |
+| **Works offline** | ❌ No | ✅ Yes |
+| **Backend dependency** | ✅ Needs Nakama | ❌ None |
+| **Use case** | Online players | Offline/casual players |
+
+### LocalSaveManager API
+
+```gdscript
+# Save current game state
+LocalSaveManager.save_game() -> bool
+
+# Load saved game state
+LocalSaveManager.load_game() -> bool
+
+# Check if save exists
+LocalSaveManager.has_save() -> bool
+
+# Delete local save
+LocalSaveManager.delete_save() -> bool
+```
+
+### What Gets Saved
+
+**Global Stats:**
+- All stats (strength, constitution, dexterity, wisdom, intelligence, charisma)
+- All experience values (strength_exp, constitution_exp, etc.)
+- Dev mode settings
+
+**Level1Vars:**
+- Resources (coal, coins, components, mechanisms, pipes)
+- Upgrades (shovel_lvl, plow_lvl, auto_shovel upgrades, overseer_lvl)
+- Story flags (barkeep_bribed, shopkeep_bribed, heart_taken, whisper_triggered, door_discovered)
+- Progress (stolen_coal, stolen_writs, correct_answers, suspicion)
+- Timers/Buffs (break_time, stamina, cooldowns, buff durations)
+- Puzzle state (pipe_puzzle_grid)
+
+### Usage Patterns
+
+#### Pattern 1: Save on Skip Login
+
+The skip button automatically handles saves:
+
+```gdscript
+# In login_popup.gd
+func _on_skip_pressed():
+    if LocalSaveManager.has_save():
+        # Load existing save
+        LocalSaveManager.load_game()
+    else:
+        # Create initial save
+        LocalSaveManager.save_game()
+
+    skip_login.emit()
+```
+
+#### Pattern 2: Manual Save Button
+
+```gdscript
+# In settings or pause menu
+func _on_save_button_pressed():
+    var success = LocalSaveManager.save_game()
+
+    if success:
+        show_notification("Game saved!")
+    else:
+        show_notification("Save failed!", true)
+```
+
+#### Pattern 3: Auto-Save on Scene Change
+
+```gdscript
+# In global.gd or scene transition handler
+func change_scene_with_save(scene_path: String):
+    # Save before transitioning
+    LocalSaveManager.save_game()
+
+    # Then change scene
+    change_scene_with_check(get_tree(), scene_path)
+```
+
+#### Pattern 4: Periodic Auto-Save
+
+```gdscript
+# In an autoload or main controller
+func _ready():
+    var autosave_timer = Timer.new()
+    autosave_timer.wait_time = 60.0  # Save every minute
+    autosave_timer.autostart = true
+    autosave_timer.timeout.connect(_on_autosave)
+    add_child(autosave_timer)
+
+func _on_autosave():
+    # Only save locally if not using cloud
+    if not NakamaManager.is_authenticated:
+        LocalSaveManager.save_game()
+        DebugLogger.log_info("AutoSave", "Local save created")
+```
+
+### Save File Structure
+
+```json
+{
+    "version": "1.0",
+    "timestamp": 1730423042,
+    "global": {
+        "strength": 5.0,
+        "constitution": 3.0,
+        "dexterity": 2.0,
+        "wisdom": 1.0,
+        "intelligence": 4.0,
+        "charisma": 1.0,
+        "strength_exp": 250.5,
+        "constitution_exp": 100.0,
+        ...
+    },
+    "level1_vars": {
+        "coal": 1500.0,
+        "coins": 750.0,
+        "components": 5,
+        "mechanisms": 2,
+        "stolen_coal": 1,
+        "suspicion": 25,
+        ...
+    }
+}
+```
+
+### Browser Storage Location
+
+- **Chrome/Edge**: IndexedDB → `godot_fs` → `user://local_save.json`
+- **Firefox**: IndexedDB → Application Storage → `user://local_save.json`
+- **Safari**: WebKit IndexedDB → `user://local_save.json`
+
+To view in browser dev tools:
+1. Open DevTools (F12)
+2. Go to **Application** tab (Chrome/Edge) or **Storage** tab (Firefox)
+3. Expand **IndexedDB** → **godot_fs** → **files**
+4. Look for `/userfs/local_save.json`
+
+### Hybrid Pattern: Cloud + Local Fallback
+
+```gdscript
+# Use cloud if authenticated, otherwise local
+func save_game_progress():
+    if NakamaManager.is_authenticated:
+        # Save to cloud
+        await NakamaManager.save_player_stats()
+        DebugLogger.log_info("SaveGame", "Saved to cloud")
+    else:
+        # Fall back to local save
+        LocalSaveManager.save_game()
+        DebugLogger.log_info("SaveGame", "Saved locally")
+
+func load_game_progress():
+    if NakamaManager.is_authenticated:
+        # Load from cloud
+        var loaded = await NakamaManager.load_player_stats()
+        if loaded:
+            DebugLogger.log_success("LoadGame", "Loaded from cloud")
+    else:
+        # Load from local save
+        if LocalSaveManager.has_save():
+            LocalSaveManager.load_game()
+            DebugLogger.log_success("LoadGame", "Loaded from local storage")
+```
+
+### Migrating Local Save to Cloud
+
+```gdscript
+# When user authenticates after playing offline
+func migrate_local_to_cloud():
+    if LocalSaveManager.has_save():
+        # Current stats are already loaded from local save
+        # Just save them to cloud
+        var success = await NakamaManager.save_player_stats()
+
+        if success:
+            show_notification("Progress synced to cloud!")
+            # Optionally delete local save
+            LocalSaveManager.delete_save()
+        else:
+            show_notification("Failed to sync. Local save kept.", true)
+```
+
+### Error Handling
+
+```gdscript
+func safe_local_save():
+    var success = LocalSaveManager.save_game()
+
+    if not success:
+        # File system error (rare in browsers)
+        DebugLogger.log_error("LocalSave", "Save failed - check browser storage quota")
+        show_notification("Save failed. Check browser storage settings.", true)
+        return false
+
+    return true
+
+func safe_local_load():
+    if not LocalSaveManager.has_save():
+        DebugLogger.log_info("LocalSave", "No save file found, using defaults")
+        return false
+
+    var success = LocalSaveManager.load_game()
+
+    if not success:
+        DebugLogger.log_error("LocalSave", "Load failed - corrupt save file?")
+        show_notification("Could not load save. Starting fresh.", true)
+        # Optionally delete corrupt save
+        LocalSaveManager.delete_save()
+        return false
+
+    return true
+```
+
+### Debugging Local Saves
+
+```gdscript
+# Check if save exists
+print("Has save: ", LocalSaveManager.has_save())
+
+# Force save current state
+LocalSaveManager.save_game()
+
+# Dump save file contents (in browser console)
+# 1. Open DevTools → Application → IndexedDB → godot_fs
+# 2. Find /userfs/local_save.json
+# 3. Click to view JSON contents
+
+# Delete and reset
+LocalSaveManager.delete_save()
+print("Save deleted, restarting with defaults")
+```
 
 ---
 
@@ -501,6 +751,6 @@ curl https://nakama.goasso.xyz/v2/status
 
 ---
 
-**Version**: 1.0
+**Version**: 1.1 (Added Local Browser Storage)
 **Last Updated**: 2025-10-31
 **Maintainer**: Claude + Noah

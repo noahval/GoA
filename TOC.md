@@ -6,6 +6,7 @@
 - [debug_logger.gd](debug_logger.gd)  
 - [global.gd](global.gd)  
 - [godot_web_auth.gd](godot_web_auth.gd)  
+- [local_save_manager.gd](local_save_manager.gd)  
 - [login_popup.gd](login_popup.gd)  
 - [nakama_client.gd](nakama_client.gd)  
 - [popup_container.gd](popup_container.gd)  

@@ -206,6 +206,20 @@ func _on_login_pressed():
 func _on_skip_pressed():
 	DebugLogger.log_info("LoginPopup", "Skip button pressed")
 	_show_status("Continuing offline...")
+
+	# Try to load existing local save
+	if LocalSaveManager.has_save():
+		_show_status("Loading local save...")
+		var loaded = LocalSaveManager.load_game()
+		if loaded:
+			DebugLogger.log_success("LoginPopup", "Local save loaded successfully")
+		else:
+			DebugLogger.log_error("LoginPopup", "Failed to load local save")
+	else:
+		# Save current state for offline play
+		LocalSaveManager.save_game()
+		DebugLogger.log_info("LoginPopup", "Initial save created for offline play")
+
 	await get_tree().create_timer(0.5).timeout
 	skip_login.emit()
 	hide_popup()
