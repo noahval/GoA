@@ -171,6 +171,7 @@ var active_notifications: Array = []  # Array of dictionaries with {panel: Panel
 var whisper_timer: Timer = null
 var suspicion_decrease_timer: Timer = null
 var get_caught_timer: Timer = null
+var autosave_timer: Timer = null
 
 func _ready():
 	# Notification system is now dynamic - panels are created on demand
@@ -199,6 +200,13 @@ func _ready():
 	get_caught_timer.autostart = true
 	get_caught_timer.timeout.connect(_on_get_caught_timeout)
 	add_child(get_caught_timer)
+
+	# Create timer for auto-save (every 30 seconds)
+	autosave_timer = Timer.new()
+	autosave_timer.wait_time = 30.0
+	autosave_timer.autostart = true
+	autosave_timer.timeout.connect(_on_autosave_timeout)
+	add_child(autosave_timer)
 
 func show_stat_notification(message: String):
 	# Find the NotificationBar in the current scene
@@ -379,9 +387,20 @@ func check_get_caught() -> bool:
 func _on_get_caught_timeout():
 	check_get_caught()
 
+func _on_autosave_timeout():
+	# Only auto-save locally if player is playing offline (not authenticated)
+	if not NakamaManager.is_authenticated:
+		LocalSaveManager.save_game()
+		DebugLogger.log_info("AutoSave", "Local game state saved")
+
 # Wrapper function for changing scenes with get caught check
 func change_scene_with_check(scene_tree: SceneTree, scene_path: String):
 	var current_scene = scene_tree.current_scene.scene_file_path if scene_tree.current_scene else "unknown"
+
+	# Save progress before scene change (only if offline)
+	if not NakamaManager.is_authenticated:
+		LocalSaveManager.save_game()
+		DebugLogger.log_info("SceneChange", "Game saved before scene transition")
 
 	# Check for victory conditions first
 	if check_victory_conditions():
