@@ -159,6 +159,23 @@ text = "Coins: 0"
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="OverseerMoodPanel" type="Panel" parent="HBoxContainer/LeftVBox"]
+self_modulate = Color(1, 1, 1, 0.7)
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+
+[node name="MoodLabel" type="Label" parent="HBoxContainer/LeftVBox/OverseerMoodPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("3_w5m21")
+text = "Overseer: indifferent →"
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="CenterArea" type="Control" parent="HBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
@@ -174,6 +191,16 @@ theme_override_constants/separation = 10
 layout_mode = 2
 theme = ExtResource("3_w5m21")
 text = "Shovel Coal"
+
+[node name="ConvertCoalButton" type="Button" parent="HBoxContainer/RightVBox"]
+layout_mode = 2
+theme = ExtResource("3_w5m21")
+text = "Convert Coal (30)"
+
+[node name="ToggleModeButton" type="Button" parent="HBoxContainer/RightVBox"]
+layout_mode = 2
+theme = ExtResource("3_w5m21")
+text = "Mode: Manual"
 
 [node name="ShopButton" type="Button" parent="HBoxContainer/RightVBox"]
 visible = false
@@ -232,5 +259,7 @@ grow_vertical = 2
 mouse_filter = 2
 
 [connection signal="pressed" from="HBoxContainer/RightVBox/ShovelCoalButton" to="." method="_on_shovel_coal_button_pressed"]
+[connection signal="pressed" from="HBoxContainer/RightVBox/ConvertCoalButton" to="." method="_on_convert_coal_button_pressed"]
+[connection signal="pressed" from="HBoxContainer/RightVBox/ToggleModeButton" to="." method="_on_toggle_mode_button_pressed"]
 [connection signal="pressed" from="HBoxContainer/RightVBox/ShopButton" to="." method="_on_shop_button_pressed"]
 [connection signal="pressed" from="HBoxContainer/RightVBox/StealCoalButton" to="." method="_on_steal_coal_button_pressed"]

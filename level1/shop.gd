@@ -192,11 +192,23 @@ func _on_frequency_upgrade_pressed():
 func update_shovels_popup_labels():
 	if shovel_button:
 		var cost = get_shovel_cost()
-		shovel_button.text = "Better Shovel: " + str(cost)
+		var level_text = ""
+		if Level1Vars.shovel_lvl == 0:
+			level_text = "A sturdy shovel"
+		elif Level1Vars.shovel_lvl < 3:
+			level_text = "A reinforced shovel"
+		else:
+			level_text = "A masterwork shovel"
+		shovel_button.text = level_text + ": " + str(cost)
 		shovel_button.disabled = Level1Vars.coins < cost
 	if plow_button:
 		var cost = get_plow_cost()
-		plow_button.text = "Coal Plow: " + str(cost)
+		var level_text = ""
+		if Level1Vars.plow_lvl == 0:
+			level_text = "Heavy coal plow"
+		else:
+			level_text = "Upgraded plow"
+		plow_button.text = level_text + ": " + str(cost)
 		# Show/hide plow button based on shovel level
 		if Level1Vars.shovel_lvl >= 5:
 			plow_button.visible = true
@@ -207,15 +219,18 @@ func update_shovels_popup_labels():
 func update_auto_shovels_popup_labels():
 	if furnace_upgrade:
 		var cost = get_auto_shovel_cost()
-		furnace_upgrade.text = "Buy Auto Shovel (" + str(Level1Vars.auto_shovel_lvl) + "): " + str(cost)
+		var level_text = "Mechanical shoveler"
+		if Level1Vars.auto_shovel_lvl > 0:
+			level_text = "Another shoveler (" + str(Level1Vars.auto_shovel_lvl) + ")"
+		furnace_upgrade.text = level_text + ": " + str(cost)
 		furnace_upgrade.disabled = Level1Vars.coins < cost
 	if coal_per_tick_button:
 		var cost = get_coal_per_tick_upgrade_cost()
-		coal_per_tick_button.text = "Enhance Scoop: " + str(cost)
+		coal_per_tick_button.text = "Better gears: " + str(cost)
 		coal_per_tick_button.disabled = Level1Vars.coins < cost
 	if frequency_button:
 		var cost = get_frequency_upgrade_cost()
-		frequency_button.text = "Tune Clockwork: " + str(cost)
+		frequency_button.text = "Fine-tuned clockwork: " + str(cost)
 		frequency_button.disabled = Level1Vars.coins < cost
 
 func update_suspicion_bar():

@@ -26,6 +26,7 @@ DebugLogger="*res://debug_logger.gd"
 NakamaManager="*res://nakama_client.gd"
 GodotWebAuth="*res://godot_web_auth.gd"
 LocalSaveManager="*res://local_save_manager.gd"
+OverseerMood="*res://overseer_mood.gd"
 
 [display]
 

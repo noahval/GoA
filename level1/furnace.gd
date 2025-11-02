@@ -10,11 +10,15 @@ extends Control
 var click_count = 0
 var steal_click_count = 0
 var auto_shovel_timer = 0.0  # Timer for auto shovel interval
+var auto_conversion_timer = 0.0  # Timer for auto conversion interval
 @onready var left_vbox = $HBoxContainer/LeftVBox
 @onready var right_vbox = $HBoxContainer/RightVBox
 @onready var coal_label = $HBoxContainer/LeftVBox/CoalPanel/CoalLabel
 @onready var coins_label = $HBoxContainer/LeftVBox/CoinsPanel/CoinsLabel
+@onready var mood_label = $HBoxContainer/LeftVBox/OverseerMoodPanel/MoodLabel
 @onready var shop_button = $HBoxContainer/RightVBox/ShopButton
+@onready var convert_coal_button = $HBoxContainer/RightVBox/ConvertCoalButton
+@onready var toggle_mode_button = $HBoxContainer/RightVBox/ToggleModeButton
 @onready var stamina_bar = $HBoxContainer/LeftVBox/StaminaPanel/StaminaBar
 @onready var suspicion_panel = $HBoxContainer/LeftVBox/SuspicionPanel
 @onready var suspicion_bar = $HBoxContainer/LeftVBox/SuspicionPanel/SuspicionBar
@@ -60,16 +64,19 @@ func _process(delta):
 			Global.show_stat_notification("You feel lazy again")
 			Level1Vars.shown_lazy_notification = true
 
-	# Check if coal reaches coin_cost threshold
-	if Level1Vars.coal >= Level1Vars.coin_cost:
-		Level1Vars.coal -= Level1Vars.coin_cost
-		Level1Vars.coins += 1.0
-		Level1Vars.coin_cost *= 1.04
+	# Phase 1: Auto-conversion mode
+	if Level1Vars.auto_conversion_enabled and Level1Vars.coal >= Level1Vars.coal_conversion_threshold:
+		auto_conversion_timer += delta
+		if auto_conversion_timer >= 5.0:  # Auto-convert every 5 seconds
+			auto_conversion_timer = 0.0
+			perform_auto_conversion()
 
 	coal_label.text = "Coal Shoveled: " + str(int(Level1Vars.coal))
 	coins_label.text = "Coins: " + str(int(Level1Vars.coins))
 	update_stamina_bar()
 	update_suspicion_bar()
+	update_mood_display()
+	update_conversion_buttons()
 	update_dev_buttons()
 
 func _on_shovel_coal_button_pressed():
@@ -100,12 +107,6 @@ func _on_shovel_coal_button_pressed():
 	var bonus_coal_chance = Global.strength * 0.03
 	if randf() < bonus_coal_chance:
 		Level1Vars.coal += coal_gained
-
-	# Check if coal reaches coin_cost threshold
-	if Level1Vars.coal >= Level1Vars.coin_cost:
-		Level1Vars.coal -= Level1Vars.coin_cost
-		Level1Vars.coins += 1.0
-		Level1Vars.coin_cost *= 1.04
 
 	coal_label.text = "Coal Shoveled: " + str(int(Level1Vars.coal))
 	click_count += 1
@@ -145,3 +146,77 @@ func update_dev_buttons():
 			take_break_button.visible = true
 		elif click_count < 50:
 			take_break_button.visible = false
+
+# Phase 1: Manual conversion - player chooses when to convert coal
+func perform_manual_conversion():
+	if Level1Vars.coal < Level1Vars.coal_conversion_threshold:
+		Global.show_stat_notification("Not enough coal to convert")
+		return
+
+	var coal_to_convert = Level1Vars.coal_conversion_threshold
+	var coins_earned = OverseerMood.manual_convert_coal(coal_to_convert)
+
+	Level1Vars.coal -= coal_to_convert
+	Level1Vars.coins += coins_earned
+
+	# Show conversion feedback
+	var message = OverseerMood.get_conversion_message()
+	Global.show_stat_notification(message)
+
+	# Gain charisma experience for dealing with overseer
+	Global.add_stat_exp("charisma", 2.0)
+
+	DebugLogger.log_resource_change("coal", Level1Vars.coal + coal_to_convert, Level1Vars.coal, "Manual conversion")
+	DebugLogger.log_resource_change("coins", Level1Vars.coins - coins_earned, Level1Vars.coins, "Manual conversion")
+
+# Phase 1: Auto conversion - happens automatically with penalty
+func perform_auto_conversion():
+	var coal_to_convert = Level1Vars.coal_conversion_threshold
+	var coins_earned = OverseerMood.auto_convert_coal(coal_to_convert)
+
+	Level1Vars.coal -= coal_to_convert
+	Level1Vars.coins += coins_earned
+
+	# No notification in auto mode (player discovers it's less efficient)
+	DebugLogger.log_resource_change("coal", Level1Vars.coal + coal_to_convert, Level1Vars.coal, "Auto conversion")
+	DebugLogger.log_resource_change("coins", Level1Vars.coins - coins_earned, Level1Vars.coins, "Auto conversion")
+
+# Toggle between manual and auto conversion
+func toggle_conversion_mode():
+	Level1Vars.auto_conversion_enabled = not Level1Vars.auto_conversion_enabled
+	auto_conversion_timer = 0.0
+
+	if Level1Vars.auto_conversion_enabled:
+		Global.show_stat_notification("Auto-converting enabled")
+	else:
+		Global.show_stat_notification("Manual conversion mode")
+
+# Update mood display with qualitative adjectives (no numbers!)
+func update_mood_display():
+	if mood_label:
+		var adjective = OverseerMood.get_mood_adjective()
+		var trend = OverseerMood.get_trend_arrow()
+		mood_label.text = "Overseer: " + adjective + " " + trend
+
+# Update conversion button states
+func update_conversion_buttons():
+	if convert_coal_button:
+		if Level1Vars.auto_conversion_enabled:
+			convert_coal_button.text = "Auto-converting..."
+			convert_coal_button.disabled = true
+		else:
+			convert_coal_button.text = "Convert Coal (" + str(int(Level1Vars.coal_conversion_threshold)) + ")"
+			convert_coal_button.disabled = Level1Vars.coal < Level1Vars.coal_conversion_threshold
+
+	if toggle_mode_button:
+		if Level1Vars.auto_conversion_enabled:
+			toggle_mode_button.text = "Mode: Auto"
+		else:
+			toggle_mode_button.text = "Mode: Manual"
+
+# Button handlers
+func _on_convert_coal_button_pressed():
+	perform_manual_conversion()
+
+func _on_toggle_mode_button_pressed():
+	toggle_conversion_mode()

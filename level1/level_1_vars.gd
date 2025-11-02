@@ -40,3 +40,7 @@ var resilient_remaining = 0.0:
 	set(value):
 		resilient_remaining = clamp(value, 0, 300)
 var shown_lazy_notification = false
+
+# Phase 1: Overseer Mood & Conversion System
+var auto_conversion_enabled = false  # Manual by default
+var coal_conversion_threshold = 30.0  # Amount of coal needed for manual conversion
