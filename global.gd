@@ -33,38 +33,14 @@ func get_xp_for_level(level: int) -> float:
 
 # Add experience to a stat and handle level ups
 func add_stat_exp(stat_name: String, amount: float):
-	var old_value = 0.0
-	match stat_name:
-		"strength":
-			old_value = strength
-			strength_exp += amount
-			_check_level_up("strength", strength, strength_exp)
-			DebugLogger.log_stat_change(stat_name, old_value, strength, amount)
-		"constitution":
-			old_value = constitution
-			constitution_exp += amount
-			_check_level_up("constitution", constitution, constitution_exp)
-			DebugLogger.log_stat_change(stat_name, old_value, constitution, amount)
-		"dexterity":
-			old_value = dexterity
-			dexterity_exp += amount
-			_check_level_up("dexterity", dexterity, dexterity_exp)
-			DebugLogger.log_stat_change(stat_name, old_value, dexterity, amount)
-		"wisdom":
-			old_value = wisdom
-			wisdom_exp += amount
-			_check_level_up("wisdom", wisdom, wisdom_exp)
-			DebugLogger.log_stat_change(stat_name, old_value, wisdom, amount)
-		"intelligence":
-			old_value = intelligence
-			intelligence_exp += amount
-			_check_level_up("intelligence", intelligence, intelligence_exp)
-			DebugLogger.log_stat_change(stat_name, old_value, intelligence, amount)
-		"charisma":
-			old_value = charisma
-			charisma_exp += amount
-			_check_level_up("charisma", charisma, charisma_exp)
-			DebugLogger.log_stat_change(stat_name, old_value, charisma, amount)
+	var stat_data = _get_stat_data(stat_name)
+	if not stat_data:
+		return
+
+	var old_value = get(stat_data.stat_var)
+	set(stat_data.exp_var, get(stat_data.exp_var) + amount)
+	_check_level_up(stat_name, get(stat_data.stat_var), get(stat_data.exp_var))
+	DebugLogger.log_stat_change(stat_name, old_value, get(stat_data.stat_var), amount)
 
 # Check if a stat should level up
 func _check_level_up(stat_name: String, current_stat_value: float, current_exp: float):
@@ -74,58 +50,24 @@ func _check_level_up(stat_name: String, current_stat_value: float, current_exp: 
 	while current_exp >= xp_needed:
 		current_level += 1
 		xp_needed = get_xp_for_level(current_level + 1)
-
-		# Update the actual stat
-		match stat_name:
-			"strength":
-				strength = current_level
-			"constitution":
-				constitution = current_level
-			"dexterity":
-				dexterity = current_level
-			"wisdom":
-				wisdom = current_level
-			"intelligence":
-				intelligence = current_level
-			"charisma":
-				charisma = current_level
+		var stat_data = _get_stat_data(stat_name)
+		if stat_data:
+			set(stat_data.stat_var, current_level)
 
 # Get progress toward next level (0.0 to 1.0)
 func get_stat_level_progress(stat_name: String) -> float:
-	var current_level: int
-	var current_exp: float
+	var stat_data = _get_stat_data(stat_name)
+	if not stat_data:
+		return 0.0
 
-	match stat_name:
-		"strength":
-			current_level = int(strength)
-			current_exp = strength_exp
-		"constitution":
-			current_level = int(constitution)
-			current_exp = constitution_exp
-		"dexterity":
-			current_level = int(dexterity)
-			current_exp = dexterity_exp
-		"wisdom":
-			current_level = int(wisdom)
-			current_exp = wisdom_exp
-		"intelligence":
-			current_level = int(intelligence)
-			current_exp = intelligence_exp
-		"charisma":
-			current_level = int(charisma)
-			current_exp = charisma_exp
-		_:
-			return 0.0
-
+	var current_level = int(get(stat_data.stat_var))
+	var current_exp = get(stat_data.exp_var)
 	var xp_for_current = get_xp_for_level(current_level)
 	var xp_for_next = get_xp_for_level(current_level + 1)
 	var xp_in_level = current_exp - xp_for_current
 	var xp_needed_in_level = xp_for_next - xp_for_current
 
-	if xp_needed_in_level <= 0:
-		return 1.0
-
-	return clamp(xp_in_level / xp_needed_in_level, 0.0, 1.0)
+	return 1.0 if xp_needed_in_level <= 0 else clamp(xp_in_level / xp_needed_in_level, 0.0, 1.0)
 
 # ===== END EXPERIENCE SYSTEM =====
 
@@ -180,33 +122,11 @@ func _ready():
 	var toc_updater = load("res://toc_updater.gd").new()
 	add_child(toc_updater)
 
-	# Create timer for whisper notifications
-	whisper_timer = Timer.new()
-	whisper_timer.wait_time = 120.0  # 2 minutes
-	whisper_timer.autostart = true
-	whisper_timer.timeout.connect(_on_whisper_timer_timeout)
-	add_child(whisper_timer)
-
-	# Create timer for suspicion decrease (every 3 seconds)
-	suspicion_decrease_timer = Timer.new()
-	suspicion_decrease_timer.wait_time = 3.0
-	suspicion_decrease_timer.autostart = true
-	suspicion_decrease_timer.timeout.connect(_on_suspicion_decrease_timeout)
-	add_child(suspicion_decrease_timer)
-
-	# Create timer for get_caught check (every 45 seconds)
-	get_caught_timer = Timer.new()
-	get_caught_timer.wait_time = 45.0
-	get_caught_timer.autostart = true
-	get_caught_timer.timeout.connect(_on_get_caught_timeout)
-	add_child(get_caught_timer)
-
-	# Create timer for auto-save (every 30 seconds)
-	autosave_timer = Timer.new()
-	autosave_timer.wait_time = 30.0
-	autosave_timer.autostart = true
-	autosave_timer.timeout.connect(_on_autosave_timeout)
-	add_child(autosave_timer)
+	# Create game timers
+	whisper_timer = _create_timer(120.0, _on_whisper_timer_timeout)
+	suspicion_decrease_timer = _create_timer(3.0, _on_suspicion_decrease_timeout)
+	get_caught_timer = _create_timer(45.0, _on_get_caught_timeout)
+	autosave_timer = _create_timer(30.0, _on_autosave_timeout)
 
 func show_stat_notification(message: String):
 	# Find the NotificationBar in the current scene
@@ -441,3 +361,24 @@ func check_victory_conditions() -> bool:
 func check_and_trigger_victory(scene_tree: SceneTree):
 	if check_victory_conditions():
 		scene_tree.change_scene_to_file("res://victory.tscn")
+
+## Helper: Get stat data for dynamic stat access
+func _get_stat_data(stat_name: String) -> Dictionary:
+	var stat_map = {
+		"strength": {"stat_var": "strength", "exp_var": "strength_exp"},
+		"constitution": {"stat_var": "constitution", "exp_var": "constitution_exp"},
+		"dexterity": {"stat_var": "dexterity", "exp_var": "dexterity_exp"},
+		"wisdom": {"stat_var": "wisdom", "exp_var": "wisdom_exp"},
+		"intelligence": {"stat_var": "intelligence", "exp_var": "intelligence_exp"},
+		"charisma": {"stat_var": "charisma", "exp_var": "charisma_exp"}
+	}
+	return stat_map.get(stat_name, {})
+
+## Helper: Create a timer with callback
+func _create_timer(wait_time: float, callback: Callable) -> Timer:
+	var timer = Timer.new()
+	timer.wait_time = wait_time
+	timer.autostart = true
+	timer.timeout.connect(callback)
+	add_child(timer)
+	return timer

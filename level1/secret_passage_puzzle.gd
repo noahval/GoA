@@ -45,126 +45,20 @@ func _ready():
 
 
 func _delayed_setup():
-	# Get reference to puzzle container (it's now in CenterArea or MiddleArea depending on orientation)
 	var viewport_size = get_viewport().get_visible_rect().size
 	var is_portrait = viewport_size.y > viewport_size.x
-
-	# Calculate puzzle base size (grid + indicators)
 	var puzzle_base_size = GRID_SIZE * CELL_SIZE + 80  # 480px total
 
-	# Find puzzle container in the appropriate location and scale it
-	if is_portrait:
-		# In portrait, reparent to MiddleArea if not already there
-		puzzle_container = get_node_or_null("VBoxContainer/MiddleArea/PuzzleContainer")
-		if not puzzle_container:
-			# It's still in CenterArea, need to move it
-			puzzle_container = get_node_or_null("HBoxContainer/CenterArea/PuzzleContainer")
-			if puzzle_container:
-				var middle_area = get_node_or_null("VBoxContainer/MiddleArea")
-				if middle_area:
-					# Reset all transforms BEFORE reparenting to avoid accumulated offsets
-					puzzle_container.rotation = 0
-					puzzle_container.scale = Vector2.ONE
-					puzzle_container.position = Vector2.ZERO
-					puzzle_container.pivot_offset = Vector2.ZERO
+	# Find and reparent puzzle container to the correct area
+	_reparent_puzzle_container(is_portrait)
 
-					puzzle_container.reparent(middle_area)
+	# Calculate scale based on orientation
+	var scale_factor = _calculate_puzzle_scale(is_portrait, viewport_size, puzzle_base_size)
 
-		# Calculate available space in portrait mode
-		# Use 85% of smaller dimension (width or available height) to leave margin
-		var available_width = viewport_size.x * 0.85
-		var available_height = viewport_size.y * 0.5  # Rough estimate of MiddleArea height
-		var available_size = min(available_width, available_height)
+	# Reset and configure puzzle container
+	_configure_puzzle_container(puzzle_base_size, scale_factor)
 
-		# Calculate scale factor
-		var scale_factor = available_size / puzzle_base_size
-		scale_factor = clamp(scale_factor, 0.8, 2.0)  # Min 0.8x, max 2x
-
-		# CRITICAL: Reset ALL transforms first to clear any inherited state
-		puzzle_container.position = Vector2.ZERO
-		puzzle_container.rotation = 0
-		puzzle_container.scale = Vector2.ONE
-		puzzle_container.pivot_offset = Vector2.ZERO
-		puzzle_container.size = Vector2.ZERO
-		puzzle_container.custom_minimum_size = Vector2.ZERO
-
-		# Set anchors to center
-		puzzle_container.anchor_left = 0.5
-		puzzle_container.anchor_top = 0.5
-		puzzle_container.anchor_right = 0.5
-		puzzle_container.anchor_bottom = 0.5
-
-		# Set offsets to define size around center point
-		var half_base = puzzle_base_size / 2.0
-		puzzle_container.offset_left = -half_base
-		puzzle_container.offset_right = half_base
-		puzzle_container.offset_top = -half_base
-		puzzle_container.offset_bottom = half_base
-
-		# Set pivot to geometric center
-		puzzle_container.pivot_offset = Vector2(half_base, half_base)
-
-		# Apply scale
-		puzzle_container.scale = Vector2(scale_factor, scale_factor)
-
-		puzzle_container.grow_horizontal = Control.GROW_DIRECTION_BOTH
-		puzzle_container.grow_vertical = Control.GROW_DIRECTION_BOTH
-	else:
-		# In landscape, make sure it's in CenterArea
-		puzzle_container = get_node_or_null("HBoxContainer/CenterArea/PuzzleContainer")
-		if not puzzle_container:
-			# It's in MiddleArea, need to move it back
-			puzzle_container = get_node_or_null("VBoxContainer/MiddleArea/PuzzleContainer")
-			if puzzle_container:
-				var center_area = get_node_or_null("HBoxContainer/CenterArea")
-				if center_area:
-					puzzle_container.reparent(center_area)
-
-		# CRITICAL: Reset ALL transforms first to clear any inherited state
-		puzzle_container.position = Vector2.ZERO
-		puzzle_container.rotation = 0
-		puzzle_container.scale = Vector2.ONE
-		puzzle_container.pivot_offset = Vector2.ZERO
-		puzzle_container.size = Vector2.ZERO
-		puzzle_container.custom_minimum_size = Vector2.ZERO
-
-		# Set anchors to center
-		puzzle_container.anchor_left = 0.5
-		puzzle_container.anchor_top = 0.5
-		puzzle_container.anchor_right = 0.5
-		puzzle_container.anchor_bottom = 0.5
-
-		# Set offsets to define size around center point
-		var half_base = puzzle_base_size / 2.0
-		puzzle_container.offset_left = -half_base
-		puzzle_container.offset_right = half_base
-		puzzle_container.offset_top = -half_base
-		puzzle_container.offset_bottom = half_base
-
-		# Set pivot to geometric center
-		puzzle_container.pivot_offset = Vector2(half_base, half_base)
-
-		# In landscape, use CenterArea size to determine scale
-		var center_area = get_node_or_null("HBoxContainer/CenterArea")
-		var scale_factor = 1.0
-		if center_area:
-			# Wait one frame for layout to settle
-			await get_tree().process_frame
-			var center_rect = center_area.get_rect()
-			var available_size = min(center_rect.size.x, center_rect.size.y) * 0.85
-			scale_factor = available_size / puzzle_base_size
-			scale_factor = clamp(scale_factor, 0.8, 1.5)  # Smaller max for landscape
-		else:
-			# Fallback: use default scale
-			scale_factor = 1.0
-
-		# Apply scale
-		puzzle_container.scale = Vector2(scale_factor, scale_factor)
-
-		puzzle_container.grow_horizontal = Control.GROW_DIRECTION_BOTH
-		puzzle_container.grow_vertical = Control.GROW_DIRECTION_BOTH
-
-	# Setup puzzle (creates the visual elements)
+	# Setup puzzle
 	setup_puzzle()
 	update_place_pipe_button()
 	add_developer_skip_button()
@@ -198,35 +92,11 @@ func _process(delta):
 		dev_button.visible = Global.dev_speed_mode
 
 func setup_puzzle():
-	# Initialize grid - load from saved state or start with no pipes
-	if Level1Vars.pipe_puzzle_grid.size() > 0:
-		# Load saved grid
-		grid = []
-		for y in range(GRID_SIZE):
-			var row = []
-			for x in range(GRID_SIZE):
-				# Deep copy the saved data
-				var saved_cell = Level1Vars.pipe_puzzle_grid[y][x]
-				row.append({"type": saved_cell["type"], "rotation": saved_cell["rotation"]})
-			grid.append(row)
-	else:
-		# Initialize empty grid
-		for y in range(GRID_SIZE):
-			var row = []
-			for x in range(GRID_SIZE):
-				row.append({"type": 0, "rotation": 0})
-			grid.append(row)
-
-	# Create visual grid
+	# Initialize grid - load from saved state or start empty
+	grid = _init_grid()
 	create_visual_grid()
-
-	# Add orange indicators outside the grid
 	create_corner_indicators()
-
-	# Update pipes label
 	update_pipes_label()
-
-	# Update energized state for initial grid
 	update_energized_cells()
 
 func update_pipes_label():
@@ -237,13 +107,7 @@ func update_pipes_label():
 		print("WARNING: PipesLabel not found")
 
 func save_grid_state():
-	# Deep copy the grid to Level1Vars
-	Level1Vars.pipe_puzzle_grid = []
-	for y in range(GRID_SIZE):
-		var row = []
-		for x in range(GRID_SIZE):
-			row.append({"type": grid[y][x]["type"], "rotation": grid[y][x]["rotation"]})
-		Level1Vars.pipe_puzzle_grid.append(row)
+	Level1Vars.pipe_puzzle_grid = _deep_copy_grid(grid)
 
 func create_visual_grid():
 	# CRITICAL: Offset all visual content by 40px to center it within the container
@@ -585,35 +449,8 @@ func mark_energized(x: int, y: int, came_from_dir: int):
 		mark_energized(nx, ny, dir)
 
 func show_train_heart_button():
-	# Create a button to enter the train heart
-	var enter_button = Button.new()
-	enter_button.text = "Enter Train Heart"
-	enter_button.pressed.connect(_on_enter_train_heart_pressed)
-
-	# Get the theme
-	var theme_resource = load("res://default_theme.tres")
-	enter_button.theme = theme_resource
-
-	# Apply ResponsiveLayout scaling based on current orientation
-	var viewport_size = get_viewport().get_visible_rect().size
-	var is_portrait = viewport_size.y > viewport_size.x
-
-	if is_portrait:
-		# Match ResponsiveLayout portrait scaling
-		var scaled_height = ResponsiveLayout.PORTRAIT_ELEMENT_HEIGHT * ResponsiveLayout.PORTRAIT_FONT_SCALE
-		enter_button.custom_minimum_size = Vector2(0, scaled_height)
-		enter_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		enter_button.add_theme_font_size_override("font_size", int(25 * ResponsiveLayout.PORTRAIT_FONT_SCALE))
-	else:
-		# Landscape mode
-		enter_button.custom_minimum_size = Vector2(0, ResponsiveLayout.LANDSCAPE_ELEMENT_HEIGHT)
-
-	# Find the appropriate parent container (could be in RightVBox or BottomVBox depending on orientation)
-	var back_button = find_node_recursive(self, "BackButton")
-	if back_button and back_button.get_parent():
-		var parent = back_button.get_parent()
-		parent.add_child(enter_button)
-		parent.move_child(enter_button, back_button.get_index())  # Place before back button
+	var enter_button = _create_responsive_button("Enter Train Heart", _on_enter_train_heart_pressed)
+	_add_button_before_back(enter_button)
 
 func _on_enter_train_heart_pressed():
 	Global.change_scene_with_check(get_tree(), "res://level1/train_heart.tscn")
@@ -669,40 +506,120 @@ func update_place_pipe_button():
 		place_pipe_button.text = "Place Pipe"
 
 func add_developer_skip_button():
-	# Create a developer button to skip the puzzle
-	var skip_button = Button.new()
+	var skip_button = _create_responsive_button("Developer: Skip Puzzle", _on_developer_skip_pressed)
 	skip_button.name = "DeveloperSkipButton"
-	skip_button.text = "Developer: Skip Puzzle"
 	skip_button.visible = Global.dev_speed_mode
-	skip_button.pressed.connect(_on_developer_skip_pressed)
+	_add_button_before_back(skip_button)
 
-	# Get the theme
-	var theme_resource = load("res://default_theme.tres")
-	skip_button.theme = theme_resource
+func _on_developer_skip_pressed():
+	Global.change_scene_with_check(get_tree(), "res://level1/train_heart.tscn")
 
-	# Apply ResponsiveLayout scaling based on current orientation
+## Helper: Reparent puzzle container to correct area based on orientation
+func _reparent_puzzle_container(is_portrait: bool) -> void:
+	var portrait_path = "VBoxContainer/MiddleArea/PuzzleContainer"
+	var landscape_path = "HBoxContainer/CenterArea/PuzzleContainer"
+	var target_area_path = "VBoxContainer/MiddleArea" if is_portrait else "HBoxContainer/CenterArea"
+
+	puzzle_container = get_node_or_null(portrait_path if is_portrait else landscape_path)
+	if not puzzle_container:
+		puzzle_container = get_node_or_null(landscape_path if is_portrait else portrait_path)
+		if puzzle_container:
+			var target_area = get_node_or_null(target_area_path)
+			if target_area:
+				_reset_transforms(puzzle_container)
+				puzzle_container.reparent(target_area)
+
+## Helper: Calculate puzzle scale based on orientation and available space
+func _calculate_puzzle_scale(is_portrait: bool, viewport_size: Vector2, puzzle_base_size: float) -> float:
+	if is_portrait:
+		var available_size = min(viewport_size.x * 0.85, viewport_size.y * 0.5)
+		return clamp(available_size / puzzle_base_size, 0.8, 2.0)
+	else:
+		var center_area = get_node_or_null("HBoxContainer/CenterArea")
+		if center_area:
+			await get_tree().process_frame
+			var available_size = min(center_area.get_rect().size.x, center_area.get_rect().size.y) * 0.85
+			return clamp(available_size / puzzle_base_size, 0.8, 1.5)
+		return 1.0
+
+## Helper: Reset all transforms on a control node
+func _reset_transforms(control: Control) -> void:
+	control.position = Vector2.ZERO
+	control.rotation = 0
+	control.scale = Vector2.ONE
+	control.pivot_offset = Vector2.ZERO
+
+## Helper: Configure puzzle container with size and scale
+func _configure_puzzle_container(puzzle_base_size: float, scale_factor: float) -> void:
+	_reset_transforms(puzzle_container)
+	puzzle_container.size = Vector2.ZERO
+	puzzle_container.custom_minimum_size = Vector2.ZERO
+
+	# Center anchors
+	puzzle_container.anchor_left = 0.5
+	puzzle_container.anchor_top = 0.5
+	puzzle_container.anchor_right = 0.5
+	puzzle_container.anchor_bottom = 0.5
+
+	# Set offsets
+	var half_base = puzzle_base_size / 2.0
+	puzzle_container.offset_left = -half_base
+	puzzle_container.offset_right = half_base
+	puzzle_container.offset_top = -half_base
+	puzzle_container.offset_bottom = half_base
+	puzzle_container.pivot_offset = Vector2(half_base, half_base)
+	puzzle_container.scale = Vector2(scale_factor, scale_factor)
+	puzzle_container.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	puzzle_container.grow_vertical = Control.GROW_DIRECTION_BOTH
+
+## Helper: Create a responsive button with theme and scaling
+func _create_responsive_button(button_text: String, callback: Callable) -> Button:
+	var button = Button.new()
+	button.text = button_text
+	button.pressed.connect(callback)
+	button.theme = load("res://default_theme.tres")
+
 	var viewport_size = get_viewport().get_visible_rect().size
 	var is_portrait = viewport_size.y > viewport_size.x
 
 	if is_portrait:
-		# Match ResponsiveLayout portrait scaling
 		var scaled_height = ResponsiveLayout.PORTRAIT_ELEMENT_HEIGHT * ResponsiveLayout.PORTRAIT_FONT_SCALE
-		skip_button.custom_minimum_size = Vector2(0, scaled_height)
-		skip_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		skip_button.add_theme_font_size_override("font_size", int(25 * ResponsiveLayout.PORTRAIT_FONT_SCALE))
-		print("Developer skip button: portrait mode, height=", scaled_height, " font=", int(25 * ResponsiveLayout.PORTRAIT_FONT_SCALE))
+		button.custom_minimum_size = Vector2(0, scaled_height)
+		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		button.add_theme_font_size_override("font_size", int(25 * ResponsiveLayout.PORTRAIT_FONT_SCALE))
 	else:
-		# Landscape mode
-		skip_button.custom_minimum_size = Vector2(0, ResponsiveLayout.LANDSCAPE_ELEMENT_HEIGHT)
-		print("Developer skip button: landscape mode, height=", ResponsiveLayout.LANDSCAPE_ELEMENT_HEIGHT)
+		button.custom_minimum_size = Vector2(0, ResponsiveLayout.LANDSCAPE_ELEMENT_HEIGHT)
 
-	# Add the button before the back button (works for any layout)
+	return button
+
+## Helper: Add button before the back button
+func _add_button_before_back(button: Button) -> void:
 	var back_button = find_node_recursive(self, "BackButton")
 	if back_button and back_button.get_parent():
 		var parent = back_button.get_parent()
-		var back_button_index = back_button.get_index()
-		parent.add_child(skip_button)
-		parent.move_child(skip_button, back_button_index)
+		parent.add_child(button)
+		parent.move_child(button, back_button.get_index())
 
-func _on_developer_skip_pressed():
-	Global.change_scene_with_check(get_tree(), "res://level1/train_heart.tscn")
+## Helper: Initialize grid from saved state or create empty grid
+func _init_grid() -> Array:
+	var new_grid = []
+	for y in range(GRID_SIZE):
+		var row = []
+		for x in range(GRID_SIZE):
+			if Level1Vars.pipe_puzzle_grid.size() > 0:
+				var saved_cell = Level1Vars.pipe_puzzle_grid[y][x]
+				row.append({"type": saved_cell["type"], "rotation": saved_cell["rotation"]})
+			else:
+				row.append({"type": 0, "rotation": 0})
+		new_grid.append(row)
+	return new_grid
+
+## Helper: Deep copy a grid
+func _deep_copy_grid(source_grid: Array) -> Array:
+	var new_grid = []
+	for y in range(GRID_SIZE):
+		var row = []
+		for x in range(GRID_SIZE):
+			row.append({"type": source_grid[y][x]["type"], "rotation": source_grid[y][x]["rotation"]})
+		new_grid.append(row)
+	return new_grid

@@ -29,10 +29,10 @@ LocalSaveManager="*res://local_save_manager.gd"
 
 [display]
 
-window/size/viewport_width=485
-window/size/viewport_height=895
-window/size/window_width_override=540
-window/size/window_height_override=960
+window/size/viewport_width=1000
+window/size/viewport_height=2000
+window/size/window_width_override=450
+window/size/window_height_override=900
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 

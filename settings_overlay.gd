@@ -9,6 +9,8 @@ func _ready():
 	_update_toggle_text()
 	# Make sure overlay is hidden on start
 	menu_overlay.visible = false
+	# Set overlay opacity to 80%
+	menu_overlay.modulate = Color(1, 1, 1, 0.8)
 	# Apply responsive sizing
 	_apply_responsive_sizing()
 
