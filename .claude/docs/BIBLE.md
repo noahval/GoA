@@ -5,6 +5,29 @@
 **Purpose**: Keyword-based navigation to technical documentation
 **Usage**: Check this index before working on any system → Find relevant docs → Read them → Follow documented patterns
 
+---
+
+## ⭐ HIGHEST PRIORITY: Knowledge as Progression
+
+**🧠 GoA's Core Design Philosophy: Knowledge > Power**
+
+Before designing ANY new system or feature:
+1. **Read** [game-design-principles.md#knowledge-as-progression](game-design-principles.md#knowledge-as-progression-high-priority-for-goa)
+2. **Ask**: Can this be learned through observation instead of tutorials?
+3. **Check**: Does this respect the player's intelligence and curiosity?
+
+**Key Principle**: "Keep the locks, give players information to pick them instead of keys"
+
+**Why This Matters**:
+- Players feel **smart** when they discover patterns themselves
+- Mysterious gameplay (qualitative over quantitative) = knowledge-based design
+- Your overseer mood, worker treatment, and environmental systems ARE knowledge gates
+- Discovery is the game - don't spoil it with explicit tutorials
+
+**When Designing Features**: Use the [Knowledge-Based Systems Checklist](game-design-principles.md#design-checklist-for-knowledge-based-systems)
+
+---
+
 ## 🤖 Automatic Hook System
 
 The BIBLE Check Hook auto-triggers on development keywords (scene, stats, popup, etc.) and suggests relevant docs.
@@ -18,6 +41,7 @@ The BIBLE Check Hook auto-triggers on development keywords (scene, stats, popup,
 
 | Doc | Keywords | Contents |
 |-----|----------|----------|
+| **⭐ [game-design-principles.md](game-design-principles.md)** | **PRIORITY: knowledge as progression, metroidbrainia, discovery, mysterious gameplay**, game design, principles, best practices, player engagement, retention, UX, UI, feedback, progression, balance, difficulty, idle, incremental, loop, motivation, polish, quality, observation, experimentation, aha moments | **HIGH PRIORITY**: Knowledge-based progression (players learn through discovery, not tutorials). Comprehensive game design guide: core principles (easy to learn/hard to master, clear goals, player agency), engagement/retention strategies, UX/UI best practices, gameplay loop design, idle/incremental mechanics, balancing, feedback systems, progression design, quality checklist |
 | **[game-systems.md](game-systems.md)** | stats, experience, shop, timer, victory, suspicion, coins | Experience/leveling, shop mechanics, timers (whisper, suspicion, stamina), victory conditions, notifications |
 | **[nakama-integration.md](nakama-integration.md)** | nakama, server, auth, authentication, cloud, save, multiplayer, online, login, local save, offline, browser save, LocalSaveManager, IndexedDB | Nakama server setup, NakamaClient API, authentication (email/password, Google OAuth), cloud saves, local browser saves, storage, login system |
 | **[deployment.md](deployment.md)** | deploy, github, actions, workflow, build, export, pages | GitHub Actions workflow, automated builds, deployment process, export settings |
@@ -33,6 +57,13 @@ The BIBLE Check Hook auto-triggers on development keywords (scene, stats, popup,
 
 ## 🎯 Common Tasks → Docs
 
+- **⭐ Design new features (ALWAYS START HERE)** → [game-design-principles.md#knowledge-as-progression](game-design-principles.md#knowledge-as-progression-high-priority-for-goa)
+- **Create mysterious/discoverable systems** → [game-design-principles.md#knowledge-as-progression](game-design-principles.md#knowledge-as-progression-high-priority-for-goa)
+- **Design without tutorials/hand-holding** → [game-design-principles.md#knowledge-as-progression](game-design-principles.md#knowledge-as-progression-high-priority-for-goa)
+- **Evaluate game quality/design principles** → [game-design-principles.md](game-design-principles.md)
+- **Improve player engagement/retention** → [game-design-principles.md](game-design-principles.md)
+- **Balance progression/difficulty** → [game-design-principles.md](game-design-principles.md)
+- **Enhance UX/UI/feedback** → [game-design-principles.md](game-design-principles.md)
 - **Modify stats/shop/timers/victory** → [game-systems.md](game-systems.md)
 - **Online features/cloud saves/authentication/login** → [nakama-integration.md](nakama-integration.md)
 - **Offline saves/local browser storage** → [nakama-integration.md](nakama-integration.md#local-browser-storage)
@@ -49,7 +80,15 @@ The BIBLE Check Hook auto-triggers on development keywords (scene, stats, popup,
 
 ## ⚠️ Critical Patterns
 
-**ALWAYS use these APIs** (NEVER bypass):
+### Design Philosophy (HIGHEST PRIORITY)
+**⭐ Knowledge as Progression** (applies to ALL features):
+- **Players learn through observation**, not tutorials
+- **Hide numbers, show qualitative feedback** (adjectives, not multipliers)
+- **Tools available early**, understanding comes later
+- **Discovery is the reward** - don't spoil with explicit explanations
+- **Use the checklist**: [game-design-principles.md#design-checklist-for-knowledge-based-systems](game-design-principles.md#design-checklist-for-knowledge-based-systems)
+
+### Technical APIs (ALWAYS use, NEVER bypass)
 - **Stats**: `Global.add_stat_exp()` (not direct modification)
 - **Scene changes**: `Global.change_scene_with_check()` (not direct change_scene)
 - **Notifications**: `Global.show_stat_notification()`
@@ -92,6 +131,10 @@ The BIBLE Check Hook auto-triggers on development keywords (scene, stats, popup,
 
 ---
 
-**Workflow**: Check keywords → Find docs in table above → Read them → Follow documented patterns
+**Workflow**:
+1. **Always start with Knowledge as Progression** when designing features
+2. Check keywords → Find docs in table above
+3. Read them → Follow documented patterns
+4. Use the [Knowledge-Based Systems Checklist](game-design-principles.md#design-checklist-for-knowledge-based-systems) before implementing
 
-**Version**: 2.5 (Added Superpowers skills) | **Updated**: 2025-11-01
+**Version**: 2.7 (Prioritized Knowledge as Progression as core design philosophy) | **Updated**: 2025-11-02
