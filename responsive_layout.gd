@@ -22,10 +22,21 @@ const BUTTON_MARGIN = 5  # Spacing between buttons
 const LANDSCAPE_HBOX_SEPARATION = 20  # Fixed gap between columns in landscape (reduced from dynamic 20-300)
 const PORTRAIT_SEPARATION_RATIO = 0.5  # Portrait separation as ratio of scaled element height (50%)
 
-# Column widths (from template)
+# Column widths (from template) - LEGACY FIXED WIDTHS
 const LEFT_COLUMN_WIDTH = 220
 const RIGHT_COLUMN_WIDTH = 260
 const MIN_CENTER_WIDTH = 400  # Minimum width for center play area
+
+# Landscape percentage-based widths for responsive scaling
+const LANDSCAPE_LEFT_WIDTH_PERCENT = 0.25  # 25% of available width
+const LANDSCAPE_CENTER_WIDTH_PERCENT = 0.50  # 50% of available width
+const LANDSCAPE_RIGHT_WIDTH_PERCENT = 0.25  # 25% of available width
+const LANDSCAPE_EDGE_PADDING = 25  # Padding on left and right edges
+const LANDSCAPE_BASE_RESOLUTION = 1438  # Base resolution for font scaling reference
+const LANDSCAPE_ENABLE_DYNAMIC_WIDTHS = true  # Enable percentage-based widths
+const LANDSCAPE_ENABLE_FONT_SCALING = true  # Enable font scaling at higher resolutions
+const LANDSCAPE_MIN_FONT_SCALE = 1.0  # Minimum font scale (at base resolution)
+const LANDSCAPE_MAX_FONT_SCALE = 2.0  # Maximum font scale (cap for very high resolutions)
 
 # Landscape container dimensions
 const LANDSCAPE_CONTAINER_HEIGHT = 700  # Total height of HBoxContainer in landscape (centered vertically)
@@ -61,9 +72,27 @@ func _apply_responsive_layout_internal(scene_root: Control) -> void:
 			scene_root.add_child(settings_instance)
 			print("ResponsiveLayout: Added settings overlay")
 
+	# Adjust viewport size based on orientation to prevent 2x scaling in landscape
+	var window = scene_root.get_window()
+	var window_size = window.size if window else Vector2(1000, 2000)
+	var is_portrait_window = window_size.y > window_size.x
+
+	if window:
+		if is_portrait_window:
+			# Portrait: Use 2x scaled viewport (1000x2000 viewport scales to fit window)
+			window.content_scale_size = Vector2(1000, 2000)
+			window.content_scale_factor = 1.0
+			print("ResponsiveLayout: Portrait - Set viewport to 1000x2000 for 2x UI scaling")
+		else:
+			# Landscape: Use native resolution (no 2x scaling)
+			# Set viewport to match actual window size
+			window.content_scale_size = window_size
+			window.content_scale_factor = 1.0
+			print("ResponsiveLayout: Landscape - Set viewport to native ", window_size, " (1x scaling)")
+
 	var viewport_size = scene_root.get_viewport().get_visible_rect().size
 	var is_portrait = viewport_size.y > viewport_size.x
-	print("ResponsiveLayout: Viewport size: ", viewport_size, " Portrait: ", is_portrait)
+	print("ResponsiveLayout: Window size: ", window_size, " Viewport size: ", viewport_size, " Portrait: ", is_portrait)
 
 	var background = scene_root.get_node_or_null("Background")
 	var hbox = scene_root.get_node_or_null("HBoxContainer")
@@ -144,12 +173,21 @@ func _apply_responsive_layout_internal(scene_root: Control) -> void:
 		else:
 			# Landscape: side by side with CenterArea in middle
 			# Restore size_flags for landscape BEFORE reparenting
-			left_vbox.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-			right_vbox.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-			# Restore minimum widths from template
-			left_vbox.custom_minimum_size = Vector2(LEFT_COLUMN_WIDTH, 0)
-			right_vbox.custom_minimum_size = Vector2(RIGHT_COLUMN_WIDTH, 0)
-			print("ResponsiveLayout: Set landscape size_flags (SHRINK_CENTER)")
+			# Use SIZE_FILL to ensure menus take their full allocated width (prevents CenterArea from being too wide)
+			left_vbox.size_flags_horizontal = Control.SIZE_FILL
+			right_vbox.size_flags_horizontal = Control.SIZE_FILL
+			# Calculate dynamic widths based on viewport size and percentages
+			var dynamic_left_width = LEFT_COLUMN_WIDTH
+			var dynamic_right_width = RIGHT_COLUMN_WIDTH
+			if LANDSCAPE_ENABLE_DYNAMIC_WIDTHS:
+				var available_width = viewport_size.x - (LANDSCAPE_EDGE_PADDING * 2)
+				dynamic_left_width = int(available_width * LANDSCAPE_LEFT_WIDTH_PERCENT)
+				dynamic_right_width = int(available_width * LANDSCAPE_RIGHT_WIDTH_PERCENT)
+				print("ResponsiveLayout: Landscape dynamic widths - Left: ", dynamic_left_width, " Right: ", dynamic_right_width, " (viewport: ", viewport_size.x, ")")
+			# Apply calculated widths
+			left_vbox.custom_minimum_size = Vector2(dynamic_left_width, 0)
+			right_vbox.custom_minimum_size = Vector2(dynamic_right_width, 0)
+			print("ResponsiveLayout: Set landscape size_flags (SIZE_FILL)")
 
 			# Reparent in correct order: LeftVBox, CenterArea (already there), RightVBox
 			if center_area and center_area.get_parent() == hbox:
@@ -181,7 +219,7 @@ func _apply_responsive_layout_internal(scene_root: Control) -> void:
 	position_popups_in_play_area(scene_root, is_portrait, popup_container, center_area, middle_area, viewport_size)
 
 	# Apply font scaling to popups - search from scene_root to catch popups that were reparented
-	apply_popup_font_scaling(scene_root, is_portrait)
+	apply_popup_font_scaling(scene_root, is_portrait, viewport_size)
 
 	# CRITICAL: Hide PopupContainer after reparenting popups
 	# PopupContainer should be empty now (popups moved to CenterArea/MiddleArea)
@@ -248,19 +286,39 @@ func _apply_responsive_layout_internal(scene_root: Control) -> void:
 		else:
 			print("ResponsiveLayout: Viewport height (", viewport_size.y, ") < ", LANDSCAPE_MIN_HEIGHT_FOR_PADDING, " - using minimal top offset: ", top_offset)
 
-		# Set offsets
-		hbox.offset_left = 0
-		hbox.offset_right = 0
+		# Set offsets with horizontal padding
+		var horizontal_padding = LANDSCAPE_EDGE_PADDING if LANDSCAPE_ENABLE_DYNAMIC_WIDTHS else 0
+		hbox.offset_left = horizontal_padding
+		hbox.offset_right = -horizontal_padding
 		hbox.offset_top = top_offset
 		hbox.offset_bottom = -NOTIFICATION_BAR_HEIGHT  # Leave room for notification bar
+		print("ResponsiveLayout: Applied horizontal padding: ", horizontal_padding)
 
 		hbox.grow_horizontal = Control.GROW_DIRECTION_BOTH
 		hbox.grow_vertical = Control.GROW_DIRECTION_BOTH
 
-		left_vbox.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-		right_vbox.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-		left_vbox.custom_minimum_size = Vector2(LEFT_COLUMN_WIDTH, 0)
-		right_vbox.custom_minimum_size = Vector2(RIGHT_COLUMN_WIDTH, 0)
+		# Use SIZE_FILL instead of SIZE_SHRINK_CENTER to ensure menus take their full allocated width
+		# This prevents CenterArea from expanding too much
+		left_vbox.size_flags_horizontal = Control.SIZE_FILL
+		right_vbox.size_flags_horizontal = Control.SIZE_FILL
+		# Calculate dynamic widths based on viewport size and percentages
+		var dynamic_left_width = LEFT_COLUMN_WIDTH
+		var dynamic_right_width = RIGHT_COLUMN_WIDTH
+		if LANDSCAPE_ENABLE_DYNAMIC_WIDTHS:
+			var available_width = viewport_size.x - (LANDSCAPE_EDGE_PADDING * 2)
+			dynamic_left_width = int(available_width * LANDSCAPE_LEFT_WIDTH_PERCENT)
+			dynamic_right_width = int(available_width * LANDSCAPE_RIGHT_WIDTH_PERCENT)
+			print("ResponsiveLayout: === LANDSCAPE WIDTH DEBUG ===")
+			print("ResponsiveLayout: Viewport size: ", viewport_size)
+			print("ResponsiveLayout: Window size: ", scene_root.get_window().size if scene_root.get_window() else "N/A")
+			print("ResponsiveLayout: Content scale: ", scene_root.get_window().content_scale_factor if scene_root.get_window() else "N/A")
+			print("ResponsiveLayout: Available width: ", available_width, " (viewport minus ", LANDSCAPE_EDGE_PADDING*2, "px padding)")
+			print("ResponsiveLayout: Left: ", dynamic_left_width, " (", LANDSCAPE_LEFT_WIDTH_PERCENT*100, "%)")
+			print("ResponsiveLayout: Right: ", dynamic_right_width, " (", LANDSCAPE_RIGHT_WIDTH_PERCENT*100, "%)")
+			print("ResponsiveLayout: Expected center: ~", int(available_width * LANDSCAPE_CENTER_WIDTH_PERCENT), " (", LANDSCAPE_CENTER_WIDTH_PERCENT*100, "%)")
+			print("ResponsiveLayout: ================================")
+		left_vbox.custom_minimum_size = Vector2(dynamic_left_width, 0)
+		right_vbox.custom_minimum_size = Vector2(dynamic_right_width, 0)
 
 		# Vertically center menu items in left and right columns
 		left_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -290,8 +348,8 @@ func _apply_responsive_layout_internal(scene_root: Control) -> void:
 		right_vbox.add_theme_constant_override("separation", dynamic_separation)
 		_scale_for_portrait(left_vbox, right_vbox)
 	else:
-		# Landscape mode - reset any portrait scaling
-		_reset_portrait_scaling(left_vbox, right_vbox)
+		# Landscape mode - reset any portrait scaling and apply landscape font scaling
+		_reset_portrait_scaling(left_vbox, right_vbox, viewport_size.x)
 
 		# Remove portrait spacing overrides - template has default separation
 		left_vbox.remove_theme_constant_override("separation")
@@ -307,31 +365,44 @@ func _apply_responsive_layout_internal(scene_root: Control) -> void:
 
 ## Apply landscape-specific adjustments (title expansion, etc.)
 func _apply_landscape_adjustments(left_vbox: VBoxContainer, right_vbox: VBoxContainer, _hbox: HBoxContainer) -> void:
-	left_vbox.custom_minimum_size = Vector2(LEFT_COLUMN_WIDTH, 0)
 	var viewport_width = left_vbox.get_viewport().get_visible_rect().size.x
-	var max_width = viewport_width - RIGHT_COLUMN_WIDTH - LANDSCAPE_HBOX_SEPARATION - 100
+
+	# Calculate base widths (dynamic if enabled, otherwise use legacy constants)
+	var base_left_width = LEFT_COLUMN_WIDTH
+	var base_right_width = RIGHT_COLUMN_WIDTH
+	if LANDSCAPE_ENABLE_DYNAMIC_WIDTHS:
+		var available_width = viewport_width - (LANDSCAPE_EDGE_PADDING * 2)
+		base_left_width = int(available_width * LANDSCAPE_LEFT_WIDTH_PERCENT)
+		base_right_width = int(available_width * LANDSCAPE_RIGHT_WIDTH_PERCENT)
+
+	# Calculate landscape font scale and scaled element height
+	var landscape_font_scale = get_landscape_font_scale(viewport_width)
+	var scaled_element_height = LANDSCAPE_ELEMENT_HEIGHT * landscape_font_scale
+
+	left_vbox.custom_minimum_size = Vector2(base_left_width, 0)
+	var max_width = viewport_width - base_right_width - LANDSCAPE_HBOX_SEPARATION - 100
 
 	# Calculate panel widths
-	var max_desired_width = LEFT_COLUMN_WIDTH
+	var max_desired_width = base_left_width
 	for panel in left_vbox.get_children():
 		if panel is Panel:
 			panel.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
 			var panel_width = _calculate_panel_width(panel, max_width)
-			panel.custom_minimum_size = Vector2(panel_width, LANDSCAPE_ELEMENT_HEIGHT)
+			panel.custom_minimum_size = Vector2(panel_width, scaled_element_height)
 			panel.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 			max_desired_width = max(max_desired_width, panel_width)
 
 	# Calculate button widths
-	var max_right_width = RIGHT_COLUMN_WIDTH
+	var max_right_width = base_right_width
 	for button in right_vbox.get_children():
 		if button is Button:
 			button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 			var button_width = _calculate_text_width(button, max_width, 60)
 			max_right_width = max(max_right_width, button_width)
 
-	# Apply final widths
-	left_vbox.custom_minimum_size = Vector2(max(LEFT_COLUMN_WIDTH, max_desired_width), 0)
-	right_vbox.custom_minimum_size = Vector2(max(RIGHT_COLUMN_WIDTH, max_right_width), 0)
+	# Apply final widths - use calculated widths but don't go below base widths
+	left_vbox.custom_minimum_size = Vector2(max(base_left_width, max_desired_width), 0)
+	right_vbox.custom_minimum_size = Vector2(max(base_right_width, max_right_width), 0)
 
 ## Scale UI elements for portrait mode with CONSISTENT universal height
 func _scale_for_portrait(left_vbox: VBoxContainer, right_vbox: VBoxContainer) -> void:
@@ -395,27 +466,52 @@ func _scale_for_portrait(left_vbox: VBoxContainer, right_vbox: VBoxContainer) ->
 						bar_font_size = 25  # Default from theme
 					child.add_theme_font_size_override("font_size", int(bar_font_size * PORTRAIT_FONT_SCALE))
 
-## Reset portrait scaling to landscape defaults
-func _reset_portrait_scaling(left_vbox: VBoxContainer, right_vbox: VBoxContainer) -> void:
-	# Reset buttons
+## Reset portrait scaling to landscape defaults and apply landscape font scaling
+func _reset_portrait_scaling(left_vbox: VBoxContainer, right_vbox: VBoxContainer, viewport_width: float = 0) -> void:
+	# Calculate landscape font scale
+	var landscape_font_scale = get_landscape_font_scale(viewport_width) if viewport_width > 0 else 1.0
+	print("ResponsiveLayout: Landscape font scale = ", landscape_font_scale)
+
+	# Calculate scaled element height
+	var scaled_element_height = LANDSCAPE_ELEMENT_HEIGHT * landscape_font_scale
+
+	# Reset buttons with landscape font scaling
 	for button in right_vbox.get_children():
 		if button is Button:
-			button.custom_minimum_size = Vector2(0, LANDSCAPE_ELEMENT_HEIGHT)
+			button.custom_minimum_size = Vector2(0, scaled_element_height)
 			button.size_flags_horizontal = Control.SIZE_FILL
-			button.remove_theme_font_size_override("font_size")
+			if LANDSCAPE_ENABLE_FONT_SCALING and landscape_font_scale > 1.0:
+				var current_size = button.get_theme_font_size("font_size")
+				if current_size <= 0:
+					current_size = 25  # Default from theme
+				button.add_theme_font_size_override("font_size", int(current_size * landscape_font_scale))
+			else:
+				button.remove_theme_font_size_override("font_size")
 
-	# Reset panels
+	# Reset panels with landscape font scaling
 	for panel in left_vbox.get_children():
 		if panel is Panel:
-			panel.custom_minimum_size = Vector2(0, LANDSCAPE_ELEMENT_HEIGHT)
+			panel.custom_minimum_size = Vector2(0, scaled_element_height)
 			panel.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 			for child in panel.get_children():
 				if child is Label:
-					child.remove_theme_font_size_override("font_size")
+					if LANDSCAPE_ENABLE_FONT_SCALING and landscape_font_scale > 1.0:
+						var label_size = child.get_theme_font_size("font_size")
+						if label_size <= 0:
+							label_size = 25  # Default from theme
+						child.add_theme_font_size_override("font_size", int(label_size * landscape_font_scale))
+					else:
+						child.remove_theme_font_size_override("font_size")
 					if child.name in ["TitleLabel", "Title"]:
 						child.custom_minimum_size = Vector2(0, 0)
 				elif child is ProgressBar:
-					child.remove_theme_font_size_override("font_size")
+					if LANDSCAPE_ENABLE_FONT_SCALING and landscape_font_scale > 1.0:
+						var bar_font_size = child.get_theme_font_size("font_size")
+						if bar_font_size <= 0:
+							bar_font_size = 25  # Default from theme
+						child.add_theme_font_size_override("font_size", int(bar_font_size * landscape_font_scale))
+					else:
+						child.remove_theme_font_size_override("font_size")
 
 ## Check if viewport is in portrait orientation
 static func is_portrait_mode(viewport: Viewport) -> bool:
@@ -425,6 +521,16 @@ static func is_portrait_mode(viewport: Viewport) -> bool:
 ## Get current scaling factor based on orientation
 static func get_font_scale(viewport: Viewport) -> float:
 	return PORTRAIT_FONT_SCALE if is_portrait_mode(viewport) else 1.0
+
+## Calculate landscape font scale based on viewport width
+## Scales proportionally between base resolution and higher resolutions
+static func get_landscape_font_scale(viewport_width: float) -> float:
+	if not LANDSCAPE_ENABLE_FONT_SCALING:
+		return 1.0
+	# Calculate scale factor: viewport_width / base_resolution
+	var scale = viewport_width / LANDSCAPE_BASE_RESOLUTION
+	# Clamp between min and max scale
+	return clamp(scale, LANDSCAPE_MIN_FONT_SCALE, LANDSCAPE_MAX_FONT_SCALE)
 
 ## Reverse the order of buttons in a container (for portrait mode)
 func _reverse_button_order(container: VBoxContainer) -> void:
@@ -688,9 +794,9 @@ func _find_popups_recursive(node: Node, popups: Array, popup_container: Node) ->
 		_find_popups_recursive(child, popups, popup_container)
 
 ## Apply font scaling to all popups in the scene
-## This ensures popup text is properly sized for portrait mode
+## This ensures popup text is properly sized for both portrait and landscape modes
 ## Searches from the given node (usually scene_root) to find all popups
-func apply_popup_font_scaling(search_root: Control, is_portrait: bool) -> void:
+func apply_popup_font_scaling(search_root: Control, is_portrait: bool, viewport_size: Vector2) -> void:
 	if not search_root:
 		return
 
@@ -705,29 +811,84 @@ func apply_popup_font_scaling(search_root: Control, is_portrait: bool) -> void:
 
 	for popup in popups:
 		# Scale ALL labels and buttons recursively in the popup
-		_scale_popup_controls_recursive(popup, is_portrait)
+		_scale_popup_controls_recursive(popup, is_portrait, viewport_size, popup)
+		# Debug: Measure actual sizes after a frame
+		if popup.visible:
+			call_deferred("_debug_measure_popup_overflow", popup)
 
 ## Recursively scale all labels and buttons in a popup
 ## This works for any popup structure, not just the standard reusable_popup template
-func _scale_popup_controls_recursive(node: Node, is_portrait: bool) -> void:
+func _scale_popup_controls_recursive(node: Node, is_portrait: bool, viewport_size: Vector2, popup_panel: Panel) -> void:
+	# Calculate landscape font scale for non-portrait mode
+	var landscape_font_scale = 1.0
+	if not is_portrait:
+		landscape_font_scale = get_landscape_font_scale(viewport_size.x)
+
+	# Calculate available width for label wrapping
+	# Use the popup's CONSTRAINED width from offsets (set by responsive layout)
+	# NOT the rendered size.x which may have already expanded
+	var popup_constrained_width = 400.0  # Default fallback
+	if popup_panel:
+		# Width from offsets: right - left (both are relative to anchor point at 0.5)
+		popup_constrained_width = popup_panel.offset_right - popup_panel.offset_left
+		print("ResponsiveLayout: Popup '", popup_panel.name, "' constrained width from offsets: ", popup_constrained_width)
+
+	# Account for MarginContainer margins (10px left + 10px right = 20px)
+	# Plus some buffer for ScrollContainer padding and safety (20px)
+	var available_width = max(200, popup_constrained_width - 40)  # Minimum 200px
+	print("ResponsiveLayout: Available width for labels: ", available_width)
+
 	# Scale labels
 	if node is Label:
+		# Enable word wrapping for ALL labels in popups (both portrait and landscape)
+		# This prevents horizontal overflow and better utilizes vertical space
+		node.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+
+		# CRITICAL: Constrain the label AND its parent containers to prevent horizontal expansion
+		# DON'T set custom_minimum_size - it uses stale popup width values and causes overflow
+		# Instead, rely on SIZE_FILL + autowrap + parent constraints to naturally fill available space
+
+		# Constrain the label itself
+		node.custom_minimum_size = Vector2(0, 0)  # No minimum - let it fill naturally
+		node.size_flags_horizontal = Control.SIZE_FILL  # Fill available width
+		node.size_flags_vertical = Control.SIZE_EXPAND_FILL  # Expand vertically as text wraps
+		node.clip_text = false  # Don't clip - let text wrap
+
+		# CRITICAL: Constrain parent containers to prevent pushing popup wider
+		var parent = node.get_parent()
+		while parent and parent != popup_panel:
+			if parent is ScrollContainer:
+				# Ensure horizontal scrolling is disabled
+				parent.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+				# Constrain width
+				parent.custom_minimum_size.x = 0  # Don't force minimum
+				parent.size_flags_horizontal = Control.SIZE_FILL  # Fill available space
+				print("ResponsiveLayout: Constrained ScrollContainer to FILL (no horizontal scroll)")
+			elif parent is VBoxContainer or parent is MarginContainer or parent is HBoxContainer:
+				# Constrain container width to prevent expansion
+				parent.size_flags_horizontal = Control.SIZE_FILL  # Fill available space, don't expand
+				print("ResponsiveLayout: Constrained ", parent.get_class(), " to FILL")
+			parent = parent.get_parent()
+
+		print("ResponsiveLayout: Constrained label '", node.name, "' and parents to ", available_width, "px width (wrapping enabled)")
+
 		if is_portrait:
 			var label_font_size = node.get_theme_font_size("font_size")
 			if label_font_size <= 0:
 				label_font_size = 25  # Default from theme
 			node.add_theme_font_size_override("font_size", int(label_font_size * PORTRAIT_FONT_SCALE))
-			print("ResponsiveLayout: Scaled popup label '", node.name, "' to ", int(label_font_size * PORTRAIT_FONT_SCALE))
-
-			# Enable word wrapping on title labels to prevent cutoff
-			if node.name == "TitleLabel" or node.name == "Title":
-				node.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-				print("ResponsiveLayout: Enabled autowrap on popup title '", node.name, "'")
+			print("ResponsiveLayout: Scaled popup label '", node.name, "' to ", int(label_font_size * PORTRAIT_FONT_SCALE), " width: ", available_width, " (autowrap enabled)")
 		else:
-			node.remove_theme_font_size_override("font_size")
-			# Reset autowrap in landscape mode
-			if node.name == "TitleLabel" or node.name == "Title":
-				node.autowrap_mode = TextServer.AUTOWRAP_OFF
+			# Landscape mode - apply landscape font scaling
+			if LANDSCAPE_ENABLE_FONT_SCALING and landscape_font_scale > 1.0:
+				var label_font_size = node.get_theme_font_size("font_size")
+				if label_font_size <= 0:
+					label_font_size = 25  # Default from theme
+				node.add_theme_font_size_override("font_size", int(label_font_size * landscape_font_scale))
+				print("ResponsiveLayout: Scaled popup label '", node.name, "' to ", int(label_font_size * landscape_font_scale), " width: ", available_width, " (landscape scale: ", landscape_font_scale, ", autowrap enabled)")
+			else:
+				node.remove_theme_font_size_override("font_size")
+				print("ResponsiveLayout: Popup label '", node.name, "' using default font size, width: ", available_width, " (autowrap enabled)")
 
 	# Scale buttons
 	elif node is Button:
@@ -735,8 +896,16 @@ func _scale_popup_controls_recursive(node: Node, is_portrait: bool) -> void:
 		var button_height = LANDSCAPE_ELEMENT_HEIGHT
 		if is_portrait:
 			button_height = PORTRAIT_ELEMENT_HEIGHT * PORTRAIT_POPUP_BUTTON_FONT_SCALE
+		else:
+			# Apply landscape font scaling to button height
+			button_height = LANDSCAPE_ELEMENT_HEIGHT * landscape_font_scale
 
 		node.custom_minimum_size.y = button_height
+
+		# Constrain button width to prevent horizontal overflow
+		# Don't force a specific width, but ensure it doesn't expand beyond the popup
+		node.size_flags_horizontal = Control.SIZE_SHRINK_CENTER  # Shrink to content, center within available space
+		node.size_flags_stretch_ratio = 0.0  # Don't stretch to fill available space
 
 		if is_portrait:
 			var button_font_size = node.get_theme_font_size("font_size")
@@ -744,13 +913,66 @@ func _scale_popup_controls_recursive(node: Node, is_portrait: bool) -> void:
 				button_font_size = 25  # Default from theme
 			node.add_theme_font_size_override("font_size", int(button_font_size * PORTRAIT_POPUP_BUTTON_FONT_SCALE))
 		else:
-			node.remove_theme_font_size_override("font_size")
+			# Landscape mode - apply landscape font scaling
+			if LANDSCAPE_ENABLE_FONT_SCALING and landscape_font_scale > 1.0:
+				var button_font_size = node.get_theme_font_size("font_size")
+				if button_font_size <= 0:
+					button_font_size = 25  # Default from theme
+				node.add_theme_font_size_override("font_size", int(button_font_size * landscape_font_scale))
+				print("ResponsiveLayout: Scaled popup button '", node.name, "' to ", int(button_font_size * landscape_font_scale), " (landscape scale: ", landscape_font_scale, ")")
+			else:
+				node.remove_theme_font_size_override("font_size")
 
 		print("ResponsiveLayout: Scaled popup button '", node.name, "' to height ", button_height)
 
 	# Recurse through children
 	for child in node.get_children():
-		_scale_popup_controls_recursive(child, is_portrait)
+		_scale_popup_controls_recursive(child, is_portrait, viewport_size, popup_panel)
+
+## Debug function to measure popup overflow issues
+func _debug_measure_popup_overflow(popup: Panel) -> void:
+	await get_tree().process_frame
+	await get_tree().process_frame  # Wait 2 frames for layout to settle
+
+	print("\n=== POPUP OVERFLOW DEBUG: ", popup.name, " ===")
+	print("Popup constrained width (offsets): ", popup.offset_right - popup.offset_left)
+	print("Popup actual rendered size: ", popup.size)
+	print("Popup position: ", popup.position)
+	print("Popup global_position: ", popup.global_position)
+
+	# Measure all children recursively
+	_debug_measure_node_recursive(popup, popup, 0)
+	print("=== END POPUP DEBUG ===\n")
+
+## Recursively measure all nodes in popup
+func _debug_measure_node_recursive(node: Node, popup: Panel, depth: int) -> void:
+	if not node is Control:
+		return
+
+	var control = node as Control
+	var indent = "  ".repeat(depth)
+	var popup_width = popup.offset_right - popup.offset_left
+	var overflow = control.size.x - popup_width
+	var overflow_marker = " ⚠️ OVERFLOW!" if overflow > 5 else ""
+
+	print(indent, control.get_class(), " '", control.name, "':")
+	print(indent, "  Size: ", control.size, overflow_marker)
+	print(indent, "  Position: ", control.position)
+	print(indent, "  Size flags H: ", control.size_flags_horizontal, " V: ", control.size_flags_vertical)
+	print(indent, "  Custom min size: ", control.custom_minimum_size)
+
+	if control is Label:
+		print(indent, "  Autowrap: ", control.autowrap_mode)
+		print(indent, "  Text length: ", len(control.text))
+	elif control is Button:
+		print(indent, "  Text: '", control.text, "'")
+	elif control is HBoxContainer:
+		print(indent, "  Alignment: ", control.alignment)
+		print(indent, "  Separation: ", control.get("theme_override_constants/separation"))
+
+	# Recurse
+	for child in control.get_children():
+		_debug_measure_node_recursive(child, popup, depth + 1)
 
 ## Helper: Set mouse filter and clipping on a control node
 func _set_mouse_and_clip(node: Control, mouse_filter: int, enable_clip: bool, node_name: String) -> void:

@@ -266,6 +266,37 @@ PopupVBox/constants/separation = 15
 
 ---
 
+## Font Scaling & Word Wrapping
+
+Popups automatically scale fonts and enable word wrapping in both portrait and landscape modes:
+
+### Font Scaling
+- **Portrait mode**: Uses `PORTRAIT_FONT_SCALE` (1.4x)
+- **Landscape mode**: Scales proportionally based on viewport width (same as menu fonts)
+  - At base resolution (1438px): 1.0x font size
+  - At higher resolutions: Scales up proportionally (max 2.0x)
+
+This ensures popup text is always consistent with menu text at any resolution.
+
+### Word Wrapping
+- **All labels**: `AUTOWRAP_WORD_SMART` enabled automatically
+- **Width constraints**: Labels constrained to popup's offset-based width minus margins (40px)
+  - Uses popup's `offset_right - offset_left` (constrained size, not rendered size)
+- **Size flags**: `SIZE_SHRINK_CENTER` horizontal, `SIZE_EXPAND_FILL` vertical
+  - Prevents labels from pushing containers wider
+  - Allows vertical expansion as text wraps to multiple lines
+- **Custom minimum size**: X = available width, Y = 0 (auto height)
+- **Clip text**: Disabled to allow wrapping instead of clipping
+- **Purpose**: Prevents horizontal overflow and better utilizes vertical space
+- **Applied to**: All labels in all popups (both reusable_popup and custom popups)
+- **Result**: Text wraps within popup boundaries and expands vertically as needed
+
+**Auto-handled by**: `ResponsiveLayout.apply_popup_font_scaling()` called during `apply_to_scene()`
+
+**Configuration**: Adjust `LANDSCAPE_ENABLE_FONT_SCALING` and `LANDSCAPE_MAX_FONT_SCALE` in [responsive_layout.gd](../../responsive_layout.gd)
+
+---
+
 ## Common Issues & Solutions
 
 ### Issue: Popup doesn't appear
@@ -299,6 +330,31 @@ func _on_popup_button_pressed(btn: String):
 **Solution**:
 - Enable auto-resize: `setup(msg, btns, true)`
 - Remove manual `custom_minimum_size` overrides in .tscn
+
+### Issue: Elements stretching horizontally outside popup
+**Cause**: CenterArea was too wide (88% of screen instead of intended 50%) because LeftVBox/RightVBox were using SIZE_SHRINK_CENTER, allowing CenterArea to expand excessively
+
+**Solution**: Fixed in two places:
+
+1. **[responsive_layout.gd:159, 283](../../responsive_layout.gd)** - Changed LeftVBox/RightVBox from `SIZE_SHRINK_CENTER` to `SIZE_FILL`
+   - Ensures side menus take their full 25% allocation each
+   - Prevents CenterArea from expanding beyond intended 50%
+   - CenterArea now correctly sized at ~50% of screen width
+
+2. **[reusable_popup.gd](../../reusable_popup.gd)** - Popup uses 98% of CenterArea size
+   - Popup size: `container_size * 0.98` (both width and height)
+   - Simple, predictable sizing based on parent container
+   - Leaves 2% margin for borders and shadows
+
+**Technical details**:
+- Landscape layout: Left (25%) + Center (50%) + Right (25%) = 100%
+- LeftVBox/RightVBox: `SIZE_FILL` with `custom_minimum_size` forces full width allocation
+- CenterArea: `SIZE_EXPAND_FILL` now gets remaining ~50% (not 88%)
+- Popup: 98% of CenterArea = ~49% of screen
+- Also fixed container constraints in [responsive_layout.gd:833](../../responsive_layout.gd#L833):
+  - Labels: Constrained with `custom_minimum_size` and `SIZE_FILL`
+  - Containers: Set to `SIZE_FILL` to prevent expansion (HBoxContainer, VBoxContainer, MarginContainer, ScrollContainer)
+  - Buttons: Set to `SIZE_SHRINK_CENTER` to size to content without expanding
 
 ---
 

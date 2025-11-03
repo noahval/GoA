@@ -126,9 +126,9 @@ func _check_and_resize_for_play_area() -> void:
 		print("ReusablePopup: Current popup anchors: L=", anchor_left, " R=", anchor_right, " T=", anchor_top, " B=", anchor_bottom)
 
 		if parent_size.x > 0 and parent_size.y > 0:
-			# Use 85% of parent width and 90% of parent height
-			var target_width = parent_size.x * 0.85
-			var target_height = parent_size.y * 0.90
+			# Use 98% of parent container size
+			var target_width = parent_size.x * 0.98
+			var target_height = parent_size.y * 0.98
 
 			print("ReusablePopup: Calculated target size: ", target_width, "x", target_height)
 
@@ -146,6 +146,13 @@ func _check_and_resize_for_play_area() -> void:
 			await get_tree().process_frame
 			print("ReusablePopup: AFTER resize - actual size: ", size)
 			print("ReusablePopup: AFTER resize - actual offsets: L=", offset_left, " R=", offset_right, " T=", offset_top, " B=", offset_bottom)
+
+			# Fix label widths - force them to fill their parent containers
+			_fix_label_widths()
+
+			# Debug: Measure overflow
+			await get_tree().process_frame
+			_debug_measure_overflow()
 		else:
 			print("ReusablePopup: Parent size invalid: ", parent_size)
 	else:
@@ -158,9 +165,9 @@ func _check_and_resize_for_play_area() -> void:
 func force_resize_in_play_area(available_width: float, available_height: float) -> void:
 	print("ReusablePopup: force_resize_in_play_area called - available: ", available_width, "x", available_height)
 
-	# Use 85% of available width by default
-	var target_width = available_width * 0.85
-	var target_height = available_height
+	# Use 98% of available container space
+	var target_width = available_width * 0.98
+	var target_height = available_height * 0.98
 
 	# Center within parent using offsets
 	var half_width = target_width / 2.0
@@ -231,11 +238,10 @@ func _resize_to_content() -> void:
 	var final_width = 0.0
 
 	if use_parent_bounds:
-		# When inside a play area (CenterArea/MiddleArea), USE AVAILABLE SPACE
-		# The whole point of being in a play area is to fill it, not shrink to text
+		# When inside a play area (CenterArea/MiddleArea), use 98% of available space
 		max_width = parent_max_width
-		final_width = parent_max_width * 0.85  # Use 85% of parent width consistently
-		print("ReusablePopup: Using parent bounds - forcing width to 85% of parent: ", final_width, " (parent: ", parent_max_width, ")")
+		final_width = parent_max_width * 0.98
+		print("ReusablePopup: Using parent bounds - width: ", final_width, " (98% of ", parent_max_width, ")")
 	else:
 		# Standard behavior: size to fit text content
 		final_width = clamp(text_width, min_width, max_width)
@@ -258,8 +264,8 @@ func _resize_to_content() -> void:
 	# Calculate height constraint to prevent overflow
 	var max_height = 0.0
 	if use_parent_bounds:
-		# Use parent's height constraint
-		max_height = parent_max_height
+		# Use 98% of parent's height constraint
+		max_height = parent_max_height * 0.98
 	elif is_portrait:
 		# Portrait: Conservative height to avoid overlapping with bottom menu
 		# Account for top padding (60) + bottom padding (60) + notification bar (100)
@@ -280,3 +286,67 @@ func _resize_to_content() -> void:
 	print("ReusablePopup: Final width: ", final_width, " max height: ", max_height, " (portrait: ", is_portrait, ", parent_bounds: ", use_parent_bounds, ")")
 	print("=== ReusablePopup._resize_to_content END ===")
 	print("")
+
+## Fix label widths to fill the popup width (minus margins)
+## This ensures labels with autowrap fill the available space instead of collapsing to 1px
+func _fix_label_widths() -> void:
+	# Get popup width from offsets (constrained width, not rendered width)
+	var popup_width = offset_right - offset_left
+	# Subtract margins: MarginContainer has 10px left + 10px right = 20px total
+	# Also subtract a bit more for ScrollContainer padding and safety
+	var target_label_width = popup_width - 30  # 20px margins + 10px buffer
+	_fix_label_widths_recursive(self, target_label_width)
+
+## Recursively fix label widths
+func _fix_label_widths_recursive(node: Node, target_width: float) -> void:
+	if node is Label:
+		# Set label width to fill most of the popup
+		node.custom_minimum_size = Vector2(target_width, 0)
+		print("ReusablePopup: Fixed label '", node.name, "' width to ", target_width, "px (95% of popup width)")
+
+	# Recurse through children
+	for child in node.get_children():
+		_fix_label_widths_recursive(child, target_width)
+
+## Debug function to measure element overflow
+func _debug_measure_overflow() -> void:
+	var popup_width = offset_right - offset_left
+	print("\n=== POPUP OVERFLOW DEBUG: ", name, " ===")
+	print("Popup constrained width (offsets): ", popup_width)
+	print("Popup actual rendered size: ", size)
+	print("Popup position: ", position)
+
+	# Measure all children recursively
+	_debug_measure_node_recursive(self, self, 0)
+	print("=== END POPUP DEBUG ===\n")
+
+## Recursively measure all nodes in popup
+func _debug_measure_node_recursive(node: Node, popup: Panel, depth: int) -> void:
+	if not node is Control:
+		return
+
+	var control = node as Control
+	var indent = "  ".repeat(depth)
+	var popup_width = popup.offset_right - popup.offset_left
+	var overflow = control.size.x - popup_width
+	var overflow_marker = " ⚠️ OVERFLOW!" if overflow > 5 else ""
+
+	print(indent, control.get_class(), " '", control.name, "':")
+	print(indent, "  Size: ", control.size, overflow_marker)
+	print(indent, "  Position: ", control.position)
+	print(indent, "  Size flags H: ", control.size_flags_horizontal, " V: ", control.size_flags_vertical)
+	print(indent, "  Custom min size: ", control.custom_minimum_size)
+
+	if control is Label:
+		print(indent, "  Autowrap: ", control.autowrap_mode)
+		print(indent, "  Text length: ", len(control.text))
+	elif control is Button:
+		print(indent, "  Text: '", control.text, "'")
+	elif control is HBoxContainer:
+		print(indent, "  Alignment: ", control.alignment)
+		var separation = control.get("theme_override_constants/separation")
+		print(indent, "  Separation: ", separation if separation != null else "default")
+
+	# Recurse
+	for child in control.get_children():
+		_debug_measure_node_recursive(child, popup, depth + 1)

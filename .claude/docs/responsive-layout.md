@@ -145,29 +145,56 @@ Automatically loads background image based on root node name:
 
 ## Configuration Constants Reference
 
+### Portrait Mode
 | Constant | Default | Purpose | Effect of Changing |
 |----------|---------|---------|-------------------|
-| `PORTRAIT_ELEMENT_HEIGHT` | 40 | Base element height | Panels scale to this × PORTRAIT_FONT_SCALE |
-| `PORTRAIT_FONT_SCALE` | 1.75 | Font multiplier | Affects fonts AND panel heights |
+| `PORTRAIT_ELEMENT_HEIGHT` | 30 | Base element height | Panels scale to this × PORTRAIT_FONT_SCALE |
+| `PORTRAIT_FONT_SCALE` | 1.4 | Font multiplier | Affects fonts AND panel heights |
 | `PORTRAIT_SEPARATION_RATIO` | 0.5 | Spacing ratio | Auto-calculates as 50% of panel height |
-| `PORTRAIT_TOP_PADDING` | 50 | Top padding (px) | Vertical space at top in portrait |
-| `PORTRAIT_BOTTOM_PADDING` | 90 | Bottom padding (px) | Vertical space at bottom in portrait |
+| `PORTRAIT_TOP_PADDING` | 60 | Top padding (px) | Vertical space at top in portrait |
+| `PORTRAIT_BOTTOM_PADDING` | 60 | Bottom padding (px) | Vertical space at bottom in portrait |
+
+### Landscape Mode - Legacy Fixed Widths
+| Constant | Default | Purpose | Effect of Changing |
+|----------|---------|---------|-------------------|
 | `LANDSCAPE_ELEMENT_HEIGHT` | 40 | Universal height | All buttons/panels in landscape |
 | `LANDSCAPE_CONTAINER_HEIGHT` | 700 | HBox height (px) | Vertical centering space in landscape |
 | `NOTIFICATION_BAR_HEIGHT` | 100 | NotificationBar (px) | Height of notification area |
-| `LEFT_COLUMN_WIDTH` | 220 | Left menu width (px) | Info panel container width |
-| `RIGHT_COLUMN_WIDTH` | 260 | Right menu width (px) | Button menu container width |
+| `LEFT_COLUMN_WIDTH` | 220 | Left menu width (px) | Legacy fixed width (used when dynamic widths disabled) |
+| `RIGHT_COLUMN_WIDTH` | 260 | Right menu width (px) | Legacy fixed width (used when dynamic widths disabled) |
+
+### Landscape Mode - Dynamic Responsive Widths
+| Constant | Default | Purpose | Effect of Changing |
+|----------|---------|---------|-------------------|
+| `LANDSCAPE_LEFT_WIDTH_PERCENT` | 0.25 | Left menu width % | Percentage of screen width for left menu |
+| `LANDSCAPE_CENTER_WIDTH_PERCENT` | 0.50 | Center area width % | Percentage of screen width for center |
+| `LANDSCAPE_RIGHT_WIDTH_PERCENT` | 0.25 | Right menu width % | Percentage of screen width for right menu |
+| `LANDSCAPE_EDGE_PADDING` | 25 | Edge padding (px) | Padding on left and right screen edges |
+| `LANDSCAPE_ENABLE_DYNAMIC_WIDTHS` | true | Enable dynamic widths | Use percentages vs fixed widths |
+| `LANDSCAPE_ENABLE_FONT_SCALING` | true | Enable font scaling | Scale fonts at higher resolutions |
+| `LANDSCAPE_BASE_RESOLUTION` | 1438 | Base resolution (px) | Reference width for 1:1 font scaling |
+| `LANDSCAPE_MIN_FONT_SCALE` | 1.0 | Minimum font scale | Font scale at base resolution |
+| `LANDSCAPE_MAX_FONT_SCALE` | 2.0 | Maximum font scale | Cap for very high resolutions |
 
 ---
 
 ## Making Global Changes
 
 Change constants in [responsive_layout.gd](../../responsive_layout.gd) to affect ALL scenes:
+
+### Portrait Mode
 - Increase `PORTRAIT_FONT_SCALE` → larger fonts + panels
 - Adjust `PORTRAIT_SEPARATION_RATIO` → tighter/looser spacing
-- Change `LANDSCAPE_CONTAINER_HEIGHT` → more vertical room
 
-Restart Godot after changing constants (autoload scripts are cached).
+### Landscape Mode
+- Adjust `LANDSCAPE_LEFT_WIDTH_PERCENT`, `LANDSCAPE_CENTER_WIDTH_PERCENT`, `LANDSCAPE_RIGHT_WIDTH_PERCENT` → change menu proportions (must sum to 1.0)
+- Change `LANDSCAPE_EDGE_PADDING` → adjust padding from screen edges
+- Set `LANDSCAPE_ENABLE_DYNAMIC_WIDTHS = false` → revert to fixed pixel widths
+- Set `LANDSCAPE_ENABLE_FONT_SCALING = false` → disable font scaling at higher resolutions
+- Adjust `LANDSCAPE_BASE_RESOLUTION` → change reference resolution for font scaling
+- Adjust `LANDSCAPE_MAX_FONT_SCALE` → cap maximum font size at very high resolutions
+
+**IMPORTANT**: Restart Godot after changing constants (autoload scripts are cached).
 
 ---
 

@@ -31,6 +31,7 @@ func _ready():
 	coins_label.text = "Coins: " + str(int(Level1Vars.coins))
 	update_stamina_bar()
 	update_suspicion_bar()
+	toggle_mode_button.visible = false
 
 func _process(delta):
 	# Auto shovel interval-based generation
@@ -65,7 +66,7 @@ func _process(delta):
 			Level1Vars.shown_lazy_notification = true
 
 	# Phase 1: Auto-conversion mode
-	if Level1Vars.auto_conversion_enabled and Level1Vars.coal >= Level1Vars.coal_conversion_threshold:
+	if Level1Vars.auto_conversion_enabled and Level1Vars.coal >= OverseerMood.get_coal_per_coin():
 		auto_conversion_timer += delta
 		if auto_conversion_timer >= 5.0:  # Auto-convert every 5 seconds
 			auto_conversion_timer = 0.0
@@ -149,14 +150,16 @@ func update_dev_buttons():
 
 # Phase 1: Manual conversion - player chooses when to convert coal
 func perform_manual_conversion():
-	if Level1Vars.coal < Level1Vars.coal_conversion_threshold:
+	# Get coal requirement based on current mood (inverse relationship)
+	var coal_required = OverseerMood.get_coal_per_coin()
+
+	if Level1Vars.coal < coal_required:
 		Global.show_stat_notification("Not enough coal to convert")
 		return
 
-	var coal_to_convert = Level1Vars.coal_conversion_threshold
-	var coins_earned = OverseerMood.manual_convert_coal(coal_to_convert)
+	var coins_earned = OverseerMood.manual_convert_coal(coal_required)
 
-	Level1Vars.coal -= coal_to_convert
+	Level1Vars.coal -= coal_required
 	Level1Vars.coins += coins_earned
 
 	# Show conversion feedback
@@ -166,19 +169,20 @@ func perform_manual_conversion():
 	# Gain charisma experience for dealing with overseer
 	Global.add_stat_exp("charisma", 2.0)
 
-	DebugLogger.log_resource_change("coal", Level1Vars.coal + coal_to_convert, Level1Vars.coal, "Manual conversion")
+	DebugLogger.log_resource_change("coal", Level1Vars.coal + coal_required, Level1Vars.coal, "Manual conversion")
 	DebugLogger.log_resource_change("coins", Level1Vars.coins - coins_earned, Level1Vars.coins, "Manual conversion")
 
 # Phase 1: Auto conversion - happens automatically with penalty
 func perform_auto_conversion():
-	var coal_to_convert = Level1Vars.coal_conversion_threshold
-	var coins_earned = OverseerMood.auto_convert_coal(coal_to_convert)
+	# Get coal requirement based on current mood (inverse relationship)
+	var coal_required = OverseerMood.get_coal_per_coin()
+	var coins_earned = OverseerMood.auto_convert_coal(coal_required)
 
-	Level1Vars.coal -= coal_to_convert
+	Level1Vars.coal -= coal_required
 	Level1Vars.coins += coins_earned
 
 	# No notification in auto mode (player discovers it's less efficient)
-	DebugLogger.log_resource_change("coal", Level1Vars.coal + coal_to_convert, Level1Vars.coal, "Auto conversion")
+	DebugLogger.log_resource_change("coal", Level1Vars.coal + coal_required, Level1Vars.coal, "Auto conversion")
 	DebugLogger.log_resource_change("coins", Level1Vars.coins - coins_earned, Level1Vars.coins, "Auto conversion")
 
 # Toggle between manual and auto conversion
@@ -201,12 +205,13 @@ func update_mood_display():
 # Update conversion button states
 func update_conversion_buttons():
 	if convert_coal_button:
+		var coal_required = OverseerMood.get_coal_per_coin()
 		if Level1Vars.auto_conversion_enabled:
 			convert_coal_button.text = "Auto-converting..."
 			convert_coal_button.disabled = true
 		else:
-			convert_coal_button.text = "Convert Coal (" + str(int(Level1Vars.coal_conversion_threshold)) + ")"
-			convert_coal_button.disabled = Level1Vars.coal < Level1Vars.coal_conversion_threshold
+			convert_coal_button.text = "Claim coin"
+			convert_coal_button.disabled = Level1Vars.coal < coal_required
 
 	if toggle_mode_button:
 		if Level1Vars.auto_conversion_enabled:

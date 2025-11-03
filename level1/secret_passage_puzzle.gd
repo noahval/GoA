@@ -53,7 +53,7 @@ func _delayed_setup():
 	_reparent_puzzle_container(is_portrait)
 
 	# Calculate scale based on orientation
-	var scale_factor = _calculate_puzzle_scale(is_portrait, viewport_size, puzzle_base_size)
+	var scale_factor = await _calculate_puzzle_scale(is_portrait, viewport_size, puzzle_base_size)
 
 	# Reset and configure puzzle container
 	_configure_puzzle_container(puzzle_base_size, scale_factor)

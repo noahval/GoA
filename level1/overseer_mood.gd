@@ -12,7 +12,7 @@ var time_since_last_conversion = 0.0
 
 # Mood drift (creates uncertainty)
 var mood_drift_timer = 0.0
-var mood_drift_interval = 5.0  # Mood changes every 5 seconds
+var mood_drift_interval = 15.0  # Mood changes every 15 seconds
 
 # Mood fatigue (punishes spam-converting)
 var fatigue_level = 0.0  # 0.0 to 1.0, reduces mood
@@ -25,6 +25,11 @@ var auto_conversion_enabled = false
 var min_multiplier = 0.5
 var max_multiplier = 2.0
 var auto_efficiency = 0.7  # 70% efficiency in auto mode
+
+# Coal requirement for conversion (inverse relationship with mood)
+var base_coal_per_coin = 40.0  # Base coal needed for 1 coin at neutral mood
+var total_conversions = 0  # Track total number of conversions
+var price_increase_per_conversion = 1.0  # Coal price increases by this amount per conversion
 
 func _ready():
 	# Initialize mood to neutral-pleasant range
@@ -69,6 +74,14 @@ func get_mood_multiplier() -> float:
 	# Map 0.0-1.0 to min_multiplier-max_multiplier
 	return min_multiplier + (effective_mood * (max_multiplier - min_multiplier))
 
+# Get coal requirement for 1 coin (inverse of mood multiplier)
+func get_coal_per_coin() -> float:
+	var multiplier = get_mood_multiplier()
+	# Calculate increasing base price based on total conversions
+	var current_base_price = base_coal_per_coin + (total_conversions * price_increase_per_conversion)
+	# Inverse relationship: better mood = less coal needed
+	return current_base_price / multiplier
+
 # Get mood as adjective (what player sees)
 func get_mood_adjective() -> String:
 	var effective_mood = mood_value - (fatigue_level * 0.3)
@@ -96,10 +109,8 @@ func get_trend_arrow() -> String:
 		return "→"
 
 # Manual conversion - player chooses when to convert
+# Returns number of coins earned (always 1 in manual mode)
 func manual_convert_coal(coal_amount: float) -> float:
-	var multiplier = get_mood_multiplier()
-	var coins_earned = coal_amount * multiplier
-
 	# Apply mood fatigue (punish frequent conversions)
 	var time_delta = time_since_last_conversion
 	if time_delta < 10.0:  # Converted within 10 seconds
@@ -110,35 +121,37 @@ func manual_convert_coal(coal_amount: float) -> float:
 		fatigue_level = min(1.0, fatigue_level)
 
 	time_since_last_conversion = 0.0
-	return coins_earned
+	total_conversions += 1  # Increment conversion counter to increase price
+	return 1.0  # Always returns 1 coin in manual mode
 
 # Auto conversion - happens automatically with penalty
+# Returns number of coins earned (reduced by auto efficiency)
 func auto_convert_coal(coal_amount: float) -> float:
-	var multiplier = get_mood_multiplier()
-	var coins_earned = coal_amount * multiplier * auto_efficiency
-
 	# Less mood fatigue in auto mode (slower accumulation)
 	fatigue_level += 0.02
 	fatigue_level = min(1.0, fatigue_level)
 
-	return coins_earned
+	total_conversions += 1  # Increment conversion counter to increase price
+
+	return 1.0 * auto_efficiency  # Returns 0.7 coins in auto mode
 
 # Get conversion feedback message (qualitative)
 func get_conversion_message() -> String:
 	var adjective = get_mood_adjective()
+	var coal_needed = int(get_coal_per_coin())
 
 	match adjective:
 		"ecstatic":
-			return "The overseer was ecstatic with your work. You earned a magnificent bonus!"
+			return "The overseer was ecstatic! He only demanded " + str(coal_needed) + " coal for 1 coin."
 		"delighted":
-			return "The overseer was delighted with your work. You earned a generous bonus!"
+			return "The overseer was delighted! He accepted " + str(coal_needed) + " coal for 1 coin."
 		"pleased":
-			return "The overseer was pleased with your work. You earned a fair bonus!"
+			return "The overseer was pleased. He took " + str(coal_needed) + " coal for 1 coin."
 		"indifferent":
-			return "The overseer accepted your work without comment."
+			return "The overseer accepted " + str(coal_needed) + " coal for 1 coin without comment."
 		"irritated":
-			return "The overseer was irritated with your timing. You earned less than expected."
+			return "The overseer was irritated. He demanded " + str(coal_needed) + " coal for 1 coin."
 		"furious":
-			return "The overseer was furious. You barely earned anything."
+			return "The overseer was furious! He took " + str(coal_needed) + " coal for just 1 coin!"
 		_:
-			return "You converted your coal to coins."
+			return "You converted coal to coins."

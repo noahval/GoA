@@ -104,6 +104,7 @@
 - [level1/intro_screen.gd](level1/intro_screen.gd)  
 - [level1/level_1_vars.gd](level1/level_1_vars.gd)  
 - [level1/loading_screen.gd](level1/loading_screen.gd)  
+- [level1/overseer_mood.gd](level1/overseer_mood.gd)  
 - [level1/overseers_office.gd](level1/overseers_office.gd)  
 - [level1/planning_table.gd](level1/planning_table.gd)  
 - [level1/secret_passage_entrance.gd](level1/secret_passage_entrance.gd)  
