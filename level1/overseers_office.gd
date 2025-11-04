@@ -13,7 +13,7 @@ var max_break_time = 30.0
 @onready var back_button = $HBoxContainer/RightVBox/BackButton
 @onready var confirmation_popup = $PopupContainer/ConfirmationPopup
 @onready var talk_questions_panel = $PopupContainer/TalkQuestionsPopup
-@onready var question_label = $PopupContainer/TalkQuestionsPopup/ScrollContainer/QuizVBox/QuestionLabel
+@onready var question_label = $PopupContainer/TalkQuestionsPopup/MarginContainer/ScrollContainer/QuizVBox/QuestionLabel
 @onready var popup_container = $PopupContainer
 @onready var right_vbox = $HBoxContainer/RightVBox
 @onready var left_vbox = $HBoxContainer/LeftVBox
@@ -258,10 +258,10 @@ func fetch_question():
 
 	# Display the question
 	question_label.text = question_data["question"]
-	var answer_a = talk_questions_panel.get_node("ScrollContainer/QuizVBox/AnswerA")
-	var answer_b = talk_questions_panel.get_node("ScrollContainer/QuizVBox/AnswerB")
-	var answer_c = talk_questions_panel.get_node("ScrollContainer/QuizVBox/AnswerC")
-	var answer_d = talk_questions_panel.get_node("ScrollContainer/QuizVBox/AnswerD")
+	var answer_a = talk_questions_panel.get_node("MarginContainer/ScrollContainer/QuizVBox/AnswerA")
+	var answer_b = talk_questions_panel.get_node("MarginContainer/ScrollContainer/QuizVBox/AnswerB")
+	var answer_c = talk_questions_panel.get_node("MarginContainer/ScrollContainer/QuizVBox/AnswerC")
+	var answer_d = talk_questions_panel.get_node("MarginContainer/ScrollContainer/QuizVBox/AnswerD")
 
 	if answer_a: answer_a.text = "A) " + question_data["answers"]["A"]
 	if answer_b: answer_b.text = "B) " + question_data["answers"]["B"]
@@ -278,10 +278,10 @@ func fetch_question():
 	set_answer_buttons_enabled(true)
 
 func set_answer_buttons_enabled(enabled: bool):
-	var answer_a = talk_questions_panel.get_node("ScrollContainer/QuizVBox/AnswerA")
-	var answer_b = talk_questions_panel.get_node("ScrollContainer/QuizVBox/AnswerB")
-	var answer_c = talk_questions_panel.get_node("ScrollContainer/QuizVBox/AnswerC")
-	var answer_d = talk_questions_panel.get_node("ScrollContainer/QuizVBox/AnswerD")
+	var answer_a = talk_questions_panel.get_node("MarginContainer/ScrollContainer/QuizVBox/AnswerA")
+	var answer_b = talk_questions_panel.get_node("MarginContainer/ScrollContainer/QuizVBox/AnswerB")
+	var answer_c = talk_questions_panel.get_node("MarginContainer/ScrollContainer/QuizVBox/AnswerC")
+	var answer_d = talk_questions_panel.get_node("MarginContainer/ScrollContainer/QuizVBox/AnswerD")
 
 	if answer_a: answer_a.disabled = !enabled
 	if answer_b: answer_b.disabled = !enabled
@@ -321,10 +321,10 @@ func resize_talk_panel():
 	# Just ensure word wrapping is enabled for the question label and answer buttons
 	question_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 
-	var answer_a = talk_questions_panel.get_node_or_null("ScrollContainer/QuizVBox/AnswerA")
-	var answer_b = talk_questions_panel.get_node_or_null("ScrollContainer/QuizVBox/AnswerB")
-	var answer_c = talk_questions_panel.get_node_or_null("ScrollContainer/QuizVBox/AnswerC")
-	var answer_d = talk_questions_panel.get_node_or_null("ScrollContainer/QuizVBox/AnswerD")
+	var answer_a = talk_questions_panel.get_node_or_null("MarginContainer/ScrollContainer/QuizVBox/AnswerA")
+	var answer_b = talk_questions_panel.get_node_or_null("MarginContainer/ScrollContainer/QuizVBox/AnswerB")
+	var answer_c = talk_questions_panel.get_node_or_null("MarginContainer/ScrollContainer/QuizVBox/AnswerC")
+	var answer_d = talk_questions_panel.get_node_or_null("MarginContainer/ScrollContainer/QuizVBox/AnswerD")
 
 	if answer_a: answer_a.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	if answer_b: answer_b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART

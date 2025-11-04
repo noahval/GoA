@@ -902,10 +902,21 @@ func _scale_popup_controls_recursive(node: Node, is_portrait: bool, viewport_siz
 
 		node.custom_minimum_size.y = button_height
 
-		# Constrain button width to prevent horizontal overflow
-		# Don't force a specific width, but ensure it doesn't expand beyond the popup
-		node.size_flags_horizontal = Control.SIZE_SHRINK_CENTER  # Shrink to content, center within available space
-		node.size_flags_stretch_ratio = 0.0  # Don't stretch to fill available space
+		# Button width behavior depends on parent container:
+		# - Buttons in VBoxContainer (vertical stack, like quiz answers): expand to fill width
+		# - Buttons in HBoxContainer (horizontal row, like OK/Cancel): shrink to content
+		var button_parent = node.get_parent()
+		if button_parent and button_parent is VBoxContainer:
+			# Vertically stacked buttons should fill available width
+			node.size_flags_horizontal = Control.SIZE_FILL
+			# Enable word wrapping for long text (like quiz answers)
+			node.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+			node.clip_text = false
+			print("ResponsiveLayout: Button '", node.name, "' in VBoxContainer set to FILL width with word wrap")
+		else:
+			# Horizontal button rows should shrink to content
+			node.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+			node.size_flags_stretch_ratio = 0.0
 
 		if is_portrait:
 			var button_font_size = node.get_theme_font_size("font_size")
