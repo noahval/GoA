@@ -46,8 +46,8 @@ const LANDSCAPE_MIN_HEIGHT_FOR_PADDING = 900  # Minimum viewport height to enabl
 
 # Popup constraints
 const POPUP_MIN_WIDTH_LANDSCAPE = 400  # Min popup width in landscape
-const POPUP_WIDTH_RATIO_LANDSCAPE = 0.9  # Use 90% of available CenterArea width
-const POPUP_MAX_WIDTH_PORTRAIT = 0.9  # Max popup width as % of viewport in portrait
+const POPUP_WIDTH_RATIO_LANDSCAPE = 0.98  # Use 98% of available CenterArea width
+const POPUP_MAX_WIDTH_PORTRAIT = 0.98  # Max popup width as % of viewport in portrait
 const POPUP_MARGIN_FROM_MENUS = 20  # Minimum space between popup and side menus (reduced from 40)
 
 
@@ -656,14 +656,14 @@ func position_popups_in_play_area(scene_root: Control, is_portrait: bool, popup_
 
 		# Available space for MiddleArea
 		var middle_area_height = max(100, viewport_size.y - used_height)
-		# Use 85% of MiddleArea space to leave margin and prevent overlap
-		max_popup_height = middle_area_height * 0.85
+		# Use 98% of MiddleArea space to leave margin and prevent overlap
+		max_popup_height = middle_area_height * 0.98
 
 		print("ResponsiveLayout: Portrait - used_height: ", used_height, " middle_area_height: ", middle_area_height, " max_popup_height: ", max_popup_height)
 	else:
 		# Landscape: constrain to center area height with margins
 		if center_area:
-			max_popup_height = play_area_rect.size.y * 0.9  # 90% of center area
+			max_popup_height = play_area_rect.size.y * 0.98  # 98% of center area
 		else:
 			# Fallback: 70% of viewport height
 			max_popup_height = viewport_size.y * 0.7
