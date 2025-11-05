@@ -32,16 +32,28 @@ jobs:
           relative_project_path: ./
           relative_export_path: ./build
 
-      - name: Copy assets to build directory
+      - name: Prepare build files
         run: |
+          echo "=== Initial build directory structure ==="
+          ls -laR build/ || echo "Build directory not found"
+
+          # Check if files are in build/ or build/Web/
+          if [ -d "build/Web" ]; then
+            echo "Files are in build/Web/, moving to build/"
+            mv build/Web/* build/
+            rmdir build/Web
+          fi
+
+          # Copy level assets
           mkdir -p build/level1
           cp level1/Title.jpg build/level1/
           cp level1/begin.jpg build/level1/
           if [ -f level1/title.webm ]; then cp level1/title.webm build/level1/; fi
-          echo "=== Build directory contents ==="
+
+          echo "=== Final build directory contents ==="
           ls -la build/
-          echo "=== Checking for .pck file ==="
-          ls -la build/*.pck || echo "No .pck file found"
+          echo "=== Checking for critical files ==="
+          ls -la build/*.html build/*.pck build/*.wasm 2>/dev/null || echo "WARNING: Missing critical files!"
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
