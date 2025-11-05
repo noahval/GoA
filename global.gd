@@ -31,7 +31,7 @@ func get_xp_for_level(level: int) -> float:
 		return 0.0
 	return BASE_XP_FOR_LEVEL * pow(level - 1, EXP_SCALING)
 
-# Add experience to a stat and handle level ups
+# Add experience to a stat and handle level-ups
 func add_stat_exp(stat_name: String, amount: float):
 	var stat_data = _get_stat_data(stat_name)
 	if not stat_data:
