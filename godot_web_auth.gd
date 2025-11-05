@@ -28,16 +28,19 @@ func _register_javascript_interface():
 	window.godot_error_callback = error_callback
 
 	# Create the interface using the stored callbacks
+	# IMPORTANT: Godot callbacks expect arguments wrapped in an Array
 	var js_code = """
 		window.godot = window.godot || {};
 		window.godot.GodotWebAuth = {
 			on_google_token_received: function(token) {
 				console.log('[GodotWebAuth] Received token, forwarding to Godot');
-				window.godot_token_callback(token);
+				// Godot callbacks expect args in an Array
+				window.godot_token_callback([token]);
 			},
 			on_google_auth_failed: function(error) {
 				console.log('[GodotWebAuth] Auth failed, forwarding to Godot:', error);
-				window.godot_error_callback(error);
+				// Godot callbacks expect args in an Array
+				window.godot_error_callback([error]);
 			}
 		};
 		console.log('[GodotWebAuth] Interface created:', window.godot.GodotWebAuth);
