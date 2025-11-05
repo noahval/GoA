@@ -9,9 +9,53 @@ func _ready():
 		_register_javascript_interface()
 
 func _register_javascript_interface():
-	# Register this object so JavaScript can call our methods
-	JavaScriptBridge.get_interface("godot").GodotWebAuth = self
-	DebugLogger.log_info("GodotWebAuth", "JavaScript interface registered")
+	# Create callbacks that JavaScript can invoke
+	# Note: Callbacks receive arguments as an Array from JavaScript
+	var token_callback = JavaScriptBridge.create_callback(_on_js_token_received)
+	var error_callback = JavaScriptBridge.create_callback(_on_js_auth_failed)
+
+	# Get the window object
+	var window = JavaScriptBridge.get_interface("window")
+
+	# Create the godot namespace if it doesn't exist
+	if not window.godot:
+		JavaScriptBridge.eval("window.godot = {}", true)
+		window = JavaScriptBridge.get_interface("window")
+
+	# Create a JavaScript object that wraps our callbacks
+	var js_code = """
+	(function(tokenCb, errorCb) {
+		window.godot.GodotWebAuth = {
+			on_google_token_received: function(token) {
+				console.log('[GodotWebAuth] Received token, forwarding to Godot');
+				tokenCb(token);
+			},
+			on_google_auth_failed: function(error) {
+				console.log('[GodotWebAuth] Auth failed, forwarding to Godot:', error);
+				errorCb(error);
+			}
+		};
+		console.log('[GodotWebAuth] Interface created:', window.godot.GodotWebAuth);
+		return true;
+	})
+	"""
+
+	# Call the setup function with our callbacks
+	var result = JavaScriptBridge.eval(js_code, true).call(token_callback, error_callback)
+
+	DebugLogger.log_info("GodotWebAuth", "JavaScript interface registered: " + str(result))
+
+## Internal callback wrapper - receives args from JS as Array
+func _on_js_token_received(args: Array):
+	if args.size() > 0:
+		var token = str(args[0])
+		on_google_token_received(token)
+
+## Internal callback wrapper - receives args from JS as Array
+func _on_js_auth_failed(args: Array):
+	if args.size() > 0:
+		var error = str(args[0])
+		on_google_auth_failed(error)
 
 ## Called from JavaScript when Google returns an ID token
 func on_google_token_received(token: String):
