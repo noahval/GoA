@@ -33,17 +33,22 @@ func _register_javascript_interface():
 	window.godot_error_callback = error_callback
 
 	# Create the interface using the stored callbacks
-	# IMPORTANT: Godot callbacks expect arguments wrapped in an Array
+	# IMPORTANT: Store token in global var for Godot to retrieve via eval
 	var js_code = """
 		window.godot = window.godot || {};
+		window.godot_auth_token_temp = null;
+		window.godot_auth_error_temp = null;
+
 		window.godot.GodotWebAuth = {
 			on_google_token_received: function(token) {
 				console.log('[GodotWebAuth JS] Received token, forwarding to Godot');
 				console.log('[GodotWebAuth JS] Token length:', token.length);
 				console.log('[GodotWebAuth JS] Callback exists:', typeof window.godot_token_callback);
 				try {
-					// Godot callbacks expect args in an Array
-					window.godot_token_callback([token]);
+					// Store token in global for Godot to retrieve
+					window.godot_auth_token_temp = token;
+					// Trigger callback (Godot will pull token via eval)
+					window.godot_token_callback([]);
 					console.log('[GodotWebAuth JS] Callback invoked successfully');
 				} catch (e) {
 					console.error('[GodotWebAuth JS] Error calling callback:', e);
@@ -52,8 +57,10 @@ func _register_javascript_interface():
 			on_google_auth_failed: function(error) {
 				console.log('[GodotWebAuth JS] Auth failed, forwarding to Godot:', error);
 				try {
-					// Godot callbacks expect args in an Array
-					window.godot_error_callback([error]);
+					// Store error in global for Godot to retrieve
+					window.godot_auth_error_temp = error;
+					// Trigger callback
+					window.godot_error_callback([]);
 				} catch (e) {
 					console.error('[GodotWebAuth JS] Error calling error callback:', e);
 				}
@@ -75,19 +82,33 @@ func _register_javascript_interface():
 
 ## Internal callback wrapper - receives args from JS as Array
 func _on_js_token_received(args: Array):
-	DebugLogger.log_info("GodotWebAuth", "_on_js_token_received called with %d args" % args.size())
-	if args.size() > 0:
-		var token = str(args[0])
-		DebugLogger.log_info("GodotWebAuth", "Token length: %d" % token.length())
+	DebugLogger.log_info("GodotWebAuth", "_on_js_token_received called")
+
+	# Retrieve token from JavaScript global variable (workaround for JavaScriptObject conversion issue)
+	var token = JavaScriptBridge.eval("window.godot_auth_token_temp", true)
+
+	if token and token is String:
+		DebugLogger.log_info("GodotWebAuth", "Retrieved token from JS, length: %d" % token.length())
+		# Clear the temp variable
+		JavaScriptBridge.eval("window.godot_auth_token_temp = null", true)
 		on_google_token_received(token)
 	else:
-		DebugLogger.log_error("GodotWebAuth", "No token in callback args")
+		DebugLogger.log_error("GodotWebAuth", "Failed to retrieve token from JavaScript")
 
 ## Internal callback wrapper - receives args from JS as Array
 func _on_js_auth_failed(args: Array):
-	if args.size() > 0:
-		var error = str(args[0])
+	DebugLogger.log_info("GodotWebAuth", "_on_js_auth_failed called")
+
+	# Retrieve error from JavaScript global variable
+	var error = JavaScriptBridge.eval("window.godot_auth_error_temp", true)
+
+	if error and error is String:
+		DebugLogger.log_info("GodotWebAuth", "Retrieved error from JS: %s" % error)
+		# Clear the temp variable
+		JavaScriptBridge.eval("window.godot_auth_error_temp = null", true)
 		on_google_auth_failed(error)
+	else:
+		DebugLogger.log_error("GodotWebAuth", "Failed to retrieve error from JavaScript")
 
 ## Called from JavaScript when Google returns an ID token
 func on_google_token_received(token: String):
