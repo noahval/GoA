@@ -33,17 +33,29 @@ func _register_javascript_interface():
 		window.godot = window.godot || {};
 		window.godot.GodotWebAuth = {
 			on_google_token_received: function(token) {
-				console.log('[GodotWebAuth] Received token, forwarding to Godot');
-				// Godot callbacks expect args in an Array
-				window.godot_token_callback([token]);
+				console.log('[GodotWebAuth JS] Received token, forwarding to Godot');
+				console.log('[GodotWebAuth JS] Token length:', token.length);
+				console.log('[GodotWebAuth JS] Callback exists:', typeof window.godot_token_callback);
+				try {
+					// Godot callbacks expect args in an Array
+					window.godot_token_callback([token]);
+					console.log('[GodotWebAuth JS] Callback invoked successfully');
+				} catch (e) {
+					console.error('[GodotWebAuth JS] Error calling callback:', e);
+				}
 			},
 			on_google_auth_failed: function(error) {
-				console.log('[GodotWebAuth] Auth failed, forwarding to Godot:', error);
-				// Godot callbacks expect args in an Array
-				window.godot_error_callback([error]);
+				console.log('[GodotWebAuth JS] Auth failed, forwarding to Godot:', error);
+				try {
+					// Godot callbacks expect args in an Array
+					window.godot_error_callback([error]);
+				} catch (e) {
+					console.error('[GodotWebAuth JS] Error calling error callback:', e);
+				}
 			}
 		};
-		console.log('[GodotWebAuth] Interface created:', window.godot.GodotWebAuth);
+		console.log('[GodotWebAuth JS] Interface created:', window.godot.GodotWebAuth);
+		console.log('[GodotWebAuth JS] Callbacks registered:', typeof window.godot_token_callback, typeof window.godot_error_callback);
 		true;
 	"""
 
