@@ -148,11 +148,15 @@
 			console.log('[GoogleAuth] Sign-in successful');
 			console.log('[GoogleAuth] Received credential response');
 
+			credentialReceived = true; // Mark that we got a credential
+
 			// The response.credential contains the JWT ID token
 			const idToken = response.credential;
 
 			// Send token to Godot
-			if (window.godotGoogleAuthCallback) {
+			if (window.godot && window.godot.GodotWebAuth) {
+				window.godot.GodotWebAuth.on_google_token_received(idToken);
+			} else if (window.godotGoogleAuthCallback) {
 				window.godotGoogleAuthCallback(idToken);
 			} else {
 				console.error('[GoogleAuth] Godot callback not found');
@@ -160,8 +164,11 @@
 		}
 
 		// Trigger Google Sign-In flow using popup
+		let credentialReceived = false;
+
 		function signInWithGoogle() {
 			console.log('[GoogleAuth] Starting Google Sign-In flow...');
+			credentialReceived = false; // Reset flag
 
 			if (!googleInitialized) {
 				console.error('[GoogleAuth] Google Auth not initialized yet');
@@ -181,14 +188,21 @@
 						// Fallback: Try the direct popup method
 						triggerDirectSignIn();
 					} else if (notification.isSkippedMoment()) {
-						console.log('[GoogleAuth] User skipped the prompt');
-						if (window.godotGoogleAuthErrorCallback) {
-							window.godotGoogleAuthErrorCallback('Sign-in cancelled');
+						if (!credentialReceived) {
+							console.log('[GoogleAuth] User skipped the prompt');
+							if (window.godotGoogleAuthErrorCallback) {
+								window.godotGoogleAuthErrorCallback('Sign-in cancelled');
+							}
 						}
 					} else if (notification.isDismissedMoment()) {
-						console.log('[GoogleAuth] User dismissed the prompt');
-						if (window.godotGoogleAuthErrorCallback) {
-							window.godotGoogleAuthErrorCallback('Sign-in cancelled');
+						// Only treat as error if we didn't already get a credential
+						if (!credentialReceived) {
+							console.log('[GoogleAuth] User dismissed the prompt without signing in');
+							if (window.godotGoogleAuthErrorCallback) {
+								window.godotGoogleAuthErrorCallback('Sign-in cancelled');
+							}
+						} else {
+							console.log('[GoogleAuth] Prompt dismissed after successful sign-in');
 						}
 					}
 				});
