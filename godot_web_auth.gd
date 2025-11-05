@@ -18,36 +18,34 @@ func _register_javascript_interface():
 	var token_callback = JavaScriptBridge.create_callback(_on_js_token_received)
 	var error_callback = JavaScriptBridge.create_callback(_on_js_auth_failed)
 
+	DebugLogger.log_info("GodotWebAuth", "Created callbacks: token=%s error=%s" % [str(token_callback), str(error_callback)])
+
 	# Get the window object
 	var window = JavaScriptBridge.get_interface("window")
 
-	# Create the godot namespace if it doesn't exist
-	if not window.godot:
-		JavaScriptBridge.eval("window.godot = {}", true)
-		window = JavaScriptBridge.get_interface("window")
+	# Store callbacks on window for JavaScript to access
+	window.godot_token_callback = token_callback
+	window.godot_error_callback = error_callback
 
-	# Create a JavaScript object that wraps our callbacks
+	# Create the interface using the stored callbacks
 	var js_code = """
-	(function(tokenCb, errorCb) {
+		window.godot = window.godot || {};
 		window.godot.GodotWebAuth = {
 			on_google_token_received: function(token) {
 				console.log('[GodotWebAuth] Received token, forwarding to Godot');
-				tokenCb(token);
+				window.godot_token_callback(token);
 			},
 			on_google_auth_failed: function(error) {
 				console.log('[GodotWebAuth] Auth failed, forwarding to Godot:', error);
-				errorCb(error);
+				window.godot_error_callback(error);
 			}
 		};
 		console.log('[GodotWebAuth] Interface created:', window.godot.GodotWebAuth);
-		return true;
-	})
+		true;
 	"""
 
-	# Call the setup function with our callbacks
-	var setup_func = JavaScriptBridge.eval(js_code, true)
-	var result = setup_func.call(token_callback, error_callback)
-
+	# Execute the setup code
+	var result = JavaScriptBridge.eval(js_code, true)
 	DebugLogger.log_info("GodotWebAuth", "JavaScript interface registered: " + str(result))
 
 	# Verify the interface was created
