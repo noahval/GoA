@@ -3,6 +3,10 @@ extends Node
 ## Handles JavaScript callbacks for web-based Google authentication
 ## This is registered with JavaScriptBridge so JS can call these methods
 
+# Keep references to callbacks to prevent garbage collection
+var token_callback
+var error_callback
+
 func _ready():
 	DebugLogger.log_info("GodotWebAuth", "_ready() called - version 2")
 	# Only register for web builds
@@ -15,8 +19,9 @@ func _ready():
 func _register_javascript_interface():
 	# Create callbacks that JavaScript can invoke
 	# Note: Callbacks receive arguments as an Array from JavaScript
-	var token_callback = JavaScriptBridge.create_callback(_on_js_token_received)
-	var error_callback = JavaScriptBridge.create_callback(_on_js_auth_failed)
+	# IMPORTANT: Store as instance variables to prevent garbage collection
+	token_callback = JavaScriptBridge.create_callback(_on_js_token_received)
+	error_callback = JavaScriptBridge.create_callback(_on_js_auth_failed)
 
 	DebugLogger.log_info("GodotWebAuth", "Created callbacks: token=%s error=%s" % [str(token_callback), str(error_callback)])
 
