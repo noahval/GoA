@@ -114,13 +114,17 @@ func _trigger_web_google_auth():
 
 # Called from JavaScript when Google token is received
 func on_google_token_received(token: String):
-	DebugLogger.log_info("GoogleAuth", "Received Google ID token from JavaScript")
+	DebugLogger.log_info("LoginPopup", "on_google_token_received called")
+	DebugLogger.log_info("LoginPopup", "Token length: %d" % token.length())
 	_show_status("Authenticating with server...")
 
 	# Authenticate with Nakama using the Google token
+	DebugLogger.log_info("LoginPopup", "Calling NakamaManager.authenticate_google")
 	var success = await NakamaManager.authenticate_google(token)
+	DebugLogger.log_info("LoginPopup", "authenticate_google returned: %s" % str(success))
 
 	if not success:
+		DebugLogger.log_error("LoginPopup", "Google authentication failed")
 		_set_buttons_enabled(true)
 
 # Called from JavaScript when Google auth fails

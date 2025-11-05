@@ -55,9 +55,13 @@ func _register_javascript_interface():
 
 ## Internal callback wrapper - receives args from JS as Array
 func _on_js_token_received(args: Array):
+	DebugLogger.log_info("GodotWebAuth", "_on_js_token_received called with %d args" % args.size())
 	if args.size() > 0:
 		var token = str(args[0])
+		DebugLogger.log_info("GodotWebAuth", "Token length: %d" % token.length())
 		on_google_token_received(token)
+	else:
+		DebugLogger.log_error("GodotWebAuth", "No token in callback args")
 
 ## Internal callback wrapper - receives args from JS as Array
 func _on_js_auth_failed(args: Array):
@@ -67,14 +71,17 @@ func _on_js_auth_failed(args: Array):
 
 ## Called from JavaScript when Google returns an ID token
 func on_google_token_received(token: String):
-	DebugLogger.log_info("GodotWebAuth", "Received Google token from JS")
+	DebugLogger.log_info("GodotWebAuth", "on_google_token_received called with token")
 
 	# Find the login popup and pass the token to it
 	var login_popup = _find_login_popup()
 	if login_popup:
+		DebugLogger.log_success("GodotWebAuth", "Found login popup, forwarding token")
 		login_popup.on_google_token_received(token)
 	else:
 		DebugLogger.log_error("GodotWebAuth", "Could not find login popup to send token")
+		# Try to debug what's in the scene tree
+		DebugLogger.log_info("GodotWebAuth", "Current scene: %s" % str(get_tree().current_scene.name if get_tree().current_scene else "none"))
 
 ## Called from JavaScript when Google auth fails
 func on_google_auth_failed(error: String):
