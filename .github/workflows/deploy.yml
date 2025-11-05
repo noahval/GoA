@@ -32,15 +32,16 @@ jobs:
           relative_project_path: ./
           relative_export_path: ./build
 
-      - name: Move files to root of build directory
+      - name: Copy assets to build directory
         run: |
-          mv build/Web/* build/
-          rmdir build/Web
           mkdir -p build/level1
           cp level1/Title.jpg build/level1/
           cp level1/begin.jpg build/level1/
           if [ -f level1/title.webm ]; then cp level1/title.webm build/level1/; fi
+          echo "=== Build directory contents ==="
           ls -la build/
+          echo "=== Checking for .pck file ==="
+          ls -la build/*.pck || echo "No .pck file found"
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
