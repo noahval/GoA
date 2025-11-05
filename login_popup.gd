@@ -229,13 +229,13 @@ func _on_skip_pressed():
 	hide_popup()
 
 func _on_auth_success(session_data):
-	_show_status("Welcome, " + session_data.username + "!")
-
 	# Try to load full cloud save (not just stats)
 	var loaded = await NakamaManager.load_game()
 	if loaded:
+		_show_status("Welcome back!")
 		DebugLogger.log_success("Login", "Full cloud save loaded (stats + progress)")
 	else:
+		_show_status("Welcome!")
 		DebugLogger.log_info("Login", "No cloud save found, starting fresh")
 		# Save initial state to cloud so it's ready for next time
 		await NakamaManager.save_game()
