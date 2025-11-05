@@ -1,6 +1,6 @@
 extends Panel
 ## Login Popup
-## Handles user authentication via Google SSO or username/password
+## Handles user authentication via Google SSO / username/password
 
 signal authentication_completed(success: bool)
 signal skip_login()
