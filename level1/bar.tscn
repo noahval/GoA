@@ -80,27 +80,30 @@ text = "Steel Stout: 1"
 layout_mode = 2
 text = "Bribe Barkeep: 50"
 
-[node name="SecretPassageButton" type="Button" parent="HBoxContainer/RightVBox" index="3"]
+[node name="FollowVoiceButton" type="Button" parent="HBoxContainer/RightVBox" index="3"]
 visible = false
 layout_mode = 2
-text = "Enter Secret Passage"
+text = "Follow whispering voice"
 
 [node name="DeveloperFreeCoinsButton" type="Button" parent="HBoxContainer/RightVBox" index="4"]
 layout_mode = 2
 text = "Developer: Free Coins"
 
-[node name="ToBlackboreFurnaceButton" type="Button" parent="HBoxContainer/RightVBox" index="5"]
-layout_mode = 2
-text = "To Blackbore Furnace"
-
-[node name="FollowVoiceButton" type="Button" parent="HBoxContainer/RightVBox" index="6"]
+[node name="SecretPassageButton" type="Button" parent="HBoxContainer/RightVBox" index="5"]
 visible = false
 layout_mode = 2
-text = "Follow whispering voice"
+theme_type_variation = &"ForwardNavButton"
+text = "Enter Secret Passage"
 
-[node name="ToCoppersmithCarriageButton" type="Button" parent="HBoxContainer/RightVBox" index="7"]
+[node name="ToCoppersmithCarriageButton" type="Button" parent="HBoxContainer/RightVBox" index="6"]
 layout_mode = 2
+theme_type_variation = &"ForwardNavButton"
 text = "To Coppersmith Carriage"
+
+[node name="ToBlackboreFurnaceButton" type="Button" parent="HBoxContainer/RightVBox" index="7"]
+layout_mode = 2
+theme_type_variation = &"BackNavButton"
+text = "To Blackbore Furnace"
 
 [node name="VoicePopup" parent="PopupContainer" instance=ExtResource("4_popup")]
 

@@ -450,6 +450,7 @@ func mark_energized(x: int, y: int, came_from_dir: int):
 
 func show_train_heart_button():
 	var enter_button = _create_responsive_button("Enter Train Heart", _on_enter_train_heart_pressed)
+	enter_button.theme_type_variation = &"ForwardNavButton"
 	_add_button_before_back(enter_button)
 
 func _on_enter_train_heart_pressed():

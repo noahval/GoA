@@ -27,6 +27,7 @@ NakamaManager="*res://nakama_client.gd"
 GodotWebAuth="*res://godot_web_auth.gd"
 LocalSaveManager="*res://local_save_manager.gd"
 OverseerMood="*res://level1/overseer_mood.gd"
+ButtonHierarchy="*res://button_hierarchy_config.gd"
 
 [display]
 

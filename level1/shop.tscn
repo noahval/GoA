@@ -108,10 +108,12 @@ text = "Bribe Shopkeep: 10"
 [node name="WorkshopButton" type="Button" parent="HBoxContainer/RightVBox" index="3"]
 visible = false
 layout_mode = 2
+theme_type_variation = &"ForwardNavButton"
 text = "To Workshop"
 
 [node name="ToCoppersmithCarriageButton" type="Button" parent="HBoxContainer/RightVBox" index="4"]
 layout_mode = 2
+theme_type_variation = &"BackNavButton"
 text = "To Coppersmith Carriage"
 
 [node name="ShovelsPopup" type="Panel" parent="PopupContainer" index="0"]

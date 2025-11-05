@@ -1,6 +1,7 @@
 # OverseerMood - Phase 1: Mood & Conversion System
 # Manages the overseer's mood and coal-to-coin conversion mechanics
 # Design: Mysterious gameplay - players discover optimal timing through experimentation
+# Mood levels (grimdark theme): furious, irritated, indifferent, tolerant, pleased, delighted
 
 extends Node
 
@@ -90,14 +91,14 @@ func get_mood_adjective() -> String:
 		return "furious"
 	elif effective_mood < 0.35:
 		return "irritated"
-	elif effective_mood < 0.55:
+	elif effective_mood < 0.50:
 		return "indifferent"
-	elif effective_mood < 0.70:
+	elif effective_mood < 0.65:
+		return "tolerant"
+	elif effective_mood < 0.80:
 		return "pleased"
-	elif effective_mood < 0.85:
-		return "delighted"
 	else:
-		return "ecstatic"
+		return "delighted"
 
 # Get trend arrow (what player sees)
 func get_trend_arrow() -> String:
@@ -141,12 +142,12 @@ func get_conversion_message() -> String:
 	var coal_needed = int(get_coal_per_coin())
 
 	match adjective:
-		"ecstatic":
-			return "The overseer was ecstatic! He only demanded " + str(coal_needed) + " coal for 1 coin."
 		"delighted":
-			return "The overseer was delighted! He accepted " + str(coal_needed) + " coal for 1 coin."
+			return "The overseer was delighted. He accepted " + str(coal_needed) + " coal for 1 coin."
 		"pleased":
 			return "The overseer was pleased. He took " + str(coal_needed) + " coal for 1 coin."
+		"tolerant":
+			return "The overseer tolerated your request. He took " + str(coal_needed) + " coal for 1 coin."
 		"indifferent":
 			return "The overseer accepted " + str(coal_needed) + " coal for 1 coin without comment."
 		"irritated":

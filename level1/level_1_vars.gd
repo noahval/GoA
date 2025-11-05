@@ -44,3 +44,5 @@ var shown_lazy_notification = false
 # Phase 1: Overseer Mood & Conversion System
 var auto_conversion_enabled = false  # Manual by default
 var coal_conversion_threshold = 30.0  # Amount of coal needed for manual conversion
+var overseer_bribe_count = 0  # Track number of times overseer has been bribed
+var mood_system_unlocked = false  # Unlocked after 4 bribes

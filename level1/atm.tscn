@@ -1,23 +1,27 @@
-[gd_scene load_steps=3 format=3 uid="uid://vwpxcrgsmbqn"]
+[gd_scene load_steps=4 format=3 uid="uid://atm_scene"]
 
 [ext_resource type="PackedScene" uid="uid://base_scene_template" path="res://level1/scene_template.tscn" id="1_base"]
-[ext_resource type="Script" uid="uid://crf22qthb73tu" path="res://level1/secret_passage_entrance.gd" id="2_script"]
+[ext_resource type="Script" path="res://level1/atm.gd" id="2_script"]
+[ext_resource type="Texture2D" path="res://level1/atm.jpg" id="3_texture"]
 
-[node name="SecretPassageEntrance" instance=ExtResource("1_base")]
+[node name="ATM" instance=ExtResource("1_base")]
 script = ExtResource("2_script")
+
+[node name="Background" parent="." index="0"]
+texture = ExtResource("3_texture")
 
 [node name="TitlePanel" type="Panel" parent="HBoxContainer/LeftVBox" index="0"]
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 
-[node name="Title" type="Label" parent="HBoxContainer/LeftVBox/TitlePanel"]
+[node name="TitleLabel" type="Label" parent="HBoxContainer/LeftVBox/TitlePanel"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-text = "Secret Passage"
+text = "Currency Converter"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -47,15 +51,25 @@ text = "Break Timer"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="PuzzleButton" type="Button" parent="HBoxContainer/RightVBox" index="0"]
+[node name="CoinsPanel" type="Panel" parent="HBoxContainer/LeftVBox" index="2"]
+self_modulate = Color(1, 1, 1, 0.7)
+custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
-theme_type_variation = &"ForwardNavButton"
-text = "Approach Hidden Door"
 
-[node name="ToBarButton" type="Button" parent="HBoxContainer/RightVBox" index="1"]
+[node name="CoinsLabel" type="Label" parent="HBoxContainer/LeftVBox/CoinsPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Coins: 0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ToCoppersmithCarriageButton" type="Button" parent="HBoxContainer/RightVBox"]
 layout_mode = 2
 theme_type_variation = &"BackNavButton"
-text = "To Bar"
+text = "To Coppersmith Carriage Hall"
 
-[connection signal="pressed" from="HBoxContainer/RightVBox/PuzzleButton" to="." method="_on_puzzle_button_pressed"]
-[connection signal="pressed" from="HBoxContainer/RightVBox/ToBarButton" to="." method="_on_to_bar_button_pressed"]
+[connection signal="pressed" from="HBoxContainer/RightVBox/ToCoppersmithCarriageButton" to="." method="_on_to_coppersmith_carriage_button_pressed"]

@@ -21,7 +21,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-text = "Coppersmith Carriage"
+text = "Coppersmith Carriage Hall"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -75,17 +75,26 @@ text = "Bribe Overseer: 5"
 [node name="OverseersOfficeButton" type="Button" parent="HBoxContainer/RightVBox"]
 visible = false
 layout_mode = 2
+theme_type_variation = &"ForwardNavButton"
 text = "To Overseer's Office"
 
 [node name="ShopButton" type="Button" parent="HBoxContainer/RightVBox"]
 layout_mode = 2
+theme_type_variation = &"ForwardNavButton"
 text = "To Crankshaft's"
+
+[node name="ToCurrencyConverterButton" type="Button" parent="HBoxContainer/RightVBox"]
+layout_mode = 2
+theme_type_variation = &"ForwardNavButton"
+text = "To Currency Converter"
 
 [node name="ToBlackboreButton" type="Button" parent="HBoxContainer/RightVBox"]
 layout_mode = 2
+theme_type_variation = &"BackNavButton"
 text = "To Blackbore Bar"
 
 [connection signal="pressed" from="HBoxContainer/RightVBox/BribeOverseerButton" to="." method="_on_bribe_overseer_pressed"]
 [connection signal="pressed" from="HBoxContainer/RightVBox/OverseersOfficeButton" to="." method="_on_overseers_office_button_pressed"]
 [connection signal="pressed" from="HBoxContainer/RightVBox/ShopButton" to="." method="_on_shop_button_pressed"]
+[connection signal="pressed" from="HBoxContainer/RightVBox/ToCurrencyConverterButton" to="." method="_on_to_currency_converter_button_pressed"]
 [connection signal="pressed" from="HBoxContainer/RightVBox/ToBlackboreButton" to="." method="_on_to_blackbore_button_pressed"]

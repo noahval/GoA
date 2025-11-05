@@ -41,7 +41,7 @@ The BIBLE Check Hook auto-triggers on development keywords (scene, stats, popup,
 
 | Doc | Keywords | Contents |
 |-----|----------|----------|
-| **⭐ [game-design-principles.md](game-design-principles.md)** | **PRIORITY: knowledge as progression, metroidbrainia, discovery, mysterious gameplay**, game design, principles, best practices, player engagement, retention, UX, UI, feedback, progression, balance, difficulty, idle, incremental, loop, motivation, polish, quality, observation, experimentation, aha moments | **HIGH PRIORITY**: Knowledge-based progression (players learn through discovery, not tutorials). Comprehensive game design guide: core principles (easy to learn/hard to master, clear goals, player agency), engagement/retention strategies, UX/UI best practices, gameplay loop design, idle/incremental mechanics, balancing, feedback systems, progression design, quality checklist |
+| **⭐ [game-design-principles.md](game-design-principles.md)** | **PRIORITY: knowledge as progression, metroidbrainia, discovery, mysterious gameplay, grimdark, theme, atmosphere, tone**, game design, principles, best practices, player engagement, retention, UX, UI, feedback, progression, balance, difficulty, idle, incremental, loop, motivation, polish, quality, observation, experimentation, aha moments | **HIGH PRIORITY**: Knowledge-based progression (players learn through discovery, not tutorials). Grimdark theme (oppressive atmosphere, grim vocabulary, no false hope). Comprehensive game design guide: core principles (easy to learn/hard to master, clear goals, player agency), engagement/retention strategies, UX/UI best practices, gameplay loop design, idle/incremental mechanics, balancing, feedback systems, progression design, quality checklist |
 | **[game-systems.md](game-systems.md)** | stats, experience, shop, timer, victory, suspicion, coins | Experience/leveling, shop mechanics, timers (whisper, suspicion, stamina), victory conditions, notifications |
 | **[nakama-integration.md](nakama-integration.md)** | nakama, server, auth, authentication, cloud, save, multiplayer, online, login, local save, offline, browser save, LocalSaveManager, IndexedDB | Nakama server setup, NakamaClient API, authentication (email/password, Google OAuth), cloud saves, local browser saves, storage, login system |
 | **[deployment.md](deployment.md)** | deploy, github, actions, workflow, build, export, pages | GitHub Actions workflow, automated builds, deployment process, export settings |
@@ -50,8 +50,10 @@ The BIBLE Check Hook auto-triggers on development keywords (scene, stats, popup,
 | **[popup-system.md](popup-system.md)** | popup, dialog, modal, PopupContainer | Popup API, PopupContainer requirement, implementation patterns |
 | **[notifications.md](notifications.md)** | notification, NotificationBar, show_stat_notification | Notification flow, dynamic panel creation, auto-removal timers |
 | **[theme-system.md](theme-system.md)** | theme, styling, colors, StyleBoxFlat | default_theme.tres, base styles, theme variations, color palette |
+| **[button-hierarchy.md](button-hierarchy.md)** | button order, button hierarchy, navigation buttons, button organization, ForwardNavButton, BackNavButton, RightVBox, LeftVBox | Button ordering standards, navigation button hierarchy, configurable button priority system, left/right panel organization |
 | **[debug-system.md](debug-system.md)** | debug, logging, test, DebugLogger, validate | Testing procedures, DebugLogger, headless testing, log analysis |
 | **[godot-dev.md](godot-dev.md)** | godot, gdscript, node, signal, autoload | GDScript patterns, scene management, node lifecycle, best practices |
+| **[programming-principles.md](programming-principles.md)** | SOLID, DRY, KISS, YAGNI, principles, best practices, code quality, refactoring, clean code, maintainability | General programming principles (SOLID, DRY, KISS, YAGNI) adapted for GDScript/Godot development, code quality checklist |
 
 ---
 
@@ -60,6 +62,7 @@ The BIBLE Check Hook auto-triggers on development keywords (scene, stats, popup,
 - **⭐ Design new features (ALWAYS START HERE)** → [game-design-principles.md#knowledge-as-progression](game-design-principles.md#knowledge-as-progression-high-priority-for-goa)
 - **Create mysterious/discoverable systems** → [game-design-principles.md#knowledge-as-progression](game-design-principles.md#knowledge-as-progression-high-priority-for-goa)
 - **Design without tutorials/hand-holding** → [game-design-principles.md#knowledge-as-progression](game-design-principles.md#knowledge-as-progression-high-priority-for-goa)
+- **⭐ Writing dialogue/narrative/descriptions** → Check [BIBLE.md#grimdark-theme](BIBLE.md#design-philosophy-highest-priority) for tone guidelines
 - **Evaluate game quality/design principles** → [game-design-principles.md](game-design-principles.md)
 - **Improve player engagement/retention** → [game-design-principles.md](game-design-principles.md)
 - **Balance progression/difficulty** → [game-design-principles.md](game-design-principles.md)
@@ -73,8 +76,11 @@ The BIBLE Check Hook auto-triggers on development keywords (scene, stats, popup,
 - **Display notifications** → [notifications.md](notifications.md)
 - **Fix UI scaling/buttons** → [responsive-layout.md](responsive-layout.md)
 - **Change colors/theme** → [theme-system.md](theme-system.md)
+- **Order buttons in scenes/navigation hierarchy** → [button-hierarchy.md](button-hierarchy.md)
 - **Test/debug** → [debug-system.md](debug-system.md)
 - **Godot patterns** → [godot-dev.md](godot-dev.md)
+- **Refactor code/improve code quality** → [programming-principles.md](programming-principles.md)
+- **Code review/architectural decisions** → [programming-principles.md](programming-principles.md)
 
 ---
 
@@ -87,6 +93,24 @@ The BIBLE Check Hook auto-triggers on development keywords (scene, stats, popup,
 - **Tools available early**, understanding comes later
 - **Discovery is the reward** - don't spoil with explicit explanations
 - **Use the checklist**: [game-design-principles.md#design-checklist-for-knowledge-based-systems](game-design-principles.md#design-checklist-for-knowledge-based-systems)
+
+**⭐ Grimdark Theme** (applies to ALL content):
+- **Oppressive atmosphere**: You are a slave in a harsh industrial setting
+- **No false hope**: Avoid overly positive language (e.g., "ecstatic" → "delighted" at best)
+- **Grim vocabulary**: Use words that reflect suffering, oppression, and survival
+- **Dark humor acceptable**: Gallows humor fits the theme
+- **NPCs are oppressors**: Overseer, guards, and authority figures are harsh/indifferent
+- **Player is powerless but clever**: Power comes through cunning, not strength
+
+### Code Quality Standards (ALWAYS apply)
+- **Apply SOLID, DRY, KISS, YAGNI principles** to all code
+- **Proactive application**: Reference [programming-principles.md](programming-principles.md) when:
+  - Writing new scripts/scenes
+  - Refactoring existing code
+  - Reviewing code quality
+  - Making architectural decisions
+  - Noticing code duplication or complexity
+- **Code Review Checklist**: Use the checklist in programming-principles.md before completing tasks
 
 ### Technical APIs (ALWAYS use, NEVER bypass)
 - **Stats**: `Global.add_stat_exp()` (not direct modification)
@@ -133,8 +157,10 @@ The BIBLE Check Hook auto-triggers on development keywords (scene, stats, popup,
 
 **Workflow**:
 1. **Always start with Knowledge as Progression** when designing features
-2. Check keywords → Find docs in table above
-3. Read them → Follow documented patterns
-4. Use the [Knowledge-Based Systems Checklist](game-design-principles.md#design-checklist-for-knowledge-based-systems) before implementing
+2. **Maintain grimdark tone** in all content (dialogue, descriptions, mood adjectives)
+3. **Apply SOLID, DRY, KISS, YAGNI principles** to all code (see Critical Patterns above)
+4. Check keywords → Find docs in table above
+5. Read them → Follow documented patterns
+6. Use the [Knowledge-Based Systems Checklist](game-design-principles.md#design-checklist-for-knowledge-based-systems) before implementing
 
-**Version**: 2.7 (Prioritized Knowledge as Progression as core design philosophy) | **Updated**: 2025-11-02
+**Version**: 2.8 (Added Grimdark Theme as critical design pattern) | **Updated**: 2025-11-05

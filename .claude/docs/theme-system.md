@@ -278,6 +278,126 @@ confirm_button.theme_type_variation = &"AffirmativeButton"
 - Use **AffirmativeButton** (blue) for: Yes, OK, Confirm, Accept, Save, Submit
 - Use **Default Button** (orange) for: No, Cancel, Back, Close, Delete
 
+### ForwardNavButton
+
+**Type**: Button variant
+
+**Usage**: Navigation buttons that take you forward/deeper into scenes
+
+**Normal State** (`StyleBoxFlat_forward_nav_button_normal`):
+```
+background: Color(0.255, 0.412, 0.882, 0.3)  # Royal blue (#4169E1), 30% opacity
+border: 2px, Color(0.357, 0.608, 0.835, 1)  # Bright blue (#5B9BD5), 100% opacity
+corner_radius: 6px (all corners)
+content_margin: 8px left/right, 4px top/bottom
+shadow_color: Color(0, 0, 0, 0.1)
+shadow_size: 4px
+shadow_offset: Vector2(0, 2)
+font_color: Color(0.529, 0.808, 0.922, 1)  # Sky blue (#87CEEB)
+```
+
+**Hover State** (`StyleBoxFlat_forward_nav_button_hover`):
+```
+background: Color(0.3, 0.5, 0.95, 0.35)  # Lighter blue, 35% opacity
+border: 2px, Color(0.4, 0.65, 0.88, 1)  # Brighter blue
+corner_radius: 6px (all corners)
+shadow_size: 6px (increased depth on hover)
+shadow_offset: Vector2(0, 3)
+font_hover_color: Color(0.65, 0.88, 0.98, 1)  # Brighter sky blue
+```
+
+**Pressed State** (`StyleBoxFlat_forward_nav_button_pressed`):
+```
+background: Color(0.2, 0.35, 0.75, 0.4)  # Darker blue, 40% opacity
+border: 2px, Color(0.3, 0.55, 0.78, 1)
+corner_radius: 6px (all corners)
+shadow_size: 2px (reduced on press)
+font_pressed_color: Color(0.45, 0.73, 0.86, 1)  # Dimmed blue
+```
+
+**Visual Features**:
+- Light blue background (brighter = forward/progress)
+- **2px border** (thicker than back nav = more emphasis)
+- **6px corner radius** (more rounded than standard buttons)
+- Subtle shadow for depth
+- Progressive shadow animation (grows on hover, shrinks on press)
+
+**How to Use**:
+```gdscript
+# In .tscn file:
+[node name="EnterDungeonButton" type="Button"]
+theme_type_variation = "ForwardNavButton"
+
+# In code:
+enter_button.theme_type_variation = &"ForwardNavButton"
+```
+
+### BackNavButton
+
+**Type**: Button variant
+
+**Usage**: Navigation buttons that take you back to previous scenes
+
+**Normal State** (`StyleBoxFlat_back_nav_button_normal`):
+```
+background: Color(0, 0, 0.502, 0.3)  # Navy blue (#000080), 30% opacity
+border: 1px, Color(0.176, 0.290, 0.431, 1)  # Dark blue-gray (#2D4A6E), 100% opacity
+corner_radius: 6px (all corners)
+content_margin: 8px left/right, 4px top/bottom
+shadow_color: Color(0, 0, 0, 0.08)
+shadow_size: 2px
+shadow_offset: Vector2(0, 1)
+font_color: Color(0.690, 0.769, 0.871, 1)  # Light steel blue (#B0C4DE)
+```
+
+**Hover State** (`StyleBoxFlat_back_nav_button_hover`):
+```
+background: Color(0.05, 0.05, 0.6, 0.35)  # Slightly lighter navy, 35% opacity
+border: 1px, Color(0.22, 0.35, 0.5, 1)  # Lighter border
+corner_radius: 6px (all corners)
+shadow_size: 3px (slightly increased)
+shadow_offset: Vector2(0, 2)
+font_hover_color: Color(0.78, 0.85, 0.94, 1)  # Brighter steel blue
+```
+
+**Pressed State** (`StyleBoxFlat_back_nav_button_pressed`):
+```
+background: Color(0, 0, 0.4, 0.4)  # Darker navy, 40% opacity
+border: 1px, Color(0.15, 0.25, 0.38, 1)  # Darkened border
+corner_radius: 6px (all corners)
+shadow_size: 1px (minimal on press)
+font_pressed_color: Color(0.60, 0.69, 0.80, 1)  # Dimmed steel blue
+```
+
+**Visual Features**:
+- Dark blue background (darker = return/retreat)
+- **1px border** (thinner than forward nav = less emphasis)
+- **6px corner radius** (matches forward nav for consistency)
+- Minimal shadow for subtle appearance
+- Muted colors for secondary action feel
+
+**How to Use**:
+```gdscript
+# In .tscn file:
+[node name="ReturnButton" type="Button"]
+theme_type_variation = "BackNavButton"
+
+# In code:
+back_button.theme_type_variation = &"BackNavButton"
+```
+
+**Design Pattern - Navigation Buttons**:
+- Use **ForwardNavButton** (light blue, 2px border) for: Enter, Explore, Continue, Next, Open, Advance
+- Use **BackNavButton** (dark blue, 1px border) for: Return, Exit, Leave, Previous, Close
+- Use **Default Button** (orange) for: Standard actions not related to navigation
+- Use **AffirmativeButton** (cyan/blue) for: Yes, OK, Confirm, Accept actions in dialogs
+
+**Visual Hierarchy**:
+1. **Forward navigation** = Most prominent (light, thick border, larger shadow)
+2. **Back navigation** = Less prominent (dark, thin border, minimal shadow)
+3. **Border thickness** reinforces directionality (2px forward, 1px back)
+4. **Color temperature** creates natural hierarchy (warm = action, cool = navigation)
+
 ---
 
 ## Component Integration
@@ -616,6 +736,12 @@ When modifying themes:
 | **Buttons Hover** | Light orange | (0.68, 0.35, 0.1) | 30% | Brighter on hover |
 | **Affirmative Button** | Blue | #026a9e / (0.008, 0.416, 0.62) | 30% | Positive/confirm actions |
 | **Affirmative Hover** | Light blue | (0.1, 0.52, 0.75) | 30% | Brighter blue hover |
+| **Forward Nav Button** | Royal blue | #4169E1 / (0.255, 0.412, 0.882) | 30% | Forward navigation |
+| **Forward Nav Border** | Bright blue | #5B9BD5 / (0.357, 0.608, 0.835) | 100% | 2px border |
+| **Forward Nav Text** | Sky blue | #87CEEB / (0.529, 0.808, 0.922) | 100% | Light blue text |
+| **Back Nav Button** | Navy blue | #000080 / (0, 0, 0.502) | 30% | Back navigation |
+| **Back Nav Border** | Blue-gray | #2D4A6E / (0.176, 0.290, 0.431) | 100% | 1px border |
+| **Back Nav Text** | Steel blue | #B0C4DE / (0.690, 0.769, 0.871) | 100% | Muted blue text |
 | **Panels** | Dark orange | (0.58, 0.247, 0.012) | 30% | Background panels |
 | **Labels** | Dark orange | (0.58, 0.247, 0.012) | 30% | Info displays |
 | **Progress Fill** | Green | (0, 1, 0) | 30% | Health/positive resources |
@@ -640,9 +766,12 @@ confirm_button.theme_type_variation = &"AffirmativeButton"
 
 **Visual Design Philosophy**:
 - **Orange buttons** = Negative, cancel, or neutral actions
-- **Blue buttons** = Affirmative, confirm, or positive actions
+- **Cyan/blue buttons** = Affirmative, confirm, or positive actions
+- **Light blue buttons (2px border)** = Forward navigation (advancing to deeper scenes)
+- **Dark blue buttons (1px border)** = Back navigation (returning to previous scenes)
 - **Blue borders** = Visual trim and special element highlights
 - **30% opacity** = Maintains translucent overlay aesthetic
+- **Border thickness** = Visual hierarchy (2px forward > 1px back)
 
 ---
 
@@ -652,5 +781,5 @@ confirm_button.theme_type_variation = &"AffirmativeButton"
 - [godot-dev.md](godot-dev.md) - Theme application patterns
 - [responsive-layout.md](responsive-layout.md) - Font scaling system
 
-**Version**: 1.1 (Updated to orange/blue color scheme)
-**Last Updated**: 2025-10-31
+**Version**: 1.2 (Added ForwardNavButton and BackNavButton navigation variants)
+**Last Updated**: 2025-11-05

@@ -57,7 +57,8 @@ text = "Take Whispering Crystal"
 
 [node name="BackButton" type="Button" parent="HBoxContainer/RightVBox" index="1"]
 layout_mode = 2
-text = "Back to Pipes"
+theme_type_variation = &"BackNavButton"
+text = "To Secret Passage"
 
 [connection signal="pressed" from="HBoxContainer/RightVBox/TakeHeartButton" to="." method="_on_take_heart_button_pressed"]
 [connection signal="pressed" from="HBoxContainer/RightVBox/BackButton" to="." method="_on_back_button_pressed"]

@@ -79,10 +79,16 @@ func _apply_responsive_layout_internal(scene_root: Control) -> void:
 
 	if window:
 		if is_portrait_window:
-			# Portrait: Use 2x scaled viewport (1000x2000 viewport scales to fit window)
-			window.content_scale_size = Vector2(1000, 2000)
+			# Portrait: Use 2x scaled viewport
+			# Calculate viewport width based on window aspect ratio (maintains 2x scale target)
+			# Default 2000 height, width scales to match window aspect ratio
+			var portrait_height = 2000
+			var portrait_width = int((window_size.x / window_size.y) * portrait_height)
+			# Clamp width to reasonable range (800-1200) for phone/tablet layouts
+			portrait_width = clampi(portrait_width, 800, 1200)
+			window.content_scale_size = Vector2(portrait_width, portrait_height)
 			window.content_scale_factor = 1.0
-			print("ResponsiveLayout: Portrait - Set viewport to 1000x2000 for 2x UI scaling")
+			print("ResponsiveLayout: Portrait - Set viewport to ", portrait_width, "x", portrait_height, " for 2x UI scaling (window: ", window_size, ")")
 		else:
 			# Landscape: Use native resolution (no 2x scaling)
 			# Set viewport to match actual window size

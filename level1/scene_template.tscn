@@ -70,7 +70,6 @@ custom_minimum_size = Vector2(0, 0)
 layout_mode = 2
 
 [node name="LeftVBox" type="VBoxContainer" parent="HBoxContainer"]
-custom_minimum_size = Vector2(220, 0)
 layout_mode = 2
 size_flags_horizontal = 4
 theme_override_constants/separation = 10
@@ -85,7 +84,6 @@ size_flags_horizontal = 3
 mouse_filter = 2
 
 [node name="RightVBox" type="VBoxContainer" parent="HBoxContainer"]
-custom_minimum_size = Vector2(260, 0)
 layout_mode = 2
 size_flags_horizontal = 4
 theme_override_constants/separation = 10

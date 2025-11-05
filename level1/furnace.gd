@@ -24,6 +24,7 @@ var auto_conversion_timer = 0.0  # Timer for auto conversion interval
 @onready var suspicion_bar = $HBoxContainer/LeftVBox/SuspicionPanel/SuspicionBar
 @onready var steal_coal_button = $HBoxContainer/RightVBox/StealCoalButton
 @onready var take_break_button = $HBoxContainer/RightVBox/ShopButton
+@onready var overseer_mood_panel = $HBoxContainer/LeftVBox/OverseerMoodPanel
 
 func _ready():
 	ResponsiveLayout.apply_to_scene(self)
@@ -32,6 +33,7 @@ func _ready():
 	update_stamina_bar()
 	update_suspicion_bar()
 	toggle_mode_button.visible = false
+	update_mood_panel_visibility()
 
 func _process(delta):
 	# Auto shovel interval-based generation
@@ -76,6 +78,7 @@ func _process(delta):
 	coins_label.text = "Coins: " + str(int(Level1Vars.coins))
 	update_stamina_bar()
 	update_suspicion_bar()
+	update_mood_panel_visibility()
 	update_mood_display()
 	update_conversion_buttons()
 	update_dev_buttons()
@@ -195,12 +198,16 @@ func toggle_conversion_mode():
 	else:
 		Global.show_stat_notification("Manual conversion mode")
 
+# Show/hide mood panel based on unlock status
+func update_mood_panel_visibility():
+	if overseer_mood_panel:
+		overseer_mood_panel.visible = Level1Vars.mood_system_unlocked
+
 # Update mood display with qualitative adjectives (no numbers!)
 func update_mood_display():
 	if mood_label:
 		var adjective = OverseerMood.get_mood_adjective()
-		var trend = OverseerMood.get_trend_arrow()
-		mood_label.text = "Overseer: " + adjective + " " + trend
+		mood_label.text = "Overseer: " + adjective
 
 # Update conversion button states
 func update_conversion_buttons():

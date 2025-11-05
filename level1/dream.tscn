@@ -69,7 +69,6 @@ custom_minimum_size = Vector2(0, 90)
 layout_mode = 2
 
 [node name="LeftVBox" type="VBoxContainer" parent="HBoxContainer"]
-custom_minimum_size = Vector2(220, 0)
 layout_mode = 2
 
 [node name="TitlePanel" type="Panel" parent="HBoxContainer/LeftVBox"]
@@ -117,7 +116,6 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="RightVBox" type="VBoxContainer" parent="HBoxContainer"]
-custom_minimum_size = Vector2(260, 0)
 layout_mode = 2
 
 [node name="BackButton" type="Button" parent="HBoxContainer/RightVBox"]
