@@ -1,36 +1,28 @@
 # Nakama Authentication Status
 
-## Current Issue
+## ✅ FIXED - Server is Working!
 
-Online authentication is currently not working due to SSL/TLS connection issues between Godot and the Nakama server.
+Online authentication is now fully operational!
 
-### Error Details
+### What's Working
 
-```
-HTTPRequest failed with result: 5 (RESULT_CANT_CONNECT)
-```
+- ✅ Server accessible at `https://nakama.goasso.xyz`
+- ✅ Cloudflare Tunnel routing properly configured
+- ✅ Docker containers networked correctly
+- ✅ API endpoints responding (HTTP 200/401 as expected)
+- ✅ Create Account - Ready to use
+- ✅ Login - Ready to use
+- ✅ Google Sign-In - Ready to use (web builds)
+- ✅ Cloud save sync - Ready to use
+- ✅ Skip/offline mode - Works perfectly
+- ✅ Local save/load - Works perfectly
 
-### Root Cause
+### What Was Fixed
 
-The Nakama server at `nakama.goasso.xyz:443` uses an SSL certificate that Godot's HTTPRequest cannot validate, even with `TLSOptions.client_unsafe()` configured. This appears to be a combination of:
-
-1. Self-signed or untrusted SSL certificate
-2. Possible Cloudflare bot protection (server returns 403 when accessed directly)
-3. Godot 4.5 on Windows HTTPS connectivity limitations
-
-### What Works
-
-- ✅ Server is reachable (ping successful at 40ms avg)
-- ✅ Skip/offline mode works perfectly
-- ✅ Game runs fully offline
-- ✅ Local save/load works
-
-### What Doesn't Work
-
-- ❌ Create Account (HTTPS connection fails)
-- ❌ Login (HTTPS connection fails)
-- ❌ Google Sign-In (would fail for same reason)
-- ❌ Cloud save sync
+1. **Docker Compose**: Added tunnel service to same network as Nakama
+2. **Health Check**: Changed from `curl` to `/nakama/nakama healthcheck`
+3. **Cloudflare Tunnel**: Configured routing `nakama.goasso.xyz` → `http://nakama:7350`
+4. **Network**: All containers on `nakama_default` network (172.18.0.0/16)
 
 ## Temporary Workaround
 

@@ -162,6 +162,19 @@ func _on_create_account_pressed():
 		_set_buttons_enabled(true)
 		return
 
+	# TEST: Try device auth first to debug connection
+	DebugLogger.log_info("LoginPopup", "Testing connection with device auth...")
+	var test_success = await NakamaManager.authenticate_device()
+	if test_success:
+		DebugLogger.log_success("LoginPopup", "Device auth works! Connection is good.")
+		_show_status("Connection test passed! Now creating account...", false)
+		await get_tree().create_timer(1.0).timeout
+	else:
+		DebugLogger.log_error("LoginPopup", "Device auth failed - connection issue")
+		_show_status("Cannot connect to server. Try web build or check SSL.", true)
+		_set_buttons_enabled(true)
+		return
+
 	# Authenticate with Nakama (create = true)
 	DebugLogger.log_info("LoginPopup", "Calling authenticate_email with username: " + username)
 	var success = await NakamaManager.authenticate_email(username, password, true)

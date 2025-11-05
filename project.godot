@@ -30,10 +30,11 @@ OverseerMood="*res://level1/overseer_mood.gd"
 
 [display]
 
-window/size/viewport_width=1000
-window/size/viewport_height=2000
-window/size/window_width_override=450
-window/size/window_height_override=900
+window/size/viewport_width=450
+window/size/viewport_height=900
+window/size/resizable=true
+window/size/mode=0
+window/dpi/allow_hidpi=false
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 
