@@ -4,7 +4,7 @@ extends Node
 ## This is registered with JavaScriptBridge so JS can call these methods
 
 func _ready():
-	DebugLogger.log_info("GodotWebAuth", "_ready() called")
+	DebugLogger.log_info("GodotWebAuth", "_ready() called - version 2")
 	# Only register for web builds
 	if OS.has_feature("web"):
 		DebugLogger.log_info("GodotWebAuth", "Web build detected, registering interface")
