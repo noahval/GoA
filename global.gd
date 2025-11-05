@@ -308,8 +308,11 @@ func _on_get_caught_timeout():
 	check_get_caught()
 
 func _on_autosave_timeout():
-	# Only auto-save locally if player is playing offline (not authenticated)
-	if not NakamaManager.is_authenticated:
+	# Save to cloud if authenticated, otherwise save locally
+	if NakamaManager.is_authenticated:
+		NakamaManager.save_game()
+		DebugLogger.log_info("AutoSave", "Cloud game state saved")
+	else:
 		LocalSaveManager.save_game()
 		DebugLogger.log_info("AutoSave", "Local game state saved")
 
@@ -317,10 +320,13 @@ func _on_autosave_timeout():
 func change_scene_with_check(scene_tree: SceneTree, scene_path: String):
 	var current_scene = scene_tree.current_scene.scene_file_path if scene_tree.current_scene else "unknown"
 
-	# Save progress before scene change (only if offline)
-	if not NakamaManager.is_authenticated:
+	# Save progress before scene change (cloud if authenticated, local if offline)
+	if NakamaManager.is_authenticated:
+		NakamaManager.save_game()
+		DebugLogger.log_info("SceneChange", "Cloud save before scene transition")
+	else:
 		LocalSaveManager.save_game()
-		DebugLogger.log_info("SceneChange", "Game saved before scene transition")
+		DebugLogger.log_info("SceneChange", "Local save before scene transition")
 
 	# Check for victory conditions first
 	if check_victory_conditions():

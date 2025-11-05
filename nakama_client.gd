@@ -209,45 +209,197 @@ func read_storage(collection: String, key: String):
 	DebugLogger.log_info("NakamaClient", "No data found at %s/%s" % [collection, key])
 	return null
 
-## Save player stats to cloud
-func save_player_stats():
-	var stats_data = {
+## Save full game state to cloud (similar to LocalSaveManager)
+func save_game() -> bool:
+	if not is_authenticated:
+		DebugLogger.log_error("NakamaClient", "Cannot save: Not authenticated")
+		return false
+
+	var save_data = {
+		"version": "1.0",
+		"timestamp": Time.get_unix_time_from_system(),
+		"global": _get_global_data(),
+		"level1_vars": _get_level1_vars_data()
+	}
+
+	var result = await write_storage("player_data", "game_save", save_data)
+	if result:
+		DebugLogger.log_success("NakamaClient", "Full game state saved to cloud")
+		return true
+	return false
+
+## Load full game state from cloud
+func load_game() -> bool:
+	if not is_authenticated:
+		DebugLogger.log_error("NakamaClient", "Cannot load: Not authenticated")
+		return false
+
+	var save_data = await read_storage("player_data", "game_save")
+
+	if save_data:
+		# Validate save data structure
+		if not save_data.has("global") or not save_data.has("level1_vars"):
+			DebugLogger.log_error("NakamaClient", "Invalid cloud save structure")
+			return false
+
+		# Load Global data
+		_set_global_data(save_data.global)
+
+		# Load Level1Vars data
+		_set_level1_vars_data(save_data.level1_vars)
+
+		DebugLogger.log_success("NakamaClient", "Full game state loaded from cloud")
+		return true
+
+	DebugLogger.log_info("NakamaClient", "No cloud save found")
+	return false
+
+## Get all Global variables to save (matching LocalSaveManager)
+func _get_global_data() -> Dictionary:
+	return {
+		# Stats
 		"strength": Global.strength,
 		"constitution": Global.constitution,
 		"dexterity": Global.dexterity,
 		"wisdom": Global.wisdom,
 		"intelligence": Global.intelligence,
 		"charisma": Global.charisma,
+
+		# Experience
 		"strength_exp": Global.strength_exp,
 		"constitution_exp": Global.constitution_exp,
 		"dexterity_exp": Global.dexterity_exp,
 		"wisdom_exp": Global.wisdom_exp,
 		"intelligence_exp": Global.intelligence_exp,
 		"charisma_exp": Global.charisma_exp,
-		"last_saved": Time.get_unix_time_from_system()
+
+		# Dev mode
+		"dev_speed_mode": Global.dev_speed_mode
 	}
 
-	return await write_storage("player_data", "stats", stats_data)
+## Get all Level1Vars variables to save (matching LocalSaveManager)
+func _get_level1_vars_data() -> Dictionary:
+	return {
+		# Resources
+		"coal": Level1Vars.coal,
+		"coins": Level1Vars.coins,
+		"components": Level1Vars.components,
+		"mechanisms": Level1Vars.mechanisms,
+		"pipes": Level1Vars.pipes,
 
+		# Upgrades
+		"shovel_lvl": Level1Vars.shovel_lvl,
+		"plow_lvl": Level1Vars.plow_lvl,
+		"auto_shovel_lvl": Level1Vars.auto_shovel_lvl,
+		"auto_shovel_freq": Level1Vars.auto_shovel_freq,
+		"auto_shovel_coal_per_tick": Level1Vars.auto_shovel_coal_per_tick,
+		"auto_shovel_coal_upgrade_lvl": Level1Vars.auto_shovel_coal_upgrade_lvl,
+		"auto_shovel_freq_upgrade_lvl": Level1Vars.auto_shovel_freq_upgrade_lvl,
+		"overseer_lvl": Level1Vars.overseer_lvl,
+
+		# Story/State flags
+		"barkeep_bribed": Level1Vars.barkeep_bribed,
+		"shopkeep_bribed": Level1Vars.shopkeep_bribed,
+		"heart_taken": Level1Vars.heart_taken,
+		"whisper_triggered": Level1Vars.whisper_triggered,
+		"door_discovered": Level1Vars.door_discovered,
+
+		# Progress
+		"stolen_coal": Level1Vars.stolen_coal,
+		"stolen_writs": Level1Vars.stolen_writs,
+		"correct_answers": Level1Vars.correct_answers,
+		"suspicion": Level1Vars.suspicion,
+
+		# Timers/Buffs
+		"break_time_remaining": Level1Vars.break_time_remaining,
+		"starting_break_time": Level1Vars.starting_break_time,
+		"coin_cost": Level1Vars.coin_cost,
+		"stamina": Level1Vars.stamina,
+		"talk_button_cooldown": Level1Vars.talk_button_cooldown,
+		"stimulated_remaining": Level1Vars.stimulated_remaining,
+		"shown_tired_notification": Level1Vars.shown_tired_notification,
+		"resilient_remaining": Level1Vars.resilient_remaining,
+		"shown_lazy_notification": Level1Vars.shown_lazy_notification,
+
+		# Pipe puzzle state
+		"pipe_puzzle_grid": Level1Vars.pipe_puzzle_grid
+	}
+
+## Set Global variables from cloud save data (matching LocalSaveManager)
+func _set_global_data(data: Dictionary) -> void:
+	# Stats
+	Global.strength = data.get("strength", 1.0)
+	Global.constitution = data.get("constitution", 1.0)
+	Global.dexterity = data.get("dexterity", 1.0)
+	Global.wisdom = data.get("wisdom", 1.0)
+	Global.intelligence = data.get("intelligence", 1.0)
+	Global.charisma = data.get("charisma", 1.0)
+
+	# Experience
+	Global.strength_exp = data.get("strength_exp", 0.0)
+	Global.constitution_exp = data.get("constitution_exp", 0.0)
+	Global.dexterity_exp = data.get("dexterity_exp", 0.0)
+	Global.wisdom_exp = data.get("wisdom_exp", 0.0)
+	Global.intelligence_exp = data.get("intelligence_exp", 0.0)
+	Global.charisma_exp = data.get("charisma_exp", 0.0)
+
+	# Dev mode
+	Global.dev_speed_mode = data.get("dev_speed_mode", false)
+
+## Set Level1Vars variables from cloud save data (matching LocalSaveManager)
+func _set_level1_vars_data(data: Dictionary) -> void:
+	# Resources
+	Level1Vars.coal = data.get("coal", 0.0)
+	Level1Vars.coins = data.get("coins", 0.0)
+	Level1Vars.components = data.get("components", 0)
+	Level1Vars.mechanisms = data.get("mechanisms", 0)
+	Level1Vars.pipes = data.get("pipes", 5)
+
+	# Upgrades
+	Level1Vars.shovel_lvl = data.get("shovel_lvl", 0)
+	Level1Vars.plow_lvl = data.get("plow_lvl", 0)
+	Level1Vars.auto_shovel_lvl = data.get("auto_shovel_lvl", 1)
+	Level1Vars.auto_shovel_freq = data.get("auto_shovel_freq", 3.0)
+	Level1Vars.auto_shovel_coal_per_tick = data.get("auto_shovel_coal_per_tick", 4.0)
+	Level1Vars.auto_shovel_coal_upgrade_lvl = data.get("auto_shovel_coal_upgrade_lvl", 0)
+	Level1Vars.auto_shovel_freq_upgrade_lvl = data.get("auto_shovel_freq_upgrade_lvl", 0)
+	Level1Vars.overseer_lvl = data.get("overseer_lvl", 0)
+
+	# Story/State flags
+	Level1Vars.barkeep_bribed = data.get("barkeep_bribed", false)
+	Level1Vars.shopkeep_bribed = data.get("shopkeep_bribed", false)
+	Level1Vars.heart_taken = data.get("heart_taken", true)
+	Level1Vars.whisper_triggered = data.get("whisper_triggered", false)
+	Level1Vars.door_discovered = data.get("door_discovered", false)
+
+	# Progress
+	Level1Vars.stolen_coal = data.get("stolen_coal", 0)
+	Level1Vars.stolen_writs = data.get("stolen_writs", 0)
+	Level1Vars.correct_answers = data.get("correct_answers", 0)
+	Level1Vars.suspicion = data.get("suspicion", 0)
+
+	# Timers/Buffs
+	Level1Vars.break_time_remaining = data.get("break_time_remaining", 0.0)
+	Level1Vars.starting_break_time = data.get("starting_break_time", 23)
+	Level1Vars.coin_cost = data.get("coin_cost", 30.0)
+	Level1Vars.stamina = data.get("stamina", 125.0)
+	Level1Vars.talk_button_cooldown = data.get("talk_button_cooldown", 0.0)
+	Level1Vars.stimulated_remaining = data.get("stimulated_remaining", 0.0)
+	Level1Vars.shown_tired_notification = data.get("shown_tired_notification", false)
+	Level1Vars.resilient_remaining = data.get("resilient_remaining", 0.0)
+	Level1Vars.shown_lazy_notification = data.get("shown_lazy_notification", false)
+
+	# Pipe puzzle state
+	Level1Vars.pipe_puzzle_grid = data.get("pipe_puzzle_grid", [])
+
+## DEPRECATED: Use save_game() instead for full game state
+## Save player stats to cloud
+func save_player_stats():
+	DebugLogger.log_warn("NakamaClient", "save_player_stats() is deprecated. Use save_game() instead")
+	return await save_game()
+
+## DEPRECATED: Use load_game() instead for full game state
 ## Load player stats from cloud
 func load_player_stats():
-	var stats_data = await read_storage("player_data", "stats")
-
-	if stats_data:
-		Global.strength = stats_data.get("strength", 1.0)
-		Global.constitution = stats_data.get("constitution", 1.0)
-		Global.dexterity = stats_data.get("dexterity", 1.0)
-		Global.wisdom = stats_data.get("wisdom", 1.0)
-		Global.intelligence = stats_data.get("intelligence", 1.0)
-		Global.charisma = stats_data.get("charisma", 1.0)
-		Global.strength_exp = stats_data.get("strength_exp", 0.0)
-		Global.constitution_exp = stats_data.get("constitution_exp", 0.0)
-		Global.dexterity_exp = stats_data.get("dexterity_exp", 0.0)
-		Global.wisdom_exp = stats_data.get("wisdom_exp", 0.0)
-		Global.intelligence_exp = stats_data.get("intelligence_exp", 0.0)
-		Global.charisma_exp = stats_data.get("charisma_exp", 0.0)
-
-		DebugLogger.log_success("NakamaClient", "Player stats loaded from cloud")
-		return true
-
-	return false
+	DebugLogger.log_warn("NakamaClient", "load_player_stats() is deprecated. Use load_game() instead")
+	return await load_game()
