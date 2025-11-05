@@ -4,9 +4,13 @@ extends Node
 ## This is registered with JavaScriptBridge so JS can call these methods
 
 func _ready():
+	DebugLogger.log_info("GodotWebAuth", "_ready() called")
 	# Only register for web builds
 	if OS.has_feature("web"):
+		DebugLogger.log_info("GodotWebAuth", "Web build detected, registering interface")
 		_register_javascript_interface()
+	else:
+		DebugLogger.log_info("GodotWebAuth", "Not a web build, skipping registration")
 
 func _register_javascript_interface():
 	# Create callbacks that JavaScript can invoke
@@ -41,9 +45,15 @@ func _register_javascript_interface():
 	"""
 
 	# Call the setup function with our callbacks
-	var result = JavaScriptBridge.eval(js_code, true).call(token_callback, error_callback)
+	var setup_func = JavaScriptBridge.eval(js_code, true)
+	var result = setup_func.call(token_callback, error_callback)
 
 	DebugLogger.log_info("GodotWebAuth", "JavaScript interface registered: " + str(result))
+
+	# Verify the interface was created
+	var check_code = "typeof window.godot !== 'undefined' && typeof window.godot.GodotWebAuth !== 'undefined'"
+	var interface_exists = JavaScriptBridge.eval(check_code, true)
+	DebugLogger.log_info("GodotWebAuth", "Interface exists check: " + str(interface_exists))
 
 ## Internal callback wrapper - receives args from JS as Array
 func _on_js_token_received(args: Array):
