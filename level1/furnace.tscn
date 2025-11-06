@@ -201,18 +201,18 @@ layout_mode = 2
 theme = ExtResource("3_w5m21")
 text = "Mode: Manual"
 
-[node name="ShopButton" type="Button" parent="HBoxContainer/RightVBox"]
-visible = false
-layout_mode = 2
-theme = ExtResource("3_w5m21")
-theme_type_variation = &"ForwardNavButton"
-text = "Take Break"
-
 [node name="StealCoalButton" type="Button" parent="HBoxContainer/RightVBox"]
 visible = false
 layout_mode = 2
 theme = ExtResource("3_w5m21")
 text = "Steal Coal"
+
+[node name="ToBarButton" type="Button" parent="HBoxContainer/RightVBox"]
+visible = false
+layout_mode = 2
+theme = ExtResource("3_w5m21")
+theme_type_variation = &"ForwardNavButton"
+text = "Take Break"
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
 visible = false
@@ -261,5 +261,5 @@ mouse_filter = 2
 [connection signal="pressed" from="HBoxContainer/RightVBox/ShovelCoalButton" to="." method="_on_shovel_coal_button_pressed"]
 [connection signal="pressed" from="HBoxContainer/RightVBox/ConvertCoalButton" to="." method="_on_convert_coal_button_pressed"]
 [connection signal="pressed" from="HBoxContainer/RightVBox/ToggleModeButton" to="." method="_on_toggle_mode_button_pressed"]
-[connection signal="pressed" from="HBoxContainer/RightVBox/ShopButton" to="." method="_on_shop_button_pressed"]
+[connection signal="pressed" from="HBoxContainer/RightVBox/ToBarButton" to="." method="_on_to_bar_button_pressed"]
 [connection signal="pressed" from="HBoxContainer/RightVBox/StealCoalButton" to="." method="_on_steal_coal_button_pressed"]

@@ -13,7 +13,7 @@
 **Key Characteristics**:
 - Dynamic panel creation (no pre-existing UI elements)
 - VBoxContainer stacking (automatic vertical arrangement)
-- 3-second auto-removal
+- Dynamic auto-removal (1 sec base + 45ms per character)
 - Responsive scaling (portrait/landscape)
 - Translucent dark backgrounds
 - White centered text with word-wrap
@@ -177,13 +177,13 @@ notification_panel.add_child(notification_label)
 ```gdscript
 var notification_timer = Timer.new()
 notification_timer.one_shot = true
-notification_timer.wait_time = 3.0
+notification_timer.wait_time = 1.0 + (len(message) * 0.045)  # 1 sec base + 45ms per character
 add_child(notification_timer)  # Child of Global autoload
 ```
 
 **Properties**:
 - **One-shot**: Only fires once
-- **Duration**: 3 seconds
+- **Duration**: 1 second base + 45ms per character (e.g., "You feel stronger" = 17 chars = 1.765 seconds)
 - **Parent**: Global autoload (persists across scene changes)
 
 ### Step 6: Track Notification
@@ -252,7 +252,7 @@ func _apply_notification_scaling(notification_panel: Panel, notification_label: 
 
 **Landscape**: No changes (uses defaults)
 
-### Step 9: Auto-Removal After 3 Seconds
+### Step 9: Auto-Removal After Dynamic Duration
 
 **Function**: `_remove_notification(notification_data: Dictionary)`
 
@@ -408,7 +408,7 @@ func _on_item_acquired():
 
 | Event | Duration |
 |-------|----------|
-| Display time | 3 seconds |
+| Display time | Dynamic: 1 second base + 45ms per character |
 | Fade in | None (instant) |
 | Fade out | None (instant removal) |
 
@@ -521,9 +521,10 @@ const PORTRAIT_FONT_SCALE = 1.75  # Adjust this value
 
 ### Notification Duration
 
-**Location**: global.gd line 245
+**Location**: global.gd line 186
 ```gdscript
-notification_timer.wait_time = 3.0  # Change to desired duration (seconds)
+notification_timer.wait_time = 1.0 + (len(message) * 0.045)  # 1 sec base + 45ms per character
+# Change 1.0 to adjust base time or 0.045 to adjust per-character time
 ```
 
 ### Background Color/Opacity

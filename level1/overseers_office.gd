@@ -10,6 +10,7 @@ var max_break_time = 30.0
 @onready var coins_label = $HBoxContainer/LeftVBox/CoinsPanel/CoinsLabel
 @onready var talk_button = $HBoxContainer/RightVBox/TalkButton
 @onready var steal_writ_button = $HBoxContainer/RightVBox/StealWritButton
+@onready var ask_coin_slot_button = $HBoxContainer/RightVBox/AskCoinSlotButton
 @onready var back_button = $HBoxContainer/RightVBox/BackButton
 @onready var confirmation_popup = $PopupContainer/ConfirmationPopup
 @onready var talk_questions_panel = $PopupContainer/TalkQuestionsPopup
@@ -180,6 +181,9 @@ func update_talk_button_visibility(_delta):
 	# Show Steal Writ button only if correct_answers is 3 or higher
 	steal_writ_button.visible = Level1Vars.correct_answers >= 3
 
+	# Show Ask Coin Slot button if lifetime coins exceeds 200 and not yet unlocked
+	ask_coin_slot_button.visible = Level1Vars.lifetimecoins > 200 and not Level1Vars.coinslot_machine_unlocked
+
 func _on_talk_button_pressed():
 	# Show confirmation popup using reusable popup system
 	# NOTE: In portrait mode, popups are reparented to MiddleArea, so don't need to show PopupContainer
@@ -331,6 +335,62 @@ func resize_talk_panel():
 	if answer_c: answer_c.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	if answer_d: answer_d.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 
+	# DEBUG: Wait a frame for layout to settle, then print sizes
+	await get_tree().process_frame
+	await get_tree().process_frame
+	print("\n=== TALK QUESTIONS POPUP SIZE DEBUG ===")
+	print("Viewport: ", get_viewport().get_visible_rect().size)
+	print("\n--- Popup Panel ---")
+	print("talk_questions_panel parent: ", talk_questions_panel.get_parent().name)
+	print("talk_questions_panel visible: ", talk_questions_panel.visible)
+	print("talk_questions_panel global_position: ", talk_questions_panel.global_position)
+	print("talk_questions_panel size: ", talk_questions_panel.size)
+	print("talk_questions_panel anchors: L=", talk_questions_panel.anchor_left, " R=", talk_questions_panel.anchor_right)
+	print("talk_questions_panel offsets: L=", talk_questions_panel.offset_left, " R=", talk_questions_panel.offset_right)
+	print("talk_questions_panel CONSTRAINED WIDTH (from offsets): ", talk_questions_panel.offset_right - talk_questions_panel.offset_left)
+
+	var margin_container = talk_questions_panel.get_node_or_null("MarginContainer")
+	if margin_container:
+		print("\n--- MarginContainer ---")
+		print("size: ", margin_container.size)
+		print("size_flags_horizontal: ", margin_container.size_flags_horizontal)
+		print("custom_minimum_size: ", margin_container.custom_minimum_size)
+
+	var scroll_container = talk_questions_panel.get_node_or_null("MarginContainer/ScrollContainer")
+	if scroll_container:
+		print("\n--- ScrollContainer ---")
+		print("size: ", scroll_container.size)
+		print("size_flags_horizontal: ", scroll_container.size_flags_horizontal)
+		print("size_flags_vertical: ", scroll_container.size_flags_vertical)
+		print("custom_minimum_size: ", scroll_container.custom_minimum_size)
+		print("horizontal_scroll_mode: ", scroll_container.horizontal_scroll_mode)
+
+	var quiz_vbox = talk_questions_panel.get_node_or_null("MarginContainer/ScrollContainer/QuizVBox")
+	if quiz_vbox:
+		print("\n--- QuizVBox ---")
+		print("size: ", quiz_vbox.size)
+		print("size_flags_horizontal: ", quiz_vbox.size_flags_horizontal)
+		print("size_flags_vertical: ", quiz_vbox.size_flags_vertical)
+		print("custom_minimum_size: ", quiz_vbox.custom_minimum_size)
+
+	print("\n--- Question Label ---")
+	print("size: ", question_label.size)
+	print("size_flags_horizontal: ", question_label.size_flags_horizontal)
+	print("size_flags_vertical: ", question_label.size_flags_vertical)
+	print("custom_minimum_size: ", question_label.custom_minimum_size)
+	print("autowrap_mode: ", question_label.autowrap_mode)
+	print("text length: ", len(question_label.text))
+
+	if answer_a:
+		print("\n--- Answer A Button ---")
+		print("size: ", answer_a.size)
+		print("size_flags_horizontal: ", answer_a.size_flags_horizontal)
+		print("custom_minimum_size: ", answer_a.custom_minimum_size)
+		print("autowrap_mode: ", answer_a.autowrap_mode)
+		print("text: '", answer_a.text.substr(0, 50), "...'")
+
+	print("=== END DEBUG ===\n")
+
 func _on_steal_writ_button_pressed():
 	# Increase stolen writs by 1
 	Level1Vars.stolen_writs += 1
@@ -343,3 +403,13 @@ func _on_steal_writ_button_pressed():
 	Level1Vars.suspicion += suspicion_increase
 
 	# Keep the same question displayed - don't fetch a new one
+
+func _on_ask_coin_slot_button_pressed():
+	# Show notification with the overseer's response
+	Global.show_stat_notification("Oh, that old thing? I can install the Coin Allocation Machine in the furnace, it'll dispense your wage, but it might not pay you as much as I do for a job well done")
+
+	# Mark the coin allocation machine as unlocked
+	Level1Vars.coinslot_machine_unlocked = true
+
+	# Hide the button after clicking
+	ask_coin_slot_button.visible = false

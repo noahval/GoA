@@ -123,9 +123,14 @@ visible = false
 layout_mode = 2
 text = "Steal Writ of Passage"
 
-[node name="BackButton" type="Button" parent="HBoxContainer/RightVBox" index="2"]
+[node name="AskCoinSlotButton" type="Button" parent="HBoxContainer/RightVBox" index="2"]
+visible = false
 layout_mode = 2
-text = "To Coppersmith Carriage"
+text = "Ask about Coin Allocation Machine"
+
+[node name="BackButton" type="Button" parent="HBoxContainer/RightVBox" index="3"]
+layout_mode = 2
+text = "Back"
 
 [node name="ConfirmationPopup" parent="PopupContainer" instance=ExtResource("4_popup")]
 
@@ -200,6 +205,7 @@ text = "D) Loading..."
 
 [connection signal="pressed" from="HBoxContainer/RightVBox/TalkButton" to="." method="_on_talk_button_pressed"]
 [connection signal="pressed" from="HBoxContainer/RightVBox/StealWritButton" to="." method="_on_steal_writ_button_pressed"]
+[connection signal="pressed" from="HBoxContainer/RightVBox/AskCoinSlotButton" to="." method="_on_ask_coin_slot_button_pressed"]
 [connection signal="pressed" from="HBoxContainer/RightVBox/BackButton" to="." method="_on_back_button_pressed"]
 [connection signal="button_pressed" from="PopupContainer/ConfirmationPopup" to="." method="_on_confirmation_popup_button_pressed"]
 [connection signal="pressed" from="PopupContainer/TalkQuestionsPopup/MarginContainer/ScrollContainer/QuizVBox/AnswerA" to="." method="_on_answer_selected" binds= ["A"]]

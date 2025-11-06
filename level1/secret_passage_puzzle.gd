@@ -589,7 +589,15 @@ func _create_responsive_button(button_text: String, callback: Callable) -> Butto
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		button.add_theme_font_size_override("font_size", int(25 * ResponsiveLayout.PORTRAIT_FONT_SCALE))
 	else:
-		button.custom_minimum_size = Vector2(0, ResponsiveLayout.LANDSCAPE_ELEMENT_HEIGHT)
+		# Apply landscape font scaling to match ResponsiveLayout standards
+		var landscape_font_scale = ResponsiveLayout.get_landscape_font_scale(viewport_size.x)
+		var scaled_height = ResponsiveLayout.LANDSCAPE_ELEMENT_HEIGHT * landscape_font_scale
+		button.custom_minimum_size = Vector2(0, scaled_height)
+
+		# Apply font size override if scaling is enabled and scale > 1.0
+		if ResponsiveLayout.LANDSCAPE_ENABLE_FONT_SCALING and landscape_font_scale > 1.0:
+			var current_size = 25  # Default from theme
+			button.add_theme_font_size_override("font_size", int(current_size * landscape_font_scale))
 
 	return button
 

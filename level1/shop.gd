@@ -124,6 +124,7 @@ func _on_workshop_button_pressed():
 
 func _on_get_coin_button_pressed():
 	Level1Vars.coins += 1
+	Level1Vars.lifetimecoins += 1  # Track lifetime coins earned
 	Global.show_stat_notification("developer notification: coins")
 	update_labels()
 

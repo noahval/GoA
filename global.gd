@@ -183,7 +183,7 @@ func show_stat_notification(message: String):
 	# Create timer for this notification
 	var notification_timer = Timer.new()
 	notification_timer.one_shot = true
-	notification_timer.wait_time = 3.0
+	notification_timer.wait_time = 1.0 + (len(message) * 0.045)  # 1 sec base + 45ms per character
 	add_child(notification_timer)
 
 	# Store notification data

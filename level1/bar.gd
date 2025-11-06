@@ -117,6 +117,7 @@ func _on_steel_stout_pressed():
 
 func _on_developer_free_coins_button_pressed():
 	Level1Vars.coins += 200
+	Level1Vars.lifetimecoins += 200  # Track lifetime coins earned
 	update_labels()
 
 func update_labels():

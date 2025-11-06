@@ -1,11 +1,13 @@
 # Button Hierarchy & Ordering Guide
 
-**Version**: 1.0
+**Version**: 1.1
 **Last Updated**: 2025-11-05
 
 ## Overview
 
 This document defines the standard ordering hierarchy for buttons in GoA's UI. Consistent button ordering improves UX by creating predictable patterns across all scenes.
+
+**🎯 Automatic Enforcement**: Button hierarchy is now automatically enforced by `ResponsiveLayout`. All scenes that call `ResponsiveLayout.apply_to_scene(self)` will have their buttons automatically sorted according to this hierarchy.
 
 ---
 
@@ -270,21 +272,31 @@ When updating existing scenes to follow hierarchy:
 
 ---
 
-## Validation
+## Automatic Enforcement
 
-### Manual Validation
+**Button hierarchy is now enforced automatically!**
+
+The `ResponsiveLayout.apply_to_scene()` function (called by all scenes) automatically sorts buttons according to the hierarchy defined in `ButtonHierarchy`. This means:
+
+- ✅ **Automatic sorting**: Buttons are reordered at runtime to match the hierarchy
+- ✅ **No manual implementation needed**: Individual scenes don't need sorting code
+- ✅ **Centralized changes**: Modify `button_hierarchy_config.gd` and all scenes update
+- ✅ **Debug validation**: In debug builds, warnings appear if hierarchy is violated
+
+### How It Works
+
+1. Scene calls `ResponsiveLayout.apply_to_scene(self)` in `_ready()`
+2. ResponsiveLayout automatically calls `ButtonHierarchy.sort_buttons_by_hierarchy()`
+3. Buttons are reordered according to their type (Action, Forward Nav, Back Nav, Developer)
+4. In debug mode, validation warnings appear in console if there are issues
+
+### Manual Validation (Optional)
+
 For each scene with buttons:
 1. Open the .tscn file
-2. Check RightVBox button order matches hierarchy
+2. Check RightVBox button order matches hierarchy (will be auto-corrected at runtime)
 3. Verify theme_type_variation is correct for nav buttons
 4. Confirm button text patterns match button type
-
-### Automated Validation
-Run the validation tool script:
-```bash
-# Future feature - not yet implemented
-godot --script tools/validate_button_order.gd
-```
 
 ---
 
@@ -327,6 +339,12 @@ func add_navigation_buttons():
 ---
 
 ## Version History
+
+**v1.1** (2025-11-05)
+- Added automatic button hierarchy enforcement via ResponsiveLayout
+- Buttons now auto-sort at runtime based on ButtonHierarchy configuration
+- Centralized implementation - no per-scene code needed
+- Debug validation warnings in console
 
 **v1.0** (2025-11-05)
 - Initial hierarchy definition

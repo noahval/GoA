@@ -175,7 +175,6 @@ func _apply_responsive_layout_internal(scene_root: Control) -> void:
 
 			hbox.visible = false
 			vbox.visible = true
-			_reverse_button_order(right_vbox)
 		else:
 			# Landscape: side by side with CenterArea in middle
 			# Restore size_flags for landscape BEFORE reparenting
@@ -220,12 +219,6 @@ func _apply_responsive_layout_internal(scene_root: Control) -> void:
 
 			hbox.visible = true
 			vbox.visible = false
-
-	# Position popups in the appropriate area
-	position_popups_in_play_area(scene_root, is_portrait, popup_container, center_area, middle_area, viewport_size)
-
-	# Apply font scaling to popups - search from scene_root to catch popups that were reparented
-	apply_popup_font_scaling(scene_root, is_portrait, viewport_size)
 
 	# CRITICAL: Hide PopupContainer after reparenting popups
 	# PopupContainer should be empty now (popups moved to CenterArea/MiddleArea)
@@ -303,11 +296,14 @@ func _apply_responsive_layout_internal(scene_root: Control) -> void:
 		hbox.grow_horizontal = Control.GROW_DIRECTION_BOTH
 		hbox.grow_vertical = Control.GROW_DIRECTION_BOTH
 
-		# Use SIZE_FILL instead of SIZE_SHRINK_CENTER to ensure menus take their full allocated width
-		# This prevents CenterArea from expanding too much
-		left_vbox.size_flags_horizontal = Control.SIZE_FILL
-		right_vbox.size_flags_horizontal = Control.SIZE_FILL
-		# Calculate dynamic widths based on viewport size and percentages
+		# Use SIZE_EXPAND_FILL with stretch ratios to enforce 25-50-25 split
+		# This ensures side menus take exactly their allocated percentage
+		left_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		left_vbox.size_flags_stretch_ratio = LANDSCAPE_LEFT_WIDTH_PERCENT  # 0.25
+		right_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		right_vbox.size_flags_stretch_ratio = LANDSCAPE_RIGHT_WIDTH_PERCENT  # 0.25
+
+		# Calculate dynamic widths based on viewport size and percentages (for reference)
 		var dynamic_left_width = LEFT_COLUMN_WIDTH
 		var dynamic_right_width = RIGHT_COLUMN_WIDTH
 		if LANDSCAPE_ENABLE_DYNAMIC_WIDTHS:
@@ -315,14 +311,19 @@ func _apply_responsive_layout_internal(scene_root: Control) -> void:
 			dynamic_left_width = int(available_width * LANDSCAPE_LEFT_WIDTH_PERCENT)
 			dynamic_right_width = int(available_width * LANDSCAPE_RIGHT_WIDTH_PERCENT)
 			print("ResponsiveLayout: === LANDSCAPE WIDTH DEBUG ===")
+			print("ResponsiveLayout: Using stretch ratios for 25-50-25 split")
 			print("ResponsiveLayout: Viewport size: ", viewport_size)
 			print("ResponsiveLayout: Window size: ", scene_root.get_window().size if scene_root.get_window() else "N/A")
 			print("ResponsiveLayout: Content scale: ", scene_root.get_window().content_scale_factor if scene_root.get_window() else "N/A")
 			print("ResponsiveLayout: Available width: ", available_width, " (viewport minus ", LANDSCAPE_EDGE_PADDING*2, "px padding)")
-			print("ResponsiveLayout: Left: ", dynamic_left_width, " (", LANDSCAPE_LEFT_WIDTH_PERCENT*100, "%)")
-			print("ResponsiveLayout: Right: ", dynamic_right_width, " (", LANDSCAPE_RIGHT_WIDTH_PERCENT*100, "%)")
+			print("ResponsiveLayout: Left stretch_ratio: ", LANDSCAPE_LEFT_WIDTH_PERCENT)
+			print("ResponsiveLayout: Center stretch_ratio: ", LANDSCAPE_CENTER_WIDTH_PERCENT)
+			print("ResponsiveLayout: Right stretch_ratio: ", LANDSCAPE_RIGHT_WIDTH_PERCENT)
+			print("ResponsiveLayout: Expected Left: ", dynamic_left_width, " (", LANDSCAPE_LEFT_WIDTH_PERCENT*100, "%)")
+			print("ResponsiveLayout: Expected Right: ", dynamic_right_width, " (", LANDSCAPE_RIGHT_WIDTH_PERCENT*100, "%)")
 			print("ResponsiveLayout: Expected center: ~", int(available_width * LANDSCAPE_CENTER_WIDTH_PERCENT), " (", LANDSCAPE_CENTER_WIDTH_PERCENT*100, "%)")
 			print("ResponsiveLayout: ================================")
+		# Keep custom_minimum_size as a fallback, but stretch_ratio is now primary control
 		left_vbox.custom_minimum_size = Vector2(dynamic_left_width, 0)
 		right_vbox.custom_minimum_size = Vector2(dynamic_right_width, 0)
 
@@ -331,16 +332,34 @@ func _apply_responsive_layout_internal(scene_root: Control) -> void:
 		right_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
 		print("ResponsiveLayout: Set left/right menu vertical alignment to CENTER")
 
-		# Ensure CenterArea expands to fill available space vertically
+		# Ensure CenterArea expands to fill available space with proper stretch ratio
 		if center_area:
 			center_area.size_flags_vertical = Control.SIZE_EXPAND_FILL
 			center_area.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-			print("ResponsiveLayout: Set CenterArea to expand vertically and horizontally")
+			center_area.size_flags_stretch_ratio = LANDSCAPE_CENTER_WIDTH_PERCENT  # 0.50
+			print("ResponsiveLayout: Set CenterArea to expand with stretch_ratio ", LANDSCAPE_CENTER_WIDTH_PERCENT)
 
 			# Debug: wait a frame and print CenterArea's actual size
 			call_deferred("_debug_print_center_area_size", center_area)
 
 		print("ResponsiveLayout: Applied landscape full-height layout - HBox from top to notification bar")
+
+	# Enforce button hierarchy - sort buttons by type (Action, Forward Nav, Back Nav)
+	# This ensures buttons are always in the correct order across all scenes
+	_sort_buttons_by_hierarchy(left_vbox, right_vbox, top_vbox, bottom_vbox, is_portrait)
+
+	# CRITICAL: Wait for layout to update after setting stretch ratios
+	# This ensures CenterArea has the correct 50% width before positioning popups
+	if not is_portrait:
+		await get_tree().process_frame
+		print("ResponsiveLayout: Waited for layout update after stretch ratios")
+
+	# Position popups AFTER layout is configured and has updated
+	# This ensures CenterArea/MiddleArea have correct sizes
+	position_popups_in_play_area(scene_root, is_portrait, popup_container, center_area, middle_area, viewport_size)
+
+	# Apply font scaling to popups - search from scene_root to catch popups that were reparented
+	apply_popup_font_scaling(scene_root, is_portrait, viewport_size)
 
 	# Always apply mode-specific styling and scaling (even if already in correct mode)
 	if is_portrait:
@@ -373,6 +392,10 @@ func _apply_responsive_layout_internal(scene_root: Control) -> void:
 func _apply_landscape_adjustments(left_vbox: VBoxContainer, right_vbox: VBoxContainer, _hbox: HBoxContainer) -> void:
 	var viewport_width = left_vbox.get_viewport().get_visible_rect().size.x
 
+	print("\n=== LANDSCAPE ADJUSTMENTS DEBUG ===")
+	print("RightVBox current size BEFORE adjustments: ", right_vbox.size)
+	print("RightVBox current custom_minimum_size BEFORE: ", right_vbox.custom_minimum_size)
+
 	# Calculate base widths (dynamic if enabled, otherwise use legacy constants)
 	var base_left_width = LEFT_COLUMN_WIDTH
 	var base_right_width = RIGHT_COLUMN_WIDTH
@@ -380,6 +403,7 @@ func _apply_landscape_adjustments(left_vbox: VBoxContainer, right_vbox: VBoxCont
 		var available_width = viewport_width - (LANDSCAPE_EDGE_PADDING * 2)
 		base_left_width = int(available_width * LANDSCAPE_LEFT_WIDTH_PERCENT)
 		base_right_width = int(available_width * LANDSCAPE_RIGHT_WIDTH_PERCENT)
+		print("Target right width (25%): ", base_right_width)
 
 	# Calculate landscape font scale and scaled element height
 	var landscape_font_scale = get_landscape_font_scale(viewport_width)
@@ -398,17 +422,22 @@ func _apply_landscape_adjustments(left_vbox: VBoxContainer, right_vbox: VBoxCont
 			panel.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 			max_desired_width = max(max_desired_width, panel_width)
 
-	# Calculate button widths
-	var max_right_width = base_right_width
+	# Enable button wrapping and constrain to base width (DON'T expand menu)
+	# Buttons will wrap to multiple lines instead of pushing menu wider
 	for button in right_vbox.get_children():
 		if button is Button:
 			button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-			var button_width = _calculate_text_width(button, max_width, 60)
-			max_right_width = max(max_right_width, button_width)
+			button.custom_minimum_size = Vector2(0, scaled_element_height)
+			button.size_flags_horizontal = Control.SIZE_FILL
+			print("ResponsiveLayout: Button '", button.text.substr(0, 30), "...' autowrap enabled, height: ", scaled_element_height)
 
-	# Apply final widths - use calculated widths but don't go below base widths
+	# Apply final widths - RESPECT stretch ratios by NOT expanding beyond base widths
+	# Left menu can expand for long panel text, but right menu stays at 25% (buttons wrap instead)
 	left_vbox.custom_minimum_size = Vector2(max(base_left_width, max_desired_width), 0)
-	right_vbox.custom_minimum_size = Vector2(max(base_right_width, max_right_width), 0)
+	right_vbox.custom_minimum_size = Vector2(base_right_width, 0)  # DON'T expand - force wrapping
+
+	print("RightVBox final custom_minimum_size: ", right_vbox.custom_minimum_size)
+	print("=== END LANDSCAPE ADJUSTMENTS DEBUG ===\n")
 
 ## Scale UI elements for portrait mode with CONSISTENT universal height
 func _scale_for_portrait(left_vbox: VBoxContainer, right_vbox: VBoxContainer) -> void:
@@ -538,25 +567,6 @@ static func get_landscape_font_scale(viewport_width: float) -> float:
 	# Clamp between min and max scale
 	return clamp(scale, LANDSCAPE_MIN_FONT_SCALE, LANDSCAPE_MAX_FONT_SCALE)
 
-## Reverse the order of buttons in a container (for portrait mode)
-func _reverse_button_order(container: VBoxContainer) -> void:
-	var children = container.get_children()
-	var buttons = []
-
-	# Collect all buttons
-	for child in children:
-		if child is Button:
-			buttons.append(child)
-
-	# Remove and re-add in reverse order
-	for button in buttons:
-		container.remove_child(button)
-
-	buttons.reverse()
-
-	for button in buttons:
-		container.add_child(button)
-
 ## Automatically load background texture based on scene root name
 ## Converts scene root name (e.g. "Bar", "CoppersmithCarriage") to snake_case
 ## and attempts to load the corresponding .jpg file from level1 directory
@@ -627,6 +637,27 @@ func position_popups_in_play_area(scene_root: Control, is_portrait: bool, popup_
 		# Landscape: use most of the center area width (90% by default)
 		if center_area:
 			play_area_rect = center_area.get_global_rect()
+
+			# DEBUG: Check CenterArea sizing
+			print("\n=== LANDSCAPE CENTER AREA DEBUG ===")
+			print("Viewport width: ", viewport_size.x)
+			print("Expected center width (50%): ", viewport_size.x * 0.5)
+			print("CenterArea actual width: ", play_area_rect.size.x)
+			print("CenterArea actual width %: ", (play_area_rect.size.x / viewport_size.x) * 100, "%")
+			print("CenterArea size_flags_horizontal: ", center_area.size_flags_horizontal)
+			print("CenterArea custom_minimum_size: ", center_area.custom_minimum_size)
+
+			# Check sibling menu widths
+			var left_vbox = scene_root.get_node_or_null("HBoxContainer/LeftVBox")
+			var right_vbox = scene_root.get_node_or_null("HBoxContainer/RightVBox")
+			if left_vbox:
+				print("LeftVBox actual width: ", left_vbox.size.x, " (", (left_vbox.size.x / viewport_size.x) * 100, "%)")
+				print("LeftVBox custom_minimum_size: ", left_vbox.custom_minimum_size)
+			if right_vbox:
+				print("RightVBox actual width: ", right_vbox.size.x, " (", (right_vbox.size.x / viewport_size.x) * 100, "%)")
+				print("RightVBox custom_minimum_size: ", right_vbox.custom_minimum_size)
+			print("=== END CENTER AREA DEBUG ===\n")
+
 			# Use a percentage of the center area width, respecting margins
 			var available_width = play_area_rect.size.x - (POPUP_MARGIN_FROM_MENUS * 2)
 			max_popup_width = max(float(POPUP_MIN_WIDTH_LANDSCAPE), available_width * POPUP_WIDTH_RATIO_LANDSCAPE)
@@ -678,6 +709,12 @@ func position_popups_in_play_area(scene_root: Control, is_portrait: bool, popup_
 
 	# Apply constraints to each popup
 	for popup in popups:
+		print("\n=== ResponsiveLayout: Processing popup '", popup.name, "' ===")
+		print("Max popup width: ", max_popup_width)
+		print("Max popup height: ", max_popup_height)
+		print("Current popup size: ", popup.size)
+		print("Current popup offsets: L=", popup.offset_left, " R=", popup.offset_right, " T=", popup.offset_top, " B=", popup.offset_bottom)
+
 		# CRITICAL: Reparent popup to the appropriate play area to physically constrain it
 		# Portrait: MiddleArea (between menus) - prevents blocking top/bottom buttons
 		# Landscape: CenterArea (between side menus) - prevents blocking left/right buttons
@@ -733,6 +770,8 @@ func position_popups_in_play_area(scene_root: Control, is_portrait: bool, popup_
 
 			var parent_name = middle_area.name if popup.get_parent() == middle_area else center_area.name
 			print("ResponsiveLayout: Positioned popup '", popup.name, "' in ", parent_name, " - max width: ", max_popup_width, " max height: ", max_popup_height)
+			print("ResponsiveLayout: Set offsets: L=", popup.offset_left, " R=", popup.offset_right, " T=", popup.offset_top, " B=", popup.offset_bottom)
+			print("ResponsiveLayout: Calculated width from offsets: ", popup.offset_right - popup.offset_left)
 
 			# CRITICAL: Force popup to recalculate its size now that it's in the play area
 			# The popup will check its parent and resize to use available space
@@ -754,8 +793,11 @@ func position_popups_in_play_area(scene_root: Control, is_portrait: bool, popup_
 			popup.offset_bottom = half_height
 
 			print("ResponsiveLayout: Positioned popup '", popup.name, "' centered on viewport (fallback)")
+			print("ResponsiveLayout: Set offsets: L=", popup.offset_left, " R=", popup.offset_right, " T=", popup.offset_top, " B=", popup.offset_bottom)
+			print("ResponsiveLayout: Calculated width from offsets: ", popup.offset_right - popup.offset_left)
 
 		print("ResponsiveLayout: Constrained popup '", popup.name, "' to size: ", max_popup_width, "x", max_popup_height)
+		print("=== END ResponsiveLayout popup processing ===\n")
 
 ## Debug function to print CenterArea size after layout
 func _debug_print_center_area_size(center_area: Control) -> void:
@@ -871,9 +913,16 @@ func _scale_popup_controls_recursive(node: Node, is_portrait: bool, viewport_siz
 				parent.size_flags_horizontal = Control.SIZE_FILL  # Fill available space
 				print("ResponsiveLayout: Constrained ScrollContainer to FILL (no horizontal scroll)")
 			elif parent is VBoxContainer or parent is MarginContainer or parent is HBoxContainer:
-				# Constrain container width to prevent expansion
-				parent.size_flags_horizontal = Control.SIZE_FILL  # Fill available space, don't expand
-				print("ResponsiveLayout: Constrained ", parent.get_class(), " to FILL")
+				# Check if this container is a direct child of a ScrollContainer
+				var grandparent = parent.get_parent()
+				if grandparent is ScrollContainer:
+					# Direct child of ScrollContainer needs EXPAND_FILL to fill ScrollContainer width
+					parent.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+					print("ResponsiveLayout: Set ", parent.get_class(), " to EXPAND_FILL (child of ScrollContainer)")
+				else:
+					# Other containers: constrain to prevent expansion
+					parent.size_flags_horizontal = Control.SIZE_FILL  # Fill available space, don't expand
+					print("ResponsiveLayout: Constrained ", parent.get_class(), " to FILL")
 			parent = parent.get_parent()
 
 		print("ResponsiveLayout: Constrained label '", node.name, "' and parents to ", available_width, "px width (wrapping enabled)")
@@ -1069,3 +1118,52 @@ func _calculate_text_width(control: Control, max_width: int, padding: int) -> in
 	if font and control.has_method("get") and control.get("text"):
 		text_width = font.get_string_size(control.text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
 	return clamp(text_width + padding, LEFT_COLUMN_WIDTH if control is Label else RIGHT_COLUMN_WIDTH, max_width)
+
+## Sort buttons in containers according to ButtonHierarchy
+## This enforces consistent button ordering across all scenes
+## Called automatically by apply_to_scene() - no need for individual scenes to implement
+func _sort_buttons_by_hierarchy(left_vbox: VBoxContainer, right_vbox: VBoxContainer,
+								 top_vbox: VBoxContainer, bottom_vbox: VBoxContainer,
+								 is_portrait: bool) -> void:
+	# Determine which containers to sort based on orientation
+	var containers_to_sort = []
+	if is_portrait:
+		# Portrait: buttons are in top_vbox and bottom_vbox
+		if top_vbox:
+			containers_to_sort.append(top_vbox)
+		if bottom_vbox:
+			containers_to_sort.append(bottom_vbox)
+	else:
+		# Landscape: buttons are in left_vbox and right_vbox
+		if left_vbox:
+			containers_to_sort.append(left_vbox)
+		if right_vbox:
+			containers_to_sort.append(right_vbox)
+
+	# Sort buttons in each container
+	for container in containers_to_sort:
+		# Collect all buttons
+		var buttons = []
+		for child in container.get_children():
+			if child is Button:
+				buttons.append(child)
+
+		if buttons.size() == 0:
+			continue
+
+		# Sort by hierarchy (Action -> Forward Nav -> Back Nav -> Developer)
+		ButtonHierarchy.sort_buttons_by_hierarchy(buttons)
+
+		# Reorder in container by moving each button to its correct position
+		for i in range(buttons.size()):
+			container.move_child(buttons[i], i)
+
+		# Validate order in debug mode
+		if OS.is_debug_build():
+			var validation = ButtonHierarchy.validate_button_order(container)
+			if not validation.valid:
+				push_warning("ResponsiveLayout: Button order issues in container '", container.name, "':")
+				for issue in validation.issues:
+					push_warning("  - " + issue)
+			else:
+				print("ResponsiveLayout: Button hierarchy validated for '", container.name, "' (", buttons.size(), " buttons)")

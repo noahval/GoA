@@ -16,14 +16,13 @@ var auto_conversion_timer = 0.0  # Timer for auto conversion interval
 @onready var coal_label = $HBoxContainer/LeftVBox/CoalPanel/CoalLabel
 @onready var coins_label = $HBoxContainer/LeftVBox/CoinsPanel/CoinsLabel
 @onready var mood_label = $HBoxContainer/LeftVBox/OverseerMoodPanel/MoodLabel
-@onready var shop_button = $HBoxContainer/RightVBox/ShopButton
+@onready var to_bar_button = $HBoxContainer/RightVBox/ToBarButton
 @onready var convert_coal_button = $HBoxContainer/RightVBox/ConvertCoalButton
 @onready var toggle_mode_button = $HBoxContainer/RightVBox/ToggleModeButton
 @onready var stamina_bar = $HBoxContainer/LeftVBox/StaminaPanel/StaminaBar
 @onready var suspicion_panel = $HBoxContainer/LeftVBox/SuspicionPanel
 @onready var suspicion_bar = $HBoxContainer/LeftVBox/SuspicionPanel/SuspicionBar
 @onready var steal_coal_button = $HBoxContainer/RightVBox/StealCoalButton
-@onready var take_break_button = $HBoxContainer/RightVBox/ShopButton
 @onready var overseer_mood_panel = $HBoxContainer/LeftVBox/OverseerMoodPanel
 
 func _ready():
@@ -115,7 +114,7 @@ func _on_shovel_coal_button_pressed():
 	coal_label.text = "Coal Shoveled: " + str(int(Level1Vars.coal))
 	click_count += 1
 	if click_count >= 50:
-		shop_button.visible = true
+		to_bar_button.visible = true
 
 	# Count clicks for steal coal button
 	if Level1Vars.heart_taken:
@@ -123,7 +122,7 @@ func _on_shovel_coal_button_pressed():
 		if steal_click_count >= 100:
 			steal_coal_button.visible = true
 
-func _on_shop_button_pressed():
+func _on_to_bar_button_pressed():
 	Global.change_scene_with_check(get_tree(), "res://level1/bar.tscn")
 
 func _on_steal_coal_button_pressed():
@@ -145,11 +144,11 @@ func update_suspicion_bar():
 
 func update_dev_buttons():
 	# Show/hide take break button based on dev_speed_mode
-	if take_break_button:
+	if to_bar_button:
 		if Global.dev_speed_mode:
-			take_break_button.visible = true
+			to_bar_button.visible = true
 		elif click_count < 50:
-			take_break_button.visible = false
+			to_bar_button.visible = false
 
 # Phase 1: Manual conversion - player chooses when to convert coal
 func perform_manual_conversion():
@@ -164,6 +163,7 @@ func perform_manual_conversion():
 
 	Level1Vars.coal -= coal_required
 	Level1Vars.coins += coins_earned
+	Level1Vars.lifetimecoins += coins_earned  # Track lifetime coins earned
 
 	# Show conversion feedback
 	var message = OverseerMood.get_conversion_message()
@@ -183,6 +183,7 @@ func perform_auto_conversion():
 
 	Level1Vars.coal -= coal_required
 	Level1Vars.coins += coins_earned
+	Level1Vars.lifetimecoins += coins_earned  # Track lifetime coins earned
 
 	# No notification in auto mode (player discovers it's less efficient)
 	DebugLogger.log_resource_change("coal", Level1Vars.coal + coal_required, Level1Vars.coal, "Auto conversion")
@@ -194,9 +195,9 @@ func toggle_conversion_mode():
 	auto_conversion_timer = 0.0
 
 	if Level1Vars.auto_conversion_enabled:
-		Global.show_stat_notification("Auto-converting enabled")
+		Global.show_stat_notification("Now getting coins from Terminal")
 	else:
-		Global.show_stat_notification("Manual conversion mode")
+		Global.show_stat_notification("Now getting coins from Overseer")
 
 # Show/hide mood panel based on unlock status
 func update_mood_panel_visibility():
@@ -221,10 +222,13 @@ func update_conversion_buttons():
 			convert_coal_button.disabled = Level1Vars.coal < coal_required
 
 	if toggle_mode_button:
+		# Show toggle button if coin slot machine has been unlocked
+		toggle_mode_button.visible = Level1Vars.coinslot_machine_unlocked
+
 		if Level1Vars.auto_conversion_enabled:
-			toggle_mode_button.text = "Mode: Auto"
+			toggle_mode_button.text = "Get coins from: Terminal"
 		else:
-			toggle_mode_button.text = "Mode: Manual"
+			toggle_mode_button.text = "Get coins from: Overseer"
 
 # Button handlers
 func _on_convert_coal_button_pressed():

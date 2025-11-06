@@ -6,14 +6,60 @@
 
 ---
 
+## Table of Contents
+
+1. [Core Design Philosophy](#core-design-philosophy)
+   - Mysterious Gameplay
+   - Sacrifice Theme
+   - Desert Train Setting
+2. [Narrative Framework (Level 1: The Train)](#narrative-framework-level-1-the-train)
+   - Key Story Beats
+   - Knowledge-Based Discovery: "The Crystal's Language"
+3. [Phase 0: Onboarding & Core Loop Feel](#phase-0-onboarding--core-loop-feel-foundation)
+   - First 5 Minutes - Organic Tutorial
+   - Game Feel & Feedback (CRITICAL)
+   - Goal Visibility System
+4. [Phase 1: Overseer's Mood & Conversion System](#phase-1-overseers-mood--conversion-system)
+   - Manual vs Auto Conversion Toggle
+   - Knowledge-Based Discovery: Hidden Mood Patterns
+   - Upgradeable Paths
+5. [Phase 2: Offline Earnings & Session Support](#phase-2-offline-earnings--session-support)
+   - Tiered Offline Cap System
+   - Hybrid Session Length Support
+6. [Phase 3: Prestige System - "Donating to the Cause"](#phase-3-prestige-system---donating-to-the-cause)
+   - Theme: Oren's Sacrifice
+   - Goodwill Upgrades
+   - What Resets vs Persists
+7. [Phase 4: Stat Milestones](#phase-4-stat-milestones-levels-1-8-for-game-level-1)
+   - Strength/Dexterity/Constitution/Intelligence/Wisdom/Charisma Milestones
+   - Knowledge-Based Discovery: Stat-Based Environmental Insights
+8. [Phase 5: Own Furnace & Worker Management](#phase-5-own-furnace--worker-management)
+   - Unlock Timing
+   - Worker Treatment System (Poor/Fair/Good)
+   - Harmful Furnace Upgrades
+9. [Phase 6: Environmental Management Systems](#phase-6-environmental-management-systems-split-into-sub-phases)
+   - Phase 6A: Core Furnace Management
+   - Phase 6B: Time & Airflow
+   - Phase 6C: Dynamic Train Conditions
+   - Phase 6D: Weather Events & Crises
+   - Phase 6E: Train City Factors
+10. [Implementation Roadmap (REVISED)](#implementation-roadmap-revised)
+    - Week-by-week Development Plan
+11. [Testing & Metrics Strategy](#testing--metrics-strategy)
+    - Retention & Engagement Targets
+    - Key Analytics & A/B Testing
+12. [Complexity Growth Over Time](#complexity-growth-over-time-revised)
+    - Prestige Progression (1 through 12+)
+13. [Key Design Principles Summary](#key-design-principles-summary)
+    - Core Principles & Best Practices
+    - Success Criteria
+
+---
+
 ## Core Design Philosophy
 
 ### Mysterious Gameplay
-Players discover mechanics through experimentation rather than explicit numbers. Use qualitative feedback (adjectives, visuals, narrative hints) over quantitative data.
-
-**Examples**:
-- ❌ "Overseer's Mood: 1.42x multiplier"
-- ✅ "The overseer seems pleased" (with ↗ trend arrow)
+Players discover mechanics through experimentation rather than explicit numbers. Use qualitative feedback (adjectives, visuals, narrative hints) over quantitative data. or leave information out entirely
 
 ### Sacrifice Theme
 Meaningful progress requires difficult choices. Treating workers well is morally right but mechanically harder. The player must balance conscience against necessity.
@@ -152,10 +198,6 @@ A massive train crossing endless desert, drawing electricity from the ground. On
 - Crystal never breaks the 4th wall (stays in-world)
 - Tone is mysterious, not explanatory
 - Players discover crystal's nature through observation
-
-**Aha Moment**: "The crystal isn't giving me a quest - it's TEACHING me! My skill determines what it reveals!"
-
----
 
 ## Phase 0: Onboarding & Core Loop Feel (FOUNDATION)
 
@@ -304,94 +346,11 @@ A massive train crossing endless desert, drawing electricity from the ground. On
 
 ## Phase 1: Overseer's Mood & Conversion System
 
-### Manual vs Auto Conversion Toggle
-
-**Core Mechanic**: Player chooses between manual timing (skill-based, high reward) or auto (convenience, lower reward).
-
-### Manual Conversion Mode
-
-**What Player Sees**:
-- Mood indicator with adjectives (not numbers):
-  - "furious" (very bad)
-  - "irritated" (bad)
-  - "indifferent" (neutral)
-  - "pleased" (good)
-  - "delighted" (very good)
-  - "ecstatic" (excellent)
-- Trend arrow: ↗ (improving), → (stable), ↘ (declining)
-- After conversion: "The overseer was pleased with your work. You earned a generous bonus!"
-
-**Hidden Mechanics** (player discovers):
-- Mood drifts randomly over time (creates uncertainty)
-- Converting too often makes overseer grumpy (mood fatigue)
-- Must learn optimal timing through experimentation
-- Mood multiplier range: 0.5x to 2.0x (upgradable to 0.7x-2.5x)
-
-**Strategic Depth**:
-- Watch mood, time conversions at peaks
-- Balance greed (wait for better mood) vs safety (convert before it drops)
-- Mood fatigue punishes spam-converting
-
-### Auto Conversion Mode
-
-**What Player Sees**:
-- "Auto-Converting... efficiency unknown"
-- After time away: "While you were away, the overseer's mood varied. You earned X coins."
-- NO indication of efficiency penalty
-
-**Hidden Mechanics**:
-- Uses current mood but applies 70% efficiency penalty (upgradable to 95%)
-- Mood still fluctuates and fatigues (but slower)
-- Never optimal but provides offline progression
-
-**Discovery Process**: Players notice auto gives less, must experiment to understand tradeoff.
-
-### Knowledge-Based Discovery: Hidden Mood Patterns
-
-**Design Goal**: Players learn overseer mood system through observation, NOT tutorials.
-
-**Hidden Pattern System** (players discover through experimentation):
-
-1. **Time-Based Drift Patterns**
-   - Mood naturally cycles with subtle predictability
-   - Morning shifts (game time): Overseer tends toward "pleased" (well-rested)
-   - Mid-shift: Mood more volatile (stress, fatigue building)
-   - End of shift: Tends toward "irritated" (wants to go home)
-   - Players who track patterns gain advantage
-
-2. **Coal Quality Influence** (discovered in Phase 6A)
-   - Fine coal: Overseer appreciates efficiency (+mood temporarily)
-   - Coarse coal: Overseer grumbles about slow output (-mood temporarily)
-   - Regular coal: Neutral mood impact
-   - **Not explained** - players notice patterns over time
-
 3. **Historical Mood Memory**
-   - Overseer "remembers" last 3-5 conversions
-   - String of good conversions → more forgiving of bad timing
-   - String of spam conversions → increasingly irritable
-   - Players learn to "bank goodwill" for risky conversions
+   - answering overseer's questions correctly increases his mood, answering incorrectly decreases it
 
 4. **Environmental Mood Modifiers** (Phase 6+ discovery)
-   - Hot days: Overseer more irritable (temperature stress)
-   - Cold days: Overseer more pleased (comfortable working conditions)
-   - Sandstorms approaching: Overseer anxious (-mood)
-   - Players who understand environment predict mood better
-
-**Aha Moment**: "The overseer isn't random - there ARE patterns! I can optimize this!"
-
-**Discovery Clues** (subtle, never explicit):
-- Crystal whispers: "Watch him closely... he has rhythms like the train"
-- Wisdom stat milestone (Lv 5): "You notice patterns in the furnace behavior"
-- Intelligence stat milestone (Lv 8): "You understand the overseer's moods"
-- Workers (good treatment) occasionally comment: "Boss is always grumpy after lunch"
-
-**Implementation**:
-- NO tutorials explaining patterns
-- NO explicit "Overseer mood is affected by X" messages
-- Players must observe, experiment, and deduce
-- Community discovery encouraged (players share findings)
-
-### Upgradeable Paths
+Furnace running too hot or too cold prompts a notification comment from overseer and an adjustment down of mood
 
 **Manual Mode Upgrades**:
 - "Your smooth words help ease tensions" (reduces mood fatigue)
@@ -400,7 +359,7 @@ A massive train crossing endless desert, drawing electricity from the ground. On
 - "Your charm is undeniable" (faster fatigue recovery)
 
 **Auto Mode Upgrades**:
-- "Auto-Converter" (unlocks auto mode, 500 coins)
+- "Auto-Converter machine" (unlocks auto mode, 500 coins). button that appears in overseer's office
 - "Better gears make smoother operation" (improves efficiency 70%→95%)
 - "Silent mechanisms draw less attention" (reduces mood penalty)
 - "Bulk processing reduces interruptions" (fewer mood hits)

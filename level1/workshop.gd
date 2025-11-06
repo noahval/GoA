@@ -94,11 +94,12 @@ func add_planning_table_button():
 	if Level1Vars.heart_taken:
 		var planning_table_button = Button.new()
 		planning_table_button.name = "PlanningTableButton"
-		planning_table_button.text = "Planning Table"
+		planning_table_button.text = "To Planning Table"
 
 		# Get the theme from another button
 		var theme_resource = load("res://default_theme.tres")
 		planning_table_button.theme = theme_resource
+		planning_table_button.theme_type_variation = &"ForwardNavButton"
 
 		# Add the button before the back button (works for any layout)
 		var back_button = find_node_recursive(self, "BackToPassageButton")

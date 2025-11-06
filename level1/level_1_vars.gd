@@ -46,3 +46,5 @@ var auto_conversion_enabled = false  # Manual by default
 var coal_conversion_threshold = 30.0  # Amount of coal needed for manual conversion
 var overseer_bribe_count = 0  # Track number of times overseer has been bribed
 var mood_system_unlocked = false  # Unlocked after 4 bribes
+var lifetimecoins = 0.0  # Track total coins earned (never decreases)
+var coinslot_machine_unlocked = false  # Track if the coin slot machine has been revealed

@@ -25,9 +25,9 @@ enum ButtonType {
 ## Example: To put Back Nav above Forward Nav, swap their values
 const BUTTON_ORDER = {
 	ButtonType.ACTION: 0,       # Top - Primary actions
+	ButtonType.DEVELOPER: 0,    # Top - Same tier as actions (per button-hierarchy.md)
 	ButtonType.FORWARD_NAV: 1,  # Middle - Advance forward
-	ButtonType.BACK_NAV: 2,     # Bottom - Return/exit
-	ButtonType.DEVELOPER: 3     # Very bottom - Dev tools
+	ButtonType.BACK_NAV: 2      # Bottom - Return/exit
 }
 
 ## Left/Top Panel Element Ordering

@@ -98,6 +98,7 @@ vertical_alignment = 1
 
 [node name="BackToWorkshopButton" type="Button" parent="HBoxContainer/RightVBox" index="0"]
 layout_mode = 2
+theme_type_variation = &"BackNavButton"
 text = "Back to Workshop"
 
 [connection signal="pressed" from="HBoxContainer/RightVBox/BackToWorkshopButton" to="." method="_on_back_to_workshop_button_pressed"]
