@@ -17,7 +17,7 @@ var mood_drift_interval = 15.0  # Mood changes every 15 seconds
 
 # Mood fatigue (punishes spam-converting)
 var fatigue_level = 0.0  # 0.0 to 1.0, reduces mood
-var fatigue_decay_rate = 0.1  # Per second
+var fatigue_decay_rate = 0.15  # Per second
 
 # Conversion mode
 var auto_conversion_enabled = false
@@ -114,11 +114,11 @@ func get_trend_arrow() -> String:
 func manual_convert_coal(coal_amount: float) -> float:
 	# Apply mood fatigue (punish frequent conversions)
 	var time_delta = time_since_last_conversion
-	if time_delta < 10.0:  # Converted within 10 seconds
-		fatigue_level += 0.15
+	if time_delta < 5.0:  # Converted within 5 seconds
+		fatigue_level += 0.12
 		fatigue_level = min(1.0, fatigue_level)
-	elif time_delta < 30.0:  # Converted within 30 seconds
-		fatigue_level += 0.05
+	elif time_delta < 10.0:  # Converted within 10 seconds
+		fatigue_level += 0.08
 		fatigue_level = min(1.0, fatigue_level)
 
 	time_since_last_conversion = 0.0

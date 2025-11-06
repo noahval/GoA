@@ -123,6 +123,8 @@ func _on_shovel_coal_button_pressed():
 			steal_coal_button.visible = true
 
 func _on_to_bar_button_pressed():
+	# Reset break time so the bar refills when taking a break
+	Level1Vars.break_time_remaining = 0.0
 	Global.change_scene_with_check(get_tree(), "res://level1/bar.tscn")
 
 func _on_steal_coal_button_pressed():

@@ -1,131 +1,62 @@
 [gd_scene load_steps=4 format=3 uid="uid://c2qus2204pgky"]
 
-[ext_resource type="Script" uid="uid://covx5m8lhrp3h" path="res://level1/dream.gd" id="1"]
-[ext_resource type="Texture2D" uid="uid://lpei21lrh7e0" path="res://level1/dream.jpg" id="2"]
-[ext_resource type="Theme" path="res://default_theme.tres" id="3"]
+[ext_resource type="PackedScene" path="res://level1/scene_template.tscn" id="1_base"]
+[ext_resource type="Script" uid="uid://covx5m8lhrp3h" path="res://level1/dream.gd" id="2_script"]
+[ext_resource type="Texture2D" uid="uid://lpei21lrh7e0" path="res://level1/dream.jpg" id="3_texture"]
 
-[node name="Dream" type="Control"]
-layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme = ExtResource("3")
-script = ExtResource("1")
+[node name="Dream" instance=ExtResource("1_base")]
+script = ExtResource("2_script")
 
-[node name="Background" type="TextureRect" parent="."]
+[node name="Background" parent="." index="0"]
+texture = ExtResource("3_texture")
+
+[node name="TitlePanel" type="Panel" parent="HBoxContainer/LeftVBox" index="0"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="HBoxContainer/LeftVBox/TitlePanel" index="0"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-texture = ExtResource("2")
-expand_mode = 1
-stretch_mode = 6
-
-[node name="HBoxContainer" type="HBoxContainer" parent="."]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -250.0
-offset_top = -300.0
-offset_right = 250.0
-offset_bottom = 300.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="VBoxContainer" type="VBoxContainer" parent="."]
-visible = false
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="TopPadding" type="Control" parent="VBoxContainer"]
-custom_minimum_size = Vector2(0, 90)
-layout_mode = 2
-
-[node name="TopVBox" type="VBoxContainer" parent="VBoxContainer"]
-layout_mode = 2
-size_flags_vertical = 0
-
-[node name="Spacer" type="Control" parent="VBoxContainer"]
-layout_mode = 2
-size_flags_vertical = 3
-
-[node name="BottomVBox" type="VBoxContainer" parent="VBoxContainer"]
-layout_mode = 2
-size_flags_vertical = 0
-
-[node name="BottomPadding" type="Control" parent="VBoxContainer"]
-custom_minimum_size = Vector2(0, 90)
-layout_mode = 2
-
-[node name="LeftVBox" type="VBoxContainer" parent="HBoxContainer"]
-layout_mode = 2
-
-[node name="TitlePanel" type="Panel" parent="HBoxContainer/LeftVBox"]
-custom_minimum_size = Vector2(0, 24)
-layout_mode = 2
-
-[node name="TitleLabel" type="Label" parent="HBoxContainer/LeftVBox/TitlePanel"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme = ExtResource("3")
 text = "Dream"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="StaminaPanel" type="Panel" parent="HBoxContainer/LeftVBox"]
+[node name="StaminaPanel" type="Panel" parent="HBoxContainer/LeftVBox" index="1"]
 theme_type_variation = &"ProgressPanel"
-custom_minimum_size = Vector2(0, 24)
+custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 
-[node name="StaminaBar" type="ProgressBar" parent="HBoxContainer/LeftVBox/StaminaPanel"]
+[node name="StaminaBar" type="ProgressBar" parent="HBoxContainer/LeftVBox/StaminaPanel" index="0"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme = ExtResource("3")
 value = 100.0
 show_percentage = false
 
-[node name="StaminaLabel" type="Label" parent="HBoxContainer/LeftVBox/StaminaPanel"]
+[node name="StaminaLabel" type="Label" parent="HBoxContainer/LeftVBox/StaminaPanel" index="1"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme = ExtResource("3")
 text = "Stamina"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="RightVBox" type="VBoxContainer" parent="HBoxContainer"]
+[node name="BackButton" type="Button" parent="HBoxContainer/RightVBox" index="0"]
 layout_mode = 2
-
-[node name="BackButton" type="Button" parent="HBoxContainer/RightVBox"]
-layout_mode = 2
-theme = ExtResource("3")
 text = "Try to Wake Up"
 
-[node name="WillpowerButton" type="Button" parent="HBoxContainer/RightVBox"]
+[node name="WillpowerButton" type="Button" parent="HBoxContainer/RightVBox" index="1"]
 layout_mode = 2
-theme = ExtResource("3")
 text = "Dream of Willpower"
 
 [connection signal="pressed" from="HBoxContainer/RightVBox/BackButton" to="." method="_on_back_button_pressed"]

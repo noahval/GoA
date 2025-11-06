@@ -12,7 +12,7 @@ var overseer_lvl = 0
 var barkeep_bribed = false
 var shopkeep_bribed = false
 var break_time_remaining = 0.0
-var starting_break_time = 23
+var starting_break_time = 30
 var coin_cost = 30.0
 var components = 0
 var mechanisms = 0
@@ -22,7 +22,7 @@ var max_stamina:
 	get:
 		return 125.0 + (20 * Global.constitution)
 var pipe_puzzle_grid = []  # Saved grid state for the pipe puzzle
-var heart_taken = true
+var heart_taken = false
 var whisper_triggered = false
 var door_discovered = false
 var stolen_coal = 0
