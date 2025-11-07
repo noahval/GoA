@@ -89,18 +89,24 @@ text = "Follow whispering voice"
 layout_mode = 2
 text = "Developer: Free Coins"
 
-[node name="SecretPassageButton" type="Button" parent="HBoxContainer/RightVBox" index="5"]
+[node name="ToDormButton" type="Button" parent="HBoxContainer/RightVBox" index="5"]
+visible = false
+layout_mode = 2
+theme_type_variation = &"ForwardNavButton"
+text = "To Dorm"
+
+[node name="SecretPassageButton" type="Button" parent="HBoxContainer/RightVBox" index="6"]
 visible = false
 layout_mode = 2
 theme_type_variation = &"ForwardNavButton"
 text = "Enter Secret Passage"
 
-[node name="ToCoppersmithCarriageButton" type="Button" parent="HBoxContainer/RightVBox" index="6"]
+[node name="ToCoppersmithCarriageButton" type="Button" parent="HBoxContainer/RightVBox" index="7"]
 layout_mode = 2
 theme_type_variation = &"ForwardNavButton"
 text = "To Coppersmith Carriage"
 
-[node name="ToBlackboreFurnaceButton" type="Button" parent="HBoxContainer/RightVBox" index="7"]
+[node name="ToBlackboreFurnaceButton" type="Button" parent="HBoxContainer/RightVBox" index="8"]
 layout_mode = 2
 theme_type_variation = &"BackNavButton"
 text = "To Blackbore Furnace"
@@ -115,6 +121,7 @@ text = "To Blackbore Furnace"
 [connection signal="pressed" from="HBoxContainer/RightVBox/SecretPassageButton" to="." method="_on_secret_passage_pressed"]
 [connection signal="pressed" from="HBoxContainer/RightVBox/DeveloperFreeCoinsButton" to="." method="_on_developer_free_coins_button_pressed"]
 [connection signal="pressed" from="HBoxContainer/RightVBox/FollowVoiceButton" to="." method="_on_follow_voice_button_pressed"]
+[connection signal="pressed" from="HBoxContainer/RightVBox/ToDormButton" to="." method="_on_to_dorm_button_pressed"]
 [connection signal="pressed" from="HBoxContainer/RightVBox/ToBlackboreFurnaceButton" to="." method="_on_to_blackbore_furnace_button_pressed"]
 [connection signal="pressed" from="HBoxContainer/RightVBox/ToCoppersmithCarriageButton" to="." method="_on_to_coppersmith_carriage_button_pressed"]
 [connection signal="button_pressed" from="PopupContainer/VoicePopup" to="." method="_on_voice_popup_button_pressed"]

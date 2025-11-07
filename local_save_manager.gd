@@ -143,6 +143,7 @@ func _get_level1_vars_data() -> Dictionary:
 		"stolen_writs": Level1Vars.stolen_writs,
 		"correct_answers": Level1Vars.correct_answers,
 		"suspicion": Level1Vars.suspicion,
+		"equipment_value": Level1Vars.equipment_value,
 
 		# Timers/Buffs
 		"break_time_remaining": Level1Vars.break_time_remaining,
@@ -211,6 +212,7 @@ func _set_level1_vars_data(data: Dictionary) -> void:
 	Level1Vars.stolen_writs = data.get("stolen_writs", 0)
 	Level1Vars.correct_answers = data.get("correct_answers", 0)
 	Level1Vars.suspicion = data.get("suspicion", 0)
+	Level1Vars.equipment_value = data.get("equipment_value", 0)
 
 	# Timers/Buffs
 	Level1Vars.break_time_remaining = data.get("break_time_remaining", 0.0)

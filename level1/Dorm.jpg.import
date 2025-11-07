@@ -2,22 +2,22 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://k7el0t30mkvr"
-path="res://.godot/imported/Shop.jpg-8dbaf55d6c2dab8905b333c8768c043d.ctex"
+uid="uid://dtd48polxunca"
+path="res://.godot/imported/Dorm.jpg-e0f4af304cfddcb567292ca9bc1ef982.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://level1/Shop.jpg"
-dest_files=["res://.godot/imported/Shop.jpg-8dbaf55d6c2dab8905b333c8768c043d.ctex"]
+source_file="res://level1/Dorm.jpg"
+dest_files=["res://.godot/imported/Dorm.jpg-e0f4af304cfddcb567292ca9bc1ef982.ctex"]
 
 [params]
 
-compress/mode=1
+compress/mode=0
 compress/high_quality=false
-compress/lossy_quality=0.3
+compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0
 compress/hdr_compression=1

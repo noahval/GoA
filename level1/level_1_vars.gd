@@ -47,4 +47,6 @@ var coal_conversion_threshold = 30.0  # Amount of coal needed for manual convers
 var overseer_bribe_count = 0  # Track number of times overseer has been bribed
 var mood_system_unlocked = false  # Unlocked after 4 bribes
 var lifetimecoins = 0.0  # Track total coins earned (never decreases)
+var equipment_value = 0  # Total coin-equivalent value spent on equipment upgrades
 var coinslot_machine_unlocked = false  # Track if the coin slot machine has been revealed
+var dorm_unlocked = false  # Track if dorm has been unlocked (equipment_value >= 3000)

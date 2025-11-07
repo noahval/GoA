@@ -87,6 +87,7 @@ func _on_shovel_button_pressed():
 		DebugLogger.log_resource_change("coins", Level1Vars.coins, Level1Vars.coins - cost, "Shovel purchase")
 		Level1Vars.coins -= cost
 		Level1Vars.shovel_lvl += 1
+		UpgradeTypesConfig.track_equipment_purchase("shovel", cost)
 		DebugLogger.log_shop_purchase("Shovel", cost, Level1Vars.shovel_lvl)
 		update_labels()
 		update_shovels_popup_labels()
@@ -97,6 +98,7 @@ func _on_plow_button_pressed():
 		DebugLogger.log_resource_change("coins", Level1Vars.coins, Level1Vars.coins - cost, "Plow purchase")
 		Level1Vars.coins -= cost
 		Level1Vars.plow_lvl += 1
+		UpgradeTypesConfig.track_equipment_purchase("plow", cost)
 		DebugLogger.log_shop_purchase("Coal Plow", cost, Level1Vars.plow_lvl)
 		update_labels()
 		update_shovels_popup_labels()
@@ -107,6 +109,7 @@ func _on_furnace_upgrade_pressed():
 		DebugLogger.log_resource_change("coins", Level1Vars.coins, Level1Vars.coins - cost, "Auto Shovel purchase")
 		Level1Vars.coins -= cost
 		Level1Vars.auto_shovel_lvl += 1
+		UpgradeTypesConfig.track_equipment_purchase("auto_shovel", cost)
 		DebugLogger.log_shop_purchase("Auto Shovel", cost, Level1Vars.auto_shovel_lvl)
 		update_labels()
 		update_auto_shovels_popup_labels()
@@ -175,6 +178,7 @@ func _on_coal_per_tick_upgrade_pressed():
 		Level1Vars.coins -= cost
 		Level1Vars.auto_shovel_coal_upgrade_lvl += 1
 		Level1Vars.auto_shovel_coal_per_tick = 4.0 + (0.5 * Level1Vars.auto_shovel_coal_upgrade_lvl)
+		UpgradeTypesConfig.track_equipment_purchase("coal_per_tick", cost)
 		DebugLogger.log_shop_purchase("Coal Per Tick Upgrade", cost, Level1Vars.auto_shovel_coal_upgrade_lvl)
 		update_labels()
 		update_auto_shovels_popup_labels()
@@ -186,6 +190,7 @@ func _on_frequency_upgrade_pressed():
 		Level1Vars.coins -= cost
 		Level1Vars.auto_shovel_freq_upgrade_lvl += 1
 		Level1Vars.auto_shovel_freq = max(0.5, 3.0 - (0.2 * Level1Vars.auto_shovel_freq_upgrade_lvl))
+		UpgradeTypesConfig.track_equipment_purchase("frequency", cost)
 		DebugLogger.log_shop_purchase("Frequency Upgrade", cost, Level1Vars.auto_shovel_freq_upgrade_lvl)
 		update_labels()
 		update_auto_shovels_popup_labels()

@@ -16,6 +16,7 @@
 - [settings_overlay.gd](settings_overlay.gd)  
 - [test_progress_bar_theme.gd](test_progress_bar_theme.gd)  
 - [toc_updater.gd](toc_updater.gd)  
+- [upgrade_types_config.gd](upgrade_types_config.gd)  
 - [victory.gd](victory.gd)  
 
 ### Scenes (.tscn)
@@ -101,6 +102,7 @@
 - [level1/atm.gd](level1/atm.gd)  
 - [level1/bar.gd](level1/bar.gd)  
 - [level1/coppersmith_carriage.gd](level1/coppersmith_carriage.gd)  
+- [level1/dorm.gd](level1/dorm.gd)  
 - [level1/dream.gd](level1/dream.gd)  
 - [level1/furnace.gd](level1/furnace.gd)  
 - [level1/intro_screen.gd](level1/intro_screen.gd)  
@@ -120,6 +122,7 @@
 - [level1/atm.tscn](level1/atm.tscn)  
 - [level1/bar.tscn](level1/bar.tscn)  
 - [level1/coppersmith_carriage.tscn](level1/coppersmith_carriage.tscn)  
+- [level1/dorm.tscn](level1/dorm.tscn)  
 - [level1/dream.tscn](level1/dream.tscn)  
 - [level1/furnace.tscn](level1/furnace.tscn)  
 - [level1/intro_screen.tscn](level1/intro_screen.tscn)  

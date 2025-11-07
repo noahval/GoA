@@ -8,6 +8,7 @@ var max_break_time = 30.0
 @onready var secret_passage_button = $HBoxContainer/RightVBox/SecretPassageButton
 @onready var developer_free_coins_button = $HBoxContainer/RightVBox/DeveloperFreeCoinsButton
 @onready var follow_voice_button = $HBoxContainer/RightVBox/FollowVoiceButton
+@onready var to_dorm_button = $HBoxContainer/RightVBox/ToDormButton
 @onready var break_timer_bar = $HBoxContainer/LeftVBox/BreakTimerPanel/BreakTimerBar
 @onready var break_timer_label = $HBoxContainer/LeftVBox/BreakTimerPanel/BreakTimer
 @onready var coins_label = $HBoxContainer/LeftVBox/CoinsPanel/CoinsLabel
@@ -35,6 +36,10 @@ func _ready():
 	# Hide follow voice button if door has already been discovered
 	if follow_voice_button:
 		follow_voice_button.visible = false
+
+	# Show to dorm button if dorm has been unlocked
+	if to_dorm_button:
+		to_dorm_button.visible = Level1Vars.dorm_unlocked
 
 	# Setup popups with messages and buttons
 	if voice_popup:
@@ -90,6 +95,9 @@ func _on_to_blackbore_furnace_button_pressed():
 func _on_to_coppersmith_carriage_button_pressed():
 	Global.change_scene_with_check(get_tree(), "res://level1/coppersmith_carriage.tscn")
 
+func _on_to_dorm_button_pressed():
+	Global.change_scene_with_check(get_tree(), "res://level1/dorm.tscn")
+
 func _on_bribe_barkeep_pressed():
 	if Level1Vars.coins >= 50 and not Level1Vars.barkeep_bribed:
 		Level1Vars.coins -= 50
@@ -139,6 +147,14 @@ func update_labels():
 	# Show secret passage button only if barkeep was bribed
 	if secret_passage_button:
 		secret_passage_button.visible = Level1Vars.barkeep_bribed
+
+	# Check if dorm should be unlocked (equipment_value >= 3000)
+	if not Level1Vars.dorm_unlocked and Level1Vars.equipment_value >= 3000:
+		Level1Vars.dorm_unlocked = true
+
+	# Show to dorm button if dorm has been unlocked
+	if to_dorm_button:
+		to_dorm_button.visible = Level1Vars.dorm_unlocked
 
 func _on_follow_voice_button_pressed():
 	# Show the voice popup
