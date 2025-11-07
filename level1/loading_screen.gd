@@ -5,6 +5,7 @@ var fade_duration = 1.0  # seconds
 var elapsed_time = 0.0
 var state = "loading"  # States: loading, showing_login, waiting_for_auth, fading_out
 var login_shown = false
+var _last_viewport_size: Vector2 = Vector2.ZERO
 
 @onready var fade_overlay = $FadeOverlay
 @onready var popup_container = $PopupContainer
@@ -33,6 +34,14 @@ func _setup_web_video():
 
 func _process(delta):
 	elapsed_time += delta
+
+	# Monitor viewport resizing and reapply popup constraints
+	var current_viewport_size = get_viewport_rect().size
+	if login_popup.visible and current_viewport_size != _last_viewport_size:
+		_last_viewport_size = current_viewport_size
+		DebugLogger.log_info("LoadingScreen", "Viewport resized to %s - reapplying popup constraints" % current_viewport_size)
+		if login_popup.has_method("_apply_responsive_constraints"):
+			login_popup._apply_responsive_constraints()
 
 	match state:
 		"loading":

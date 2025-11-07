@@ -33,11 +33,9 @@ func show_popup():
 
 	visible = true
 	z_index = 200
-	# Center the popup
-	position = Vector2(
-		(get_viewport_rect().size.x - size.x) / 2,
-		(get_viewport_rect().size.y - size.y) / 2
-	)
+
+	# Apply responsive constraints using ResponsiveLayout system
+	_apply_responsive_constraints()
 
 	# Test server connection and show appropriate message
 	_test_server_connection()
@@ -257,3 +255,47 @@ func _on_auth_failed(error: String):
 		_show_status("Authentication failed: " + error, true)
 
 	_set_buttons_enabled(true)
+
+## Apply responsive constraints following ResponsiveLayout system patterns
+## Uses same constants and logic as ResponsiveLayout.position_popups_in_play_area()
+func _apply_responsive_constraints() -> void:
+	var viewport_size = get_viewport_rect().size
+	var is_portrait = viewport_size.y > viewport_size.x
+
+	# Use ResponsiveLayout constants for popup sizing
+	var max_popup_width = 0.0
+	var max_popup_height = 0.0
+
+	if is_portrait:
+		# Portrait: Use POPUP_MAX_WIDTH_PORTRAIT (98% of viewport)
+		max_popup_width = viewport_size.x * ResponsiveLayout.POPUP_MAX_WIDTH_PORTRAIT
+		max_popup_height = viewport_size.y * 0.8  # 80% of viewport height for safety
+		DebugLogger.log_info("LoginPopup", "Portrait mode - Max size: %.0fx%.0f" % [max_popup_width, max_popup_height])
+	else:
+		# Landscape: Use same logic as ResponsiveLayout for landscape popups
+		# POPUP_WIDTH_RATIO_LANDSCAPE = 0.98 (use 98% of available width)
+		var available_width = viewport_size.x - (ResponsiveLayout.POPUP_MARGIN_FROM_MENUS * 2)
+		max_popup_width = max(float(ResponsiveLayout.POPUP_MIN_WIDTH_LANDSCAPE),
+							   available_width * ResponsiveLayout.POPUP_WIDTH_RATIO_LANDSCAPE)
+		max_popup_height = viewport_size.y * 0.7  # 70% of viewport height
+		DebugLogger.log_info("LoginPopup", "Landscape mode - Max size: %.0fx%.0f" % [max_popup_width, max_popup_height])
+
+	# Center popup on viewport with constraints
+	anchor_left = 0.5
+	anchor_right = 0.5
+	anchor_top = 0.5
+	anchor_bottom = 0.5
+
+	# Set offsets based on max size (centered)
+	var half_width = max_popup_width / 2.0
+	var half_height = max_popup_height / 2.0
+
+	offset_left = -half_width
+	offset_right = half_width
+	offset_top = -half_height
+	offset_bottom = half_height
+
+	DebugLogger.log_info("LoginPopup", "Applied constraints - Offsets: L=%.0f R=%.0f T=%.0f B=%.0f" %
+						 [offset_left, offset_right, offset_top, offset_bottom])
+	DebugLogger.log_info("LoginPopup", "Calculated width: %.0f, height: %.0f" %
+						 [offset_right - offset_left, offset_bottom - offset_top])

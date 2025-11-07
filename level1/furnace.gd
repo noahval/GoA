@@ -113,7 +113,7 @@ func _on_shovel_coal_button_pressed():
 
 	coal_label.text = "Coal Shoveled: " + str(int(Level1Vars.coal))
 	click_count += 1
-	if click_count >= 50:
+	if click_count >= 35:
 		to_bar_button.visible = true
 
 	# Count clicks for steal coal button
