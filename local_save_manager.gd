@@ -107,6 +107,11 @@ func _get_global_data() -> Dictionary:
 		"intelligence_exp": Global.intelligence_exp,
 		"charisma_exp": Global.charisma_exp,
 
+		# Prestige system
+		"reputation_points": Global.reputation_points,
+		"lifetime_reputation_earned": Global.lifetime_reputation_earned,
+		"reputation_upgrades": Global.reputation_upgrades,
+
 		# Dev mode
 		"dev_speed_mode": Global.dev_speed_mode
 	}
@@ -137,6 +142,14 @@ func _get_level1_vars_data() -> Dictionary:
 		"heart_taken": Level1Vars.heart_taken,
 		"whisper_triggered": Level1Vars.whisper_triggered,
 		"door_discovered": Level1Vars.door_discovered,
+
+		# Phase 1: Overseer & Conversion
+		"auto_conversion_enabled": Level1Vars.auto_conversion_enabled,
+		"overseer_bribe_count": Level1Vars.overseer_bribe_count,
+		"mood_system_unlocked": Level1Vars.mood_system_unlocked,
+		"lifetimecoins": Level1Vars.lifetimecoins,
+		"dorm_unlocked": Level1Vars.dorm_unlocked,
+		"coinslot_machine_unlocked": Level1Vars.coinslot_machine_unlocked,
 
 		# Progress
 		"stolen_coal": Level1Vars.stolen_coal,
@@ -178,6 +191,11 @@ func _set_global_data(data: Dictionary) -> void:
 	Global.intelligence_exp = data.get("intelligence_exp", 0.0)
 	Global.charisma_exp = data.get("charisma_exp", 0.0)
 
+	# Prestige system
+	Global.reputation_points = data.get("reputation_points", 0)
+	Global.lifetime_reputation_earned = data.get("lifetime_reputation_earned", 0)
+	Global.reputation_upgrades = data.get("reputation_upgrades", {})
+
 	# Dev mode
 	Global.dev_speed_mode = data.get("dev_speed_mode", false)
 
@@ -206,6 +224,14 @@ func _set_level1_vars_data(data: Dictionary) -> void:
 	Level1Vars.heart_taken = data.get("heart_taken", true)
 	Level1Vars.whisper_triggered = data.get("whisper_triggered", false)
 	Level1Vars.door_discovered = data.get("door_discovered", false)
+
+	# Phase 1: Overseer & Conversion
+	Level1Vars.auto_conversion_enabled = data.get("auto_conversion_enabled", false)
+	Level1Vars.overseer_bribe_count = data.get("overseer_bribe_count", 0)
+	Level1Vars.mood_system_unlocked = data.get("mood_system_unlocked", false)
+	Level1Vars.lifetimecoins = data.get("lifetimecoins", 0.0)
+	Level1Vars.dorm_unlocked = data.get("dorm_unlocked", false)
+	Level1Vars.coinslot_machine_unlocked = data.get("coinslot_machine_unlocked", false)
 
 	# Progress
 	Level1Vars.stolen_coal = data.get("stolen_coal", 0)

@@ -10,6 +10,129 @@ var victory_conditions = {
 	"mechanisms": 3
 }
 
+# ===== PRESTIGE SYSTEM CONFIGURATION =====
+# Reputation points (spendable currency)
+var reputation_points: int = 0
+# Total reputation earned over all prestiges (affects cost scaling)
+var lifetime_reputation_earned: int = 0
+# Dictionary of owned reputation upgrades (upgrade_id: true)
+var reputation_upgrades: Dictionary = {}
+
+# Prestige conversion formula constants
+const REPUTATION_BASE_COST = 1000
+const REPUTATION_SCALING = 1.6
+
+# 16-node skill tree with forking paths and convergence nodes
+const REPUTATION_UPGRADES = {
+	# TIER 1 - Entry Points (Cost 1)
+	"skill_a1": {
+		"name": "Skill A1",
+		"cost": 1,
+		"description": "[Placeholder: Combat/Click focus upgrade]",
+		"prerequisites": []
+	},
+	"skill_b1": {
+		"name": "Skill B1",
+		"cost": 1,
+		"description": "[Placeholder: Economy/Coins focus upgrade]",
+		"prerequisites": []
+	},
+	"skill_c1": {
+		"name": "Skill C1",
+		"cost": 1,
+		"description": "[Placeholder: Production/Auto focus upgrade]",
+		"prerequisites": []
+	},
+
+	# TIER 2 (Cost 2-3)
+	"skill_a2": {
+		"name": "Skill A2",
+		"cost": 2,
+		"description": "[Placeholder upgrade]",
+		"prerequisites": ["skill_a1"]
+	},
+	"skill_b2": {
+		"name": "Skill B2",
+		"cost": 2,
+		"description": "[Placeholder upgrade]",
+		"prerequisites": ["skill_b1"]
+	},
+	"skill_c2": {
+		"name": "Skill C2",
+		"cost": 2,
+		"description": "[Placeholder upgrade]",
+		"prerequisites": ["skill_c1"]
+	},
+	"skill_ab2": {
+		"name": "Skill AB2",
+		"cost": 3,
+		"description": "[Placeholder: Convergence skill]",
+		"prerequisites": ["skill_a1", "skill_b1"],
+		"prerequisite_mode": "any"  # OR logic - needs at least one
+	},
+
+	# TIER 3 (Cost 4-6)
+	"skill_a3": {
+		"name": "Skill A3",
+		"cost": 4,
+		"description": "[Placeholder upgrade]",
+		"prerequisites": ["skill_a2"]
+	},
+	"skill_b3": {
+		"name": "Skill B3",
+		"cost": 4,
+		"description": "[Placeholder upgrade]",
+		"prerequisites": ["skill_b2"]
+	},
+	"skill_c3": {
+		"name": "Skill C3",
+		"cost": 5,
+		"description": "[Placeholder: Multi-path skill]",
+		"prerequisites": ["skill_c2", "skill_ab2"]  # AND logic - needs both
+	},
+	"skill_abc3": {
+		"name": "Skill ABC3",
+		"cost": 6,
+		"description": "[Placeholder: Convergence skill]",
+		"prerequisites": ["skill_ab2", "skill_c2"]  # AND logic
+	},
+
+	# TIER 4 (Cost 7-9)
+	"skill_a4": {
+		"name": "Skill A4",
+		"cost": 7,
+		"description": "[Placeholder: Fork convergence skill]",
+		"prerequisites": ["skill_a3", "skill_b3"],
+		"prerequisite_mode": "any"  # OR logic
+	},
+	"skill_b4": {
+		"name": "Skill B4",
+		"cost": 8,
+		"description": "[Placeholder: Multi-path skill]",
+		"prerequisites": ["skill_b3", "skill_c3"]  # AND logic
+	},
+	"skill_c4": {
+		"name": "Skill C4",
+		"cost": 9,
+		"description": "[Placeholder: Multi-path skill]",
+		"prerequisites": ["skill_a3", "skill_abc3"]  # AND logic
+	},
+
+	# TIER 5 - Capstones (Cost 10-12)
+	"skill_ultimate1": {
+		"name": "Skill Ultimate 1",
+		"cost": 10,
+		"description": "[Placeholder: Ultimate capstone]",
+		"prerequisites": ["skill_a4", "skill_b4"]  # AND logic
+	},
+	"skill_ultimate2": {
+		"name": "Skill Ultimate 2",
+		"cost": 12,
+		"description": "[Placeholder: Ultimate capstone]",
+		"prerequisites": ["skill_b4", "skill_c4"]  # AND logic
+	}
+}
+
 # ===== EXPERIENCE SYSTEM CONFIGURATION =====
 # Base XP needed for first level up (level 1 -> 2)
 const BASE_XP_FOR_LEVEL = 100
@@ -70,6 +193,130 @@ func get_stat_level_progress(stat_name: String) -> float:
 	return 1.0 if xp_needed_in_level <= 0 else clamp(xp_in_level / xp_needed_in_level, 0.0, 1.0)
 
 # ===== END EXPERIENCE SYSTEM =====
+
+# ===== PRESTIGE SYSTEM FUNCTIONS =====
+
+# Get the cost for the next reputation point (based on lifetime earned)
+func get_cost_for_next_reputation() -> int:
+	return int(REPUTATION_BASE_COST * pow(REPUTATION_SCALING, lifetime_reputation_earned))
+
+# Calculate how many reputation points the player would earn from current equipment value
+func calculate_available_reputation() -> int:
+	var equipment = Level1Vars.equipment_value
+	var total_earned = 0
+	var cost = get_cost_for_next_reputation()
+
+	# Keep awarding reputation while we have enough equipment
+	while equipment >= cost:
+		equipment -= cost
+		total_earned += 1
+		# Update cost for next reputation (based on lifetime + what we're earning now)
+		cost = int(REPUTATION_BASE_COST * pow(REPUTATION_SCALING, lifetime_reputation_earned + total_earned))
+
+	return total_earned
+
+# Get progress toward next reputation point (0.0 to 1.0)
+func get_progress_to_next_reputation() -> float:
+	var equipment = Level1Vars.equipment_value
+
+	# Calculate how much equipment has been "consumed" for already-earned reputation
+	var consumed_equipment = 0
+	for i in range(lifetime_reputation_earned):
+		consumed_equipment += int(REPUTATION_BASE_COST * pow(REPUTATION_SCALING, i))
+
+	# Remaining equipment after accounting for previous reputation
+	var equipment_since_last = equipment - consumed_equipment
+
+	# Cost for the next reputation point
+	var cost_for_next = get_cost_for_next_reputation()
+
+	if cost_for_next <= 0:
+		return 0.0
+
+	return clamp(float(equipment_since_last) / float(cost_for_next), 0.0, 1.0)
+
+# Execute prestige: award reputation, reset progress
+func execute_prestige():
+	var reputation_earned = calculate_available_reputation()
+
+	if reputation_earned < 1:
+		show_stat_notification("Not enough equipment to donate")
+		return
+
+	# Award reputation points
+	reputation_points += reputation_earned
+	lifetime_reputation_earned += reputation_earned
+
+	# Reset level progress
+	Level1Vars.reset_for_prestige()
+
+	# Show notification
+	show_stat_notification("Donated equipment. Earned %d Reputation" % reputation_earned)
+
+# ===== REPUTATION UPGRADE FUNCTIONS =====
+
+# Check if player owns a specific upgrade
+func has_reputation_upgrade(upgrade_id: String) -> bool:
+	return reputation_upgrades.get(upgrade_id, false)
+
+# Check if player can purchase an upgrade (has reputation and prerequisites met)
+func can_purchase_upgrade(upgrade_id: String) -> bool:
+	if not upgrade_id in REPUTATION_UPGRADES:
+		return false
+
+	var upgrade = REPUTATION_UPGRADES[upgrade_id]
+
+	# Already owned?
+	if has_reputation_upgrade(upgrade_id):
+		return false
+
+	# Can afford?
+	if reputation_points < upgrade.cost:
+		return false
+
+	# Prerequisites met?
+	var prereq_mode = upgrade.get("prerequisite_mode", "all")  # Default to AND logic
+
+	if prereq_mode == "any":
+		# OR logic - at least one prerequisite must be met
+		if upgrade.prerequisites.is_empty():
+			return true
+
+		for prereq in upgrade.prerequisites:
+			if has_reputation_upgrade(prereq):
+				return true  # Found at least one
+		return false  # None met
+	else:
+		# AND logic - all prerequisites must be met
+		for prereq in upgrade.prerequisites:
+			if not has_reputation_upgrade(prereq):
+				return false
+		return true
+
+# Purchase an upgrade
+func purchase_upgrade(upgrade_id: String) -> bool:
+	if not can_purchase_upgrade(upgrade_id):
+		return false
+
+	var upgrade = REPUTATION_UPGRADES[upgrade_id]
+	reputation_points -= upgrade.cost
+	reputation_upgrades[upgrade_id] = true
+	show_stat_notification("Purchased: %s!" % upgrade.name)
+
+	return true
+
+# Get multiplier for a specific category (for future upgrade effects)
+func get_reputation_multiplier(category: String) -> float:
+	var multiplier = 1.0
+
+	# Placeholder: Add specific upgrade effects here when finalizing skills
+	# Example:
+	# if has_reputation_upgrade("skill_a1"):
+	#     multiplier *= 1.15
+
+	return multiplier
+
+# ===== END PRESTIGE SYSTEM =====
 
 # Stats with setters to detect changes
 var strength = 1:

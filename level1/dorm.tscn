@@ -1,8 +1,9 @@
-[gd_scene load_steps=3 format=3 uid="uid://dorm_scene"]
+[gd_scene load_steps=4 format=3 uid="uid://dorm_scene"]
 
 [ext_resource type="PackedScene" path="res://level1/scene_template.tscn" id="1_base"]
 [ext_resource type="Script" path="res://level1/dorm.gd" id="2_script"]
 [ext_resource type="Texture2D" path="res://level1/Dorm.jpg" id="3_texture"]
+[ext_resource type="Script" path="res://level1/skill_tree_canvas.gd" id="4_skill_tree_canvas"]
 
 [node name="Dorm" instance=ExtResource("1_base")]
 script = ExtResource("2_script")
@@ -67,9 +68,276 @@ text = "Coins: 0"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="ToBlackboreBarButton" type="Button" parent="HBoxContainer/RightVBox" index="0"]
+[node name="ReputationPanel" type="Panel" parent="HBoxContainer/LeftVBox" index="3"]
+self_modulate = Color(1, 1, 1, 0.7)
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+
+[node name="ReputationLabel" type="Label" parent="HBoxContainer/LeftVBox/ReputationPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Reputation: 0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ProgressPanel" type="Panel" parent="HBoxContainer/LeftVBox" index="4"]
+theme_type_variation = &"ProgressPanel"
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+visible = false
+
+[node name="ProgressBar" type="ProgressBar" parent="HBoxContainer/LeftVBox/ProgressPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+value = 0.0
+show_percentage = false
+
+[node name="ProgressLabel" type="Label" parent="HBoxContainer/LeftVBox/ProgressPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Next Reputation Progress"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="DonateEquipmentButton" type="Button" parent="HBoxContainer/RightVBox" index="0"]
+layout_mode = 2
+theme_type_variation = &"PrimaryActionButton"
+text = "Donate Equipment"
+visible = false
+
+[node name="ReputationButton" type="Button" parent="HBoxContainer/RightVBox" index="1"]
+layout_mode = 2
+text = "Reputation"
+
+[node name="DeveloperFreeReputationButton" type="Button" parent="HBoxContainer/RightVBox" index="2"]
+visible = false
+layout_mode = 2
+text = "Developer: Free Reputation"
+
+[node name="ToBlackboreBarButton" type="Button" parent="HBoxContainer/RightVBox" index="3"]
 layout_mode = 2
 theme_type_variation = &"BackNavButton"
 text = "To Blackbore Bar"
 
+[node name="PrestigeConfirmationPopup" type="Panel" parent="PopupContainer"]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -300.0
+offset_top = -150.0
+offset_right = 300.0
+offset_bottom = 150.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PopupContainer/PrestigeConfirmationPopup"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 15
+
+[node name="TitleLabel" type="Label" parent="PopupContainer/PrestigeConfirmationPopup/VBoxContainer"]
+layout_mode = 2
+text = "Donate Your Equipment?"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="MessageLabel" type="Label" parent="PopupContainer/PrestigeConfirmationPopup/VBoxContainer"]
+layout_mode = 2
+text = "These tools have served you well, the other workers need them more than you. Time to start fresh.
+You'll earn 0 Reputation"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="DetailsLabel" type="Label" parent="PopupContainer/PrestigeConfirmationPopup/VBoxContainer"]
+layout_mode = 2
+text = "Will donate all equipment and coins"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ButtonContainer" type="HBoxContainer" parent="PopupContainer/PrestigeConfirmationPopup/VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="ConfirmButton" type="Button" parent="PopupContainer/PrestigeConfirmationPopup/VBoxContainer/ButtonContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"PrimaryActionButton"
+text = "Donate Equipment"
+
+[node name="CancelButton" type="Button" parent="PopupContainer/PrestigeConfirmationPopup/VBoxContainer/ButtonContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Keep Working"
+
+[node name="SkillTreePopup" type="Panel" parent="PopupContainer"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 50.0
+offset_top = 50.0
+offset_right = -50.0
+offset_bottom = -50.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PopupContainer/SkillTreePopup"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 10
+
+[node name="HeaderContainer" type="HBoxContainer" parent="PopupContainer/SkillTreePopup/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 0
+
+[node name="TitleLabel" type="Label" parent="PopupContainer/SkillTreePopup/VBoxContainer/HeaderContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Reputation Skills"
+vertical_alignment = 1
+
+[node name="PointsLabel" type="Label" parent="PopupContainer/SkillTreePopup/VBoxContainer/HeaderContainer"]
+layout_mode = 2
+text = "Points: 0"
+vertical_alignment = 1
+
+[node name="CloseButton" type="Button" parent="PopupContainer/SkillTreePopup/VBoxContainer/HeaderContainer"]
+layout_mode = 2
+text = "×"
+
+[node name="MainContainer" type="HBoxContainer" parent="PopupContainer/SkillTreePopup/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ScrollContainer" type="ScrollContainer" parent="PopupContainer/SkillTreePopup/VBoxContainer/MainContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.7
+
+[node name="SkillTreeCanvas" type="Control" parent="PopupContainer/SkillTreePopup/VBoxContainer/MainContainer/ScrollContainer"]
+custom_minimum_size = Vector2(750, 450)
+layout_mode = 2
+script = ExtResource("4_skill_tree_canvas")
+
+[node name="DetailPanel" type="Panel" parent="PopupContainer/SkillTreePopup/VBoxContainer/MainContainer"]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PopupContainer/SkillTreePopup/VBoxContainer/MainContainer/DetailPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 10
+
+[node name="SkillIcon" type="ColorRect" parent="PopupContainer/SkillTreePopup/VBoxContainer/MainContainer/DetailPanel/VBoxContainer"]
+custom_minimum_size = Vector2(128, 128)
+layout_mode = 2
+size_flags_horizontal = 4
+color = Color(0.3, 0.3, 0.3, 1)
+
+[node name="SkillName" type="Label" parent="PopupContainer/SkillTreePopup/VBoxContainer/MainContainer/DetailPanel/VBoxContainer"]
+layout_mode = 2
+text = "Skill Name"
+horizontal_alignment = 1
+
+[node name="CostLabel" type="Label" parent="PopupContainer/SkillTreePopup/VBoxContainer/MainContainer/DetailPanel/VBoxContainer"]
+layout_mode = 2
+text = "Cost: 0"
+horizontal_alignment = 1
+
+[node name="DescriptionLabel" type="Label" parent="PopupContainer/SkillTreePopup/VBoxContainer/MainContainer/DetailPanel/VBoxContainer"]
+layout_mode = 2
+text = "Skill description goes here..."
+autowrap_mode = 3
+
+[node name="PrerequisitesLabel" type="Label" parent="PopupContainer/SkillTreePopup/VBoxContainer/MainContainer/DetailPanel/VBoxContainer"]
+layout_mode = 2
+text = "Prerequisites:"
+autowrap_mode = 3
+
+[node name="PurchaseButton" type="Button" parent="PopupContainer/SkillTreePopup/VBoxContainer/MainContainer/DetailPanel/VBoxContainer"]
+layout_mode = 2
+theme_type_variation = &"PrimaryActionButton"
+text = "Purchase"
+
+[node name="LegendContainer" type="HBoxContainer" parent="PopupContainer/SkillTreePopup/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 0
+alignment = 1
+
+[node name="LockedContainer" type="HBoxContainer" parent="PopupContainer/SkillTreePopup/VBoxContainer/LegendContainer"]
+layout_mode = 2
+
+[node name="LockedColor" type="ColorRect" parent="PopupContainer/SkillTreePopup/VBoxContainer/LegendContainer/LockedContainer"]
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 2
+color = Color(0.3, 0.3, 0.3, 1)
+
+[node name="LockedLabel" type="Label" parent="PopupContainer/SkillTreePopup/VBoxContainer/LegendContainer/LockedContainer"]
+layout_mode = 2
+text = " Locked"
+
+[node name="AvailableContainer" type="HBoxContainer" parent="PopupContainer/SkillTreePopup/VBoxContainer/LegendContainer"]
+layout_mode = 2
+
+[node name="AvailableColor" type="ColorRect" parent="PopupContainer/SkillTreePopup/VBoxContainer/LegendContainer/AvailableContainer"]
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 2
+color = Color(0.2, 0.4, 0.8, 1)
+
+[node name="AvailableLabel" type="Label" parent="PopupContainer/SkillTreePopup/VBoxContainer/LegendContainer/AvailableContainer"]
+layout_mode = 2
+text = " Available"
+
+[node name="OwnedContainer" type="HBoxContainer" parent="PopupContainer/SkillTreePopup/VBoxContainer/LegendContainer"]
+layout_mode = 2
+
+[node name="OwnedColor" type="ColorRect" parent="PopupContainer/SkillTreePopup/VBoxContainer/LegendContainer/OwnedContainer"]
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 2
+color = Color(0.8, 0.4, 0.1, 1)
+
+[node name="OwnedLabel" type="Label" parent="PopupContainer/SkillTreePopup/VBoxContainer/LegendContainer/OwnedContainer"]
+layout_mode = 2
+text = " Owned"
+
+[connection signal="pressed" from="HBoxContainer/RightVBox/DonateEquipmentButton" to="." method="_on_donate_equipment_button_pressed"]
+[connection signal="pressed" from="HBoxContainer/RightVBox/ReputationButton" to="." method="_on_reputation_button_pressed"]
+[connection signal="pressed" from="HBoxContainer/RightVBox/DeveloperFreeReputationButton" to="." method="_on_developer_free_reputation_button_pressed"]
 [connection signal="pressed" from="HBoxContainer/RightVBox/ToBlackboreBarButton" to="." method="_on_to_blackbore_bar_button_pressed"]
+[connection signal="pressed" from="PopupContainer/PrestigeConfirmationPopup/VBoxContainer/ButtonContainer/ConfirmButton" to="." method="_on_prestige_confirm_pressed"]
+[connection signal="pressed" from="PopupContainer/PrestigeConfirmationPopup/VBoxContainer/ButtonContainer/CancelButton" to="." method="_on_prestige_cancel_pressed"]
+[connection signal="pressed" from="PopupContainer/SkillTreePopup/VBoxContainer/HeaderContainer/CloseButton" to="." method="_on_skill_tree_close_pressed"]

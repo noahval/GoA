@@ -709,7 +709,10 @@ func position_popups_in_play_area(scene_root: Control, is_portrait: bool, popup_
 
 	# Apply constraints to each popup
 	for popup in popups:
-		print("\n=== ResponsiveLayout: Processing popup '", popup.name, "' ===")
+		var is_minimal = popup.has_meta("responsive_minimal") and popup.get_meta("responsive_minimal")
+		var debug_prefix = " [MINIMAL]" if is_minimal else ""
+
+		print("\n=== ResponsiveLayout: Processing popup '", popup.name, "'", debug_prefix, " ===")
 		print("Max popup width: ", max_popup_width)
 		print("Max popup height: ", max_popup_height)
 		print("Current popup size: ", popup.size)
@@ -858,6 +861,11 @@ func apply_popup_font_scaling(search_root: Control, is_portrait: bool, viewport_
 	print("ResponsiveLayout: Applying font scaling to ", popups.size(), " popup(s)")
 
 	for popup in popups:
+		# Check if popup requests minimal processing
+		if popup.has_meta("responsive_minimal") and popup.get_meta("responsive_minimal"):
+			print("ResponsiveLayout: Skipping internal processing for '", popup.name, "' (responsive_minimal=true)")
+			continue
+
 		# Scale ALL labels and buttons recursively in the popup
 		_scale_popup_controls_recursive(popup, is_portrait, viewport_size, popup)
 		# Debug: Measure actual sizes after a frame

@@ -12,7 +12,9 @@ var overseer_lvl = 0
 var barkeep_bribed = false
 var shopkeep_bribed = false
 var break_time_remaining = 0.0
-var starting_break_time = 30
+var starting_break_time:
+	get:
+		return 120 if Global.dev_speed_mode else 30
 var coin_cost = 30.0
 var components = 0
 var mechanisms = 0
@@ -50,3 +52,50 @@ var lifetimecoins = 0.0  # Track total coins earned (never decreases)
 var equipment_value = 0  # Total coin-equivalent value spent on equipment upgrades
 var coinslot_machine_unlocked = false  # Track if the coin slot machine has been revealed
 var dorm_unlocked = false  # Track if dorm has been unlocked (equipment_value >= 3000)
+
+# Reset function for prestige system
+func reset_for_prestige():
+	# RESET: Clear progress and resources
+	coal = 0.0
+	coins = 0.0
+	shovel_lvl = 0
+	plow_lvl = 0
+	auto_shovel_lvl = 0
+	auto_shovel_coal_per_tick = 4.0
+	auto_shovel_freq = 3.0
+	auto_shovel_coal_upgrade_lvl = 0
+	auto_shovel_freq_upgrade_lvl = 0
+	equipment_value = 0
+	components = 0
+	mechanisms = 0
+	stolen_coal = 0
+	stolen_writs = 0
+	suspicion = 0
+	correct_answers = 0
+	barkeep_bribed = false
+	shopkeep_bribed = false
+	overseer_lvl = 0
+	break_time_remaining = 0.0
+	stamina = 125.0
+	stimulated_remaining = 0.0
+	resilient_remaining = 0.0
+	shown_tired_notification = false
+	shown_lazy_notification = false
+	heart_taken = false
+	whisper_triggered = false
+	door_discovered = false
+	mood_system_unlocked = false
+	coinslot_machine_unlocked = false
+	dorm_unlocked = false
+
+	# KEEP (DO NOT RESET): Quality of life features that persist
+	# - overseer_bribe_count (keeps progress on mood system unlock)
+	# - auto_conversion_enabled (QoL feature)
+	# - lifetimecoins (stat tracking)
+	# - pipe_puzzle_grid (puzzle state can persist)
+
+	# Apply starting resource upgrades based on reputation upgrades
+	# Placeholder: When upgrades are finalized, add checks here
+	# Example:
+	# if Global.has_reputation_upgrade("starting_coins_upgrade"):
+	#     coins = 50

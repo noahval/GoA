@@ -37,9 +37,9 @@ func _ready():
 	if follow_voice_button:
 		follow_voice_button.visible = false
 
-	# Show to dorm button if dorm has been unlocked
+	# Show to dorm button if dorm has been unlocked or dev mode
 	if to_dorm_button:
-		to_dorm_button.visible = Level1Vars.dorm_unlocked
+		to_dorm_button.visible = Level1Vars.dorm_unlocked or Global.dev_speed_mode
 
 	# Setup popups with messages and buttons
 	if voice_popup:
@@ -152,9 +152,9 @@ func update_labels():
 	if not Level1Vars.dorm_unlocked and Level1Vars.equipment_value >= 3000:
 		Level1Vars.dorm_unlocked = true
 
-	# Show to dorm button if dorm has been unlocked
+	# Show to dorm button if dorm has been unlocked or dev mode
 	if to_dorm_button:
-		to_dorm_button.visible = Level1Vars.dorm_unlocked
+		to_dorm_button.visible = Level1Vars.dorm_unlocked or Global.dev_speed_mode
 
 func _on_follow_voice_button_pressed():
 	# Show the voice popup
