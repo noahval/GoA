@@ -4,14 +4,10 @@
    - Mysterious Gameplay
    - Sacrifice Theme
    - Desert Train Setting
-
+ 
 2. [Phase 2: Offline Earnings & Session Support](#phase-2-offline-earnings--session-support)
    - Tiered Offline Cap System
    - Hybrid Session Length Support
-3. [Phase 3: Prestige System - "Donating to the Cause"](#phase-3-prestige-system---donating-to-the-cause)
-   - Theme: Oren's Sacrifice
-   - Goodwill Upgrades
-   - What Resets vs Persists
 4. [Phase 4: Stat Milestones](#phase-4-stat-milestones-levels-1-8-for-game-level-1)
    - Strength/Dexterity/Constitution/Intelligence/Wisdom/Charisma Milestones
    - Knowledge-Based Discovery: Stat-Based Environmental Insights
@@ -74,10 +70,10 @@ Meaningful progress requires difficult choices. Treating workers well is morally
 - And so on...
 
 **Offline Mechanics**:
-- Earns passive coal only (auto-shovels work)
-- 50% efficiency penalty (upgradable)
-- Shows notification: "You were away for X hours (capped at Y). You earned Z coal."
-- If exceeded cap: "You missed N hours of earnings. Upgrade your offline cap!"
+- Earns passive coal by default (auto-shovels work)
+- auto-conversion to coin upgrade can be purchased too
+- 30% efficiency initially, but upgradable
+- Shows notification: "You worked overtime for X hours and earned Y coal."
 
 ### Hybrid Session Length Support
 
@@ -98,83 +94,6 @@ Meaningful progress requires difficult choices. Treating workers well is morally
 - Environmental factor management
 - Push toward prestige
 - Story progression
-
----
-
-## Phase 3: Prestige System - "Donating to the Cause"
-
-### Theme: Oren's Sacrifice
-
-**Narrative**: Oren has learned valuable lessons. He donates his tools to prove his resolve to the crystal, earning its trust and strengthening his spirit/willpower.
-
-**Currency**: **Goodwill Points**
-
-**Calculation**: `floor(sqrt(equipment_coins_spent / 50))` *(adjusted for faster first prestige)*
-
-**Examples**:
-- 3,000 coins spent → 7 goodwill (first prestige target)
-- 8,000 coins spent → 12 goodwill (second prestige)
-- 20,000 coins spent → 20 goodwill (third prestige)
-- 50,000 coins spent → 31 goodwill (later prestiges)
-
-**Prestige Timing Philosophy**:
-- **First prestige**: 45-60 minutes (teaches prestige loop early, hooks retention)
-- **Second prestige**: 90-120 minutes (deeper optimization)
-- **Third prestige**: 2-3 hours (meaningful investment)
-- **Later prestiges**: 3-5+ hours (mastery content)
-
-**Rationale**: Players need to experience the meta-game quickly to understand the full loop and stay engaged. Industry data shows first-day engagement duration predicts long-term retention.
-
-### Prestige Dialog
-
-```
-"You've learned all you can from these tools.
-Time to start fresh and push yourself harder.
-
-The voice whispers: 'Sacrifice what you've built.
-Prove your determination to escape.'
-
-Reset your progress?"
-[Donate Tools] [Keep Working]
-```
-
-**After Prestige**:
-```
-"Your tools are gone, but your resolve is stronger.
-The crystal glows brighter - it approves of your sacrifice.
-
-Goodwill Earned: X points"
-```
-
-### Goodwill Upgrades (Spirit/Willpower Theme)
-
-**Permanent Bonuses** (qualitative descriptions):
-- "Iron Will" (2 goodwill): "Your determination cannot be broken" (+click power)
-- "Burning Purpose" (3 goodwill): "The crystal's energy flows through you" (start with coins)
-- "Experienced Hand" (4 goodwill): "You know the tricks now" (early unlocks)
-- "Resilient Mind" (5 goodwill): "Nothing will stop your escape" (+all production)
-- "Leader's Presence" (6 goodwill): "Others follow your example" (better mood start)
-- "Clear Vision" (8 goodwill): "You see the path ahead" (+offline cap)
-- "Unshakable Resolve" (10 goodwill): "Sacrifice makes you stronger" (mood fatigue resistance)
-- "Martyr's Strength" (12 goodwill): "The hardest choices require the strongest wills" (unlock furnace)
-
-### What Resets vs Persists
-
-**RESETS**:
-- Coal, coins
-- All shop upgrades (shovel, plow, auto-shovel levels)
-- Conversion mode settings
-- Furnace ownership (if unlocked)
-- Workers (if any)
-
-**PERSISTS**:
-- All 6 core stats (Str, Dex, Int, Wis, Con, Cha)
-- Goodwill points & upgrades
-- Escape items (story progress)
-- Unlocked areas
-- Stat milestones achieved
-
----
 
 ## Phase 4: Stat Milestones (Levels 1-8 for Game Level 1)
 

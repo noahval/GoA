@@ -15,6 +15,9 @@ func _ready():
 	# Start with transparent overlay
 	fade_overlay.modulate.a = 0.0
 
+	# Process offline earnings (before showing login)
+	_process_offline_earnings()
+
 	# Connect login popup signals
 	login_popup.authentication_completed.connect(_on_auth_completed)
 	login_popup.skip_login.connect(_on_login_skipped)
@@ -86,3 +89,43 @@ func _on_login_skipped():
 	state = "fading_out"
 	elapsed_time = 0.0
 	popup_container.visible = false
+
+## Process offline earnings when game loads
+func _process_offline_earnings():
+	# Initialize timestamp if first time playing
+	if Level1Vars.last_played_timestamp == 0:
+		Level1Vars.last_played_timestamp = Time.get_unix_time_from_system()
+		DebugLogger.log_info("OfflineEarnings", "First time playing - initialized timestamp")
+		return
+
+	var current_time = Time.get_unix_time_from_system()
+	var elapsed = current_time - Level1Vars.last_played_timestamp
+
+	# Only process if away for at least 60 seconds (1 minute)
+	if elapsed < 60:
+		Level1Vars.last_played_timestamp = current_time
+		DebugLogger.log_info("OfflineEarnings", "Less than 60 seconds elapsed - no offline earnings")
+		return
+
+	# Check if player has auto-shovels
+	if Level1Vars.auto_shovel_lvl == 0:
+		Level1Vars.last_played_timestamp = current_time
+		DebugLogger.log_info("OfflineEarnings", "No auto-shovels - no offline earnings")
+		return
+
+	var cap_seconds = Level1Vars.get_offline_cap_seconds()
+	var coal_earned = OfflineEarningsManager.calculate_offline_earnings(
+		elapsed,
+		cap_seconds,
+		Level1Vars.auto_shovel_lvl,
+		Level1Vars.auto_shovel_coal_per_tick,
+		Level1Vars.auto_shovel_freq
+	)
+
+	if coal_earned > 0:
+		Level1Vars.coal += coal_earned
+		var message = OfflineEarningsManager.get_offline_summary(elapsed, cap_seconds, coal_earned)
+		Global.show_stat_notification(message)
+		DebugLogger.log_info("OfflineEarnings", "Earned %d coal while offline (elapsed: %d seconds, cap: %d seconds)" % [coal_earned, elapsed, cap_seconds])
+
+	Level1Vars.last_played_timestamp = current_time

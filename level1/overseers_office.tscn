@@ -128,7 +128,11 @@ visible = false
 layout_mode = 2
 text = "Ask about Coin Allocation Machine"
 
-[node name="BackButton" type="Button" parent="HBoxContainer/RightVBox" index="3"]
+[node name="OvertimeButton" type="Button" parent="HBoxContainer/RightVBox" index="3"]
+layout_mode = 2
+text = "Negotiate Overtime"
+
+[node name="BackButton" type="Button" parent="HBoxContainer/RightVBox" index="4"]
 layout_mode = 2
 text = "Back"
 

@@ -7,6 +7,9 @@ const SAVE_FILE_PATH = "user://local_save.json"
 
 ## Save all game state to local browser storage
 func save_game() -> bool:
+	# Update last_played_timestamp before saving
+	Level1Vars.last_played_timestamp = Time.get_unix_time_from_system()
+
 	var save_data = {
 		"version": "1.0",
 		"timestamp": Time.get_unix_time_from_system(),
@@ -170,7 +173,12 @@ func _get_level1_vars_data() -> Dictionary:
 		"shown_lazy_notification": Level1Vars.shown_lazy_notification,
 
 		# Pipe puzzle state
-		"pipe_puzzle_grid": Level1Vars.pipe_puzzle_grid
+		"pipe_puzzle_grid": Level1Vars.pipe_puzzle_grid,
+
+		# Phase 2: Offline Earnings
+		"overtime_lvl": Level1Vars.overtime_lvl,
+		"offline_cap_hours": Level1Vars.offline_cap_hours,
+		"last_played_timestamp": Level1Vars.last_played_timestamp
 	}
 
 ## Set Global variables from save data
@@ -253,3 +261,8 @@ func _set_level1_vars_data(data: Dictionary) -> void:
 
 	# Pipe puzzle state
 	Level1Vars.pipe_puzzle_grid = data.get("pipe_puzzle_grid", [])
+
+	# Phase 2: Offline Earnings
+	Level1Vars.overtime_lvl = data.get("overtime_lvl", 0)
+	Level1Vars.offline_cap_hours = data.get("offline_cap_hours", 8.0)
+	Level1Vars.last_played_timestamp = data.get("last_played_timestamp", 0)

@@ -53,6 +53,11 @@ var equipment_value = 0  # Total coin-equivalent value spent on equipment upgrad
 var coinslot_machine_unlocked = false  # Track if the coin slot machine has been revealed
 var dorm_unlocked = false  # Track if dorm has been unlocked (equipment_value >= 3000)
 
+# Phase 2: Offline Earnings - Overtime System
+var overtime_lvl: int = 0  # Current overtime upgrade level (0-8)
+var offline_cap_hours: float = 8.0  # Current offline earning cap in hours
+var last_played_timestamp: int = 0  # Unix timestamp of last save/load
+
 # Reset function for prestige system
 func reset_for_prestige():
 	# RESET: Clear progress and resources
@@ -93,9 +98,16 @@ func reset_for_prestige():
 	# - auto_conversion_enabled (QoL feature)
 	# - lifetimecoins (stat tracking)
 	# - pipe_puzzle_grid (puzzle state can persist)
+	# - overtime_lvl (persistent upgrade)
+	# - offline_cap_hours (based on overtime_lvl)
+	# - last_played_timestamp (for offline earnings calculation)
 
 	# Apply starting resource upgrades based on reputation upgrades
 	# Placeholder: When upgrades are finalized, add checks here
 	# Example:
 	# if Global.has_reputation_upgrade("starting_coins_upgrade"):
 	#     coins = 50
+
+## Helper function: Get offline cap in seconds
+func get_offline_cap_seconds() -> int:
+	return int(offline_cap_hours * 3600)

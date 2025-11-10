@@ -29,6 +29,7 @@ NakamaManager="*res://nakama_client.gd"
 GodotWebAuth="*res://godot_web_auth.gd"
 LocalSaveManager="*res://local_save_manager.gd"
 OverseerMood="*res://level1/overseer_mood.gd"
+OfflineEarningsManager="*res://offline_earnings_manager.gd"
 
 [display]
 

@@ -10,6 +10,7 @@
 - [local_save_manager.gd](local_save_manager.gd)  
 - [login_popup.gd](login_popup.gd)  
 - [nakama_client.gd](nakama_client.gd)  
+- [offline_earnings_manager.gd](offline_earnings_manager.gd)  
 - [popup_container.gd](popup_container.gd)  
 - [responsive_layout.gd](responsive_layout.gd)  
 - [reusable_popup.gd](reusable_popup.gd)  
@@ -153,6 +154,15 @@
 - [test_scenes/shop_test.tscn](test_scenes/shop_test.tscn)  
 - [test_scenes/stat_test.tscn](test_scenes/stat_test.tscn)  
 - [test_scenes/victory_test.tscn](test_scenes/victory_test.tscn)  
+
+---
+
+## Tests >
+
+### Scripts (.gd)
+- [tests/test_assertions.gd](tests/test_assertions.gd)  
+- [tests/test_overtime_system.gd](tests/test_overtime_system.gd)  
+- [tests/test_runner.gd](tests/test_runner.gd)  
 
 ---
 

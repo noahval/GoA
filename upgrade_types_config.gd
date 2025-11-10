@@ -13,8 +13,8 @@ const EQUIPMENT_UPGRADES = [
 	# Workshop scene - component-based (future)
 	# Example: "forge_hammer", "anvil", etc.
 
-	# Overseer's Office scene - other currency (future)
-	# Example: "office_upgrade_1", etc.
+	# Overseer's Office scene - coin-based
+	"overtime",  # Offline earnings cap upgrade
 ]
 
 # Check if an upgrade is classified as equipment

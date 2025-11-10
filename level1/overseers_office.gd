@@ -19,6 +19,9 @@ var max_break_time = 30.0
 @onready var right_vbox = $HBoxContainer/RightVBox
 @onready var left_vbox = $HBoxContainer/LeftVBox
 
+# Overtime button (might not exist in scene yet)
+var overtime_button: Button = null
+
 # Quiz state variables
 var current_correct_answer = ""
 var questions_data = []
@@ -49,8 +52,14 @@ func _ready():
 	var progress_percent = (break_time / max_break_time) * 100.0
 	break_timer_bar.value = progress_percent
 
+	# Get overtime button reference (might not exist in scene yet)
+	overtime_button = get_node_or_null("HBoxContainer/RightVBox/OvertimeButton")
+	if overtime_button:
+		overtime_button.pressed.connect(_on_overtime_button_pressed)
+
 	update_labels()
 	update_suspicion_bar()
+	update_overtime_button()
 
 	# Load questions from file
 	load_questions()
@@ -133,6 +142,7 @@ func _process(delta):
 	update_labels()
 	update_suspicion_bar()
 	update_talk_button_visibility(delta)
+	update_overtime_button()
 
 func update_labels():
 	coins_label.text = "Coins: " + str(int(Level1Vars.coins))
@@ -413,3 +423,55 @@ func _on_ask_coin_slot_button_pressed():
 
 	# Hide the button after clicking
 	ask_coin_slot_button.visible = false
+
+## Update overtime button visibility and text
+func update_overtime_button():
+	if not overtime_button:
+		return
+
+	# Always show overtime button
+	overtime_button.visible = true
+
+	var cost = OfflineEarningsManager.get_overtime_cost(Level1Vars.overtime_lvl)
+
+	if cost == -1:
+		# Max level reached
+		overtime_button.text = "Overtime (MAX)"
+		overtime_button.disabled = true
+	else:
+		var current_hours = Level1Vars.offline_cap_hours
+		var next_hours = OfflineEarningsManager.get_cap_hours_for_level(Level1Vars.overtime_lvl + 1)
+		overtime_button.text = "Overtime (%.0fh → %.0fh) - %d coins" % [current_hours, next_hours, cost]
+		overtime_button.disabled = (Level1Vars.coins < cost)
+
+## Handle overtime button press
+func _on_overtime_button_pressed():
+	var cost = OfflineEarningsManager.get_overtime_cost(Level1Vars.overtime_lvl)
+
+	# Check if max level
+	if cost == -1:
+		Global.show_stat_notification("You've negotiated the absolute maximum overtime. Even the overseer has limits.")
+		return
+
+	# Check if can afford
+	if Level1Vars.coins < cost:
+		Global.show_stat_notification("You need %d coins to upgrade your overtime limit" % cost)
+		return
+
+	# Purchase successful
+	Level1Vars.coins -= cost
+	Level1Vars.overtime_lvl += 1
+	Level1Vars.offline_cap_hours = OfflineEarningsManager.get_cap_hours_for_level(Level1Vars.overtime_lvl)
+	UpgradeTypesConfig.track_equipment_purchase("overtime", cost)
+
+	# Get upgrade info for flavor text
+	var upgrade_info = OfflineEarningsManager.get_upgrade_info(Level1Vars.overtime_lvl)
+
+	# Show success message
+	var message = "Overtime Extended!\n\n"
+	message += "%s: %s\n\n" % [upgrade_info.name, upgrade_info.desc]
+	message += "Your offline earning cap is now %.0f hours" % Level1Vars.offline_cap_hours
+	Global.show_stat_notification(message)
+
+	# Log the purchase
+	DebugLogger.log_shop_purchase("Overtime Level %d" % Level1Vars.overtime_lvl, cost, Level1Vars.overtime_lvl)
