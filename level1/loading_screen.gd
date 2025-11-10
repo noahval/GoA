@@ -15,8 +15,8 @@ func _ready():
 	# Start with transparent overlay
 	fade_overlay.modulate.a = 0.0
 
-	# Process offline earnings (before showing login)
-	_process_offline_earnings()
+	# NOTE: Offline earnings processing moved to login_popup.gd
+	# This ensures it happens AFTER cloud/local save loads, not before
 
 	# Connect login popup signals
 	login_popup.authentication_completed.connect(_on_auth_completed)
@@ -91,7 +91,8 @@ func _on_login_skipped():
 	popup_container.visible = false
 
 ## Process offline earnings when game loads
-func _process_offline_earnings():
+## Called from login_popup.gd AFTER save data is loaded
+static func process_offline_earnings():
 	# Initialize timestamp if first time playing
 	if Level1Vars.last_played_timestamp == 0:
 		Level1Vars.last_played_timestamp = Time.get_unix_time_from_system()

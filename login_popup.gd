@@ -215,6 +215,9 @@ func _on_skip_pressed():
 		var loaded = LocalSaveManager.load_game()
 		if loaded:
 			DebugLogger.log_success("LoginPopup", "Local save loaded successfully")
+			# Process offline earnings AFTER local save loads
+			var loading_screen_script = load("res://level1/loading_screen.gd")
+			loading_screen_script.process_offline_earnings()
 		else:
 			DebugLogger.log_error("LoginPopup", "Failed to load local save")
 	else:
@@ -232,6 +235,9 @@ func _on_auth_success(session_data):
 	if loaded:
 		_show_status("Welcome back!")
 		DebugLogger.log_success("Login", "Full cloud save loaded (stats + progress)")
+		# Process offline earnings AFTER cloud save loads
+		var loading_screen_script = load("res://level1/loading_screen.gd")
+		loading_screen_script.process_offline_earnings()
 	else:
 		_show_status("Welcome!")
 		DebugLogger.log_info("Login", "No cloud save found, starting fresh")
