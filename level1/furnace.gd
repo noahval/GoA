@@ -11,6 +11,9 @@ var click_count = 0
 var steal_click_count = 0
 var auto_shovel_timer = 0.0  # Timer for auto shovel interval
 var auto_conversion_timer = 0.0  # Timer for auto conversion interval
+var cached_mood_text: String = ""  # Cached mood text for delayed display updates
+var mood_display_timer: float = 0.0  # Timer for random mood display updates
+var next_mood_update_delay: float  # Random delay between 4-10 seconds
 @onready var left_vbox = $HBoxContainer/LeftVBox
 @onready var right_vbox = $HBoxContainer/RightVBox
 @onready var coal_label = $HBoxContainer/LeftVBox/CoalPanel/CoalLabel
@@ -33,6 +36,9 @@ func _ready():
 	update_suspicion_bar()
 	toggle_mode_button.visible = false
 	update_mood_panel_visibility()
+	# Initialize random delayed mood display system
+	next_mood_update_delay = randf_range(4.0, 10.0)
+	cached_mood_text = OverseerMood.get_mood_adjective()
 
 func _process(delta):
 	# Auto shovel interval-based generation
@@ -73,8 +79,19 @@ func _process(delta):
 			auto_conversion_timer = 0.0
 			perform_auto_conversion()
 
-	coal_label.text = "Coal Shoveled: " + str(int(Level1Vars.coal))
-	coins_label.text = "Coins: " + str(int(Level1Vars.coins))
+	# Random delayed mood display update (4-10 second intervals)
+	mood_display_timer += delta
+	if mood_display_timer >= next_mood_update_delay:
+		# Update cached mood from actual mood
+		cached_mood_text = OverseerMood.get_mood_adjective()
+		# Reset timer and set new random delay
+		mood_display_timer = 0.0
+		next_mood_update_delay = randf_range(4.0, 10.0)
+
+	if coal_label:
+		coal_label.text = "Coal Shoveled: " + str(int(Level1Vars.coal))
+	if coins_label:
+		coins_label.text = "Coins: " + str(int(Level1Vars.coins))
 	update_stamina_bar()
 	update_suspicion_bar()
 	update_mood_panel_visibility()
@@ -137,12 +154,15 @@ func _on_steal_coal_button_pressed():
 	Level1Vars.suspicion += max(0, suspicion_increase)  # Ensure it doesn't go negative
 
 func update_stamina_bar():
-	var stamina_percent = (Level1Vars.stamina / Level1Vars.max_stamina) * 100.0
-	stamina_bar.value = stamina_percent
+	if stamina_bar:
+		var stamina_percent = (Level1Vars.stamina / Level1Vars.max_stamina) * 100.0
+		stamina_bar.value = stamina_percent
 
 func update_suspicion_bar():
-	suspicion_panel.visible = Level1Vars.suspicion > 0
-	suspicion_bar.value = Level1Vars.suspicion
+	if suspicion_panel:
+		suspicion_panel.visible = Level1Vars.suspicion > 0
+	if suspicion_bar:
+		suspicion_bar.value = Level1Vars.suspicion
 
 func update_dev_buttons():
 	# Show/hide take break button based on dev_speed_mode
@@ -207,10 +227,10 @@ func update_mood_panel_visibility():
 		overseer_mood_panel.visible = Level1Vars.mood_system_unlocked
 
 # Update mood display with qualitative adjectives (no numbers!)
+# Uses cached mood text that updates on random 4-10 second intervals
 func update_mood_display():
 	if mood_label:
-		var adjective = OverseerMood.get_mood_adjective()
-		mood_label.text = "Overseer: " + adjective
+		mood_label.text = "Overseer: " + cached_mood_text
 
 # Update conversion button states
 func update_conversion_buttons():

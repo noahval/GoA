@@ -160,7 +160,9 @@
 ## Tests >
 
 ### Scripts (.gd)
+- [tests/run_mood_test.gd](tests/run_mood_test.gd)  
 - [tests/test_assertions.gd](tests/test_assertions.gd)  
+- [tests/test_mood_display_timing.gd](tests/test_mood_display_timing.gd)  
 - [tests/test_overtime_system.gd](tests/test_overtime_system.gd)  
 - [tests/test_runner.gd](tests/test_runner.gd)  
 

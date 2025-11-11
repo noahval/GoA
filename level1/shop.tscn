@@ -2,7 +2,7 @@
 
 [ext_resource type="PackedScene" uid="uid://base_scene_template" path="res://level1/scene_template.tscn" id="1_base"]
 [ext_resource type="Script" uid="uid://blu645dk8w7uu" path="res://level1/shop.gd" id="2_script"]
-[ext_resource type="Texture2D" path="res://level1/Shop.jpg" id="3_bg"]
+[ext_resource type="Texture2D" path="res://level1/shop.jpg" id="3_bg"]
 
 [node name="SceneRoot" instance=ExtResource("1_base")]
 script = ExtResource("2_script")

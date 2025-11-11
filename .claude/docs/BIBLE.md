@@ -53,7 +53,7 @@ The BIBLE Check Hook auto-triggers on development keywords (scene, stats, popup,
 | **[button-hierarchy.md](button-hierarchy.md)** | button order, button hierarchy, navigation buttons, button organization, ForwardNavButton, BackNavButton, RightVBox, LeftVBox | Button ordering standards, navigation button hierarchy, configurable button priority system, left/right panel organization |
 | **[debug-system.md](debug-system.md)** | debug, logging, test, DebugLogger, validate | Testing procedures, DebugLogger, headless testing, log analysis |
 | **[godot-dev.md](godot-dev.md)** | godot, gdscript, node, signal, autoload | GDScript patterns, scene management, node lifecycle, best practices |
-| **[programming-principles.md](programming-principles.md)** | SOLID, DRY, KISS, YAGNI, principles, best practices, code quality, refactoring, clean code, maintainability | General programming principles (SOLID, DRY, KISS, YAGNI) adapted for GDScript/Godot development, code quality checklist |
+| **[programming-principles.md](programming-principles.md)** | **TDD, test-driven development, RED-GREEN-REFACTOR**, SOLID, DRY, KISS, YAGNI, principles, best practices, code quality, refactoring, clean code, maintainability, testing methodology, write tests first | General programming principles (SOLID, DRY, KISS, YAGNI) and **comprehensive TDD methodology** (RED-GREEN-REFACTOR cycle) adapted for GDScript/Godot development, code quality checklist |
 
 ---
 
@@ -78,6 +78,8 @@ The BIBLE Check Hook auto-triggers on development keywords (scene, stats, popup,
 - **Change colors/theme** → [theme-system.md](theme-system.md)
 - **Order buttons in scenes/navigation hierarchy** → [button-hierarchy.md](button-hierarchy.md)
 - **Test/debug** → [debug-system.md](debug-system.md)
+- **Write new features/fix bugs** → [programming-principles.md#test-driven-development-tdd](programming-principles.md#test-driven-development-tdd) (TDD methodology)
+- **Write tests first** → [programming-principles.md#test-driven-development-tdd](programming-principles.md#test-driven-development-tdd)
 - **Godot patterns** → [godot-dev.md](godot-dev.md)
 - **Refactor code/improve code quality** → [programming-principles.md](programming-principles.md)
 - **Code review/architectural decisions** → [programming-principles.md](programming-principles.md)
@@ -103,14 +105,19 @@ The BIBLE Check Hook auto-triggers on development keywords (scene, stats, popup,
 - **Player is powerless but clever**: Power comes through cunning, not strength
 
 ### Code Quality Standards (ALWAYS apply)
+- **Follow Test-Driven Development (TDD)**: Write tests FIRST, then implementation
+  - **RED-GREEN-REFACTOR cycle**: Write failing test → Make it pass → Refactor
+  - **Verify RED**: Always confirm test fails before implementing
+  - **No production code without failing test first**
+  - See [programming-principles.md#test-driven-development-tdd](programming-principles.md#test-driven-development-tdd)
 - **Apply SOLID, DRY, KISS, YAGNI principles** to all code
 - **Proactive application**: Reference [programming-principles.md](programming-principles.md) when:
-  - Writing new scripts/scenes
+  - Writing new scripts/scenes (use TDD!)
   - Refactoring existing code
   - Reviewing code quality
   - Making architectural decisions
   - Noticing code duplication or complexity
-- **Code Review Checklist**: Use the checklist in programming-principles.md before completing tasks
+- **Code Quality Checklist**: Use the TDD + design principles checklist before completing tasks
 
 ### Technical APIs (ALWAYS use, NEVER bypass)
 - **Stats**: `Global.add_stat_exp()` (not direct modification)
@@ -163,4 +170,4 @@ The BIBLE Check Hook auto-triggers on development keywords (scene, stats, popup,
 5. Read them → Follow documented patterns
 6. Use the [Knowledge-Based Systems Checklist](game-design-principles.md#design-checklist-for-knowledge-based-systems) before implementing
 
-**Version**: 2.8 (Added Grimdark Theme as critical design pattern) | **Updated**: 2025-11-05
+**Version**: 2.9 (Added TDD as critical development pattern) | **Updated**: 2025-11-11
