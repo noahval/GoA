@@ -124,7 +124,9 @@ func _get_level1_vars_data() -> Dictionary:
 	return {
 		# Resources
 		"coal": Level1Vars.coal,
-		"coins": Level1Vars.coins,
+		"coins": Level1Vars.coins,  # Legacy - kept for backward compatibility
+		"currency": Level1Vars.currency,  # New multi-currency system
+		"lifetime_currency": Level1Vars.lifetime_currency,  # Lifetime earnings per currency
 		"components": Level1Vars.components,
 		"mechanisms": Level1Vars.mechanisms,
 		"pipes": Level1Vars.pipes,
@@ -211,7 +213,31 @@ func _set_global_data(data: Dictionary) -> void:
 func _set_level1_vars_data(data: Dictionary) -> void:
 	# Resources
 	Level1Vars.coal = data.get("coal", 0.0)
-	Level1Vars.coins = data.get("coins", 0.0)
+
+	# Currency migration: Check if save has new multi-currency format
+	if data.has("currency") and data.has("lifetime_currency"):
+		# New format - load currency dictionaries directly
+		Level1Vars.currency = data.get("currency", {"copper": 0.0, "silver": 0.0, "gold": 0.0, "platinum": 0.0})
+		Level1Vars.lifetime_currency = data.get("lifetime_currency", {"copper": 0.0, "silver": 0.0, "gold": 0.0, "platinum": 0.0})
+		Level1Vars.coins = Level1Vars.currency.copper  # Sync legacy variable
+	else:
+		# Old format - migrate single "coins" value to new multi-currency system
+		var old_coins = data.get("coins", 0.0)
+		Level1Vars.currency.copper = old_coins
+		Level1Vars.currency.silver = 0.0
+		Level1Vars.currency.gold = 0.0
+		Level1Vars.currency.platinum = 0.0
+		Level1Vars.coins = old_coins  # Sync legacy variable
+
+		# Migrate lifetimecoins to lifetime_currency
+		var old_lifetimecoins = data.get("lifetimecoins", 0.0)
+		Level1Vars.lifetime_currency.copper = old_lifetimecoins
+		Level1Vars.lifetime_currency.silver = 0.0
+		Level1Vars.lifetime_currency.gold = 0.0
+		Level1Vars.lifetime_currency.platinum = 0.0
+
+		DebugLogger.log_info("SaveMigration", "Migrated old save from single currency to multi-currency")
+
 	Level1Vars.components = data.get("components", 0)
 	Level1Vars.mechanisms = data.get("mechanisms", 0)
 	Level1Vars.pipes = data.get("pipes", 5)

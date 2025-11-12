@@ -4,6 +4,7 @@
 
 ### Scripts (.gd)
 - [button_hierarchy_config.gd](button_hierarchy_config.gd)  
+- [currency_manager.gd](currency_manager.gd)  
 - [debug_logger.gd](debug_logger.gd)  
 - [global.gd](global.gd)  
 - [godot_web_auth.gd](godot_web_auth.gd)  

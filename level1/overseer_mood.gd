@@ -111,7 +111,7 @@ func get_trend_arrow() -> String:
 
 # Manual conversion - player chooses when to convert
 # Returns number of coins earned (always 1 in manual mode)
-func manual_convert_coal(coal_amount: float) -> float:
+func manual_convert_coal(_coal_amount: float) -> float:
 	# Apply mood fatigue (punish frequent conversions)
 	var time_delta = time_since_last_conversion
 	if time_delta < 5.0:  # Converted within 5 seconds
@@ -127,7 +127,7 @@ func manual_convert_coal(coal_amount: float) -> float:
 
 # Auto conversion - happens automatically with penalty
 # Returns number of coins earned (reduced by auto efficiency)
-func auto_convert_coal(coal_amount: float) -> float:
+func auto_convert_coal(_coal_amount: float) -> float:
 	# Less mood fatigue in auto mode (slower accumulation)
 	fatigue_level += 0.02
 	fatigue_level = min(1.0, fatigue_level)

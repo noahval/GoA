@@ -229,7 +229,7 @@ func _on_skip_pressed():
 	skip_login.emit()
 	hide_popup()
 
-func _on_auth_success(session_data):
+func _on_auth_success(_session_data):
 	# Try to load full cloud save (not just stats)
 	var loaded = await NakamaManager.load_game()
 	if loaded:

@@ -54,21 +54,21 @@ func _on_to_currency_converter_button_pressed():
 
 func _on_bribe_overseer_pressed():
 	var cost = max(3, int(3 * pow(1.3, Level1Vars.overseer_lvl)))
-	if Level1Vars.coins >= cost:
-		Level1Vars.coins -= cost
-		Level1Vars.overseer_lvl += 2
-		Level1Vars.overseer_bribe_count += 1
+	if CurrencyManager.can_afford(cost):
+		if CurrencyManager.deduct_currency(cost):
+			Level1Vars.overseer_lvl += 2
+			Level1Vars.overseer_bribe_count += 1
 
-		# First bribe notification
-		if Level1Vars.overseer_bribe_count == 1:
-			Global.show_stat_notification("Hrmph, you should know I can't be bribed, slave. Although I may turn a blind eye if you're late returning from your break.")
+			# First bribe notification
+			if Level1Vars.overseer_bribe_count == 1:
+				Global.show_stat_notification("Hrmph, you should know I can't be bribed, slave. Although I may turn a blind eye if you're late returning from your break.")
 
-		# Unlock mood system after 4 bribes
-		if Level1Vars.overseer_bribe_count >= 4 and not Level1Vars.mood_system_unlocked:
-			Level1Vars.mood_system_unlocked = true
-			Global.show_stat_notification("you're beginning to understand the overseer")
+			# Unlock mood system after 4 bribes
+			if Level1Vars.overseer_bribe_count >= 4 and not Level1Vars.mood_system_unlocked:
+				Level1Vars.mood_system_unlocked = true
+				Global.show_stat_notification("you're beginning to understand the overseer")
 
-		update_labels()
+			update_labels()
 
 func _on_overseers_office_button_pressed():
 	Global.change_scene_with_check(get_tree(), "res://level1/overseers_office.tscn")
@@ -76,7 +76,7 @@ func _on_overseers_office_button_pressed():
 func update_labels():
 	# Update coins display
 	if coins_label:
-		coins_label.text = "Coins: " + str(int(Level1Vars.coins))
+		coins_label.text = CurrencyManager.format_currency_display(false, true)
 
 	if bribe_overseer_button:
 		bribe_overseer_button.text = "Bribe Overseer: " + str(max(3, int(3 * pow(1.3, Level1Vars.overseer_lvl))))

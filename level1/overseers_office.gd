@@ -145,7 +145,7 @@ func _process(delta):
 	update_overtime_button()
 
 func update_labels():
-	coins_label.text = "Coins: " + str(int(Level1Vars.coins))
+	coins_label.text = CurrencyManager.format_currency_display(false, true)
 
 	# Update break timer display
 	break_timer_label.text = "Break Timer"
@@ -442,7 +442,7 @@ func update_overtime_button():
 		var current_hours = Level1Vars.offline_cap_hours
 		var next_hours = OfflineEarningsManager.get_cap_hours_for_level(Level1Vars.overtime_lvl + 1)
 		overtime_button.text = "Overtime (%.0fh → %.0fh) - %d coins" % [current_hours, next_hours, cost]
-		overtime_button.disabled = (Level1Vars.coins < cost)
+		overtime_button.disabled = not CurrencyManager.can_afford(cost)
 
 ## Handle overtime button press
 func _on_overtime_button_pressed():
@@ -454,15 +454,17 @@ func _on_overtime_button_pressed():
 		return
 
 	# Check if can afford
-	if Level1Vars.coins < cost:
+	if not CurrencyManager.can_afford(cost):
 		Global.show_stat_notification("You need %d coins to upgrade your overtime limit" % cost)
 		return
 
 	# Purchase successful
-	Level1Vars.coins -= cost
-	Level1Vars.overtime_lvl += 1
-	Level1Vars.offline_cap_hours = OfflineEarningsManager.get_cap_hours_for_level(Level1Vars.overtime_lvl)
-	UpgradeTypesConfig.track_equipment_purchase("overtime", cost)
+	if CurrencyManager.deduct_currency(cost):
+		Level1Vars.overtime_lvl += 1
+		Level1Vars.offline_cap_hours = OfflineEarningsManager.get_cap_hours_for_level(Level1Vars.overtime_lvl)
+		UpgradeTypesConfig.track_equipment_purchase("overtime", cost)
+	else:
+		return
 
 	# Get upgrade info for flavor text
 	var upgrade_info = OfflineEarningsManager.get_upgrade_info(Level1Vars.overtime_lvl)

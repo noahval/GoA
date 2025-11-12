@@ -1,6 +1,29 @@
 extends Node
 var coal = 0.0
-var coins = 0.0
+
+# Multi-currency system (Copper -> Silver -> Gold -> Platinum)
+var currency = {
+	"copper": 0.0,
+	"silver": 0.0,
+	"gold": 0.0,
+	"platinum": 0.0
+}
+
+# Lifetime earnings per currency type (never decreases, tracks total earned)
+var lifetime_currency = {
+	"copper": 0.0,
+	"silver": 0.0,
+	"gold": 0.0,
+	"platinum": 0.0
+}
+
+# Legacy variable for backward compatibility - syncs with currency.copper
+var coins = 0.0:
+	set(value):
+		coins = value
+		currency.copper = value
+	get:
+		return currency.copper
 var shovel_lvl = 0
 var plow_lvl = 0
 var auto_shovel_lvl = 0  # Quantity of auto-shovels owned
@@ -62,7 +85,12 @@ var last_played_timestamp: int = 0  # Unix timestamp of last save/load
 func reset_for_prestige():
 	# RESET: Clear progress and resources
 	coal = 0.0
-	coins = 0.0
+	coins = 0.0  # This also resets currency.copper via setter
+	currency.copper = 0.0
+	currency.silver = 0.0
+	currency.gold = 0.0
+	# Platinum bonds persist through prestige (special currency feature)
+	# currency.platinum is NOT reset
 	shovel_lvl = 0
 	plow_lvl = 0
 	auto_shovel_lvl = 0
@@ -96,7 +124,9 @@ func reset_for_prestige():
 	# KEEP (DO NOT RESET): Quality of life features that persist
 	# - overseer_bribe_count (keeps progress on mood system unlock)
 	# - auto_conversion_enabled (QoL feature)
-	# - lifetimecoins (stat tracking)
+	# - lifetimecoins (stat tracking - legacy)
+	# - lifetime_currency (all lifetime earnings persist)
+	# - currency.platinum (Platinum Bonds persist through prestige!)
 	# - pipe_puzzle_grid (puzzle state can persist)
 	# - overtime_lvl (persistent upgrade)
 	# - offline_cap_hours (based on overtime_lvl)

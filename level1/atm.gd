@@ -47,4 +47,4 @@ func _on_to_coppersmith_carriage_button_pressed():
 func update_labels():
 	# Update coins display
 	if coins_label:
-		coins_label.text = "Coins: " + str(int(Level1Vars.coins))
+		coins_label.text = CurrencyManager.format_currency_display(false, true)

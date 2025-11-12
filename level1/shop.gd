@@ -83,57 +83,54 @@ func _process(delta):
 
 func _on_shovel_button_pressed():
 	var cost = get_shovel_cost()
-	if Level1Vars.coins >= cost:
-		DebugLogger.log_resource_change("coins", Level1Vars.coins, Level1Vars.coins - cost, "Shovel purchase")
-		Level1Vars.coins -= cost
-		Level1Vars.shovel_lvl += 1
-		UpgradeTypesConfig.track_equipment_purchase("shovel", cost)
-		DebugLogger.log_shop_purchase("Shovel", cost, Level1Vars.shovel_lvl)
-		update_labels()
-		update_shovels_popup_labels()
+	if CurrencyManager.can_afford(cost):
+		if CurrencyManager.deduct_currency(cost):
+			Level1Vars.shovel_lvl += 1
+			UpgradeTypesConfig.track_equipment_purchase("shovel", cost)
+			DebugLogger.log_shop_purchase("Shovel", cost, Level1Vars.shovel_lvl)
+			update_labels()
+			update_shovels_popup_labels()
 
 func _on_plow_button_pressed():
 	var cost = get_plow_cost()
-	if Level1Vars.coins >= cost:
-		DebugLogger.log_resource_change("coins", Level1Vars.coins, Level1Vars.coins - cost, "Plow purchase")
-		Level1Vars.coins -= cost
-		Level1Vars.plow_lvl += 1
-		UpgradeTypesConfig.track_equipment_purchase("plow", cost)
-		DebugLogger.log_shop_purchase("Coal Plow", cost, Level1Vars.plow_lvl)
-		update_labels()
-		update_shovels_popup_labels()
+	if CurrencyManager.can_afford(cost):
+		if CurrencyManager.deduct_currency(cost):
+			Level1Vars.plow_lvl += 1
+			UpgradeTypesConfig.track_equipment_purchase("plow", cost)
+			DebugLogger.log_shop_purchase("Coal Plow", cost, Level1Vars.plow_lvl)
+			update_labels()
+			update_shovels_popup_labels()
 
 func _on_furnace_upgrade_pressed():
 	var cost = get_auto_shovel_cost()
-	if Level1Vars.coins >= cost:
-		DebugLogger.log_resource_change("coins", Level1Vars.coins, Level1Vars.coins - cost, "Auto Shovel purchase")
-		Level1Vars.coins -= cost
-		Level1Vars.auto_shovel_lvl += 1
-		UpgradeTypesConfig.track_equipment_purchase("auto_shovel", cost)
-		DebugLogger.log_shop_purchase("Auto Shovel", cost, Level1Vars.auto_shovel_lvl)
-		update_labels()
-		update_auto_shovels_popup_labels()
+	if CurrencyManager.can_afford(cost):
+		if CurrencyManager.deduct_currency(cost):
+			Level1Vars.auto_shovel_lvl += 1
+			UpgradeTypesConfig.track_equipment_purchase("auto_shovel", cost)
+			DebugLogger.log_shop_purchase("Auto Shovel", cost, Level1Vars.auto_shovel_lvl)
+			update_labels()
+			update_auto_shovels_popup_labels()
 
 func _on_bribe_shopkeep_pressed():
-	if Level1Vars.coins >= 10 and not Level1Vars.shopkeep_bribed:
-		DebugLogger.log_resource_change("coins", Level1Vars.coins, Level1Vars.coins - 10, "Bribe Shopkeep")
-		Level1Vars.coins -= 10
-		Level1Vars.shopkeep_bribed = true
-		DebugLogger.log_shop_purchase("Bribe Shopkeep", 10, 1)
-		update_labels()
+	if CurrencyManager.can_afford(10) and not Level1Vars.shopkeep_bribed:
+		if CurrencyManager.deduct_currency(10):
+			Level1Vars.shopkeep_bribed = true
+			DebugLogger.log_shop_purchase("Bribe Shopkeep", 10, 1)
+			update_labels()
 
 func _on_workshop_button_pressed():
 	Global.change_scene_with_check(get_tree(), "res://level1/workshop.tscn")
 
 func _on_get_coin_button_pressed():
-	Level1Vars.coins += 1
-	Level1Vars.lifetimecoins += 1  # Track lifetime coins earned
+	CurrencyManager.add_currency(CurrencyManager.CurrencyType.COPPER, 1, "debug/cheat")
+	Level1Vars.lifetimecoins += 1  # Legacy tracking (can be removed later)
 	Global.show_stat_notification("developer notification: coins")
 	update_labels()
 
 func update_labels():
 	if coins_label:
-		coins_label.text = "Coins: " + str(int(Level1Vars.coins))
+		# Display all unlocked currencies
+		coins_label.text = CurrencyManager.format_currency_display(false, true)
 	if bribe_shopkeep_button:
 		bribe_shopkeep_button.text = "Bribe Shopkeep: 10"
 		# Hide if already bribed, otherwise disable if not enough coins
@@ -141,7 +138,7 @@ func update_labels():
 			bribe_shopkeep_button.visible = false
 		else:
 			bribe_shopkeep_button.visible = true
-			bribe_shopkeep_button.disabled = Level1Vars.coins < 10
+			bribe_shopkeep_button.disabled = not CurrencyManager.can_afford(10)
 
 	# Show/hide workshop button based on bribe status
 	if workshop_button:
@@ -173,27 +170,25 @@ func _on_close_auto_shovels_popup_pressed():
 
 func _on_coal_per_tick_upgrade_pressed():
 	var cost = get_coal_per_tick_upgrade_cost()
-	if Level1Vars.coins >= cost:
-		DebugLogger.log_resource_change("coins", Level1Vars.coins, Level1Vars.coins - cost, "Coal per tick upgrade")
-		Level1Vars.coins -= cost
-		Level1Vars.auto_shovel_coal_upgrade_lvl += 1
-		Level1Vars.auto_shovel_coal_per_tick = 4.0 + (0.5 * Level1Vars.auto_shovel_coal_upgrade_lvl)
-		UpgradeTypesConfig.track_equipment_purchase("coal_per_tick", cost)
-		DebugLogger.log_shop_purchase("Coal Per Tick Upgrade", cost, Level1Vars.auto_shovel_coal_upgrade_lvl)
-		update_labels()
-		update_auto_shovels_popup_labels()
+	if CurrencyManager.can_afford(cost):
+		if CurrencyManager.deduct_currency(cost):
+			Level1Vars.auto_shovel_coal_upgrade_lvl += 1
+			Level1Vars.auto_shovel_coal_per_tick = 4.0 + (0.5 * Level1Vars.auto_shovel_coal_upgrade_lvl)
+			UpgradeTypesConfig.track_equipment_purchase("coal_per_tick", cost)
+			DebugLogger.log_shop_purchase("Coal Per Tick Upgrade", cost, Level1Vars.auto_shovel_coal_upgrade_lvl)
+			update_labels()
+			update_auto_shovels_popup_labels()
 
 func _on_frequency_upgrade_pressed():
 	var cost = get_frequency_upgrade_cost()
-	if Level1Vars.coins >= cost:
-		DebugLogger.log_resource_change("coins", Level1Vars.coins, Level1Vars.coins - cost, "Frequency upgrade")
-		Level1Vars.coins -= cost
-		Level1Vars.auto_shovel_freq_upgrade_lvl += 1
-		Level1Vars.auto_shovel_freq = max(0.5, 3.0 - (0.2 * Level1Vars.auto_shovel_freq_upgrade_lvl))
-		UpgradeTypesConfig.track_equipment_purchase("frequency", cost)
-		DebugLogger.log_shop_purchase("Frequency Upgrade", cost, Level1Vars.auto_shovel_freq_upgrade_lvl)
-		update_labels()
-		update_auto_shovels_popup_labels()
+	if CurrencyManager.can_afford(cost):
+		if CurrencyManager.deduct_currency(cost):
+			Level1Vars.auto_shovel_freq_upgrade_lvl += 1
+			Level1Vars.auto_shovel_freq = max(0.5, 3.0 - (0.2 * Level1Vars.auto_shovel_freq_upgrade_lvl))
+			UpgradeTypesConfig.track_equipment_purchase("frequency", cost)
+			DebugLogger.log_shop_purchase("Frequency Upgrade", cost, Level1Vars.auto_shovel_freq_upgrade_lvl)
+			update_labels()
+			update_auto_shovels_popup_labels()
 
 func update_shovels_popup_labels():
 	if shovel_button:
@@ -206,7 +201,7 @@ func update_shovels_popup_labels():
 		else:
 			level_text = "A masterwork shovel"
 		shovel_button.text = level_text + ": " + str(cost)
-		shovel_button.disabled = Level1Vars.coins < cost
+		shovel_button.disabled = not CurrencyManager.can_afford(cost)
 	if plow_button:
 		var cost = get_plow_cost()
 		var level_text = ""
@@ -220,7 +215,7 @@ func update_shovels_popup_labels():
 			plow_button.visible = true
 		else:
 			plow_button.visible = false
-		plow_button.disabled = Level1Vars.coins < cost
+		plow_button.disabled = not CurrencyManager.can_afford(cost)
 
 func update_auto_shovels_popup_labels():
 	if furnace_upgrade:
@@ -229,15 +224,15 @@ func update_auto_shovels_popup_labels():
 		if Level1Vars.auto_shovel_lvl > 0:
 			level_text = "Another shoveler (" + str(Level1Vars.auto_shovel_lvl) + ")"
 		furnace_upgrade.text = level_text + ": " + str(cost)
-		furnace_upgrade.disabled = Level1Vars.coins < cost
+		furnace_upgrade.disabled = not CurrencyManager.can_afford(cost)
 	if coal_per_tick_button:
 		var cost = get_coal_per_tick_upgrade_cost()
 		coal_per_tick_button.text = "Better gears: " + str(cost)
-		coal_per_tick_button.disabled = Level1Vars.coins < cost
+		coal_per_tick_button.disabled = not CurrencyManager.can_afford(cost)
 	if frequency_button:
 		var cost = get_frequency_upgrade_cost()
 		frequency_button.text = "Fine-tuned clockwork: " + str(cost)
-		frequency_button.disabled = Level1Vars.coins < cost
+		frequency_button.disabled = not CurrencyManager.can_afford(cost)
 
 func update_suspicion_bar():
 	suspicion_panel.visible = Level1Vars.suspicion > 0

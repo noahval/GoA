@@ -31,7 +31,7 @@ var next_mood_update_delay: float  # Random delay between 4-10 seconds
 func _ready():
 	ResponsiveLayout.apply_to_scene(self)
 	coal_label.text = "Coal Shoveled: " + str(Level1Vars.coal)
-	coins_label.text = "Coins: " + str(int(Level1Vars.coins))
+	coins_label.text = CurrencyManager.format_currency_display(false, true)
 	update_stamina_bar()
 	update_suspicion_bar()
 	toggle_mode_button.visible = false
@@ -91,7 +91,7 @@ func _process(delta):
 	if coal_label:
 		coal_label.text = "Coal Shoveled: " + str(int(Level1Vars.coal))
 	if coins_label:
-		coins_label.text = "Coins: " + str(int(Level1Vars.coins))
+		coins_label.text = CurrencyManager.format_currency_display(false, true)
 	update_stamina_bar()
 	update_suspicion_bar()
 	update_mood_panel_visibility()
@@ -184,8 +184,8 @@ func perform_manual_conversion():
 	var coins_earned = OverseerMood.manual_convert_coal(coal_required)
 
 	Level1Vars.coal -= coal_required
-	Level1Vars.coins += coins_earned
-	Level1Vars.lifetimecoins += coins_earned  # Track lifetime coins earned
+	CurrencyManager.add_currency(CurrencyManager.CurrencyType.COPPER, coins_earned, "manual_conversion")
+	Level1Vars.lifetimecoins += coins_earned  # Legacy tracking (can be removed later)
 
 	# Show conversion feedback
 	var message = OverseerMood.get_conversion_message()
@@ -195,7 +195,6 @@ func perform_manual_conversion():
 	Global.add_stat_exp("charisma", 2.0)
 
 	DebugLogger.log_resource_change("coal", Level1Vars.coal + coal_required, Level1Vars.coal, "Manual conversion")
-	DebugLogger.log_resource_change("coins", Level1Vars.coins - coins_earned, Level1Vars.coins, "Manual conversion")
 
 # Phase 1: Auto conversion - happens automatically with penalty
 func perform_auto_conversion():
@@ -204,12 +203,11 @@ func perform_auto_conversion():
 	var coins_earned = OverseerMood.auto_convert_coal(coal_required)
 
 	Level1Vars.coal -= coal_required
-	Level1Vars.coins += coins_earned
-	Level1Vars.lifetimecoins += coins_earned  # Track lifetime coins earned
+	CurrencyManager.add_currency(CurrencyManager.CurrencyType.COPPER, coins_earned, "auto_conversion")
+	Level1Vars.lifetimecoins += coins_earned  # Legacy tracking (can be removed later)
 
 	# No notification in auto mode (player discovers it's less efficient)
 	DebugLogger.log_resource_change("coal", Level1Vars.coal + coal_required, Level1Vars.coal, "Auto conversion")
-	DebugLogger.log_resource_change("coins", Level1Vars.coins - coins_earned, Level1Vars.coins, "Auto conversion")
 
 # Toggle between manual and auto conversion
 func toggle_conversion_mode():

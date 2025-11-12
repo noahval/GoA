@@ -99,39 +99,39 @@ func _on_to_dorm_button_pressed():
 	Global.change_scene_with_check(get_tree(), "res://level1/dorm.tscn")
 
 func _on_bribe_barkeep_pressed():
-	if Level1Vars.coins >= 50 and not Level1Vars.barkeep_bribed:
-		Level1Vars.coins -= 50
-		Level1Vars.barkeep_bribed = true
-		update_labels()
+	if CurrencyManager.can_afford(50) and not Level1Vars.barkeep_bribed:
+		if CurrencyManager.deduct_currency(50):
+			Level1Vars.barkeep_bribed = true
+			update_labels()
 
 func _on_secret_passage_pressed():
 	Global.change_scene_with_check(get_tree(), "res://level1/secret_passage_entrance.tscn")
 
 func _on_anthracite_delight_pressed():
-	if Level1Vars.coins >= 1:
-		Level1Vars.coins -= 1
-		Level1Vars.stimulated_remaining += 60
-		Level1Vars.shown_tired_notification = false  # Reset the flag for next time
-		Global.show_stat_notification("You feel invigorated")
-		update_labels()
+	if CurrencyManager.can_afford(1):
+		if CurrencyManager.deduct_currency(1):
+			Level1Vars.stimulated_remaining += 60
+			Level1Vars.shown_tired_notification = false  # Reset the flag for next time
+			Global.show_stat_notification("You feel invigorated")
+			update_labels()
 
 func _on_steel_stout_pressed():
-	if Level1Vars.coins >= 1:
-		Level1Vars.coins -= 1
-		Level1Vars.resilient_remaining += 60
-		Level1Vars.shown_lazy_notification = false  # Reset the flag for next time
-		Global.show_stat_notification("You feel tenacious")
-		update_labels()
+	if CurrencyManager.can_afford(1):
+		if CurrencyManager.deduct_currency(1):
+			Level1Vars.resilient_remaining += 60
+			Level1Vars.shown_lazy_notification = false  # Reset the flag for next time
+			Global.show_stat_notification("You feel tenacious")
+			update_labels()
 
 func _on_developer_free_coins_button_pressed():
-	Level1Vars.coins += 200
-	Level1Vars.lifetimecoins += 200  # Track lifetime coins earned
+	CurrencyManager.add_currency(CurrencyManager.CurrencyType.COPPER, 200, "debug/cheat")
+	Level1Vars.lifetimecoins += 200  # Legacy tracking (can be removed later)
 	update_labels()
 
 func update_labels():
 	# Update coins display
 	if coins_label:
-		coins_label.text = "Coins: " + str(int(Level1Vars.coins))
+		coins_label.text = CurrencyManager.format_currency_display(false, true)
 
 	if bribe_barkeep_button:
 		bribe_barkeep_button.text = "Bribe Barkeep: 50"

@@ -546,7 +546,11 @@ func check_get_caught() -> bool:
 			DebugLogger.warn("Player caught! Suspicion: %d" % Level1Vars.suspicion, "GET_CAUGHT")
 			Level1Vars.stolen_coal = 0
 			Level1Vars.suspicion = 0
-			Level1Vars.coins = 0
+			# Reset all currencies except Platinum Bonds (those are safely hidden!)
+			Level1Vars.currency.copper = 0
+			Level1Vars.currency.silver = 0
+			Level1Vars.currency.gold = 0
+			Level1Vars.coins = 0  # Legacy variable (syncs with copper via setter)
 			show_stat_notification("You've been caught, your coal and coins have been seized")
 			return true
 	return false

@@ -20,6 +20,7 @@ boot_splash/minimum_display_time=3000
 
 Global="*res://global.gd"
 Level1Vars="*res://level1/level_1_vars.gd"
+CurrencyManager="*res://currency_manager.gd"
 ButtonHierarchy="*res://button_hierarchy_config.gd"
 UpgradeTypesConfig="*res://upgrade_types_config.gd"
 ResponsiveLayout="*res://responsive_layout.gd"

@@ -17,7 +17,8 @@ Phase 5 represents a major shift in gameplay from being a worker in the Blackbor
 
 ## Key Design Principles
 
-- **No charisma requirement** (deferred for future phases)
+- **Charisma as obscure stat** - No explicit UI, but affects worker efficiency subtly
+- **Leadership over labor** - Player manages and leads rather than shovels
 - **No visual assets needed** (text-based UI following existing patterns)
 - **New scene creation** - owned_furnace.tscn replaces furnace.tscn after purchase
 - **Dynamic demand system** - Creates pressure and opportunity
@@ -77,7 +78,9 @@ max_steam = 500.0 + (capacity_upgrade_lvl * 200.0)
 **Purpose:** Creates dynamic gameplay with fluctuating requirements
 
 **Demand States:**
-- **Low Demand** (0.5x base): Train coasting, stopped at station, light load
+- **Zero Demand** (0.0x base): Train completely stopped, no consumption
+- **Very Low Demand** (0.2x base): Train idling, coasting downhill
+- **Low Demand** (0.5x base): Light load, slow operation
 - **Normal Demand** (1.0x base): Steady operation on flat terrain
 - **High Demand** (1.5x base): Climbing grade, accelerating, heavy load
 - **Critical Demand** (2.5x base): Steep hill, multiple trains, furnace failures
@@ -92,11 +95,29 @@ max_steam = 500.0 + (capacity_upgrade_lvl * 200.0)
 ```gdscript
 # Demand reasons (displayed to player)
 DEMAND_REASONS = {
+    "zero": [
+        "All trains stopped at stations",
+        "Night shift - depot maintenance",
+        "Track inspection - all traffic halted",
+        "Holiday - minimal operations",
+        "Scheduled maintenance window"
+    ],
+    "very_low": [
+        "Train idling at station",
+        "Coasting downhill - minimal power",
+        "Descending Copper Ridge Pass",
+        "Long downgrade - braking only",
+        "Gravity doing the work",
+        "Backup furnaces handling load"
+    ],
     "low": [
         "Train stopped at Copper Ridge Station",
         "Light passenger load today",
-        "Coasting downhill into the valley",
-        "Other furnaces covering the load"
+        "Gentle descent into valley",
+        "Approaching station - slowing down",
+        "Downhill run through foothills",
+        "Slow operation through town",
+        "Other furnaces covering most load"
     ],
     "normal": [
         "Steady run on flat terrain",
@@ -105,15 +126,18 @@ DEMAND_REASONS = {
     ],
     "high": [
         "Climbing toward High Peak",
+        "Ascending the eastern slope",
         "Heavy ore shipment",
-        "Accelerating through switchyard",
+        "Pulling uphill through switchyard",
+        "Accelerating from station",
         "Two furnaces offline for maintenance"
     ],
     "critical": [
         "Emergency! Steep mountain grade!",
+        "Climbing Devil's Backbone!",
         "All other furnaces failed!",
         "Runaway coal train needs stopping!",
-        "Governor's express - maximum priority!"
+        "Triple-header up Iron Mountain!"
     ]
 }
 ```
@@ -132,19 +156,26 @@ func _process(delta):
     # Check for state change (timer-based)
     if demand_timer <= 0:
         change_demand_state()
-        demand_timer = randf_range(15.0, 45.0)
+        # Triangular distribution: 1-5 minutes, weighted toward 2 minutes
+        var rand1 = randf_range(60.0, 180.0)  # 1-3 minutes
+        var rand2 = randf_range(60.0, 300.0)  # 1-5 minutes
+        demand_timer = (rand1 + rand2) / 2.0  # Averages ~2.5 minutes
 
 func change_demand_state():
     # Weighted random selection
     var roll = randf()
-    if roll < 0.15:  # 15% critical
-        set_demand_state("critical", 2.5)
-    elif roll < 0.35:  # 20% high
-        set_demand_state("high", 1.5)
-    elif roll < 0.80:  # 45% normal
-        set_demand_state("normal", 1.0)
-    else:  # 20% low
+    if roll < 0.10:  # 10% zero (rare - creates strategic storage opportunity)
+        set_demand_state("zero", 0.0)
+    elif roll < 0.20:  # 10% very_low
+        set_demand_state("very_low", 0.2)
+    elif roll < 0.35:  # 15% low
         set_demand_state("low", 0.5)
+    elif roll < 0.70:  # 35% normal
+        set_demand_state("normal", 1.0)
+    elif roll < 0.85:  # 15% high
+        set_demand_state("high", 1.5)
+    else:  # 15% critical
+        set_demand_state("critical", 2.5)
 
 func set_demand_state(state: String, multiplier: float):
     demand_state = state
@@ -170,7 +201,156 @@ else:
     performance = "failing"  # Severely underproducing
 ```
 
-### 4. Train Speed & Revenue
+### 4. Steam Storage System ⭐
+
+**Purpose:** Capture excess steam during low/zero demand periods for use during high demand spikes
+
+**Thematic Progression:**
+
+**Tier 1: Steam Accumulator Tank**
+- **Cost:** 300 coins
+- **Capacity:** 200 stored steam
+- **Technology:** Simple insulated pressure vessel
+- **Historical:** 1800s technology, used on traction engines and early locomotives
+- **Description:** "A basic pressure vessel that stores excess steam when demand is low"
+
+**Tier 2: Compressed Steam Reservoir**
+- **Cost:** 800 coins
+- **Requires:** Steam Accumulator Tank
+- **Capacity:** +300 stored steam (500 total)
+- **Technology:** High-pressure compression system
+- **Description:** "Stores steam at higher pressure for increased capacity"
+
+**Tier 3: Multi-Chamber Storage System**
+- **Cost:** 2,000 coins
+- **Requires:** Compressed Steam Reservoir
+- **Capacity:** +700 stored steam (1,200 total)
+- **Technology:** Multiple interconnected tanks with valves
+- **Feature:** Unlocks manual release controls (10% increments) and auto-release system
+- **Description:** "Interconnected tanks allow precise control over steam release"
+
+**Tier 4: Hydraulic Accumulator**
+- **Cost:** 5,000 coins + 50 mechanisms
+- **Requires:** Multi-Chamber Storage
+- **Capacity:** +1,300 stored steam (2,500 total)
+- **Technology:** Converts steam pressure to hydraulic pressure
+- **Efficiency:** Upgraded to 90% (from 80%)
+- **Historical:** Used in Victorian-era hydraulic power networks (London, 1880s)
+- **Description:** "Hydraulic system reduces heat loss and provides stable long-term storage"
+
+**Tier 5: Battery Bank** *(Late Game)*
+- **Cost:** 15,000 coins + 100 components + 50 pipes
+- **Requires:** Hydraulic Accumulator + Power System unlocked
+- **Capacity:** +2,500 stored steam equivalent (5,000 total)
+- **Technology:** Electrical energy storage charged by steam turbine
+- **Efficiency:** 100% (no storage loss)
+- **Feature:** Instant response, no decay
+- **Description:** "Modern electrical storage eliminates all inefficiencies"
+
+**Storage Mechanics:**
+
+```gdscript
+# New Level1Vars variables
+var stored_steam: float = 0.0
+var max_stored_steam: float = 0.0  # Starts at 0, unlocked by purchases
+var storage_efficiency: float = 0.8  # 80% base, upgradeable to 90%, then 100%
+var storage_diversion_percentage: float = 0.0  # % of steam production diverted to storage (0-100)
+var auto_release_enabled: bool = false  # Unlocked at Tier 3
+var auto_release_threshold: float = 0.6  # Auto-release when main steam < 60%
+
+# In process_steam()
+func process_steam(delta):
+    # ... existing steam generation code ...
+
+    # Active diversion: Player chooses % of production to store (strategic play)
+    if Level1Vars.storage_diversion_percentage > 0 and Level1Vars.max_stored_steam > 0:
+        if Level1Vars.stored_steam < Level1Vars.max_stored_steam:
+            var steam_to_divert = Level1Vars.current_steam * (Level1Vars.storage_diversion_percentage / 100.0)
+            var storage_space = Level1Vars.max_stored_steam - Level1Vars.stored_steam
+            var actually_diverted = min(steam_to_divert, storage_space)
+
+            # Apply storage efficiency and move steam
+            Level1Vars.stored_steam += actually_diverted * Level1Vars.storage_efficiency
+            Level1Vars.current_steam -= actually_diverted
+
+    # Automatic overflow storage (when main reservoir full, regardless of diversion)
+    if Level1Vars.current_steam >= Level1Vars.max_steam:
+        if Level1Vars.max_stored_steam > 0 and Level1Vars.stored_steam < Level1Vars.max_stored_steam:
+            var overflow = Level1Vars.current_steam - Level1Vars.max_steam
+            var storage_space = Level1Vars.max_stored_steam - Level1Vars.stored_steam
+            var to_store = min(overflow, storage_space)
+
+            # Apply storage efficiency (80%, 90%, or 100% depending on upgrades)
+            Level1Vars.stored_steam += to_store * Level1Vars.storage_efficiency
+            Level1Vars.current_steam -= to_store
+
+            # Optional notification when storage starts
+            if Level1Vars.stored_steam > 0 and not storage_notified:
+                show_notification("Excess steam diverted to storage")
+                storage_notified = true
+
+    # Auto-release during high demand (if enabled)
+    if Level1Vars.auto_release_enabled and Level1Vars.demand_state in ["high", "critical"]:
+        var steam_percentage = Level1Vars.current_steam / Level1Vars.max_steam
+        if steam_percentage < Level1Vars.auto_release_threshold and Level1Vars.stored_steam > 0:
+            release_stored_steam(1.0)  # Release 100%
+
+func release_stored_steam(percentage: float):
+    # Release stored steam back to main reservoir
+    # percentage is based on max_stored_steam, not current stored amount
+    var release_amount = Level1Vars.max_stored_steam * percentage
+    var available_to_release = min(release_amount, Level1Vars.stored_steam)
+    var space_available = Level1Vars.max_steam - Level1Vars.current_steam
+    var actually_released = min(available_to_release, space_available)
+
+    Level1Vars.current_steam += actually_released
+    Level1Vars.stored_steam -= actually_released
+
+    show_notification("Released %d steam from storage" % int(actually_released))
+```
+
+**UI Elements:**
+
+**Storage Gauge (Left Panel):**
+```
+Storage: 450 / 1200
+[■■■■■■□□□□]
+```
+
+**Storage Control Buttons (Tier 3+):**
+- "Release 10%" - Releases 10% of max storage capacity per click (consistent amount regardless of current storage)
+- "Auto-Release: ON/OFF" - Toggle automatic release during high demand
+- Threshold slider (when auto-release enabled)
+
+**Strategic Gameplay:**
+
+**Active Diversion Strategy (New!):**
+1. Player notices "Very Low Demand" state (0.2x multiplier) - trains coasting downhill
+2. Current payment: 0.5 coins/sec (low revenue during low demand)
+3. Player opens Storage Controls, sets diversion slider to 40%
+4. Steam production: 25/sec → Main gets 15/sec, Storage gets 10/sec (before efficiency loss)
+5. Storage builds: 200 → 400 → 600 steam over 3 minutes
+6. Demand shifts to "High" (1.5x) - trains climbing steep grade
+7. Payment jumps to 3.0 coins/sec!
+8. Player sets diversion back to 0%, clicks "Release 10%" three times
+9. Storage floods main reservoir with 360 steam (3 × 120)
+10. Player exceeds high demand, earns maximum revenue for 2 minutes
+11. Strategic profit: Stored cheap steam, sold it at premium rates!
+
+**Overflow Capture (Passive Strategy):**
+1. Zero demand state triggers (train stopped)
+2. Workers continue producing steam
+3. Main reservoir fills to 500/500
+4. Overflow automatically diverts to storage (with 80% efficiency)
+5. Storage fills to 800/1200
+6. Player sees: "Excess steam stored for later use"
+7. Critical demand spike occurs!
+8. Player manually releases storage or auto-release triggers
+9. Stored steam floods into main reservoir
+10. Player maintains "Excellent" performance during spike
+11. Earns bonus revenue for exceeding critical demand
+
+### 5. Train Speed & Revenue
 
 **Purpose:** Convert performance into currency
 
@@ -284,10 +464,15 @@ Inherit from scene_template.tscn (3-panel layout)
   - Shows current_steam / max_steam
   - Color: White/blue gradient
   - Label: "Steam: 250 / 500"
+- **Steam Storage Gauge** (ProgressBar) *(visible only when storage purchased)*
+  - Shows stored_steam / max_stored_steam
+  - Color: Cyan/blue gradient (distinct from main steam)
+  - Label: "Storage: 450 / 1200"
+  - Shows efficiency: "Efficiency: 80%" (subtle, small text)
 - **Demand Indicator** (Panel with RichTextLabel)
-  - Shows current demand state (low/normal/high/critical)
+  - Shows current demand state (zero/very_low/low/normal/high/critical)
   - Shows demand reason text
-  - Color-coded: Green/Yellow/Orange/Red
+  - Color-coded: Dark Blue/Green/Yellow/Orange/Red
 - **Performance Display**
   - "Performance: Excellent" (color-coded)
   - "Revenue: +0.15 coins/sec" (green if positive)
@@ -296,23 +481,115 @@ Inherit from scene_template.tscn (3-panel layout)
   - Coal (still used for shoveling)
 
 **Right Panel Buttons:**
-- **Shovel Coal** - Generates heat (replaces old coal generation)
-  - Still costs stamina
-  - Still gives strength XP
-  - Now generates heat instead of coal
-- **Manage Workers** - Opens worker management popup
+- **Lead by Example** - Manager helps with shoveling (replaces old coal generation)
+  - Costs stamina
+  - Gives charisma XP (not strength - you're leading, not laboring)
+  - Generates small amount of heat
+  - Temporarily boosts worker morale/efficiency
+- **Visit Dormitory** - Transitions to owned_dorm.tscn for worker management ⭐ NEW
 - **Upgrade Furnace** - Opens furnace upgrade popup
+- **Storage Controls** *(visible only when Tier 3+ storage purchased)*
+  - Opens storage control popup with release buttons and auto-release settings
 - **Take Break** - Returns to bar
 
 **Center Area:**
 - Background: Could reuse furnace.jpg or create owned_furnace.jpg
 - Could display animated elements (heat glow, steam pipes) in future
 
-### Bar Scene Navigation Update
+**Color Indicator** (subtle discovery mechanic):
+- Small dot next to "Visit Dormitory" button
+- **Green:** All workers healthy (< 55 fatigue, morale > 60, food > 25%)
+- **Yellow:** Some concerns (workers 55-80 fatigue OR morale 40-60 OR food 10-25%)
+- **Red:** Critical issues (any worker > 80 fatigue OR morale < 40 OR food < 10%)
+
+### New Owned Dormitory (owned_dorm.tscn) ⭐
+
+**Purpose:** Worker management hub - hire, manage, upgrade dormitory
+
+**Scene Structure:**
+Duplicate existing [level1/dorm.tscn](level1/dorm.tscn) → owned_dorm.tscn
+
+**Visual Changes:**
+- Shows actual beds in scene (empty vs occupied)
+- Bed count increases as upgrades purchased (visual progression)
+- Workers visible when idle/on break
+
+**Left Panel: Worker Roster**
+- Title: "Worker Roster"
+- **Scrollable list** of hired workers (up to 20)
+- Each worker entry shows:
+  - **Name** (e.g., "Thomas")
+  - **Type** (Stoker/Fireman/Engineer)
+  - **Quality descriptor** (e.g., "Steady Hand", "Skilled Worker")
+  - **Current status**: Active / Idle / On Break
+  - If on break: countdown timer ("Break: 3:45 remaining")
+  - **Action buttons per worker:**
+    - [Assign Active] - Send to work
+    - [Set Idle] - Rest in dorm
+    - [Send on Break] - 5min recovery break
+    - [Fire] - Remove worker (confirmation required)
+
+**Right Panel Buttons:**
+- **Hire Workers** - Opens hiring pool dialog (shows 3-8 candidates)
+- **Send All on Break** - Group break, enhanced recovery ⭐
+  - Shows "Cooldown: 12:34" if recently used (15min cooldown)
+- **Buy Food** - Opens food shop (5 quality tiers)
+- **Dormitory Upgrades** - Opens upgrade menu
+  - **Beds Tab:** Purchase bed expansions (7 tiers, 2 → 20 capacity)
+  - **Amenities Tab:** Purchase quality-of-life upgrades (10 tiers)
+- **Return to Furnace** - Goes back to owned_furnace.tscn
+
+**Top Panel Info:**
+- **Food Supply:** "Food: 47 units (Decent Meal quality)"
+  - Warning color if low (< 15 units: orange, < 5 units: red)
+- **Dormitory Capacity:** "Beds: 8 / 10 occupied"
+- **Reputation Hint** (narrative only, no number):
+  - High reputation (70+): "Workers speak well of this place"
+  - Medium reputation (30-70): "Your reputation is mixed"
+  - Low reputation (< 30): "Conditions here are poorly regarded"
+
+**Bottom Panel:**
+- **Auto-Break Policy:** Dropdown selector
+  - Options: Never / Conservative / Balanced / Aggressive / Preventive
+  - Applies to all workers (individual breaks only)
+- **Worker Status Indicator:** Color dot (discovery mechanic)
+  - Green/Yellow/Red based on crew health
+  - No explicit explanation - players discover meaning
+
+**Dialogs Opened from owned_dorm.tscn:**
+
+**1. Hiring Pool Dialog**
+- Shows 3-8 available candidates (based on reputation)
+- Each candidate: Name, Type, Quality descriptor, Hire cost
+- [Refresh Pool - 50 coins] button
+- Cannot hire if no empty beds
+
+**2. Food Shop Dialog**
+- Shows current supply and quality
+- Purchase options: 5 quality tiers (Stale Bread → Premium Provisions)
+- Each tier: Cost per 10 units, purchase buttons (10/50/100 units)
+- Auto-purchase settings: Enable toggle, tier selector, amount selector
+
+**3. Dormitory Upgrades Dialog**
+- **Beds Tab:** 7 tiers of bed expansions
+  - Visual: Checkmarks for owned, locks for locked
+  - Shows requirements (runtime hours, components/mechanisms)
+- **Amenities Tab:** 10 tiers of quality-of-life upgrades
+  - Each shows: Description, vague benefit (no numbers), cost, requirements
+  - Players discover actual effects through experimentation
+
+**Center Area:**
+- Background: dormitory interior (reuse dorm.jpg or create owned_dorm.jpg)
+- Visual representation of beds (scalable, shows occupancy)
+- Could show workers as sprites when idle/on break (future enhancement)
+
+### Bar Scene Navigation Updates
 
 **File:** [level1/bar.gd](level1/bar.gd)
 
-**Modified Function:**
+**Modified Functions:**
+
+**1. Furnace Button:**
 ```gdscript
 func _on_to_blackbore_furnace_button_pressed():
     var target_scene
@@ -327,75 +604,1171 @@ func _on_to_blackbore_furnace_button_pressed():
 - Before: "To Blackbore Furnace"
 - After: "To Your Furnace" (when owned)
 
+**2. Dormitory Button:** ⭐ NEW
+```gdscript
+func _on_to_dorm_button_pressed():
+    var target_scene
+    if Level1Vars.furnace_owned:
+        target_scene = "res://level1/owned_dorm.tscn"
+    else:
+        target_scene = "res://level1/dorm.tscn"
+    Global.change_scene_with_check(get_tree(), target_scene)
+```
+
+**Button Text Update:**
+- Before: "To Dormitory"
+- After: "To Worker Quarters" or "To Your Dormitory" (when owned)
+
+**Routing Logic:**
+- Before furnace purchase: All scenes route to original worker-perspective scenes
+- After furnace purchase: Bar routes to owned_furnace.tscn and owned_dorm.tscn
+- Maintains narrative consistency (player is now the owner/manager)
+
 ---
 
-## Worker Management System
+## Worker Management System ⭐
+
+Phase 5 introduces a comprehensive **individual worker management system** where each worker is a named person with fatigue, morale, and quality levels. This replaces the simple "hire X workers" model with a deeper, discovery-based system focused on workforce management.
+
+### Core Philosophy
+
+**Discovery-Based Complexity:**
+- Worker fatigue and morale are **never shown as numbers** - players discover through narrative notifications
+- Workers provide contextual feedback ("Thomas is exhausted", "The crew is in high spirits")
+- Quality differences discovered through observation (skilled workers tire slower, produce more)
+- Reputation system affects hiring pool quality (hidden mechanic)
+
+**Individual Agency:**
+- Each worker has a procedurally generated name (Thomas, Jakob, William, etc.)
+- Players develop attachment to specific workers
+- Firing workers has real consequences (morale penalty, reputation hit)
+- Active/idle/break management per worker
+
+**Strategic Depth:**
+- Multiple valid playstyles: sweatshop vs premium operation
+- Trade-offs: cheap workers vs skilled workers, food quality, amenities
+- Long-term investment: treat workers well → better reputation → attract better candidates
+
+---
 
 ### Worker Types
 
-**1. Stoker (Basic Coal Shoveler)**
-- Generates heat automatically
-- Cost scaling: `50 * pow(1.8, stoker_count)`
-- Heat per second: `stoker_count * 1.5`
-- Upgrade: Efficiency (heat per stoker)
+Three worker types serve different functions in furnace operation:
+
+**1. Stoker (Coal Shoveler)**
+- **Role:** Generates heat automatically through coal shoveling
+- **Base Rate:** 1.2 fatigue/sec (hard physical labor)
+- **Heat Generation:** Varies by quality tier (0.6 to 1.5/sec at baseline)
+- **Hire Cost:** 20-1,200 coins depending on quality tier
 
 **2. Fireman (Heat Manager)**
-- Reduces heat decay rate
-- Cost scaling: `200 * pow(2.0, fireman_count)`
-- Decay reduction: `0.1 per fireman`
-- Upgrade: Decay reduction amount
+- **Role:** Manages furnace heat, reduces decay rate
+- **Base Rate:** 0.8 fatigue/sec (moderate work)
+- **Decay Reduction:** 0.1/sec per fireman (varies by quality)
+- **Hire Cost:** 50-2,600 coins depending on quality tier
 
 **3. Engineer (Steam Optimizer)**
-- Increases steam generation efficiency
-- Cost scaling: `500 * pow(2.2, engineer_count)`
-- Efficiency bonus: `+10% per engineer`
-- Upgrade: Efficiency percentage
+- **Role:** Optimizes steam generation efficiency
+- **Base Rate:** 0.6 fatigue/sec (technical work, less physical)
+- **Efficiency Bonus:** +10% per engineer (varies by quality)
+- **Hire Cost:** 100-4,800 coins depending on quality tier
+
+---
+
+### Individual Worker System
+
+#### Worker Data Structure
+
+Each worker in the roster has:
+- **Name**: Procedurally generated (Thomas, Jakob, William, Elias, Henrik, etc.)
+- **Type**: Stoker, Fireman, or Engineer
+- **Quality Tier**: 1-7 (Sickly Youth → Skilled Worker)
+- **Current Fatigue**: 0.0 (fresh) to 100.0 (exhausted) - **hidden from player**
+- **Status**: Active (working), Idle (resting), or On Break
+- **Hire Timestamp**: When worker was hired
+
+#### Worker Quality Tiers (7 Tiers)
+
+Quality affects productivity, fatigue resistance, and base morale. **Quality is shown only as narrative descriptions** - no stats revealed to player.
+
+**Tier 1 - Sickly Youth**
+- **Description:** "Young and frail, barely fit for work"
+- **Productivity:** 60% of baseline
+- **Fatigue Accumulation:** +60% (tires 1.6x faster)
+- **Base Morale Contribution:** 25
+- **Hire Cost:** 20 (stoker), 50 (fireman), 100 (engineer)
+- **Availability:** Always available in hiring pool
+
+**Tier 2 - Green Recruit**
+- **Description:** "Inexperienced but willing to learn"
+- **Productivity:** 75%
+- **Fatigue Accumulation:** +30%
+- **Base Morale Contribution:** 35
+- **Hire Cost:** 40 (stoker), 100 (fireman), 200 (engineer)
+- **Availability:** Always available
+
+**Tier 3 - Ordinary Laborer**
+- **Description:** "Average worker, nothing special"
+- **Productivity:** 90%
+- **Fatigue Accumulation:** +10%
+- **Base Morale Contribution:** 45
+- **Hire Cost:** 80 (stoker), 180 (fireman), 350 (engineer)
+- **Availability:** Always available
+
+**Tier 4 - Steady Hand**
+- **Description:** "Reliable and experienced"
+- **Productivity:** 100% (baseline reference)
+- **Fatigue Accumulation:** 0% (baseline)
+- **Base Morale Contribution:** 55
+- **Hire Cost:** 150 (stoker), 350 (fireman), 650 (engineer)
+- **Availability:** After 15h runtime as owner
+
+**Tier 5 - Capable Hand**
+- **Description:** "Knows the work well"
+- **Productivity:** 115%
+- **Fatigue Accumulation:** -15% (tires 0.85x as fast)
+- **Base Morale Contribution:** 65
+- **Hire Cost:** 300 (stoker), 650 (fireman), 1,200 (engineer)
+- **Availability:** After 35h runtime as owner
+
+**Tier 6 - Practiced Worker**
+- **Description:** "Years of experience show"
+- **Productivity:** 130%
+- **Fatigue Accumulation:** -30%
+- **Base Morale Contribution:** 75
+- **Hire Cost:** 600 (stoker), 1,300 (fireman), 2,400 (engineer)
+- **Availability:** After 55h runtime as owner
+
+**Tier 7 - Skilled Worker**
+- **Description:** "As good as they come"
+- **Productivity:** 150%
+- **Fatigue Accumulation:** -45%
+- **Base Morale Contribution:** 85
+- **Special:** 20% chance to self-rest when fatigue hits 65 (discovered mechanic)
+- **Hire Cost:** 1,200 (stoker), 2,600 (fireman), 4,800 (engineer)
+- **Availability:** After 75h runtime as owner
+
+**Strategic Notes:**
+- Early game: Forced to hire Tier 1-3 (cheap but inefficient)
+- Mid game: Tier 4-5 become accessible (reliable workers)
+- Late game: Tier 6-7 available if reputation is high enough
+
+---
+
+### Dormitory Capacity System ⭐
+
+**Worker capacity is determined by dormitory beds**, not arbitrary limits. This creates a tangible, visual progression.
+
+#### Starting Capacity
+- **2 beds** included with furnace purchase
+- Can hire up to 2 workers initially
+
+#### Bed Expansion Upgrades
+
+All bed upgrades purchased in **owned_dorm.tscn** (new scene).
+
+**Tier 1: Bunk Bed Pair**
+- **Cost:** 400 coins
+- **Capacity:** +2 workers (total: 4)
+- **Description:** "Simple wooden bunks"
+- **Unlocks:** Immediately available
+
+**Tier 2: Second Bunk Set**
+- **Cost:** 600 coins
+- **Requires:** 12h runtime
+- **Capacity:** +2 workers (total: 6)
+- **Description:** "Additional sleeping space"
+
+**Tier 3: Third Bunk Set**
+- **Cost:** 900 coins
+- **Requires:** 25h runtime
+- **Capacity:** +2 workers (total: 8)
+- **Description:** "Cramped but functional"
+
+**Tier 4: Fourth Bunk Set**
+- **Cost:** 1,400 coins + 20 components
+- **Requires:** 40h runtime
+- **Capacity:** +2 workers (total: 10)
+- **Description:** "The dormitory is quite crowded now"
+
+**Tier 5: Reinforced Bunks (Triple-Tier)**
+- **Cost:** 2,500 coins + 50 components
+- **Requires:** 55h runtime
+- **Capacity:** +3 workers (total: 13)
+- **Description:** "Sturdier construction allows triple-stacking"
+- **Note:** Replaces one bunk pair with stronger 3-tier design
+
+**Tier 6: Second Reinforced Set**
+- **Cost:** 3,000 coins + 70 components + 25 mechanisms
+- **Requires:** 70h runtime
+- **Capacity:** +3 workers (total: 16)
+- **Description:** "Maximum occupancy approaching"
+
+**Tier 7: Final Expansion**
+- **Cost:** 4,500 coins + 110 components + 50 mechanisms
+- **Requires:** 85h runtime
+- **Capacity:** +4 workers (total: 20 maximum)
+- **Description:** "Every inch of space utilized"
+
+**Visual Feedback:**
+- Dorm scene shows actual beds (empty vs occupied)
+- Overcrowding warning if trying to hire beyond beds
+- Cannot hire if no empty beds available
+
+---
+
+### Dynamic Hiring Pool System ⭐
+
+The **hiring pool** shows available worker candidates. Pool size and quality improve based on **reputation** (hidden score).
+
+#### Reputation System (Hidden Score: 0-100)
+
+Reputation is **never shown as a number** - players discover through:
+- Hiring pool size changes
+- Quality of available candidates
+- Narrative notifications ("Word has spread about your operation")
+
+**Reputation Increases From:**
+- **High crew morale (70+):** +0.3 reputation/hour
+- **Good amenities:** +1 to +15 reputation per amenity tier
+- **Low average fatigue (< 45):** +0.2 reputation/hour
+- **Quality food provided:** +0.1 to +0.3 reputation/hour
+- **Charisma:** +1 reputation per charisma level (max +30)
+- **No recent firings:** +0.1 reputation/hour (if none fired in 24h)
+- **Skilled workers on roster:** +0.5 reputation per Tier 6+ worker
+
+**Reputation Decreases From:**
+- **Low crew morale (< 40):** -0.5 reputation/hour
+- **High average fatigue (> 70):** -0.4 reputation/hour
+- **Worker collapses (95+ fatigue):** -3 reputation per incident
+- **Recent firings:** -8 reputation per firing (decays over 24h)
+- **Poor/no food:** -0.3 reputation/hour
+- **Ruthless management:** -0.2 reputation/hour
+
+#### Hiring Pool Mechanics
+
+**Pool Size by Reputation:**
+- 0-15 reputation: 3 candidates
+- 15-30 reputation: 4 candidates
+- 30-50 reputation: 5 candidates
+- 50-70 reputation: 6 candidates
+- 70-85 reputation: 7 candidates
+- 85-100 reputation: 8 candidates
+
+**Quality Distribution by Reputation:**
+
+*Low Reputation (0-25):*
+- Tier 1 (Sickly Youth): 40%
+- Tier 2 (Green Recruit): 35%
+- Tier 3 (Ordinary Laborer): 20%
+- Tier 4 (Steady Hand): 5%
+- Tier 5+: 0%
+
+*Medium Reputation (25-50):*
+- Tier 1: 15%
+- Tier 2: 30%
+- Tier 3: 30%
+- Tier 4: 20%
+- Tier 5 (Capable Hand): 5%
+- Tier 6+: 0%
+
+*Good Reputation (50-75):*
+- Tier 1: 5%
+- Tier 2: 15%
+- Tier 3: 25%
+- Tier 4: 30%
+- Tier 5: 20%
+- Tier 6 (Practiced Worker): 5%
+- Tier 7: 0%
+
+*Excellent Reputation (75-100):*
+- Tier 1: 0%
+- Tier 2: 5%
+- Tier 3: 15%
+- Tier 4: 25%
+- Tier 5: 25%
+- Tier 6: 20%
+- Tier 7 (Skilled Worker): 10%
+
+**Pool Refresh:**
+- **Manual refresh:** 50 coins, generates new pool immediately
+- **Auto-refresh:** Pool regenerates every 2 hours of runtime
+- **Notifications:** "A skilled worker has applied for a position!" when Tier 6-7 appears
+
+---
+
+### Hidden Worker Fatigue System ⭐
+
+**Fatigue is completely hidden from the player** - no gauges, no numbers. Players learn through worker notifications and productivity changes.
+
+#### Fatigue Tracking
+
+Each worker tracks fatigue individually: **0.0 (fresh) → 100.0 (exhausted)**
+
+**Base Fatigue Rates by Type:**
+- Stoker: 1.2/sec (heavy physical labor)
+- Fireman: 0.8/sec (moderate work)
+- Engineer: 0.6/sec (technical work)
+
+#### Fatigue Accumulation Formula
+
+```gdscript
+fatigue_rate = base_rate * demand_multiplier * management_style_multiplier *
+               (1.0 + tier_resistance) * (1.0 - charisma_bonus) *
+               (1.0 - facility_bonus) * food_modifier
+```
+
+**Fatigue Drivers:**
+
+**Demand State Multiplier:**
+- Zero Demand: 0.5x (train stopped, easy work)
+- Very Low: 0.7x
+- Low: 0.85x
+- Normal: 1.0x
+- High: 1.4x (climbing grade, stressful)
+- Critical: 2.3x (emergency, extremely stressful)
+
+**Management Style Multiplier** (from overseer slider):
+- Comfortable (0-20%): 0.5x fatigue accumulation
+- Orderly (20-40%): 0.85x fatigue accumulation
+- Firm (40-70%): 1.15x fatigue accumulation
+- Harsh (70-90%): 1.7x fatigue accumulation
+- Ruthless (90-100%): 2.1x fatigue accumulation
+
+**Quality Tier Resistance:**
+- Built into tier stats: -45% (Tier 7) to +60% (Tier 1)
+
+**Charisma Bonus:**
+- -2% fatigue per charisma level (max -40% at charisma 20)
+- High charisma = workers tire much slower
+
+**Food Modifier:**
+- Well-fed (Tier 4-5 food): 0.85x to 0.75x
+- Basic food (Tier 2-3): 1.0x to 1.08x
+- Stale bread (Tier 1): 1.15x
+- No food: 1.25x
+
+**Facility Bonus:**
+- Varies by amenity purchases: -5% to -30%
+
+#### Performance Impact by Fatigue Level
+
+Fatigue directly affects each worker's productivity:
+
+- **0-10 (Peak):** 120% productivity (rare, freshly rested)
+- **10-25 (Energetic):** 115% productivity
+- **25-55 (Fresh):** 100% productivity (ideal working range)
+- **55-70 (Tiring):** 85% productivity
+- **70-80 (Tired):** 65% productivity
+- **80-90 (Exhausted):** 40% productivity
+- **90-95 (Critical):** 25% productivity, rapid morale damage
+- **95-100 (Collapsed):** 15% productivity, severe morale damage, -3 reputation
+
+**Overall furnace productivity** = average of all active workers' productivity multipliers.
+
+#### Fatigue Recovery System
+
+Workers recover fatigue based on their status:
+
+```gdscript
+# Base recovery rate
+active_recovery = 0.25 + (morale * 0.015) + charisma_bonus + facility_bonus + food_bonus
+
+# Recovery multipliers by status
+idle_recovery = active_recovery * 3
+individual_break_recovery = active_recovery * 5
+group_break_recovery = active_recovery * 8  # Social bonus!
+
+# Additional bonuses
+if demand_state in ["zero", "very_low"]:
+    active_recovery += 0.4  # Workers can pace themselves
+
+if crew_morale >= 70:
+    all_recovery += 0.3/sec  # High morale accelerates recovery
+```
+
+**Charisma Bonus:** +0.02/sec per 5 charisma levels
+
+**Facility Bonuses:**
+- Varies by amenity tier: +0.2 to +3.0/sec
+
+**Food Bonuses:**
+- Tier 4-5 food: +0.2 to +0.4/sec recovery
+
+---
+
+### Worker Morale System ⭐
+
+**Morale is a shared pool** affecting all workers: **0.0 (mutinous) → 100.0 (devoted)**
+
+Starts at 50.0 (neutral).
+
+#### Morale Influences
+
+**Positive Factors:**
+- **Charisma:** +0.4 morale per level (max +12 at charisma 30)
+- **Quality workers:** +5 morale per Tier 6+ worker employed
+- **Amenities:** +3 to +28 morale depending on tiers purchased
+- **Regular breaks:** +2.5 morale per individual break
+- **Group breaks:** +5 morale (social benefit!)
+- **Low average fatigue (< 40):** +0.6 morale/min
+- **Well-fed:** +0.4 morale/min
+- **Good reputation (70+):** +0.2 morale/min
+
+**Negative Factors:**
+- **High individual fatigue (75+):** -0.4 morale/min per worker
+- **Collapsed worker (95+):** -2.0 morale/min
+- **Ruthless management:** -0.5 morale/min
+- **Critical demand sustained:** -0.3 morale/min
+- **Fired workers recently:** -5 morale instantly
+- **No breaks for 40+ min at 65+ fatigue:** -2.5 morale/min
+- **Poor/no food:** -0.5 morale/min
+- **Overcrowding (workers > beds):** -1.0 morale/min
+
+#### Morale Effects
+
+**Recovery Speed Multiplier:**
+- 0-25 morale: 0.5x recovery (demoralized, slow healing)
+- 25-50 morale: 0.8x recovery
+- 50-75 morale: 1.0x recovery (neutral)
+- 75-90 morale: 1.3x recovery (motivated)
+- 90-100 morale: 1.6x recovery (inspired, rapid healing)
+
+**Productivity Modifier:**
+- 0-25 morale: 0.7x productivity (demoralized)
+- 25-50 morale: 0.85x productivity
+- 50-75 morale: 1.0x productivity (neutral)
+- 75-90 morale: 1.12x productivity (motivated)
+- 90-100 morale: 1.25x productivity (inspired)
+
+**Notification Tone:**
+- High morale: Polite, apologetic ("Sorry boss, I need a moment")
+- Low morale: Hostile, accusatory ("Thomas: 'You're killing us!'")
+
+**Fatigue Resistance:**
+- High morale (75+): -10% fatigue accumulation (workers more resilient)
+
+---
+
+### Worker Food Supply System ⭐
+
+Workers consume food while active. Food quality affects fatigue, morale, and reputation.
+
+#### Food Mechanics
+
+- **Consumption Rate:** 1 food unit per worker per 10 minutes (active only)
+- **Storage:** Player purchases food in advance, stored in inventory
+- **Idle/Break Workers:** Do not consume food
+- **Running Out:** "Hungry" penalties apply if food supply reaches 0
+
+#### Food Quality Tiers
+
+**Tier 1 - Stale Bread**
+- **Cost:** 2 coins per 10 units
+- **Effects:** +15% fatigue accumulation, -0.3 morale/min, -0.2 reputation/hour
+- **Description:** "Barely edible scraps"
+- **Strategic Use:** Desperate times only
+
+**Tier 2 - Basic Rations**
+- **Cost:** 5 coins per 10 units
+- **Effects:** Neutral (1.0x fatigue, no morale/reputation change)
+- **Description:** "Plain but filling"
+- **Strategic Use:** Early game, cost-conscious
+
+**Tier 3 - Decent Meal**
+- **Cost:** 12 coins per 10 units
+- **Effects:** -8% fatigue accumulation, +0.2 morale/min, +0.1 reputation/hour
+- **Description:** "Simple but satisfying"
+- **Strategic Use:** Balanced mid-game choice
+
+**Tier 4 - Quality Food**
+- **Cost:** 25 coins per 10 units
+- **Requires:** 20h runtime
+- **Effects:** -15% fatigue, +0.4 morale/min, +0.2/sec recovery, +0.2 reputation/hour
+- **Description:** "Good, hearty portions"
+- **Strategic Use:** Late game, well-funded operations
+
+**Tier 5 - Premium Provisions**
+- **Cost:** 50 coins per 10 units
+- **Requires:** 50h runtime
+- **Effects:** -25% fatigue, +0.6 morale/min, +0.4/sec recovery, +0.3 reputation/hour
+- **Description:** "Surprisingly good for furnace work"
+- **Strategic Use:** Premium operations, maximizing efficiency
+
+#### Hunger Penalties
+
+If food supply reaches 0:
+- **+25% fatigue accumulation** (workers tire much faster)
+- **-1.0 morale/min** (rapid morale decay)
+- **-0.5 reputation/hour** (word spreads about poor conditions)
+- **Complaint notifications every 5 minutes**
+
+#### Food Management UI
+
+Located in owned_dorm.tscn or owned_furnace.tscn:
+- **Current Supply Display:** "Food: 47 units (Decent Meal quality)"
+- **Purchase Button:** Opens food shop with 5 tiers
+- **Auto-Purchase Toggle:** Automatically buys selected tier when supply < 20 units
+- **Low Supply Warning:** Notification at < 15 units remaining
+
+---
+
+### Break Management System ⭐
+
+Players can send workers on breaks to recover fatigue. Two types: individual and group.
+
+#### Individual Breaks
+
+**Per-Worker Control:**
+- **Button:** "Send [Name] on Break" (no cooldown)
+- **Duration:** 5 minutes
+- **Recovery Rate:** 5x active recovery rate
+- **Status:** Worker becomes idle, stops producing
+- **Morale Bonus:** +2.5 morale per individual break
+
+**Use Case:** Targeted recovery for specific exhausted workers
+
+#### Group Breaks (Enhanced) ⭐
+
+**Social Benefit:**
+- **Button:** "Send All Workers on Break"
+- **Duration:** 5 minutes
+- **Recovery Rate:** **8x active recovery rate** (better than individual!)
+- **Cooldown:** 15 minutes
+- **Morale Bonus:** +5 morale (doubled due to socialization)
+- **Special:** All active workers break simultaneously
+
+**Social Notifications:**
+Group breaks trigger special notifications emphasizing camaraderie:
+- "The crew gathers to chat and rest together"
+- "You hear laughter from the dormitory"
+- "Someone says: 'Thanks boss, we needed this'"
+- "The workers seem in better spirits after spending time together"
+- "[Thomas] and [Jakob] are swapping stories"
+- "The crew looks refreshed and ready to get back to it"
+
+**Strategic Value:** Group breaks are more efficient than individual breaks, but require coordinating downtime.
+
+#### Auto-Break Policy
+
+**5 Settings** (applies to all workers, individual breaks only):
+
+1. **Never:** Manual control only
+2. **Conservative:** Auto-break at 75 fatigue (minimizes downtime)
+3. **Balanced:** Auto-break at 60 fatigue (recommended)
+4. **Aggressive:** Auto-break at 45 fatigue (prevents buildup)
+5. **Preventive:** Auto-break at 30 fatigue (maximum welfare, frequent breaks)
+
+**Behavior:**
+- Auto-breaks are individual only (one worker at a time)
+- Staggered (30 seconds apart) to maintain some production
+- Group breaks must be manual (strategic player choice)
+
+---
+
+### Dormitory Amenities System ⭐
+
+**Amenities are purchased in owned_dorm.tscn**. They're presented as **vague quality-of-life improvements** - effects are hidden, players discover through experimentation.
+
+All amenities are **small-scale** (appropriate for cramped furnace dorm):
+
+**Tier 1: Water Barrels**
+- **Cost:** 300 coins
+- **Description:** "Cool water for the crew"
+- **Vague Benefit:** "Basic necessity"
+- **Hidden Effects:** -5% fatigue accumulation, +0.2/sec recovery, +1 reputation
+
+**Tier 2: Simple Cots**
+- **Cost:** 500 coins, 8h runtime
+- **Description:** "Mattresses for the bunks"
+- **Vague Benefit:** "Better than the floor"
+- **Hidden Effects:** +0.5/sec recovery when idle, +5 morale, +2 reputation
+
+**Tier 3: Tool Storage Rack**
+- **Cost:** 800 coins, 15h runtime
+- **Description:** "Organized equipment area"
+- **Vague Benefit:** "Keeps things tidy"
+- **Hidden Effects:** -8% fatigue accumulation, +3 reputation
+
+**Tier 4: Ventilation Grate**
+- **Cost:** 1,500 coins + 20 components, 25h runtime
+- **Description:** "Better airflow"
+- **Vague Benefit:** "Makes breathing easier"
+- **Hidden Effects:** -12% fatigue accumulation, +0.3/sec recovery, +8 morale, +4 reputation
+
+**Tier 5: Cushioned Benches**
+- **Cost:** 2,200 coins + 35 components, 35h runtime
+- **Description:** "Comfortable seating for breaks"
+- **Vague Benefit:** "Somewhere to rest"
+- **Hidden Effects:** +1.2/sec recovery during breaks, +10 morale, +5 reputation
+
+**Tier 6: Personal Lockers**
+- **Cost:** 3,500 coins + 60 components + 20 mechanisms, 45h runtime
+- **Description:** "Storage for belongings"
+- **Vague Benefit:** "A touch of dignity"
+- **Hidden Effects:** +12 morale, -10% fatigue accumulation, +6 reputation
+
+**Tier 7: Better Bedding**
+- **Cost:** 5,000 coins + 90 components + 35 mechanisms, 55h runtime
+- **Description:** "Proper mattresses and blankets"
+- **Vague Benefit:** "Quality rest is important"
+- **Hidden Effects:** +1.8/sec recovery when idle, +15 morale, +7 reputation
+
+**Tier 8: Oil Lamps**
+- **Cost:** 7,500 coins + 130 components + 55 mechanisms, 65h runtime
+- **Description:** "Better lighting"
+- **Vague Benefit:** "Easier on the eyes"
+- **Hidden Effects:** +18 morale, -15% fatigue accumulation, +0.8/sec recovery, +8 reputation
+
+**Tier 9: Insulated Walls**
+- **Cost:** 11,000 coins + 180 components + 80 mechanisms + 30 pipes, 75h runtime
+- **Description:** "Temperature control"
+- **Vague Benefit:** "More comfortable year-round"
+- **Hidden Effects:** -22% fatigue accumulation, +2.2/sec recovery, +20 morale, +10 reputation
+
+**Tier 10: Premium Furnishings**
+- **Cost:** 18,000 coins + 280 components + 140 mechanisms + 70 pipes, 90h runtime
+- **Description:** "Surprisingly nice accommodations"
+- **Vague Benefit:** "Workers comment on the improvements"
+- **Hidden Effects:** -30% fatigue accumulation, +3.0/sec recovery, +28 morale, +15 reputation, **workers start each session at 0 fatigue**
+
+**Strategic Discovery:**
+- Players experiment to find which amenities provide best value
+- High-tier amenities dramatically improve operation sustainability
+- Reputation benefits create positive feedback loop
+
+---
+
+### Notification System ⭐
+
+Workers communicate their state through **contextual, named notifications**. Never mention "fatigue" or "morale" directly.
+
+#### Individual Worker Fatigue Notifications
+
+**Peak Performance (0-10 fatigue, 70+ morale):**
+- "[Thomas] whistles while working"
+- "[Jakob]: 'Best job I've ever had!'"
+- "You notice [William] working with unusual enthusiasm"
+- **Frequency:** Every 12-18 minutes per worker (rare treat)
+
+**Energetic (10-25 fatigue, 60+ morale):**
+- "[Thomas] is in high spirits today"
+- "[Jakob] tackles the job with enthusiasm"
+- "[William]: 'I could do this all day!'"
+- **Frequency:** Every 10-15 minutes
+
+**Fresh/Normal (25-55 fatigue):**
+- **No notifications** (ideal working state)
+
+**Tiring (55-70 fatigue):**
+- "[Thomas] wipes sweat from his brow"
+- "[Jakob] pauses to catch his breath"
+- "You hear [William] ask for water"
+- **Frequency:** Every 8-12 minutes
+
+**Tired (70-80 fatigue):**
+- "[Thomas] is breathing heavily"
+- "[Jakob]: 'Could really use a break soon...'"
+- "[William] leans on his shovel, looking worn"
+- **Frequency:** Every 5-8 minutes
+
+**Exhausted (80-90 fatigue):**
+- "[Thomas] stumbles slightly"
+- "[Jakob]: 'I don't know how much longer I can keep this up'"
+- "[William]'s movements are noticeably slower"
+- **Frequency:** Every 3-5 minutes
+
+**Critical (90-95 fatigue, morale dropping):**
+- "[Thomas] nearly drops his tools"
+- "[Jakob]: 'Please, I need to stop!'"
+- "[William] is barely standing"
+- **Frequency:** Every 2-3 minutes
+
+**Collapsed (95-100 fatigue):**
+- "[Thomas] collapses! Other workers help him aside"
+- "[Jakob]: 'I... I can't... do this...'"
+- "[William] slumps against the wall, completely spent"
+- **Frequency:** Every 90-120 seconds (very intrusive, signals crisis)
+
+#### Group Break Notifications (Social Benefits)
+
+When player uses "Send All on Break":
+- "The crew gathers to chat and rest together"
+- "You hear laughter from the dormitory"
+- "Someone says: 'Thanks boss, we needed this'"
+- "The workers seem in better spirits after spending time together"
+- "[Thomas] and [Jakob] are swapping stories"
+- "The crew looks refreshed and ready to get back to it"
+
+**Purpose:** Reinforces that group breaks have social value beyond just fatigue recovery.
+
+#### Food-Related Notifications
+
+When food supply is low or workers are hungry:
+- "[Thomas]'s stomach growls loudly"
+- "[Jakob]: 'Any chance of some food?'"
+- "[William] complains about being hungry"
+- "The crew is asking about food"
+
+#### Reputation Hints (Narrative Only)
+
+At high reputation (70+):
+- "Workers speak well of this place in town"
+- "Your operation has a good reputation"
+
+At low reputation (30-):
+- "Rumors of poor conditions are spreading"
+- "Fewer workers want to work here"
+
+#### Hiring Pool Changes
+
+When reputation changes significantly:
+- "Word has spread about your operation - more workers are interested" (pool size increased)
+- "A skilled worker has applied for a position!" (Tier 6-7 candidate available)
+- "Your reputation is suffering - fewer workers want to work here" (pool shrunk)
+
+#### Morale-Modified Tone
+
+Notification tone adapts to morale level:
+
+**High Morale (75+):** Polite, apologetic
+- "[Thomas]: 'Sorry boss, I need a moment'"
+- "[Jakob]: 'If it's alright, could I take a short break?'"
+
+**Low Morale (< 40):** Hostile, accusatory
+- "[Thomas]: 'You're working us into the ground!'"
+- "[Jakob]: 'This is inhumane!'"
+
+---
 
 ### Worker Management UI
 
-**Popup:** "Manage Workers" (similar to shop popups)
+All worker management happens in **owned_dorm.tscn** (new scene).
+
+#### Owned Dormitory Scene (owned_dorm.tscn)
+
+**New Scene Required:**
+- Duplicate existing [level1/dorm.tscn](level1/dorm.tscn) → owned_dorm.tscn
+- Shows dormitory with visible beds (empty vs occupied)
+- Accessible from owned_furnace scene via "Visit Dormitory" button
+- Accessible from bar scene (replaces dorm.tscn after furnace purchase)
+
+**Scene Layout:**
+
+**Left Panel: Worker Roster**
+- Title: "Worker Roster"
+- Scrollable list of hired workers
+- Each entry shows:
+  - Name (e.g., "Thomas")
+  - Type (Stoker/Fireman/Engineer)
+  - Quality descriptor (e.g., "Steady Hand")
+  - Current status: Active / Idle / On Break
+  - Buttons: [Assign Active] [Set Idle] [Send on Break] [Fire]
+- If on break, shows countdown timer
+
+**Right Panel Buttons:**
+- **Hire Workers** - Opens hiring pool dialog
+- **Send All on Break** - Group break (shows 15min cooldown if active)
+- **Buy Food** - Opens food shop
+- **Dormitory Upgrades** - Opens upgrade menu (beds + amenities)
+- **Return to Furnace** - Goes back to owned_furnace.tscn
+
+**Top Panel Info:**
+- Current Food Supply: "Food: 47 units (Decent Meal)"
+- Dormitory Capacity: "Beds: 8 / 10 occupied"
+- Subtle reputation hint (narrative only, no number):
+  - High reputation: "Workers speak well of this place"
+  - Low reputation: "Conditions here are poorly regarded"
+
+**Bottom Panel:**
+- Auto-break policy dropdown: [Never ▼]
+- Color indicator dot (discovery mechanic):
+  - **Green:** All workers < 55 fatigue, morale > 60, food > 25%
+  - **Yellow:** Some concerns (55-80 fatigue OR morale 40-60 OR food 10-25%)
+  - **Red:** Critical issues (any worker > 80 fatigue OR morale < 40 OR food < 10%)
+
+#### Hiring Pool Dialog
+
+**Opened from:** "Hire Workers" button in owned_dorm.tscn
 
 **Layout:**
 ```
-+----------------------------------+
-|  Worker Management            [X]|
-+----------------------------------+
-| Stokers: 3                       |
-| [Hire Stoker - 231 coins]        |
-| [Upgrade Stoker Efficiency]      |
-|                                  |
-| Firemen: 1                       |
-| [Hire Fireman - 400 coins]       |
-| [Upgrade Heat Retention]         |
-|                                  |
-| Engineers: 0                     |
-| [Hire Engineer - 500 coins] (!)  |
-| [Upgrade Steam Efficiency]       |
-+----------------------------------+
++---------------------------------------+
+|  Available Workers                 [X]|
++---------------------------------------+
+| Beds Available: 2 / 10                |
+|                                       |
+| [Refresh Pool - 50 coins]             |
+|                                       |
+| 1. Thomas (Stoker)                    |
+|    "Ordinary Laborer"                 |
+|    Cost: 80 coins                     |
+|    [Hire]                             |
+|                                       |
+| 2. Jakob (Fireman)                    |
+|    "Green Recruit"                    |
+|    Cost: 100 coins                    |
+|    [Hire]                             |
+|                                       |
+| 3. William (Stoker)                   |
+|    "Sickly Youth"                     |
+|    Cost: 20 coins                     |
+|    [Hire]                             |
+|                                       |
+| 4. Elias (Engineer)                   |
+|    "Steady Hand"                      |
+|    Cost: 650 coins                    |
+|    [Hire]                             |
+|                                       |
+| 5. Henrik (Stoker)                    |
+|    "Capable Hand"                     |
+|    Cost: 300 coins                    |
+|    [Hire]                             |
++---------------------------------------+
 ```
 
-**Button States:**
-- Disabled if cannot afford
-- Shows current level/count
-- Shows next cost
-- Progressive unlock (engineers require stokers/firemen)
+**Features:**
+- Shows 3-8 candidates (based on reputation)
+- Quality distribution based on reputation (hidden)
+- Manual refresh: 50 coins, generates new candidates
+- Auto-refresh: Every 2 hours of runtime
+- Cannot hire if no empty beds
 
-**Worker Effects:**
+#### Food Shop Dialog
+
+**Opened from:** "Buy Food" button
+
+**Layout:**
+```
++---------------------------------------+
+|  Food Supply                       [X]|
++---------------------------------------+
+| Current: 47 units (Decent Meal)       |
+|                                       |
+| [✓] Stale Bread - 2 coins/10 units    |
+|     "Barely edible scraps"            |
+|     [Buy 50 units - 10 coins]         |
+|                                       |
+| [✓] Basic Rations - 5 coins/10 units  |
+|     "Plain but filling"               |
+|     [Buy 50 units - 25 coins]         |
+|                                       |
+| [✓] Decent Meal - 12 coins/10 units   |
+|     "Simple but satisfying"           |
+|     [Buy 50 units - 60 coins]         |
+|                                       |
+| [🔒] Quality Food - 25 coins/10 units |
+|     Requires: 20h runtime             |
+|                                       |
+| [🔒] Premium Provisions               |
+|     Requires: 50h runtime             |
+|                                       |
+| Auto-Purchase Settings:               |
+| [✓] Enable Auto-Purchase              |
+| When supply < 20 units, buy:          |
+| [Decent Meal ▼] [50 units ▼]          |
++---------------------------------------+
+```
+
+#### Dormitory Upgrades Dialog
+
+**Opened from:** "Dormitory Upgrades" button
+
+**Two tabs:** Beds | Amenities
+
+**Beds Tab:**
+```
++---------------------------------------+
+|  Dormitory Upgrades - Beds         [X]|
++---------------------------------------+
+| Current Capacity: 8 / 10 beds         |
+|                                       |
+| [✓] Starting Beds - 2 beds            |
+|     (Included)                        |
+|                                       |
+| [✓] Bunk Bed Pair - 2 beds            |
+|     (Purchased)                       |
+|                                       |
+| [✓] Second Bunk Set - 2 beds          |
+|     (Purchased)                       |
+|                                       |
+| [ ] Third Bunk Set - 2 beds           |
+|     Cost: 900 coins                   |
+|     Requires: 25h runtime             |
+|     [Purchase]                        |
+|                                       |
+| [🔒] Fourth Bunk Set - 2 beds         |
+|     Requires: 40h runtime             |
++---------------------------------------+
+```
+
+**Amenities Tab:**
+```
++---------------------------------------+
+|  Dormitory Upgrades - Amenities    [X]|
++---------------------------------------+
+| Improve worker conditions             |
+|                                       |
+| [✓] Water Barrels                     |
+|     "Cool water for the crew"         |
+|     (Purchased)                       |
+|                                       |
+| [ ] Simple Cots                       |
+|     Cost: 500 coins, 8h runtime       |
+|     "Mattresses for the bunks"        |
+|     Benefit: "Better than the floor"  |
+|     [Purchase]                        |
+|                                       |
+| [ ] Tool Storage Rack                 |
+|     Cost: 800 coins, 15h runtime      |
+|     "Organized equipment area"        |
+|     Benefit: "Keeps things tidy"      |
+|     [Purchase]                        |
+|                                       |
+| [🔒] Ventilation Grate                |
+|     Requires: 25h runtime             |
++---------------------------------------+
+```
+
+---
+
+### Worker Production Formulas
+
+#### Heat Generation (Stokers)
+
 ```gdscript
-func _process(delta):
-    # Worker heat generation
-    var worker_heat = Level1Vars.stoker_count * 1.5 * delta
-    current_heat += worker_heat
+func calculate_stoker_heat_generation(delta):
+    var total_heat = 0.0
+    for worker in worker_roster:
+        if worker.type == "stoker" and worker.status == "active":
+            var base_heat_per_sec = 1.0  # Baseline for Tier 4
+            var quality_multiplier = get_quality_productivity(worker.quality_tier)
+            var fatigue_multiplier = get_fatigue_performance(worker.fatigue)
+            var morale_multiplier = get_morale_productivity(crew_morale)
 
-    # Heat decay reduction
-    var decay_rate = base_decay_rate - (Level1Vars.fireman_count * 0.1)
-    current_heat -= max(decay_rate, 0.1) * delta
+            var worker_heat = base_heat_per_sec * quality_multiplier *
+                              fatigue_multiplier * morale_multiplier * delta
+            total_heat += worker_heat
 
-    # Steam efficiency
-    var efficiency = 1.0 + (Level1Vars.engineer_count * 0.1)
-    var steam_gen = (current_heat / 10.0) * efficiency * delta
-    current_steam += steam_gen
+    current_heat += total_heat
 ```
+
+#### Heat Decay Reduction (Firemen)
+
+```gdscript
+func calculate_heat_decay(delta):
+    var base_decay = 0.5  # per second
+    var fireman_reduction = 0.0
+
+    for worker in worker_roster:
+        if worker.type == "fireman" and worker.status == "active":
+            var quality_multiplier = get_quality_productivity(worker.quality_tier)
+            var fatigue_multiplier = get_fatigue_performance(worker.fatigue)
+            var morale_multiplier = get_morale_productivity(crew_morale)
+
+            fireman_reduction += 0.1 * quality_multiplier *
+                                 fatigue_multiplier * morale_multiplier
+
+    var effective_decay = max(base_decay - fireman_reduction, 0.1)
+    current_heat -= effective_decay * delta
+```
+
+#### Steam Efficiency (Engineers)
+
+```gdscript
+func calculate_steam_efficiency():
+    var base_efficiency = 1.0
+    var engineer_bonus = 0.0
+
+    for worker in worker_roster:
+        if worker.type == "engineer" and worker.status == "active":
+            var quality_multiplier = get_quality_productivity(worker.quality_tier)
+            var fatigue_multiplier = get_fatigue_performance(worker.fatigue)
+            var morale_multiplier = get_morale_productivity(crew_morale)
+
+            engineer_bonus += 0.1 * quality_multiplier *
+                              fatigue_multiplier * morale_multiplier
+
+    return base_efficiency + engineer_bonus
+```
+
+---
+
+### Strategic Gameplay Implications
+
+#### Multiple Valid Strategies
+
+**"Sweatshop" Strategy:**
+- Hire cheap workers (Tier 1-2)
+- Feed stale bread
+- Ruthless management
+- Minimal amenities
+- **Result:** Low productivity, high fatigue, low morale, poor reputation, unsustainable long-term
+
+**"Balanced" Strategy:**
+- Mid-tier workers (Tier 3-4)
+- Decent food
+- Orderly management
+- Some amenities
+- **Result:** Stable, reliable production, moderate costs
+
+**"Premium Operation" Strategy:**
+- Skilled workers (Tier 6-7)
+- Quality/premium food
+- Comfortable management
+- All amenities
+- **Result:** High productivity, low fatigue, high morale, excellent reputation, attracts best candidates
+
+**"Rotation Specialist" Strategy:**
+- Many workers hired
+- Manual active/idle management
+- Strategic group breaks
+- **Result:** Micromanagement-intensive but highly efficient
+
+**"Automation" Strategy:**
+- Aggressive auto-break policy
+- Good amenities
+- Quality food
+- **Result:** Hands-off, consistent performance
+
+#### Reputation Feedback Loop
+
+Good treatment → High reputation → Better candidates → Higher efficiency → More profits → Afford better treatment
+
+Poor treatment → Low reputation → Only desperate workers → Low efficiency → Lower profits → Cannot afford improvements
+
+#### Charisma as Key Stat
+
+High charisma provides:
+- -40% fatigue accumulation (workers tire much slower)
+- +12 morale (workers happier)
+- +30 reputation (attracts better workers)
+- Better recovery rates
+
+**Makes charisma extremely valuable** beyond just dialogue options.
+
+---
+
+### Save/Load Variables
+
+Add to Level1Vars:
+
+```gdscript
+# Worker roster (array of dictionaries)
+var worker_roster = []
+# Each worker dict:
+# {
+#     "name": "Thomas",
+#     "type": "stoker",  # stoker, fireman, engineer
+#     "quality_tier": 4,  # 1-7
+#     "fatigue": 35.0,  # 0.0-100.0
+#     "status": "active",  # active, idle, on_break
+#     "break_end_time": 0,  # timestamp
+#     "hire_timestamp": 12345
+# }
+
+# Dormitory capacity
+var dormitory_beds = 2  # Starts at 2, increases with bed purchases
+
+# Reputation system (hidden from player)
+var worker_reputation = 0.0  # 0-100
+
+# Hiring pool
+var hiring_pool = []
+# Each candidate dict:
+# {
+#     "name": "Jakob",
+#     "type": "fireman",
+#     "tier": 3,
+#     "cost": 180
+# }
+var last_pool_refresh_time = 0
+
+# Crew morale (shared pool)
+var crew_morale = 50.0  # 0-100
+
+# Food system
+var food_supply = 0  # Units remaining
+var current_food_tier = 2  # Which quality tier is stocked
+var auto_purchase_food = false
+var auto_purchase_tier = 2
+var auto_purchase_amount = 50
+
+# Break management
+var break_policy = "never"  # never, conservative, balanced, aggressive, preventive
+var last_group_break_time = 0
+
+# Amenities purchased (bitmask for 10 tiers)
+var dorm_amenities_purchased = 0
+
+# Statistics tracking
+var total_workers_hired = 0
+var total_workers_fired = 0
+var total_individual_breaks = 0
+var total_group_breaks = 0
+var total_worker_collapses = 0  # Times any worker hit 95+ fatigue
+var peak_morale = 50.0
+var peak_reputation = 0.0
+
+# Notification throttling
+var last_fatigue_notification_per_worker = {}  # {"Thomas": 12345, ...}
+var last_food_notification = 0
+var last_reputation_notification = 0
+```
+
+---
+
+### Integration with Existing Systems
+
+#### Charisma Stat Integration
+
+Update Global.gd experience system documentation:
+
+**Charisma Benefits (Hidden from Player):**
+- **Fatigue Reduction:** -2% per level (max -40% at level 20)
+- **Morale Bonus:** +0.4 morale per level (max +12 at level 30)
+- **Reputation Bonus:** +1 reputation per level (max +30)
+- **Recovery Speed:** +0.02/sec per 5 levels
+- **Hiring Pool:** High charisma attracts better quality candidates
+
+#### Overseer Management Style Integration
+
+Update Hired Overseer System section:
+
+**Management Style Effects** (add fatigue column):
+
+| Slider % | Label | Cost | Production | Charisma Gain | **Fatigue Rate** |
+|----------|-------|------|------------|---------------|------------------|
+| 0% | Comfortable | -20% | 0.5x | 0.2 | 0.5x |
+| 10% | Considerate | -16% | 0.6x | 0.5 | 0.6x |
+| 20% | Lenient | -12% | 0.7x | 0.8 | 0.7x |
+| 30% | **Orderly** | -8% | **0.8x** | **1.0** | **0.85x** |
+| 40% | Fair | -5% | 0.9x | 0.8 | 1.0x |
+| 50% | Firm | 0% | 1.0x | 0.5 | 1.15x |
+| 60% | Strict | -3% | 1.1x | 0.3 | 1.3x |
+| 70% | Demanding | -5% | 1.2x | 0.15 | 1.5x |
+| 80% | Harsh | -7% | 1.3x | 0.05 | 1.7x |
+| 90% | **Severe** | -9% | **1.35x** | **0.01** | **1.9x** |
+| 100% | Ruthless | -10% | 1.4x | 0.0 | 2.1x |
+
+**Note:** Management style affects worker fatigue accumulation both online (player present) and offline (hired overseer managing).
+
+#### Revenue Formula Integration
+
+Update revenue calculation in owned_furnace.tscn:
+
+```gdscript
+# Revenue calculation with worker productivity
+var base_revenue = 0.1  # coins per second
+var performance_multiplier = revenue_multipliers[performance]  # excellent/good/poor/failing
+var worker_productivity = calculate_average_worker_productivity()
+var morale_modifier = get_morale_productivity(crew_morale)
+
+var final_revenue = base_revenue * performance_multiplier *
+                    worker_productivity * morale_modifier
+```
+
+Where `calculate_average_worker_productivity()` returns average of all active workers' fatigue-based performance multipliers.
 
 ---
 
@@ -523,6 +1896,54 @@ The furnace upgrade system is more complex than worker management, so it benefit
 +----------------------------------+
 ```
 
+**Tab 5: Steam Storage**
+```
++----------------------------------+
+|  Furnace Upgrades - Storage   [X]|
++----------------------------------+
+| Steam Storage System             |
+| Capture excess steam during low  |
+| demand for use during spikes     |
+|                                  |
+| [✓] No Storage                   |
+|     Current: 0 capacity          |
+|                                  |
+| [ ] Steam Accumulator Tank       |
+|     Cost: 300 coins              |
+|     Capacity: +200 storage       |
+|     Efficiency: 80%              |
+|                                  |
+| [🔒] Compressed Steam Reservoir  |
+|     Cost: 800 coins              |
+|     Capacity: +300 storage       |
+|     Requires: Accumulator Tank   |
+|                                  |
+| [🔒] Multi-Chamber Storage       |
+|     Cost: 2,000 coins            |
+|     Capacity: +700 storage       |
+|     Unlocks: Manual release      |
+|              (10% button) &      |
+|              auto-release        |
+|     Requires: Compressed Res.    |
+|                                  |
+| [🔒] Hydraulic Accumulator       |
+|     Cost: 5,000 coins +          |
+|           50 mechanisms          |
+|     Capacity: +1,300 storage     |
+|     Efficiency: 90%              |
+|     Requires: Multi-Chamber      |
+|                                  |
+| [🔒] Battery Bank (Late Game)    |
+|     Cost: 15,000 coins +         |
+|           100 components +       |
+|           50 pipes               |
+|     Capacity: +2,500 storage     |
+|     Efficiency: 100%             |
+|     Requires: Hydraulic Accum. + |
+|               Power System       |
++----------------------------------+
+```
+
 **UI Features:**
 - **Color Coding:**
   - ✓ Green checkmark = Owned/Active
@@ -554,6 +1975,641 @@ Effective Stats:
 - Heat Decay: 0.35/sec (base 0.5 - 30% cooling)
 - Steam Efficiency: 2.4x (base 1.0 + efficiency upgrades)
 ```
+
+---
+
+### Storage Control UI
+
+**Popup:** "Steam Storage Controls" (Tier 3+ only)
+
+**Purpose:** Manage stored steam release and configure auto-release settings
+
+**Layout:**
+```
++----------------------------------+
+|  Steam Storage Controls       [X]|
++----------------------------------+
+| Current Storage: 800 / 1200      |
+| Efficiency: 80%                  |
+|                                  |
+| Divert Production to Storage:    |
+| [--------○------] 0%             |
+|                                  |
+| Manual Release:                  |
+| [Release 10%]                    |
+|                                  |
+| Auto-Release Settings:           |
+| [✓] Enable Auto-Release          |
+|                                  |
+| Trigger when steam drops below:  |
+| [--------○------] 60%            |
+|                                  |
+| Info: Auto-release activates     |
+| during high/critical demand only |
++----------------------------------+
+```
+
+**Button Functions:**
+
+**Diversion Slider:**
+- Range: 0% to 100%
+- Default: 0% (no active diversion)
+- Saves to Level1Vars.storage_diversion_percentage
+- Continuously diverts X% of steam production to storage (before demand consumption)
+- Works independently of overflow (overflow still captures excess when main is full)
+- Strategic use: Set to 20-50% during low demand/low pay periods to build reserves
+- Real-time preview: "Diverting ~15 steam/sec to storage at current production"
+- Color indicator: Green when diverting, gray when at 0%
+
+**Release 10% Button:**
+- Releases 10% of max storage capacity (not current stored amount)
+- Example: With 1,200 max storage, always releases 120 steam per click
+- Consistent release amount regardless of how much is currently stored
+- Can be clicked multiple times rapidly for larger releases
+- Button disabled if stored_steam == 0
+- Shows actual amount being released: "Release 10% (120 steam)"
+- Provides fine-grained, predictable control
+
+**Auto-Release Toggle:**
+- Checkbox to enable/disable
+- Saves state to Level1Vars.auto_release_enabled
+- When enabled, shows threshold slider
+
+**Threshold Slider:**
+- Range: 0% to 100%
+- Default: 60%
+- Saves to Level1Vars.auto_release_threshold
+- Real-time preview: "Will release when below 300/500 steam"
+
+**Behavior:**
+- Auto-release only triggers during "high" or "critical" demand states
+- Releases 100% of stored steam when triggered
+- Shows notification: "Auto-release activated!"
+- Useful for semi-idle gameplay
+
+---
+
+## Hired Overseer System (Offline Progression) ⭐
+
+### System Overview
+
+**Purpose:** Enable offline progression by hiring an overseer to manage the furnace while the player is away
+
+**Design Philosophy:**
+- **No offline progression by default** - Heat, steam, demand, and revenue only accumulate when actively playing
+- **Paid management** - Overseer must be compensated from accumulated revenue
+- **Efficiency penalties** - Overseer operates at reduced efficiency compared to active player
+- **Limited shift duration** - Initially short shifts, upgradeable to longer absences
+- **Three independent upgrade dimensions** - Quality, duration, and management style
+
+**Thematic Role Reversal:**
+- Player was a worker under an overseer in the initial furnace scene
+- Now the player is the owner hiring an overseer to manage their furnace
+- Creates narrative symmetry and progression
+
+---
+
+### Three Independent Upgrade Paths
+
+The Hired Overseer system has three separate, independently upgradeable dimensions:
+
+**1. Overseer Quality (Production Efficiency)**
+- Determines how efficiently the overseer operates the furnace
+- Higher tiers = better production during offline periods
+- 6 tiers: Apprentice → Junior → Experienced → Senior → Master → Executive Manager
+
+**2. Shift Duration (Time Away Limit)**
+- Determines maximum hours the overseer can manage before requiring player return
+- Longer shifts = more offline time possible
+- 10 tiers: 1h → 2h → 4h → 8h → 12h → 18h → 24h → 36h → 48h → 72h
+
+**3. Management Style (Comfort ←→ Efficiency)**
+- Continuous slider controlling overseer's treatment of workers
+- Affects production (hidden), cost (visible), and charisma gain (hidden)
+- Player only sees cost differences, must discover optimal settings through experimentation
+
+---
+
+### 1. Overseer Quality Upgrades
+
+Progressive efficiency tiers representing overseer skill and experience.
+
+**Tier 1: Apprentice Overseer**
+- **Efficiency:** 30% of full production
+- **Cost:** 150 coins
+- **Requirements:** Furnace ownership
+- **Description:** "Inexperienced manager, still learning the ropes. Keeps things running at minimal capacity."
+
+**Tier 2: Junior Overseer**
+- **Efficiency:** 50% of full production
+- **Cost:** 400 coins
+- **Requirements:** Apprentice Overseer
+- **Description:** "Competent but cautious manager. Maintains stable operations."
+
+**Tier 3: Experienced Overseer**
+- **Efficiency:** 65% of full production
+- **Cost:** 1,000 coins
+- **Requirements:** Junior Overseer
+- **Description:** "Seasoned manager who knows the furnace well. Good efficiency."
+
+**Tier 4: Senior Overseer**
+- **Efficiency:** 80% of full production
+- **Cost:** 2,500 coins
+- **Requirements:** Experienced Overseer
+- **Description:** "Veteran manager with years of experience. Near-optimal operations."
+
+**Tier 5: Master Overseer**
+- **Efficiency:** 90% of full production
+- **Cost:** 6,000 coins + 25 mechanisms
+- **Requirements:** Senior Overseer
+- **Description:** "Expert manager, one of the best in the region. Exceptional efficiency."
+
+**Tier 6: Executive Manager**
+- **Efficiency:** 98% of full production
+- **Cost:** 15,000 coins + 75 mechanisms + 50 components
+- **Requirements:** Master Overseer
+- **Description:** "Elite professional manager with formal training. Nearly matches owner's personal oversight."
+
+---
+
+### 2. Shift Duration Upgrades
+
+Progressive time limit upgrades allowing longer offline periods.
+
+**Tier 1: Trial Shift**
+- **Duration:** 1 hour
+- **Cost:** Included with first overseer hire
+- **Description:** "Brief test shift to evaluate the overseer's capabilities."
+
+**Tier 2: Short Shift**
+- **Duration:** 2 hours
+- **Cost:** 100 coins
+- **Description:** "Quick shift for short absences."
+
+**Tier 3: Standard Shift**
+- **Duration:** 4 hours
+- **Cost:** 250 coins
+- **Description:** "Half-day shift for moderate absences."
+
+**Tier 4: Extended Shift**
+- **Duration:** 8 hours
+- **Cost:** 600 coins
+- **Description:** "Full workday shift for daytime management."
+
+**Tier 5: Double Shift**
+- **Duration:** 12 hours
+- **Cost:** 1,200 coins
+- **Description:** "Long shift covering business hours and evening operations."
+
+**Tier 6: Long Shift**
+- **Duration:** 18 hours
+- **Cost:** 2,500 coins
+- **Description:** "Extended coverage for overnight operations."
+
+**Tier 7: Full Day Shift**
+- **Duration:** 24 hours
+- **Cost:** 5,000 coins + 10 mechanisms
+- **Description:** "Round-the-clock management for full-day absences."
+
+**Tier 8: Extended Day Shift**
+- **Duration:** 36 hours
+- **Cost:** 10,000 coins + 25 mechanisms
+- **Description:** "Day-and-a-half coverage for weekend trips."
+
+**Tier 9: Two-Day Shift**
+- **Duration:** 48 hours
+- **Cost:** 20,000 coins + 50 mechanisms + 25 components
+- **Description:** "Full weekend coverage without player oversight."
+
+**Tier 10: Three-Day Shift**
+- **Duration:** 72 hours
+- **Cost:** 40,000 coins + 100 mechanisms + 50 components
+- **Description:** "Extended multi-day management for long absences."
+
+---
+
+### 3. Management Style Slider (Continuous)
+
+A fluid, continuous slider controlling how the overseer treats workers. The slider has **8 descriptive labels** but allows positioning at any point between 0% and 100%.
+
+**What the Player SEES:**
+- Single descriptive word based on slider position
+- Cost modifier percentage only
+- NO productivity information
+- NO charisma gain information
+
+**What is HIDDEN from the Player:**
+- Production efficiency multipliers
+- Charisma gain per hour
+- All strategic trade-offs
+
+**Slider Labels (8-point progression):**
+
+| Position | Label | Cost Modifier |
+|----------|-------|---------------|
+| 0% | Comfortable | -20% |
+| 12% | Relaxed | -17% |
+| 25% | Orderly | -13% |
+| 37% | Structured | -8% |
+| 50% | Firm | 0% |
+| 62% | Strict | -3% |
+| 75% | Demanding | -6% |
+| 87% | Ruthless | -9% |
+
+**Hidden Production Multipliers:**
+
+```gdscript
+# Hidden from player - they must discover through experimentation
+func get_production_multiplier(slider_percent: float) -> float:
+    # 0% = 0.50x (Comfortable, workers too relaxed)
+    # 30% = 0.65x (Orderly, sweet spot for charisma but lower production)
+    # 50% = 0.80x (Firm, baseline)
+    # 70% = 1.10x (Strict, pushing hard)
+    # 100% = 1.40x (Ruthless, maximum exploitation)
+
+    if slider_percent <= 50.0:
+        # 0% to 50%: 0.5x to 0.8x
+        return 0.5 + (slider_percent / 50.0) * 0.3
+    else:
+        # 50% to 100%: 0.8x to 1.4x
+        return 0.8 + ((slider_percent - 50.0) / 50.0) * 0.6
+```
+
+**Hidden Charisma Gain Per Hour:**
+
+```gdscript
+# Completely hidden from player - no UI indication whatsoever
+# Peak at ~30% (Orderly position)
+func get_charisma_per_hour(slider_percent: float) -> float:
+    # 0% = +0.2 charisma/hour (too lenient, workers resent laziness)
+    # 30% = +1.0 charisma/hour (PEAK - firm but fair, respected leadership)
+    # 50% = +0.5 charisma/hour (balanced but not optimal)
+    # 70% = +0.2 charisma/hour (harsh conditions)
+    # 100% = +0.0 charisma/hour (brutal, no charisma growth)
+
+    if slider_percent <= 30.0:
+        # 0% to 30%: 0.2 to 1.0 (rising to peak)
+        return 0.2 + (slider_percent / 30.0) * 0.8
+    elif slider_percent <= 50.0:
+        # 30% to 50%: 1.0 to 0.5 (falling from peak)
+        return 1.0 - ((slider_percent - 30.0) / 20.0) * 0.5
+    elif slider_percent <= 70.0:
+        # 50% to 70%: 0.5 to 0.2 (continuing to fall)
+        return 0.5 - ((slider_percent - 50.0) / 20.0) * 0.3
+    else:
+        # 70% to 100%: 0.2 to 0.0 (approaching zero, never negative)
+        return max(0.0, 0.2 - ((slider_percent - 70.0) / 30.0) * 0.2)
+```
+
+**Visible Cost Curve:**
+
+```gdscript
+# This IS shown to the player
+func get_cost_multiplier(slider_percent: float) -> float:
+    # Creates a curve: expensive at comfortable, peaks at firm, cheaper at ruthless
+    # 0% = 0.8 (20% discount - comfortable conditions cost more)
+    # 50% = 1.0 (full base cost)
+    # 100% = 0.9 (10% discount - exploitation saves money)
+
+    if slider_percent <= 50.0:
+        # 0% to 50%: 0.8 to 1.0
+        return 0.8 + (slider_percent / 50.0) * 0.2
+    else:
+        # 50% to 100%: 1.0 to 0.9
+        return 1.0 - ((slider_percent - 50.0) / 50.0) * 0.1
+```
+
+**Label Selection:**
+
+```gdscript
+func get_management_label(slider_percent: float) -> String:
+    if slider_percent < 8.0:
+        return "Comfortable"
+    elif slider_percent < 18.0:
+        return "Relaxed"
+    elif slider_percent < 31.0:
+        return "Orderly"
+    elif slider_percent < 43.0:
+        return "Structured"
+    elif slider_percent < 56.0:
+        return "Firm"
+    elif slider_percent < 68.0:
+        return "Strict"
+    elif slider_percent < 81.0:
+        return "Demanding"
+    else:
+        return "Ruthless"
+```
+
+---
+
+### Overseer UI Design
+
+**Popup Window:** "Hired Overseer Management"
+
+**Location:** Accessed from owned_furnace scene right panel button
+
+**Layout:**
+```
++─────────────────────────────────────────+
+|  Hired Overseer Management          [X] |
++─────────────────────────────────────────+
+| Status: Idle                             |
+| (When active: Time Remaining: 17:23:45)  |
+|                                          |
+| ──────────── QUALITY ──────────────      |
+| Current: Senior Overseer (80%)           |
+| ↑ Upgrade to Master (90%)                |
+|   Cost: 6,000 coins + 25 mechanisms      |
+|                                          |
+| ──────────── DURATION ──────────────     |
+| Max Shift Length: 18 hours               |
+| ↑ Upgrade to Full Day (24h)              |
+|   Cost: 5,000 coins + 10 mechanisms      |
+|                                          |
+| ──────────── MANAGEMENT STYLE ────────── |
+|                                          |
+| [━━━━●━━━━━━━━━━━━━━━━] 25%            |
+|                                          |
+|         Orderly                          |
+|       Cost: -13%                         |
+|                                          |
+| ────────────────────────────────────     |
+|                                          |
+| Shift Cost: 45 coins/hour                |
+| Total Cost: 810 coins for 18h shift      |
+|                                          |
+| Set Shift Duration: [slider 1h-18h]      |
+| Selected: 18 hours                       |
+|                                          |
+| [Start Overseer Shift]                   |
++─────────────────────────────────────────+
+```
+
+**UI Behavior:**
+- Slider is **continuous** - can be positioned anywhere from 0-100%
+- Word label updates fluidly as slider moves
+- Cost percentage updates in real-time
+- NO hints about production or charisma effects
+- Shift duration slider shows only available range (based on purchased upgrades)
+- Start button disabled if cannot afford total cost
+
+---
+
+### Cost Calculation & Payment
+
+**Base Shift Cost Formula:**
+```gdscript
+# Calculate base hourly cost
+var base_hourly_rate = (average_revenue_per_hour * overseer_quality_efficiency)
+var cost_multiplier = get_cost_multiplier(management_slider_percent)
+var hourly_cost = base_hourly_rate * cost_multiplier
+
+# Total shift cost
+var total_shift_cost = hourly_cost * shift_duration_hours
+```
+
+**Payment Timing:**
+- Cost is **deducted upfront** when shift starts
+- If player cannot afford full shift cost, shift cannot be started
+- Any revenue earned during shift is added to player's coins
+- Net result: `final_coins = starting_coins - shift_cost + revenue_earned`
+
+**Revenue During Shift:**
+```gdscript
+# Offline revenue calculation (when shift completes)
+var quality_efficiency = overseer_quality_percent  # 0.30 to 0.98
+var style_efficiency = get_production_multiplier(management_slider_percent)  # 0.5 to 1.4
+var total_efficiency = quality_efficiency * style_efficiency
+
+# Apply to normal revenue calculation
+var offline_revenue = normal_revenue * total_efficiency * hours_elapsed
+```
+
+**Charisma Accumulation:**
+```gdscript
+# When shift completes (completely silent, no notification)
+var charisma_per_hour = get_charisma_per_hour(management_slider_percent)
+var total_charisma_gain = charisma_per_hour * shift_duration_hours
+
+Global.add_stat_exp("charisma", total_charisma_gain)
+# NO notification - player must discover this through improved worker efficiency
+```
+
+---
+
+### Integration with Existing Systems
+
+**With Worker System:**
+- Overseer manages existing hired workers (stokers, firemen, engineers)
+- Worker effects continue during offline time at reduced efficiency
+- Worker heat generation, decay reduction, steam efficiency all apply
+- Overseer quality determines how effectively workers are utilized
+
+**With Demand System:**
+- Demand continues to fluctuate during offline time
+- Overseer attempts to meet demand using available workers/steam
+- Performance is tracked and affects revenue multiplier
+- Critical demand spikes may cause poor performance if not prepared
+
+**With Charisma System:**
+- Charisma gains from overseer management style (hidden)
+- Existing charisma bonus to worker efficiency still applies
+- Creates compound effect: higher charisma → better workers → better offline gains
+- Sweet spot discovery: players eventually learn ~30% slider = best long-term growth
+
+**With Steam Storage System:**
+- Storage continues to function during offline time
+- Overflow storage captures excess during low demand
+- Auto-release (if configured) helps manage high demand spikes
+- Storage particularly valuable for longer offline periods
+
+---
+
+### Level1Vars Additions
+
+```gdscript
+# Hired Overseer System
+var overseer_quality_tier: int = 0  # 0=none, 1=apprentice, 2=junior, ..., 6=executive
+var overseer_shift_duration_tier: int = 0  # 0=none, 1=1h, 2=2h, ..., 10=72h
+var overseer_management_slider: float = 50.0  # 0.0 to 100.0, continuous
+
+# Overseer Active State
+var overseer_shift_active: bool = false
+var overseer_shift_start_time: int = 0  # Unix timestamp
+var overseer_shift_duration: float = 0.0  # Hours selected for current shift
+var overseer_shift_cost_paid: float = 0.0  # Cost deducted at start
+
+# Overseer Unlocks
+var overseer_quality_unlocked: Array[bool] = [false, false, false, false, false, false, false]  # 7 tiers (0=none)
+var overseer_duration_unlocked: Array[bool] = [false, false, false, false, false, false, false, false, false, false, false]  # 11 tiers (0=none)
+```
+
+---
+
+### Implementation Notes
+
+**Offline Time Calculation:**
+
+```gdscript
+# In owned_furnace.gd or global offline time processor
+func process_offline_overseer_time():
+    if not Level1Vars.overseer_shift_active:
+        return
+
+    var current_time = Time.get_unix_time_from_system()
+    var elapsed_seconds = current_time - Level1Vars.overseer_shift_start_time
+    var elapsed_hours = elapsed_seconds / 3600.0
+
+    # Cap at purchased shift duration
+    var max_hours = get_shift_duration_hours(Level1Vars.overseer_shift_duration_tier)
+    elapsed_hours = min(elapsed_hours, max_hours)
+
+    if elapsed_hours >= Level1Vars.overseer_shift_duration:
+        # Shift complete
+        complete_overseer_shift(elapsed_hours)
+    else:
+        # Shift still in progress - show remaining time
+        update_overseer_ui(elapsed_hours)
+
+func complete_overseer_shift(hours_elapsed: float):
+    # Calculate revenue earned
+    var quality_eff = get_quality_efficiency(Level1Vars.overseer_quality_tier)
+    var style_eff = get_production_multiplier(Level1Vars.overseer_management_slider)
+    var total_eff = quality_eff * style_eff
+
+    # Simulate production
+    var revenue_earned = calculate_offline_revenue(hours_elapsed, total_eff)
+    Level1Vars.coins += revenue_earned
+
+    # Silently award charisma (no notification!)
+    var charisma_gain = get_charisma_per_hour(Level1Vars.overseer_management_slider) * hours_elapsed
+    Global.add_stat_exp("charisma", charisma_gain)
+
+    # Reset overseer state
+    Level1Vars.overseer_shift_active = false
+
+    # Show completion summary
+    show_shift_complete_popup(hours_elapsed, revenue_earned, Level1Vars.overseer_shift_cost_paid)
+```
+
+**UI Update Functions:**
+
+```gdscript
+func update_management_slider_display():
+    var percent = Level1Vars.overseer_management_slider
+    var label = get_management_label(percent)
+    var cost_mult = get_cost_multiplier(percent)
+    var cost_display = "%+.0f%%" % ((cost_mult - 1.0) * 100)
+
+    management_label.text = label
+    cost_label.text = "Cost: " + cost_display
+
+    # Update total shift cost estimate
+    update_shift_cost_estimate()
+```
+
+---
+
+### Strategic Player Discovery Process
+
+**Phase 1: Initial Discovery**
+- Player hires first overseer, uses default 50% (Firm) slider position
+- Returns to modest revenue, realizes offline progression is possible
+- Experiments with slider to see cost differences
+
+**Phase 2: Cost Optimization**
+- Player discovers moving slider toward "Ruthless" reduces costs
+- May operate at high efficiency (90-100%) for pure profit maximization
+- Accumulates coins but misses hidden charisma gains
+
+**Phase 3: Performance Discrepancy**
+- Over time, player may notice their workers seem less efficient than other players
+- Or notices their own worker efficiency varies between play sessions
+- Begins to wonder if management style affects more than cost
+
+**Phase 4: Experimentation**
+- Player tries different slider positions over multiple shifts
+- Eventually notices worker efficiency improvements after using "Orderly" (~30%)
+- Discovers the charisma sweet spot through gameplay, not UI hints
+- Realizes long-term optimization ≠ short-term profit
+
+**Phase 5: Mastery**
+- Understands the hidden trade-off: short-term revenue vs long-term worker efficiency
+- Strategically chooses positions based on current needs:
+  - Need coins now? Use Ruthless (100%)
+  - Building for endgame? Use Orderly (~30%)
+  - Balanced approach? Use Firm-Structured (40-50%)
+
+**Design Goal:** Player never sees explicit mechanics but can discover optimal play through observation and experimentation.
+
+---
+
+### Implementation Checklist Addition
+
+**Phase 5K: Hired Overseer System**
+
+- [ ] **Add overseer variables to Level1Vars**
+  - overseer_quality_tier, overseer_shift_duration_tier
+  - overseer_management_slider (0-100 continuous)
+  - overseer_shift_active, start_time, duration
+  - Add to save/load dictionaries
+
+- [ ] **Create overseer management popup**
+  - Design popup layout with three sections (quality, duration, style)
+  - Add upgrade buttons for quality tiers (6 tiers)
+  - Add upgrade buttons for duration tiers (10 tiers)
+  - Implement continuous slider for management style (0-100%)
+  - Show only cost modifier, hide all other effects
+
+- [ ] **Implement overseer upgrade purchases**
+  - Quality tier purchase logic with costs/requirements
+  - Duration tier purchase logic with costs/requirements
+  - Track unlocks in Level1Vars
+  - Log purchases via UpgradeTypesConfig
+
+- [ ] **Implement overseer shift start logic**
+  - Calculate total shift cost upfront
+  - Deduct cost from player coins
+  - Record shift start time (Unix timestamp)
+  - Set overseer_shift_active = true
+  - Disable start button while shift active
+
+- [ ] **Implement offline time processing**
+  - Detect offline time on return to game
+  - Calculate hours elapsed (capped at purchased duration)
+  - Apply quality efficiency × style efficiency
+  - Calculate revenue earned during shift
+  - Award charisma (hidden, no notification)
+  - Show shift completion summary popup
+
+- [ ] **Create helper functions**
+  - get_quality_efficiency(tier) → 0.30 to 0.98
+  - get_shift_duration_hours(tier) → 1 to 72
+  - get_management_label(percent) → string
+  - get_cost_multiplier(percent) → 0.8 to 0.9
+  - get_production_multiplier(percent) → 0.5 to 1.4 (hidden)
+  - get_charisma_per_hour(percent) → 0.0 to 1.0 (hidden)
+
+- [ ] **Integrate with existing systems**
+  - Ensure worker effects apply during offline time
+  - Ensure demand system simulates during offline time
+  - Ensure storage system functions during offline time
+  - Test charisma accumulation and worker efficiency synergy
+
+- [ ] **Update UpgradeTypesConfig**
+  - Add "overseer_quality_tier_N" entries (6 tiers)
+  - Add "overseer_duration_tier_N" entries (10 tiers)
+  - Track for prestige system
+
+- [ ] **Test overseer system**
+  - Test shift start with sufficient/insufficient coins
+  - Test offline time calculation accuracy
+  - Test efficiency multiplier application
+  - Test charisma accumulation (verify it's hidden)
+  - Test discovery: does slider affect worker efficiency?
+  - Test edge case: app killed mid-shift
+  - Test maximum duration: 72-hour shift
 
 ---
 
@@ -911,6 +2967,15 @@ var max_steam: float = 500.0
 var steam_capacity_lvl: int = 0
 var steam_efficiency_lvl: int = 0
 
+# Steam Storage System
+var stored_steam: float = 0.0
+var max_stored_steam: float = 0.0  # Starts at 0, increased by storage upgrades
+var storage_efficiency: float = 0.8  # 80% base, upgradeable to 90%, then 100%
+var storage_tier: int = 0  # 0=none, 1=accumulator, 2=compressed, 3=multi-chamber, 4=hydraulic, 5=battery
+var storage_diversion_percentage: float = 0.0  # % of steam production to divert to storage (0-100)
+var auto_release_enabled: bool = false  # Unlocked at Tier 3
+var auto_release_threshold: float = 0.6  # Auto-release when main steam drops below 60%
+
 # Material Upgrades Unlocked
 var materials_unlocked: Dictionary = {
     "cast_iron": true,
@@ -973,7 +3038,7 @@ extends Control
 @onready var revenue_label = $HBoxContainer/LeftVBox/RevenueLabel
 
 # Timers
-var demand_timer: float = 30.0
+var demand_timer: float = 120.0  # Start at ~2 min; refreshes with triangular dist (1-5 min, avg ~2.5 min)
 var revenue_timer: float = 1.0
 
 func _ready():
@@ -987,17 +3052,7 @@ func _process(delta):
     process_revenue(delta)
     update_ui()
 
-func process_heat(delta):
-    # Worker generation
-    var worker_heat = Level1Vars.stoker_count * (1.5 + Level1Vars.stoker_efficiency_lvl * 0.3)
-    Level1Vars.current_heat += worker_heat * delta
-
-    # Heat decay
-    var decay = 0.5 - (Level1Vars.fireman_count * 0.1)
-    Level1Vars.current_heat = max(0, Level1Vars.current_heat - decay * delta)
-
-    # Clamp to max
-    Level1Vars.current_heat = min(Level1Vars.current_heat, Level1Vars.max_heat)
+# (See process_heat implementation below, after morale boost system)
 
 func process_steam(delta):
     # Generate steam from heat
@@ -1031,7 +3086,10 @@ func process_demand(delta):
     demand_timer -= delta
     if demand_timer <= 0:
         change_demand_state()
-        demand_timer = randf_range(15.0, 45.0)
+        # Triangular distribution: 1-5 minutes, weighted toward 2 minutes
+        var rand1 = randf_range(60.0, 180.0)  # 1-3 minutes
+        var rand2 = randf_range(60.0, 300.0)  # 1-5 minutes
+        demand_timer = (rand1 + rand2) / 2.0  # Averages ~2.5 minutes
 
     # Smooth transition to target multiplier
     # (implement gradual lerp as shown in demand system section)
@@ -1052,18 +3110,56 @@ func process_revenue(delta):
     Level1Vars.lifetimecoins += coins_earned
     Level1Vars.lifetime_revenue += coins_earned
 
-func _on_shovel_coal_button_pressed():
-    # Similar to old furnace, but generates heat instead of coal
+func _on_lead_by_example_button_pressed():
+    # Manager helps workers - gives charisma XP, not strength
     if Level1Vars.stamina >= 1.0:
         Level1Vars.stamina -= 1.0
 
-        var heat_gained = 1.0 + (Global.strength * 0.1)
+        # Small heat gain - workers do the heavy lifting now
+        var heat_gained = 1.0 + (Global.charisma * 0.05)  # Charisma bonus instead of strength
         Level1Vars.current_heat += heat_gained
 
-        Global.add_stat_exp("strength", 0.4)
+        # Charisma XP - you're leading by example, not just laboring
+        Global.add_stat_exp("charisma", 0.4)
 
-        # Coal still used for fuel (optional)
-        Level1Vars.coal += 1
+        # Temporary worker efficiency boost (5% for 30 seconds)
+        apply_morale_boost(1.05, 30.0)
+
+        # No explicit notification - let player discover the charisma gain
+
+# Morale boost system (optional enhancement)
+var morale_multiplier: float = 1.0
+var morale_timer: float = 0.0
+
+func apply_morale_boost(multiplier: float, duration: float):
+    # Stacks with current boost, extends timer
+    morale_multiplier = max(morale_multiplier, multiplier)
+    morale_timer = max(morale_timer, duration)
+
+func process_heat(delta):
+    # Update morale timer
+    if morale_timer > 0:
+        morale_timer -= delta
+        if morale_timer <= 0:
+            morale_multiplier = 1.0
+
+    # Worker generation (base + upgrades)
+    var base_worker_heat = Level1Vars.stoker_count * (1.5 + Level1Vars.stoker_efficiency_lvl * 0.3)
+
+    # Subtle charisma bonus - workers are slightly more efficient with good leadership
+    # +1% per charisma level, max +50% at charisma 50 (not shown in UI)
+    var charisma_multiplier = 1.0 + (Global.charisma * 0.01)
+
+    # Apply morale boost (from Lead by Example)
+    var worker_heat = base_worker_heat * charisma_multiplier * morale_multiplier
+    Level1Vars.current_heat += worker_heat * delta
+
+    # Heat decay
+    var decay = 0.5 - (Level1Vars.fireman_count * 0.1)
+    Level1Vars.current_heat = max(0, Level1Vars.current_heat - decay * delta)
+
+    # Clamp to max
+    Level1Vars.current_heat = min(Level1Vars.current_heat, Level1Vars.max_heat)
 
 func update_ui():
     heat_bar.value = (Level1Vars.current_heat / Level1Vars.max_heat) * 100
@@ -1071,12 +3167,22 @@ func update_ui():
 
     # Demand panel with color coding
     var demand_colors = {
+        "zero": Color(0.2, 0.2, 0.5),  # Dark blue - opportunity to store
+        "very_low": Color.CYAN,
         "low": Color.GREEN,
         "normal": Color.YELLOW,
         "high": Color.ORANGE,
         "critical": Color.RED
     }
     demand_panel.modulate = demand_colors[Level1Vars.demand_state]
+
+    # Storage gauge (visible only if storage purchased)
+    if Level1Vars.max_stored_steam > 0:
+        storage_bar.visible = true
+        storage_bar.value = (Level1Vars.stored_steam / Level1Vars.max_stored_steam) * 100
+        storage_label.text = "Storage: %d / %d" % [int(Level1Vars.stored_steam), int(Level1Vars.max_stored_steam)]
+    else:
+        storage_bar.visible = false
 
     # Performance and revenue
     var perf_colors = {
@@ -1119,6 +3225,12 @@ const EQUIPMENT_UPGRADES = [
     "mullite_zirconia_lining",
     "magnesia_lining",
     "silicon_carbide_lining",
+    # Phase 5 additions - Steam Storage System
+    "steam_accumulator_tank",
+    "compressed_steam_reservoir",
+    "multi_chamber_storage",
+    "hydraulic_accumulator",
+    "battery_bank",
     # Phase 5 additions - Other Systems
     "steam_capacity",
     "steam_efficiency",
@@ -1138,6 +3250,8 @@ Add all new Level1Vars variables to save/load dictionaries:
 - furnace_owned
 - current_heat, max_heat, heat_capacity_lvl
 - current_steam, max_steam, steam_capacity_lvl, steam_efficiency_lvl
+- stored_steam, max_stored_steam, storage_efficiency, storage_tier
+- storage_diversion_percentage, auto_release_enabled, auto_release_threshold
 - demand_state, demand_multiplier
 - Worker counts and levels
 - Lifetime tracking variables
@@ -1151,7 +3265,8 @@ Add all new Level1Vars variables to save/load dictionaries:
 - [ ] **Update Level1Vars**
   - Add all furnace ownership variables
   - Add heat/steam variables
-  - Add demand variables
+  - Add steam storage variables (stored_steam, max_stored_steam, storage_efficiency, storage_tier, storage_diversion_percentage, auto_release settings)
+  - Add demand variables (including zero and very_low states)
   - Add worker variables
   - Test save/load with new variables
 
@@ -1273,7 +3388,65 @@ Add all new Level1Vars variables to save/load dictionaries:
   - (Optional) Demand response time upgrade
   - Test each upgrade's effects
 
-### Phase 5H: Polish & Balance
+### Phase 5H: Steam Storage System
+
+- [ ] **Add storage variables to Level1Vars**
+  - stored_steam, max_stored_steam
+  - storage_efficiency, storage_tier
+  - storage_diversion_percentage
+  - auto_release_enabled, auto_release_threshold
+  - Add to save/load dictionaries
+
+- [ ] **Create storage upgrade tab in furnace upgrades popup**
+  - Add Tab 5: Steam Storage
+  - Add buttons for all 5 storage tiers
+  - Show capacity, efficiency, and requirements
+  - Implement purchase logic for each tier
+
+- [ ] **Implement storage mechanics in owned_furnace.gd**
+  - Add automatic overflow storage when main reservoir full
+  - Apply storage efficiency (80%, 90%, 100%)
+  - Add storage notification system
+  - Test storage fill behavior during zero demand
+
+- [ ] **Create storage control popup** (Tier 3+)
+  - Design popup layout with diversion slider, release button, and auto-release controls
+  - Add "Divert Production to Storage" slider (0-100%)
+  - Connect slider to Level1Vars.storage_diversion_percentage
+  - Add "Release 10%" button (clickable multiple times)
+  - Add auto-release toggle checkbox
+  - Add auto-release threshold slider (0-100%)
+  - Implement release_stored_steam() function
+
+- [ ] **Implement auto-release system**
+  - Check conditions: high/critical demand + enabled + below threshold
+  - Trigger automatic release
+  - Show notification when auto-release activates
+  - Test with various threshold settings
+
+- [ ] **Add storage gauge to UI**
+  - Add storage bar to left panel (visible when storage > 0)
+  - Color: Cyan/blue gradient
+  - Update in update_ui() function
+  - Show efficiency percentage
+
+- [ ] **Update demand state probabilities**
+  - Add zero demand (10% chance)
+  - Add very_low demand (10% chance)
+  - Update demand reasons dictionary
+  - Update color coding for zero/very_low states
+
+- [ ] **Test storage system**
+  - Test diversion slider at various percentages (0%, 25%, 50%, 100%)
+  - Test diversion during different demand states
+  - Test that diversion + overflow work together correctly
+  - Test overflow during zero demand
+  - Test manual release button (single click and multiple clicks)
+  - Test auto-release during high demand
+  - Test efficiency losses (80%, 90%, 100%)
+  - Test with all 5 storage tiers
+
+### Phase 5I: Polish & Balance
 
 - [ ] **Balancing pass**
   - Tune heat generation rates
@@ -1296,7 +3469,7 @@ Add all new Level1Vars variables to save/load dictionaries:
   - Test with zero workers
   - Test with maxed workers
 
-### Phase 5I: Integration & Testing
+### Phase 5J: Integration & Testing
 
 - [ ] **Victory condition updates**
   - Determine if furnace ownership affects victory
@@ -1326,8 +3499,12 @@ Add all new Level1Vars variables to save/load dictionaries:
 
 ### Phase 5.5: Advanced Worker Management
 - Worker traits/specializations
-- Worker morale system
-- Worker accidents/events
+- Worker morale system (visible or hidden)
+- **Worker events** - Leadership decision points that grant charisma XP
+  - "Worker is tired" - Be kind vs push harder
+  - "Worker injury" - Send to rest vs make them work
+  - "Bonus request" - Grant vs refuse
+  - Kind choices give charisma XP (still obscure, no explicit notification)
 - Hiring screen with worker profiles
 
 ### Phase 6: Multiple Furnaces
@@ -1337,7 +3514,9 @@ Add all new Level1Vars variables to save/load dictionaries:
 - Route optimization
 
 ### Integration with Other Systems
-- Charisma requirement for furnace purchase
+- Charisma gain from "Lead by Example" button (✅ included in Phase 5)
+- Obscure charisma bonus on worker efficiency (✅ included in Phase 5)
+- Worker event system for additional charisma growth (Phase 5.5)
 - Visual improvements (animated steam, heat glow)
 - Sound effects (shoveling, steam hiss, demand alerts)
 - Achievement system for performance milestones
@@ -1354,7 +3533,7 @@ Add all new Level1Vars variables to save/load dictionaries:
 - ✅ Save/load system
 
 ### Deferred to Later Phases
-- ⏸️ Charisma stat requirement
+- ⏸️ Worker event system (Phase 5.5 - additional charisma gain opportunities)
 - ⏸️ Visual assets (sprites, animations)
 - ⏸️ Advanced worker AI
 - ⏸️ Multiple furnace management
@@ -1377,16 +3556,39 @@ Add all new Level1Vars variables to save/load dictionaries:
 - Thematically appropriate progression
 
 ### Why Workers Instead of Full Automation?
-- Maintains manual shoveling as core mechanic
+- Maintains leadership action as core mechanic
 - Workers augment rather than replace player action
 - Provides clear upgrade path
 - Allows flexible playstyles (active vs idle)
 
+### Why Obscure Charisma System?
+- Encourages player experimentation and discovery
+- Rewards engaged players who notice subtle efficiency gains
+- Avoids "obvious stat grinding" - feels organic
+- "Lead by Example" button gives value without explicit stat display
+- Players discover: "My workers seem more efficient when I help them"
+- Fits theme: Good leadership is subtle, not flashy
+
+### Why Steam Storage System?
+- **Captures the "wasted" potential** of zero/low demand periods
+- **Creates strategic depth** - when to divert, when to release, manual vs auto
+- **Active resource trading** - diversion slider lets players "buy low, sell high" with steam
+- **Dual storage modes**: Passive (overflow) for idle play, Active (diversion) for engaged optimization
+- **Rewards planning** - buying storage is an investment in crisis management and profit maximization
+- **Thematic progression** - realistic industrial history from simple tanks to batteries
+- **Smooth difficulty curve** - storage softens the punishing critical demand spikes
+- **Encourages active play** - player can choose to manually optimize diversion and release timing
+- **Enables idle play** - overflow + auto-release allows semi-afk gameplay
+- **Market dynamics** - low demand periods become opportunities, not just downtime
+- **Historical accuracy** - steam accumulators were real technology in Victorian era
+
 ### Economic Balance Philosophy
-- Early game: Manual shoveling dominant
-- Mid game: Workers provide strong automation
-- Late game: Optimization and efficiency upgrades
+- Early game: "Lead by Example" gives small boost, workers are the main producers
+- Mid game: Workers provide strong automation, charisma bonus becomes noticeable, storage becomes available
+- Late game: Optimization and efficiency upgrades, high charisma significantly multiplies worker output, large storage buffers allow consistent performance
 - Revenue should feel rewarding but not trivial
+- Charisma bonus creates a "hidden efficiency curve" that rewards leadership engagement
+- Storage system creates a "strategic resource management" layer
 
 ---
 
@@ -1408,24 +3610,76 @@ Add all new Level1Vars variables to save/load dictionaries:
 
 ### Scenario 3: Optimized Setup
 - 5+ stokers, 3 firemen, 2 engineers
+- High charisma level (from using "Lead by Example" frequently)
 - Heat generation exceeds decay
 - Steam rapidly fills reservoir
 - Exceeds demand even during critical
 - Excellent revenue consistently
+- Workers produce ~25-50% more than a low-charisma player with same setup
 
 ### Scenario 4: Critical Demand Event
 - Player has moderate steam reserves
 - Critical demand triggered
 - Steam drains quickly
-- Player must manually shovel to help
+- Player must use "Lead by Example" to boost workers
+- Gains charisma XP while helping meet the crisis
 - High reward if successful, high penalty if not
+- Teaches player that active leadership matters
+
+### Scenario 5: Active Diversion - Playing the Market
+- Player has Multi-Chamber Storage (1,200 capacity) with diversion slider
+- "Very Low Demand" state: trains descending Copper Ridge Pass (0.2x multiplier)
+- Current revenue: 0.5 coins/sec (very low pay during downhill run)
+- Player recognizes opportunity: "Low demand = cheap steam, time to store!"
+- Opens Storage Controls, sets diversion slider to 50%
+- Steam production: 20/sec → 10/sec to main (meets demand easily), 10/sec to storage
+- Storage accumulates over 3 minutes: 0 → 300 → 600 → 900 steam
+- Player continues normal operations, main steam stays healthy at 300-400
+- Demand changes to "High" - "Climbing toward High Peak" (1.5x multiplier)
+- Revenue jumps to 3.0 coins/sec!
+- Player immediately: Sets diversion to 0%, clicks "Release 10%" 7 times
+- 840 steam floods main reservoir (7 × 120)
+- Player exceeds high demand for full duration, earns premium revenue
+- Profit calculation: Stored steam when it was "cheap", sold it when "expensive"
+- Player thinks: "I'm not just a furnace operator - I'm a steam trader!"
+
+### Scenario 6: Storage System Mastery - Overflow Capture
+- Player has Multi-Chamber Storage (1,200 capacity)
+- Zero demand state triggers (train stopped for maintenance)
+- Main reservoir fills to 500/500
+- Workers continue producing ~8 steam/sec
+- Overflow automatically diverts to storage with 80% efficiency
+- Storage fills: 200... 400... 600... 800...
+- Player sees: "Storage: 800 / 1,200" in cyan gauge
+- Zero demand ends, switches to normal demand
+- 5 minutes later: Critical demand spike!
+- Main steam drops rapidly: 500 → 400 → 300 → 200
+- Player has two choices:
+  - **Manual:** Opens storage controls, clicks "Release 10%" button ~7 times (each click = 120 steam, 10% of 1,200 max)
+  - **Auto:** Auto-release triggers at 60% threshold (300/500), releases all 800 stored steam
+- Stored steam floods into main reservoir (all 800 steam released)
+- Steam jumps: 200 → 1,000 (capped at 500, immediate consumption of excess)
+- Player maintains "Excellent" performance throughout crisis
+- Earns 2.5x revenue multiplier during critical demand
+- Player thinks: "Storage was worth the 2,000 coin investment!"
 
 ---
 
 ## Conclusion
 
-Phase 5 represents a major evolution in GoA's gameplay, transitioning from worker to owner and introducing sophisticated resource management. The steam demand system creates engaging moment-to-moment decisions, while worker management provides long-term progression. The implementation is designed to be modular, testable, and extensible for future phases.
+Phase 5 represents a major evolution in GoA's gameplay, transitioning from worker to owner and introducing sophisticated resource management. The steam demand system creates engaging moment-to-moment decisions, while worker management provides long-term progression. The steam storage system adds strategic depth and rewards planning, creating a satisfying loop of resource optimization. The obscure charisma system rewards engaged leadership without explicit stat grinding. The implementation is designed to be modular, testable, and extensible for future phases.
 
-**Estimated Implementation Time:** 8-12 hours
-**Complexity:** High (new systems, UI, balancing)
+**Key Features:**
+- Dynamic demand system (6 states: zero to critical, with uphill/downhill environmental factors)
+- Triangular timer distribution (1-5 minutes, averaging ~2.5 minutes)
+- Worker management (3 types: stokers, firemen, engineers)
+- Steam storage system (5 tiers: accumulator to battery bank)
+  - Active diversion slider (strategic resource allocation)
+  - Passive overflow capture (automatic backup)
+  - Manual and auto-release controls
+- Obscure charisma progression (leadership rewards)
+- Continuous revenue based on performance
+
+**Estimated Implementation Time:** 10-14 hours (increased due to storage system)
+**Complexity:** High (new systems, UI, balancing, strategic depth)
 **Risk Level:** Medium (requires careful balancing, many integration points)
