@@ -11,6 +11,14 @@ enum CurrencyType {
 	PLATINUM
 }
 
+# Currency icon paths
+const CURRENCY_ICONS = {
+	CurrencyType.COPPER: "res://level1/icons/copper_icon.png",
+	CurrencyType.SILVER: "res://level1/icons/silver_icon.png",
+	CurrencyType.GOLD: "res://level1/icons/gold_icon.png",
+	CurrencyType.PLATINUM: "res://level1/icons/platinum_icon.png"
+}
+
 # Currency names for display
 const CURRENCY_NAMES = {
 	CurrencyType.COPPER: "Copper",
@@ -184,7 +192,54 @@ func get_total_copper_value() -> float:
 	return total
 
 
-## Format currency for display
+## Get currency icon path for a specific currency type
+## @param currency_type: CurrencyType enum value
+## @return: String - path to icon file
+static func get_currency_icon(currency_type: int) -> String:
+	return CURRENCY_ICONS.get(currency_type, "")
+
+
+## Format currency for icon-based display
+## Returns an array of dictionaries suitable for CurrencyPanel.setup_currency_display()
+## @param show_all: bool - if true, shows all currency types. If false, only shows non-zero amounts
+## @return: Array of {"icon": String, "value": String} dictionaries
+func format_currency_for_icons(show_all: bool = false) -> Array:
+	var result = []
+
+	var currencies = [
+		{"type": CurrencyType.COPPER, "key": "copper"},
+		{"type": CurrencyType.SILVER, "key": "silver"},
+		{"type": CurrencyType.GOLD, "key": "gold"},
+		{"type": CurrencyType.PLATINUM, "key": "platinum"}
+	]
+
+	for curr in currencies:
+		var amount = Level1Vars.currency[curr.key]
+
+		# Skip if zero and not showing all
+		if not show_all and amount <= 0:
+			continue
+
+		# Skip if not unlocked and zero
+		if not unlocked_currencies[curr.type] and amount <= 0:
+			continue
+
+		result.append({
+			"icon": CURRENCY_ICONS[curr.type],
+			"value": _format_number(amount)
+		})
+
+	# If nothing to show, show at least copper with 0
+	if result.is_empty():
+		result.append({
+			"icon": CURRENCY_ICONS[CurrencyType.COPPER],
+			"value": "0"
+		})
+
+	return result
+
+
+## Format currency for display (legacy text-based format)
 ## @param show_all: bool - if true, shows all currency types. If false, only shows non-zero amounts
 ## @param compact: bool - if true, uses compact format (C: 100 | S: 5). If false, uses full names
 ## @return: String - formatted currency display

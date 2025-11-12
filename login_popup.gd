@@ -262,6 +262,74 @@ func _on_auth_failed(error: String):
 
 	_set_buttons_enabled(true)
 
+## Calculate the width of the widest content element in the popup
+## Returns the minimum width needed to fit all text without wrapping
+func _calculate_widest_content_width() -> float:
+	var max_width = 400.0  # Minimum sensible width
+	var margin_padding = 40  # MarginContainer margins (20px left + 20px right)
+	var text_padding = 20  # Extra padding for comfortable spacing
+
+	# Find all text-containing controls recursively
+	var controls = _find_text_controls_recursive(self)
+
+	for control in controls:
+		var text = ""
+		if control is Label:
+			text = control.text
+		elif control is Button:
+			text = control.text
+		elif control is LineEdit:
+			text = control.placeholder_text if control.text.is_empty() else control.text
+
+		if text.is_empty():
+			continue
+
+		# Get font and font size
+		var font = control.get_theme_font("font")
+		var font_size = control.get_theme_font_size("font_size")
+		if font_size <= 0:
+			font_size = 25  # Default from theme
+
+		if font:
+			# Measure text width
+			var text_size = font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size)
+			var content_width = text_size.x + text_padding
+
+			# For HBoxContainer children (like username/password inputs), add label width
+			if control.get_parent() is HBoxContainer:
+				var hbox = control.get_parent()
+				for sibling in hbox.get_children():
+					if sibling is Label and sibling != control:
+						var label_font = sibling.get_theme_font("font")
+						var label_font_size = sibling.get_theme_font_size("font_size")
+						if label_font_size <= 0:
+							label_font_size = 25
+						if label_font:
+							var label_size = label_font.get_string_size(sibling.text, HORIZONTAL_ALIGNMENT_LEFT, -1, label_font_size)
+							content_width += label_size.x + 10  # Add label width + spacing
+
+			max_width = max(max_width, content_width)
+			DebugLogger.log_info("LoginPopup", "Measured '%s': %.0fpx" % [text.substr(0, 30), content_width])
+
+	# Add margins and clamp to reasonable range
+	var total_width = max_width + margin_padding
+	total_width = clamp(total_width, 400.0, 800.0)  # Min 400px, max 800px
+
+	DebugLogger.log_info("LoginPopup", "Calculated widest content width: %.0fpx" % total_width)
+	return total_width
+
+## Recursively find all controls that contain text
+func _find_text_controls_recursive(node: Node) -> Array:
+	var controls = []
+
+	if node is Label or node is Button or node is LineEdit:
+		controls.append(node)
+
+	for child in node.get_children():
+		controls.append_array(_find_text_controls_recursive(child))
+
+	return controls
+
 ## Apply responsive constraints following ResponsiveLayout system patterns
 ## Uses same constants and logic as ResponsiveLayout.position_popups_in_play_area()
 func _apply_responsive_constraints() -> void:
@@ -278,11 +346,9 @@ func _apply_responsive_constraints() -> void:
 		max_popup_height = viewport_size.y * 0.8  # 80% of viewport height for safety
 		DebugLogger.log_info("LoginPopup", "Portrait mode - Max size: %.0fx%.0f" % [max_popup_width, max_popup_height])
 	else:
-		# Landscape: Use same logic as ResponsiveLayout for landscape popups
-		# POPUP_WIDTH_RATIO_LANDSCAPE = 0.98 (use 98% of available width)
-		var available_width = viewport_size.x - (ResponsiveLayout.POPUP_MARGIN_FROM_MENUS * 2)
-		max_popup_width = max(float(ResponsiveLayout.POPUP_MIN_WIDTH_LANDSCAPE),
-							   available_width * ResponsiveLayout.POPUP_WIDTH_RATIO_LANDSCAPE)
+		# Landscape: Calculate width based on widest text element
+		# This ensures the popup is only as wide as needed, and adjusts if text changes
+		max_popup_width = _calculate_widest_content_width()
 		max_popup_height = viewport_size.y * 0.7  # 70% of viewport height
 		DebugLogger.log_info("LoginPopup", "Landscape mode - Max size: %.0fx%.0f" % [max_popup_width, max_popup_height])
 

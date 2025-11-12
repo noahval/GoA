@@ -17,7 +17,7 @@ var next_mood_update_delay: float  # Random delay between 4-10 seconds
 @onready var left_vbox = $HBoxContainer/LeftVBox
 @onready var right_vbox = $HBoxContainer/RightVBox
 @onready var coal_label = $HBoxContainer/LeftVBox/CoalPanel/CoalLabel
-@onready var coins_label = $HBoxContainer/LeftVBox/CoinsPanel/CoinsLabel
+@onready var coins_panel = $HBoxContainer/LeftVBox/CoinsPanel
 @onready var mood_label = $HBoxContainer/LeftVBox/OverseerMoodPanel/MoodLabel
 @onready var to_bar_button = $HBoxContainer/RightVBox/ToBarButton
 @onready var convert_coal_button = $HBoxContainer/RightVBox/ConvertCoalButton
@@ -31,7 +31,7 @@ var next_mood_update_delay: float  # Random delay between 4-10 seconds
 func _ready():
 	ResponsiveLayout.apply_to_scene(self)
 	coal_label.text = "Coal Shoveled: " + str(Level1Vars.coal)
-	coins_label.text = CurrencyManager.format_currency_display(false, true)
+	_update_currency_display()
 	update_stamina_bar()
 	update_suspicion_bar()
 	toggle_mode_button.visible = false
@@ -39,6 +39,12 @@ func _ready():
 	# Initialize random delayed mood display system
 	next_mood_update_delay = randf_range(4.0, 10.0)
 	cached_mood_text = OverseerMood.get_mood_adjective()
+
+## Update currency panel with current currency values
+func _update_currency_display():
+	if coins_panel:
+		var currency_data = CurrencyManager.format_currency_for_icons(false)
+		coins_panel.setup_currency_display(currency_data)
 
 func _process(delta):
 	# Auto shovel interval-based generation
@@ -90,8 +96,7 @@ func _process(delta):
 
 	if coal_label:
 		coal_label.text = "Coal Shoveled: " + str(int(Level1Vars.coal))
-	if coins_label:
-		coins_label.text = CurrencyManager.format_currency_display(false, true)
+	_update_currency_display()
 	update_stamina_bar()
 	update_suspicion_bar()
 	update_mood_panel_visibility()

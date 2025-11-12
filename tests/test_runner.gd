@@ -9,11 +9,14 @@ var current_test_name = ""
 
 func _initialize():
 	print("\n" + "=".repeat(60))
-	print("RUNNING OFFLINE EARNINGS TESTS")
+	print("RUNNING TESTS")
 	print("=".repeat(60) + "\n")
 
 	# Discover and run all test suites
 	run_test_suite("res://tests/test_overtime_system.gd")
+	run_test_suite("res://tests/test_login_popup_width.gd")
+	run_test_suite("res://tests/test_currency_icons.gd")
+	run_test_suite("res://tests/test_currency_icons_integration.gd")
 	# run_test_suite("res://tests/test_overtime_integration.gd")
 	# run_test_suite("res://tests/test_offline_scenarios.gd")
 

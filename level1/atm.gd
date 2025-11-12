@@ -5,7 +5,7 @@ var max_break_time = 30.0
 
 @onready var break_timer_bar = $HBoxContainer/LeftVBox/BreakTimerPanel/BreakTimerBar
 @onready var break_timer_label = $HBoxContainer/LeftVBox/BreakTimerPanel/BreakTimer
-@onready var coins_label = $HBoxContainer/LeftVBox/CoinsPanel/CoinsLabel
+@onready var coins_panel = $HBoxContainer/LeftVBox/CoinsPanel
 
 func _ready():
 	# Set the actual maximum break time
@@ -46,5 +46,10 @@ func _on_to_coppersmith_carriage_button_pressed():
 
 func update_labels():
 	# Update coins display
-	if coins_label:
-		coins_label.text = CurrencyManager.format_currency_display(false, true)
+	_update_currency_display()
+
+## Update currency panel with current currency values
+func _update_currency_display():
+	if coins_panel:
+		var currency_data = CurrencyManager.format_currency_for_icons(false)
+		coins_panel.setup_currency_display(currency_data)

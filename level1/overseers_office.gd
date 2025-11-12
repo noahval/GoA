@@ -7,7 +7,7 @@ var max_break_time = 30.0
 @onready var suspicion_bar = $HBoxContainer/LeftVBox/SuspicionPanel/SuspicionBar
 @onready var break_timer_bar = $HBoxContainer/LeftVBox/BreakTimerPanel/BreakTimerBar
 @onready var break_timer_label = $HBoxContainer/LeftVBox/BreakTimerPanel/BreakTimer
-@onready var coins_label = $HBoxContainer/LeftVBox/CoinsPanel/CoinsLabel
+@onready var coins_panel = $HBoxContainer/LeftVBox/CoinsPanel
 @onready var talk_button = $HBoxContainer/RightVBox/TalkButton
 @onready var steal_writ_button = $HBoxContainer/RightVBox/StealWritButton
 @onready var ask_coin_slot_button = $HBoxContainer/RightVBox/AskCoinSlotButton
@@ -145,10 +145,16 @@ func _process(delta):
 	update_overtime_button()
 
 func update_labels():
-	coins_label.text = CurrencyManager.format_currency_display(false, true)
+	_update_currency_display()
 
 	# Update break timer display
 	break_timer_label.text = "Break Timer"
+
+## Update currency panel with current currency values
+func _update_currency_display():
+	if coins_panel:
+		var currency_data = CurrencyManager.format_currency_for_icons(false)
+		coins_panel.setup_currency_display(currency_data)
 
 func _on_back_button_pressed():
 	Global.change_scene_with_check(get_tree(), "res://level1/coppersmith_carriage.tscn")

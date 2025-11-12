@@ -1,9 +1,10 @@
-[gd_scene load_steps=5 format=3 uid="uid://b4q8x7nan2pls"]
+[gd_scene load_steps=6 format=3 uid="uid://b4q8x7nan2pls"]
 
 [ext_resource type="PackedScene" uid="uid://base_scene_template" path="res://level1/scene_template.tscn" id="1_base"]
 [ext_resource type="Script" uid="uid://dcqlw1fqjrlfm" path="res://level1/overseers_office.gd" id="2_script"]
 [ext_resource type="Texture2D" uid="uid://dsrnv7h3utneg" path="res://level1/overseers_office.jpg" id="3_bg"]
 [ext_resource type="PackedScene" uid="uid://reusable_popup" path="res://reusable_popup.tscn" id="4_popup"]
+[ext_resource type="Script" path="res://currency_panel.gd" id="currency_panel_script"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_DarkPanel"]
 content_margin_left = 20.0
@@ -101,16 +102,7 @@ vertical_alignment = 1
 [node name="CoinsPanel" type="Panel" parent="HBoxContainer/LeftVBox" index="3"]
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
-
-[node name="CoinsLabel" type="Label" parent="HBoxContainer/LeftVBox/CoinsPanel"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-text = "Coins: 0"
-horizontal_alignment = 1
+script = ExtResource("currency_panel_script")
 vertical_alignment = 1
 
 [node name="TalkButton" type="Button" parent="HBoxContainer/RightVBox" index="0"]

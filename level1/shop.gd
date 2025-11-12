@@ -6,7 +6,7 @@ var max_break_time = 30.0
 @onready var suspicion_panel = $HBoxContainer/LeftVBox/SuspicionPanel
 @onready var suspicion_bar = $HBoxContainer/LeftVBox/SuspicionPanel/SuspicionBar
 @onready var break_timer_bar = $HBoxContainer/LeftVBox/BreakTimerPanel/BreakTimerBar
-@onready var coins_label = $HBoxContainer/LeftVBox/CoinsPanel/CoinsLabel
+@onready var coins_panel = $HBoxContainer/LeftVBox/CoinsPanel
 @onready var shovels_button = $HBoxContainer/RightVBox/ShovelsButton
 @onready var auto_shovels_button = $HBoxContainer/RightVBox/AutoShovelsButton
 @onready var bribe_shopkeep_button = $HBoxContainer/RightVBox/BribeShopkeepButton
@@ -128,9 +128,14 @@ func _on_get_coin_button_pressed():
 	update_labels()
 
 func update_labels():
-	if coins_label:
-		# Display all unlocked currencies
-		coins_label.text = CurrencyManager.format_currency_display(false, true)
+	# Update coins display
+	_update_currency_display()
+
+## Update currency panel with current currency values
+func _update_currency_display():
+	if coins_panel:
+		var currency_data = CurrencyManager.format_currency_for_icons(false)
+		coins_panel.setup_currency_display(currency_data)
 	if bribe_shopkeep_button:
 		bribe_shopkeep_button.text = "Bribe Shopkeep: 10"
 		# Hide if already bribed, otherwise disable if not enough coins

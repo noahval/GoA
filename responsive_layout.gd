@@ -472,6 +472,12 @@ func _scale_for_portrait(left_vbox: VBoxContainer, right_vbox: VBoxContainer) ->
 	# SECOND PASS: Apply HEIGHT and WIDTH to all panels (all same width for consistency)
 	for panel in left_vbox.get_children():
 		if panel is Panel:
+			# Check if this is a CurrencyPanel (has custom icon sizing logic)
+			if panel.has_method("update_icon_sizes_for_orientation"):
+				# CurrencyPanel - let it handle its own icon sizing
+				panel.update_icon_sizes_for_orientation(true)  # true = portrait
+				print("ResponsiveLayout: Updated CurrencyPanel '", panel.name, "' for portrait mode")
+
 			# All panels use the same width (widest text) and height for consistent appearance
 			panel.custom_minimum_size = Vector2(max_panel_width, scaled_height)
 
@@ -481,25 +487,26 @@ func _scale_for_portrait(left_vbox: VBoxContainer, right_vbox: VBoxContainer) ->
 
 			print("ResponsiveLayout: Set panel '", panel.name, "' size to (", max_panel_width, ", ", scaled_height, ")")
 
-			# Scale labels and other children
-			for child in panel.get_children():
-				if child is Label:
-					var label_size = child.get_theme_font_size("font_size")
-					if label_size <= 0:
-						label_size = 25  # Default from theme
-					child.add_theme_font_size_override("font_size", int(label_size * PORTRAIT_FONT_SCALE))
+			# Scale labels and other children (skip CurrencyPanel internals - it handles itself)
+			if not panel.has_method("update_icon_sizes_for_orientation"):
+				for child in panel.get_children():
+					if child is Label:
+						var label_size = child.get_theme_font_size("font_size")
+						if label_size <= 0:
+							label_size = 25  # Default from theme
+						child.add_theme_font_size_override("font_size", int(label_size * PORTRAIT_FONT_SCALE))
 
-					# Enable word wrapping on title labels but don't force width
-					if child.name == "TitleLabel" or child.name == "Title":
-						child.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-						# Remove width constraint - let it size naturally within the panel
-						child.custom_minimum_size = Vector2(0, 0)
-				elif child is ProgressBar:
-					# Scale progress bar font size
-					var bar_font_size = child.get_theme_font_size("font_size")
-					if bar_font_size <= 0:
-						bar_font_size = 25  # Default from theme
-					child.add_theme_font_size_override("font_size", int(bar_font_size * PORTRAIT_FONT_SCALE))
+						# Enable word wrapping on title labels but don't force width
+						if child.name == "TitleLabel" or child.name == "Title":
+							child.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+							# Remove width constraint - let it size naturally within the panel
+							child.custom_minimum_size = Vector2(0, 0)
+					elif child is ProgressBar:
+						# Scale progress bar font size
+						var bar_font_size = child.get_theme_font_size("font_size")
+						if bar_font_size <= 0:
+							bar_font_size = 25  # Default from theme
+						child.add_theme_font_size_override("font_size", int(bar_font_size * PORTRAIT_FONT_SCALE))
 
 ## Reset portrait scaling to landscape defaults and apply landscape font scaling
 func _reset_portrait_scaling(left_vbox: VBoxContainer, right_vbox: VBoxContainer, viewport_width: float = 0) -> void:
@@ -526,27 +533,36 @@ func _reset_portrait_scaling(left_vbox: VBoxContainer, right_vbox: VBoxContainer
 	# Reset panels with landscape font scaling
 	for panel in left_vbox.get_children():
 		if panel is Panel:
+			# Check if this is a CurrencyPanel (has custom icon sizing logic)
+			if panel.has_method("update_icon_sizes_for_orientation"):
+				# CurrencyPanel - let it handle its own icon sizing
+				panel.update_icon_sizes_for_orientation(false)  # false = landscape
+				print("ResponsiveLayout: Updated CurrencyPanel '", panel.name, "' for landscape mode")
+
 			panel.custom_minimum_size = Vector2(0, scaled_element_height)
 			panel.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
-			for child in panel.get_children():
-				if child is Label:
-					if LANDSCAPE_ENABLE_FONT_SCALING and landscape_font_scale > 1.0:
-						var label_size = child.get_theme_font_size("font_size")
-						if label_size <= 0:
-							label_size = 25  # Default from theme
-						child.add_theme_font_size_override("font_size", int(label_size * landscape_font_scale))
-					else:
-						child.remove_theme_font_size_override("font_size")
-					if child.name in ["TitleLabel", "Title"]:
-						child.custom_minimum_size = Vector2(0, 0)
-				elif child is ProgressBar:
-					if LANDSCAPE_ENABLE_FONT_SCALING and landscape_font_scale > 1.0:
-						var bar_font_size = child.get_theme_font_size("font_size")
-						if bar_font_size <= 0:
-							bar_font_size = 25  # Default from theme
-						child.add_theme_font_size_override("font_size", int(bar_font_size * landscape_font_scale))
-					else:
-						child.remove_theme_font_size_override("font_size")
+
+			# Scale children (skip CurrencyPanel internals - it handles itself)
+			if not panel.has_method("update_icon_sizes_for_orientation"):
+				for child in panel.get_children():
+					if child is Label:
+						if LANDSCAPE_ENABLE_FONT_SCALING and landscape_font_scale > 1.0:
+							var label_size = child.get_theme_font_size("font_size")
+							if label_size <= 0:
+								label_size = 25  # Default from theme
+							child.add_theme_font_size_override("font_size", int(label_size * landscape_font_scale))
+						else:
+							child.remove_theme_font_size_override("font_size")
+						if child.name in ["TitleLabel", "Title"]:
+							child.custom_minimum_size = Vector2(0, 0)
+					elif child is ProgressBar:
+						if LANDSCAPE_ENABLE_FONT_SCALING and landscape_font_scale > 1.0:
+							var bar_font_size = child.get_theme_font_size("font_size")
+							if bar_font_size <= 0:
+								bar_font_size = 25  # Default from theme
+							child.add_theme_font_size_override("font_size", int(bar_font_size * landscape_font_scale))
+						else:
+							child.remove_theme_font_size_override("font_size")
 
 ## Check if viewport is in portrait orientation
 static func is_portrait_mode(viewport: Viewport) -> bool:
@@ -1087,16 +1103,23 @@ func _calculate_max_panel_width(container: VBoxContainer, font_scale: float, pad
 	var max_width = 0
 	for panel in container.get_children():
 		if panel is Panel:
-			for child in panel.get_children():
-				if child is Label:
-					var label_size = child.get_theme_font_size("font_size")
-					if label_size <= 0:
-						label_size = 25
-					var scaled_font_size = int(label_size * font_scale)
-					var font = child.get_theme_font("font")
-					if font:
-						var text_width = font.get_string_size(child.text, HORIZONTAL_ALIGNMENT_LEFT, -1, scaled_font_size).x + padding
-						max_width = max(max_width, text_width)
+			# Check if this is a CurrencyPanel with custom width calculation
+			if panel.has_method("calculate_minimum_width"):
+				var panel_width = int(panel.calculate_minimum_width())
+				max_width = max(max_width, panel_width)
+				print("ResponsiveLayout: CurrencyPanel '", panel.name, "' calculated width: ", panel_width)
+			else:
+				# Standard panel - measure labels
+				for child in panel.get_children():
+					if child is Label:
+						var label_size = child.get_theme_font_size("font_size")
+						if label_size <= 0:
+							label_size = 25
+						var scaled_font_size = int(label_size * font_scale)
+						var font = child.get_theme_font("font")
+						if font:
+							var text_width = font.get_string_size(child.text, HORIZONTAL_ALIGNMENT_LEFT, -1, scaled_font_size).x + padding
+							max_width = max(max_width, text_width)
 	return max_width
 
 ## Helper: Remove panel backgrounds to prevent double backgrounds

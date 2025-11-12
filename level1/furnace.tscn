@@ -1,8 +1,9 @@
-[gd_scene load_steps=6 format=3 uid="uid://cni3f6t3vpjku"]
+[gd_scene load_steps=7 format=3 uid="uid://cni3f6t3vpjku"]
 
 [ext_resource type="Script" uid="uid://bc1774bks8bbb" path="res://level1/furnace.gd" id="1"]
 [ext_resource type="Texture2D" uid="uid://bwdj1q5ox86nm" path="res://level1/furnace.jpg" id="2"]
 [ext_resource type="Theme" uid="uid://d3j86yyfijc68" path="res://default_theme.tres" id="3_w5m21"]
+[ext_resource type="Script" path="res://currency_panel.gd" id="4_currency"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_panel"]
 
@@ -145,18 +146,7 @@ vertical_alignment = 1
 self_modulate = Color(1, 1, 1, 0.7)
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
-
-[node name="CoinsLabel" type="Label" parent="HBoxContainer/LeftVBox/CoinsPanel"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme = ExtResource("3_w5m21")
-text = "Coins: 0"
-horizontal_alignment = 1
-vertical_alignment = 1
+script = ExtResource("4_currency")
 
 [node name="OverseerMoodPanel" type="Panel" parent="HBoxContainer/LeftVBox"]
 visible = false
