@@ -46,6 +46,7 @@ GoA/
 3. **Notifications**: Use `Global.show_stat_notification()` for user feedback
 4. **Scene Changes**: Use `Global.change_scene_with_check()` to respect game mechanics
 5. **Timers**: Game uses multiple global timers - be cautious when modifying
+6. **No Unicode Symbols**: Never use emoji or unicode symbols in code, comments, or documentation - use plain ASCII instead ([!], [x], ->, etc.) as they display incorrectly on web
 
 ## Documentation System (BIBLE)
 

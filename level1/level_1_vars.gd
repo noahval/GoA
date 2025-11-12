@@ -138,6 +138,22 @@ func reset_for_prestige():
 	# if Global.has_reputation_upgrade("starting_coins_upgrade"):
 	#     coins = 50
 
+## Complete reset of all variables (for save deletion/reset)
+func reset_all():
+	# Start with prestige reset (handles most variables)
+	reset_for_prestige()
+
+	# Also reset the persistent items that survive prestige
+	currency.platinum = 0.0
+	lifetimecoins = 0.0
+	lifetime_currency = {"copper": 0.0, "silver": 0.0, "gold": 0.0, "platinum": 0.0}
+	overseer_bribe_count = 0
+	auto_conversion_enabled = false
+	overtime_lvl = 0
+	offline_cap_hours = 8.0
+	last_played_timestamp = 0
+	pipe_puzzle_grid = []
+
 ## Helper function: Get offline cap in seconds
 func get_offline_cap_seconds() -> int:
 	return int(offline_cap_hours * 3600)

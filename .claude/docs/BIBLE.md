@@ -28,7 +28,56 @@ Before designing ANY new system or feature:
 
 ---
 
-## 🤖 Automatic Hook System
+## Documentation Standards
+
+### Text Formatting Rules
+
+**CRITICAL: Avoid Unicode Symbols in Documentation**
+
+Unicode symbols (emoji, special characters) display incorrectly in many web contexts (GitHub, browsers, etc.).
+
+**Forbidden**:
+- Emoji (warning sign, checkmark, star, robot, etc.)
+- Unicode arrows (→, ←, ↑, ↓)
+- Special symbols (★, ✓, ✗, etc.)
+
+**Use Instead**:
+- Plain text markers: [!], [x], [*]
+- ASCII arrows: ->, <-, ^, v
+- Words: WARNING, CHECK, NOTE, CRITICAL
+- Markdown: **bold**, *italic*, `code`
+
+**Examples**:
+```
+Bad:  ⚠️ CRITICAL: Do not use unicode
+Good: [!] CRITICAL: Do not use unicode
+
+Bad:  ✅ Correct approach
+Good: [x] Correct approach
+
+Bad:  ⭐ Important feature
+Good: [*] Important feature or **Important feature**
+
+Bad:  File path → line 42
+Good: File path -> line 42
+```
+
+**Why**: Unicode symbols break in:
+- GitHub markdown rendering
+- Web browsers (varying font support)
+- Terminal displays
+- Copy/paste operations
+- Search functionality
+
+**When Writing Documentation**:
+1. Use plain ASCII characters only
+2. Use markdown formatting for emphasis
+3. Use words instead of symbols for clarity
+4. Test rendering in multiple contexts
+
+---
+
+## Automatic Hook System
 
 The BIBLE Check Hook auto-triggers on development keywords (scene, stats, popup, etc.) and suggests relevant docs.
 

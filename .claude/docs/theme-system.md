@@ -694,19 +694,33 @@ button.theme_type_variation = &"PopupButton"
 ## When Working with Themes
 
 ### Do:
-- ✅ Modify default_theme.tres for global changes
-- ✅ Use theme variations for specialized styles
-- ✅ Test changes in both landscape and portrait
-- ✅ Keep colors consistent (similar opacity/brightness)
-- ✅ Document custom theme variations
-- ✅ Use alpha (opacity) for translucent UI
+- [x] Modify default_theme.tres for global changes
+- [x] Use theme variations for specialized styles
+- [x] Test changes in both landscape and portrait
+- [x] Keep colors consistent (similar opacity/brightness)
+- [x] Document custom theme variations
+- [x] Use alpha (opacity) for translucent UI
 
 ### Don't:
-- ❌ Hardcode colors in individual scenes
-- ❌ Create too many theme variations (keep simple)
-- ❌ Forget to test hover/pressed states
-- ❌ Use fully opaque backgrounds (breaks visual layering)
-- ❌ Override theme in code unless necessary
+- [ ] Hardcode colors in individual scenes
+- [ ] Create too many theme variations (keep simple)
+- [ ] Forget to test hover/pressed states
+- [ ] Use fully opaque backgrounds (breaks visual layering)
+- [ ] Override theme in code unless necessary
+
+---
+
+## Documentation Guidelines
+
+**[!] IMPORTANT: No Unicode Symbols**
+
+When documenting theme-related information, avoid unicode symbols (emoji, special characters):
+
+**Forbidden**: Emoji (checkmark, X, warning signs), unicode arrows (→, ←), special symbols (★, ✓, ✗)
+
+**Use Instead**: Plain ASCII markers ([x], [ ], [!]), ASCII arrows (->), words (WARNING, NOTE), or markdown formatting
+
+**Why**: Unicode symbols display incorrectly in web contexts (GitHub, browsers, terminals), breaking documentation readability
 
 ---
 

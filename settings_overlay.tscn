@@ -81,10 +81,43 @@ text = "Dev Speed Mode: OFF"
 layout_mode = 2
 size_flags_vertical = 3
 
+[node name="Spacer3" type="Control" parent="MenuOverlay/VBoxContainer"]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+
+[node name="ResetSaveButton" type="Button" parent="MenuOverlay/VBoxContainer"]
+layout_mode = 2
+text = "Reset Save"
+
+[node name="ConfirmationContainer" type="VBoxContainer" parent="MenuOverlay/VBoxContainer"]
+visible = false
+layout_mode = 2
+
+[node name="ConfirmationLabel" type="Label" parent="MenuOverlay/VBoxContainer/ConfirmationContainer"]
+layout_mode = 2
+text = "Are you sure?"
+horizontal_alignment = 1
+
+[node name="ButtonContainer" type="HBoxContainer" parent="MenuOverlay/VBoxContainer/ConfirmationContainer"]
+layout_mode = 2
+
+[node name="ConfirmYesButton" type="Button" parent="MenuOverlay/VBoxContainer/ConfirmationContainer/ButtonContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Yes"
+
+[node name="ConfirmNoButton" type="Button" parent="MenuOverlay/VBoxContainer/ConfirmationContainer/ButtonContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "No"
+
 [node name="CloseButton" type="Button" parent="MenuOverlay/VBoxContainer"]
 layout_mode = 2
 text = "Close"
 
 [connection signal="pressed" from="SettingsButton" to="." method="_on_settings_button_pressed"]
 [connection signal="pressed" from="MenuOverlay/VBoxContainer/DevSpeedToggle" to="." method="_on_dev_speed_toggle_pressed"]
+[connection signal="pressed" from="MenuOverlay/VBoxContainer/ResetSaveButton" to="." method="_on_reset_save_button_pressed"]
+[connection signal="pressed" from="MenuOverlay/VBoxContainer/ConfirmationContainer/ButtonContainer/ConfirmYesButton" to="." method="_on_confirm_yes_pressed"]
+[connection signal="pressed" from="MenuOverlay/VBoxContainer/ConfirmationContainer/ButtonContainer/ConfirmNoButton" to="." method="_on_confirm_no_pressed"]
 [connection signal="pressed" from="MenuOverlay/VBoxContainer/CloseButton" to="." method="_on_close_button_pressed"]

@@ -158,6 +158,36 @@ func calculate_damage(attacker_strength: float) -> float:
 # ===== END SECTION =====
 ```
 
+**[!] CRITICAL: No Unicode Symbols in Code or Comments**
+
+**Never use unicode symbols** (emoji, special characters) in:
+- Code comments
+- String literals (user-facing text is OK)
+- Variable names
+- Function names
+- Documentation strings
+
+**Forbidden**: Emoji, unicode arrows (→, ←), special symbols (★, ✓, ✗, etc.)
+
+**Use Instead**: Plain ASCII characters, words, or markdown in external docs
+
+**Why**:
+- Breaks in web rendering (GitHub, documentation sites)
+- Inconsistent display across terminals/editors
+- Can cause encoding issues
+- Reduces code searchability
+
+**Example**:
+```gdscript
+# Bad
+func process_item():  # ✅ Process the item
+	print("Status: ✓")  # Bad for debug output
+
+# Good
+func process_item():  # [x] Process the item
+	print("Status: OK")  # Good for debug output
+```
+
 ---
 
 ## Scene Management

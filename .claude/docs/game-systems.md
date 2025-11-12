@@ -701,6 +701,16 @@ func change_scene_with_check(scene_tree: SceneTree, scene_path: String):
 
 ## Best Practices
 
+### Documentation Standards
+
+**[!] CRITICAL: No Unicode Symbols in Documentation**
+
+When documenting game systems, avoid unicode symbols (emoji, special characters like arrows, checkmarks, warning signs, etc.).
+
+**Use Instead**: Plain ASCII markers ([!], [x], ->), words (WARNING, NOTE), or markdown formatting.
+
+**Why**: Unicode symbols display incorrectly in web contexts (GitHub, browsers, terminals), breaking documentation readability.
+
 ### Experience & Stats
 
 1. **Always use `add_stat_exp()`**: Never directly set stat values

@@ -2,12 +2,41 @@
 
 General programming principles and best practices for GoA development.
 
-**⚠️ APPLY PROACTIVELY**: These principles should be applied to **all code**, not just when specific keywords appear. Reference this doc when:
+**[!] APPLY PROACTIVELY**: These principles should be applied to **all code**, not just when specific keywords appear. Reference this doc when:
 - Writing new scripts/scenes
 - Refactoring existing code
 - Reviewing code quality
 - Making architectural decisions
 - Noticing code duplication or complexity
+
+---
+
+## Documentation Standards
+
+**[!] CRITICAL: No Unicode Symbols**
+
+When writing code, comments, or documentation:
+
+**Forbidden**:
+- Emoji and unicode symbols (warning signs, checkmarks, stars, arrows, etc.)
+- Special characters that don't render properly in all contexts
+
+**Use Instead**:
+- Plain ASCII markers: [!], [x], [*], [ ]
+- ASCII arrows: ->, <-, ^, v
+- Words: WARNING, NOTE, CRITICAL, TODO
+- Markdown formatting: **bold**, *italic*, `code`
+
+**Why**: Unicode symbols break in web rendering (GitHub, documentation sites, browsers), cause encoding issues, and reduce searchability.
+
+**Example**:
+```
+Bad:  ⚠️ WARNING: Critical issue
+Good: [!] WARNING: Critical issue
+
+Bad:  → See line 42
+Good: -> See line 42
+```
 
 ---
 

@@ -639,3 +639,29 @@ func _create_timer(wait_time: float, callback: Callable) -> Timer:
 	timer.timeout.connect(callback)
 	add_child(timer)
 	return timer
+
+## Reset all Global variables to defaults (for complete save reset)
+func reset_all():
+	# Reset dev mode
+	dev_speed_mode = false
+
+	# Reset all stats to level 1
+	strength = 1
+	constitution = 1
+	dexterity = 1
+	wisdom = 1
+	intelligence = 1
+	charisma = 1
+
+	# Reset all experience to 0
+	strength_exp = 0.0
+	constitution_exp = 0.0
+	dexterity_exp = 0.0
+	wisdom_exp = 0.0
+	intelligence_exp = 0.0
+	charisma_exp = 0.0
+
+	# Reset prestige system
+	reputation_points = 0
+	lifetime_reputation_earned = 0
+	reputation_upgrades = {}

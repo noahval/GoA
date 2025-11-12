@@ -21,6 +21,7 @@ var max_break_time = 30.0
 
 # Overtime button (might not exist in scene yet)
 var overtime_button: Button = null
+var last_overtime_cost: int = -2  # Cache to avoid rebuilding button every frame
 
 # Quiz state variables
 var current_correct_answer = ""
@@ -430,25 +431,120 @@ func _on_ask_coin_slot_button_pressed():
 	# Hide the button after clicking
 	ask_coin_slot_button.visible = false
 
+## Helper function to get appropriate currency tier and icon for a cost
+## Returns: {currency_type: CurrencyManager.CurrencyType, amount: float, icon_path: String}
+func _get_currency_display_for_cost(cost_copper: float) -> Dictionary:
+	# Determine appropriate currency tier based on cost
+	# Use highest tier that shows a reasonable number (avoid 0.001 gold, prefer whole numbers)
+	var currency_type = CurrencyManager.CurrencyType.COPPER
+	var display_amount = cost_copper
+
+	# Check from highest to lowest tier
+	if cost_copper >= CurrencyManager.CONVERSION_RATES[CurrencyManager.CurrencyType.PLATINUM]:
+		currency_type = CurrencyManager.CurrencyType.PLATINUM
+		display_amount = cost_copper / CurrencyManager.CONVERSION_RATES[CurrencyManager.CurrencyType.PLATINUM]
+	elif cost_copper >= CurrencyManager.CONVERSION_RATES[CurrencyManager.CurrencyType.GOLD]:
+		currency_type = CurrencyManager.CurrencyType.GOLD
+		display_amount = cost_copper / CurrencyManager.CONVERSION_RATES[CurrencyManager.CurrencyType.GOLD]
+	elif cost_copper >= CurrencyManager.CONVERSION_RATES[CurrencyManager.CurrencyType.SILVER]:
+		currency_type = CurrencyManager.CurrencyType.SILVER
+		display_amount = cost_copper / CurrencyManager.CONVERSION_RATES[CurrencyManager.CurrencyType.SILVER]
+
+	return {
+		"currency_type": currency_type,
+		"amount": display_amount,
+		"icon_path": CurrencyManager.get_currency_icon(currency_type)
+	}
+
 ## Update overtime button visibility and text
 func update_overtime_button():
 	if not overtime_button:
 		return
 
-	# Always show overtime button
-	overtime_button.visible = true
-
 	var cost = OfflineEarningsManager.get_overtime_cost(Level1Vars.overtime_lvl)
 
 	if cost == -1:
-		# Max level reached
-		overtime_button.text = "Overtime (MAX)"
-		overtime_button.disabled = true
-	else:
-		var current_hours = Level1Vars.offline_cap_hours
-		var next_hours = OfflineEarningsManager.get_cap_hours_for_level(Level1Vars.overtime_lvl + 1)
-		overtime_button.text = "Overtime (%.0fh → %.0fh) - %d coins" % [current_hours, next_hours, cost]
+		# Max level reached - hide button completely
+		if last_overtime_cost != -1:
+			overtime_button.visible = false
+			last_overtime_cost = -1
+		return
+
+	# Check if cost changed (avoid rebuilding every frame)
+	if cost == last_overtime_cost:
+		# Just update disabled state
 		overtime_button.disabled = not CurrencyManager.can_afford(cost)
+		return
+
+	# Cost changed, rebuild button layout
+	last_overtime_cost = cost
+	overtime_button.visible = true
+	overtime_button.disabled = not CurrencyManager.can_afford(cost)
+
+	# Clear button text to prevent overlap
+	overtime_button.text = ""
+
+	# Clear existing children
+	for child in overtime_button.get_children():
+		child.queue_free()
+
+	# Get next hours
+	var next_hours = OfflineEarningsManager.get_cap_hours_for_level(Level1Vars.overtime_lvl + 1)
+
+	# Get currency display info
+	var currency_info = _get_currency_display_for_cost(cost)
+	var formatted_cost = CurrencyManager.format_single_currency(currency_info.currency_type, currency_info.amount, false)
+
+	# Determine orientation for icon sizing
+	var viewport_size = get_viewport_rect().size
+	var is_portrait = viewport_size.y > viewport_size.x
+	var icon_size = 34 if is_portrait else 32
+
+	# Create HBoxContainer for layout
+	var hbox = HBoxContainer.new()
+	hbox.name = "CurrencyLayout"
+	hbox.set_anchors_preset(Control.PRESET_FULL_RECT)
+	hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	overtime_button.add_child(hbox)
+
+	# Get default font size from theme (25px standard, scaled for portrait if needed)
+	var default_font_size = 25
+	if is_portrait:
+		default_font_size = int(default_font_size * ResponsiveLayout.PORTRAIT_FONT_SCALE)
+
+	# Label 1: "Increase overtime limit to "
+	var label1 = Label.new()
+	label1.text = "Increase overtime limit to "
+	label1.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label1.add_theme_font_size_override("font_size", default_font_size)
+	hbox.add_child(label1)
+
+	# Label 2: "[X]H "
+	var label2 = Label.new()
+	label2.text = "%.0fH " % next_hours
+	label2.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label2.add_theme_font_size_override("font_size", default_font_size)
+	hbox.add_child(label2)
+
+	# Currency Icon
+	var icon = TextureRect.new()
+	icon.custom_minimum_size = Vector2(icon_size, icon_size)
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+
+	if ResourceLoader.exists(currency_info.icon_path):
+		icon.texture = load(currency_info.icon_path)
+	else:
+		DebugLogger.log_error("OvertimeButton", "Currency icon not found: %s" % currency_info.icon_path)
+
+	hbox.add_child(icon)
+
+	# Label 3: ": [Y]"
+	var label3 = Label.new()
+	label3.text = ": %s" % formatted_cost
+	label3.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label3.add_theme_font_size_override("font_size", default_font_size)
+	hbox.add_child(label3)
 
 ## Handle overtime button press
 func _on_overtime_button_pressed():

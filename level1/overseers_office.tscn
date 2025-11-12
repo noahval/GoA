@@ -126,7 +126,8 @@ text = "Negotiate Overtime"
 
 [node name="BackButton" type="Button" parent="HBoxContainer/RightVBox" index="4"]
 layout_mode = 2
-text = "Back"
+theme_type_variation = &"BackNavButton"
+text = "To Coppersmith Carriage Hall"
 
 [node name="ConfirmationPopup" parent="PopupContainer" instance=ExtResource("4_popup")]
 
