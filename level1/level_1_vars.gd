@@ -17,6 +17,10 @@ var lifetime_currency = {
 	"platinum": 0.0
 }
 
+# Currency tier unlocks (ATM exchange feature)
+var unlocked_gold: bool = false  # Unlocks at 60 silver
+var unlocked_platinum: bool = false  # Unlocks at 60 gold
+
 # Legacy variable for backward compatibility - syncs with currency.copper
 var coins = 0.0:
 	set(value):
@@ -157,3 +161,17 @@ func reset_all():
 ## Helper function: Get offline cap in seconds
 func get_offline_cap_seconds() -> int:
 	return int(offline_cap_hours * 3600)
+
+
+## Check and unlock currency tiers based on current holdings
+## Gold unlocks at 60 silver, Platinum unlocks at 60 gold
+func check_currency_unlocks() -> void:
+	# Gold unlocks at 60 silver
+	if not unlocked_gold and currency.silver >= 60:
+		unlocked_gold = true
+		Global.show_stat_notification("Trading in gold now permitted")
+
+	# Platinum unlocks at 60 gold
+	if not unlocked_platinum and currency.gold >= 60:
+		unlocked_platinum = true
+		Global.show_stat_notification("Trading in platinum bonds now permitted")

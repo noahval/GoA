@@ -13,6 +13,8 @@
 5. [Notification System](#notification-system)
 6. [Victory System](#victory-system)
 7. [Resource Management](#resource-management)
+   - [Multi-Currency System](#multi-currency-system)
+   - [Currency Exchange (ATM)](#currency-exchange-atm)
 8. [Suspicion & Get Caught Mechanics](#suspicion--get-caught-mechanics)
 
 ---
@@ -556,13 +558,108 @@ var victory_conditions = {
 | Resource | Type | Starting Value | Purpose |
 |----------|------|----------------|---------|
 | `coal` | float | 0.0 | Mining resource |
-| `coins` | float | 0.0 | Shop currency |
+| `coins` | float | 0.0 | Shop currency (legacy, synced with copper) |
 | `components` | int | 0 | Crafting material |
 | `mechanisms` | int | 0 | Victory resource |
 | `pipes` | int | 5 | Puzzle resource |
 | `stamina` | float | 125.0 | Action points |
 | `stolen_coal` | int | 0 | Victory resource (stolen) |
 | `stolen_writs` | int | 0 | Victory resource (stolen documents) |
+
+### Multi-Currency System
+
+**Location**: [currency_manager.gd](../currency_manager.gd), [level1/level_1_vars.gd](../level1/level_1_vars.gd)
+
+GoA uses a 4-tier currency system with market volatility and exchange mechanics.
+
+#### Currency Tiers
+
+| Currency | Base Rate | Class Association | Volatility |
+|----------|-----------|-------------------|------------|
+| Copper Pieces | 1x | Laborers/destitute | vs Silver |
+| Silver Marks | 100x | Merchants/artisans | vs Gold |
+| Gold Crowns | 10,000x | Nobles/gentry | vs Platinum |
+| Platinum Bonds | 1,000,000x | Ruling class | Stable anchor |
+
+**Conversion**: 100 of lower tier = 1 of next tier (baseline)
+
+#### Currency Storage
+
+```gdscript
+# In Level1Vars
+var currency = {
+	"copper": 0.0,
+	"silver": 0.0,
+	"gold": 0.0,
+	"platinum": 0.0
+}
+
+var lifetime_currency = {  # Never decreases
+	"copper": 0.0,
+	"silver": 0.0,
+	"gold": 0.0,
+	"platinum": 0.0
+}
+```
+
+#### Currency Exchange (ATM)
+
+**Location**: [level1/atm.tscn](../level1/atm.tscn), [level1/atm.gd](../level1/atm.gd)
+
+**Market Volatility**:
+- Bell curve distribution (randfn with std dev 0.1)
+- ±30% maximum deviation (extremes are rare)
+- Updates every 15-30 minutes
+- Only Copper, Silver, Gold fluctuate (Platinum stable)
+
+**Transaction Fees**:
+- Base: 8% for small transactions
+- Floor: 1% minimum (never lower)
+- Scaling: Logarithmic (larger = better rate)
+- Charisma bonus: 2% reduction per level (respects floor)
+- XP gain: Charisma gains XP equal to fee paid
+
+**Currency Unlocks** (ATM-specific):
+- Silver: Always available
+- Gold: Unlocks at 60 silver (current holdings)
+- Platinum: Unlocks at 60 gold (current holdings)
+
+**Example Exchange**:
+```gdscript
+# Exchange 100 copper -> silver (baseline rates)
+Fee: 8 copper (8%)
+Net: 92 copper
+Received: 0.92 silver
+Charisma XP: 8
+```
+
+**Extreme Market Events**:
+When volatility hits ±20-30%, classist grimdark notifications appear:
+- High copper: "Furnace accident: labor shortage drives copper rates"
+- Low copper: "Coal quotas doubled: labor value plummets"
+- 18 total variants (3 per direction per currency)
+
+**Usage**:
+```gdscript
+# Add currency
+CurrencyManager.add_currency(CurrencyManager.CurrencyType.SILVER, 10.0)
+
+# Check affordability
+if CurrencyManager.can_afford({"silver": 5.0, "copper": 100.0}):
+	CurrencyManager.deduct_currency({"silver": 5.0, "copper": 100.0})
+
+# Exchange with fee (use at ATM)
+var result = CurrencyManager.exchange_currency_with_fee(
+	CurrencyManager.CurrencyType.COPPER,
+	CurrencyManager.CurrencyType.SILVER,
+	100.0
+)
+if result.success:
+	print("Received: ", result.received, " silver")
+	print("Fee: ", result.fee, " copper")
+```
+
+**See Also**: [.claude/plans/atm-currency-exchange.md](../.claude/plans/atm-currency-exchange.md)
 
 ### Upgrade Levels
 

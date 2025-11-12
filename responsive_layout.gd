@@ -2,6 +2,14 @@ extends Node
 ## Centralized responsive layout configuration
 ## All scenes can reference this for consistent scaling behavior
 ## Change values here and all scenes will update automatically
+##
+## PRESERVING CUSTOM PANEL HEIGHTS:
+## By default, ResponsiveLayout applies UNIFORM heights to all panels for consistency.
+## If a panel needs a different height (e.g., displaying multi-line content), add this metadata:
+##   metadata/_responsive_layout_preserve_height = true
+## This tells ResponsiveLayout to keep the panel's custom_minimum_size.y value instead of
+## applying the universal height. Use sparingly - only for panels with genuinely different
+## content requirements (e.g., market rates display, multi-stat panels, etc.)
 
 # UNIVERSAL MENU ELEMENT HEIGHTS
 # All menu items (buttons, panels, counters, titles) use the same height in each mode
@@ -418,7 +426,14 @@ func _apply_landscape_adjustments(left_vbox: VBoxContainer, right_vbox: VBoxCont
 		if panel is Panel:
 			panel.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
 			var panel_width = _calculate_panel_width(panel, max_width)
-			panel.custom_minimum_size = Vector2(panel_width, scaled_element_height)
+
+			# Check if panel wants to preserve its custom height
+			var panel_height = scaled_element_height
+			if panel.has_meta("_responsive_layout_preserve_height") and panel.get_meta("_responsive_layout_preserve_height"):
+				panel_height = panel.custom_minimum_size.y
+				print("ResponsiveLayout: Preserving custom height ", panel_height, " for panel '", panel.name, "' in landscape initial pass")
+
+			panel.custom_minimum_size = Vector2(panel_width, panel_height)
 			panel.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 			max_desired_width = max(max_desired_width, panel_width)
 
@@ -478,8 +493,15 @@ func _scale_for_portrait(left_vbox: VBoxContainer, right_vbox: VBoxContainer) ->
 				panel.update_icon_sizes_for_orientation(true)  # true = portrait
 				print("ResponsiveLayout: Updated CurrencyPanel '", panel.name, "' for portrait mode")
 
-			# All panels use the same width (widest text) and height for consistent appearance
-			panel.custom_minimum_size = Vector2(max_panel_width, scaled_height)
+			# Check if panel wants to preserve its custom height
+			if panel.has_meta("_responsive_layout_preserve_height") and panel.get_meta("_responsive_layout_preserve_height"):
+				print("ResponsiveLayout: Preserving custom height for panel '", panel.name, "'")
+				# Only set width, keep existing height
+				var current_height = panel.custom_minimum_size.y
+				panel.custom_minimum_size = Vector2(max_panel_width, current_height)
+			else:
+				# All panels use the same width (widest text) and height for consistent appearance
+				panel.custom_minimum_size = Vector2(max_panel_width, scaled_height)
 
 			# Don't constrain size too tightly - let it grow if needed
 			panel.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
@@ -539,7 +561,14 @@ func _reset_portrait_scaling(left_vbox: VBoxContainer, right_vbox: VBoxContainer
 				panel.update_icon_sizes_for_orientation(false)  # false = landscape
 				print("ResponsiveLayout: Updated CurrencyPanel '", panel.name, "' for landscape mode")
 
-			panel.custom_minimum_size = Vector2(0, scaled_element_height)
+			# Check if panel wants to preserve its custom height
+			if panel.has_meta("_responsive_layout_preserve_height") and panel.get_meta("_responsive_layout_preserve_height"):
+				print("ResponsiveLayout: Preserving custom height for panel '", panel.name, "' in landscape")
+				# Keep existing height, just reset width to 0 (auto)
+				var current_height = panel.custom_minimum_size.y
+				panel.custom_minimum_size = Vector2(0, current_height)
+			else:
+				panel.custom_minimum_size = Vector2(0, scaled_element_height)
 			panel.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 
 			# Scale children (skip CurrencyPanel internals - it handles itself)

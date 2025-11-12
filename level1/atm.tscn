@@ -11,18 +11,32 @@ script = ExtResource("2_script")
 [node name="Background" parent="." index="0"]
 texture = ExtResource("3_texture")
 
-[node name="TitlePanel" type="Panel" parent="HBoxContainer/LeftVBox" index="0"]
-custom_minimum_size = Vector2(0, 40)
+[node name="MarketRatesPanel" type="Panel" parent="HBoxContainer/LeftVBox" index="0"]
+custom_minimum_size = Vector2(0, 140)
 layout_mode = 2
+size_flags_vertical = 0
+clip_contents = true
+z_index = 0
+metadata/_responsive_layout_preserve_height = true
 
-[node name="TitleLabel" type="Label" parent="HBoxContainer/LeftVBox/TitlePanel"]
+[node name="MarginContainer" type="MarginContainer" parent="HBoxContainer/LeftVBox/MarketRatesPanel"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-text = "Currency Converter"
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 5
+
+[node name="RatesLabel" type="Label" parent="HBoxContainer/LeftVBox/MarketRatesPanel/MarginContainer"]
+layout_mode = 2
+text = "Currency Exchange
+
+Current Rates:
+1 silver = 100 copper"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -30,6 +44,9 @@ vertical_alignment = 1
 theme_type_variation = &"ProgressPanel"
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
+size_flags_vertical = 0
+clip_contents = true
+z_index = 0
 
 [node name="BreakTimerBar" type="ProgressBar" parent="HBoxContainer/LeftVBox/BreakTimerPanel"]
 layout_mode = 1
@@ -40,6 +57,7 @@ grow_horizontal = 2
 grow_vertical = 2
 value = 100.0
 show_percentage = false
+z_index = 0
 
 [node name="BreakTimer" type="Label" parent="HBoxContainer/LeftVBox/BreakTimerPanel"]
 layout_mode = 1
@@ -51,15 +69,74 @@ grow_vertical = 2
 text = "Break Timer"
 horizontal_alignment = 1
 vertical_alignment = 1
+z_index = 1
 
 [node name="CoinsPanel" type="Panel" parent="HBoxContainer/LeftVBox" index="2"]
 self_modulate = Color(1, 1, 1, 0.7)
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
+size_flags_vertical = 0
+clip_contents = true
+z_index = 0
 script = ExtResource("currency_panel_script")
 vertical_alignment = 1
 
-[node name="ToCoppersmithCarriageButton" type="Button" parent="HBoxContainer/RightVBox"]
+[node name="ExchangePanel" type="Panel" parent="HBoxContainer/RightVBox" index="0"]
+custom_minimum_size = Vector2(0, 300)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="MarginContainer" type="MarginContainer" parent="HBoxContainer/RightVBox/ExchangePanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="VBox" type="VBoxContainer" parent="HBoxContainer/RightVBox/ExchangePanel/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="FromLabel" type="Label" parent="HBoxContainer/RightVBox/ExchangePanel/MarginContainer/VBox"]
+layout_mode = 2
+text = "From Currency:"
+
+[node name="FromCurrencyOption" type="OptionButton" parent="HBoxContainer/RightVBox/ExchangePanel/MarginContainer/VBox"]
+layout_mode = 2
+
+[node name="AmountLabel" type="Label" parent="HBoxContainer/RightVBox/ExchangePanel/MarginContainer/VBox"]
+layout_mode = 2
+text = "Amount to Exchange:"
+
+[node name="AmountInput" type="LineEdit" parent="HBoxContainer/RightVBox/ExchangePanel/MarginContainer/VBox"]
+layout_mode = 2
+placeholder_text = "Enter amount..."
+
+[node name="ToLabel" type="Label" parent="HBoxContainer/RightVBox/ExchangePanel/MarginContainer/VBox"]
+layout_mode = 2
+text = "To Currency:"
+
+[node name="ToCurrencyOption" type="OptionButton" parent="HBoxContainer/RightVBox/ExchangePanel/MarginContainer/VBox"]
+layout_mode = 2
+
+[node name="PreviewLabel" type="Label" parent="HBoxContainer/RightVBox/ExchangePanel/MarginContainer/VBox"]
+layout_mode = 2
+text = "Enter amount to exchange"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="ExchangeButton" type="Button" parent="HBoxContainer/RightVBox" index="1"]
+layout_mode = 2
+text = "Exchange Currency"
+disabled = true
+
+[node name="ToCoppersmithCarriageButton" type="Button" parent="HBoxContainer/RightVBox" index="2"]
 layout_mode = 2
 theme_type_variation = &"BackNavButton"
 text = "To Coppersmith Carriage Hall"

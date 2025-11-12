@@ -75,6 +75,43 @@ Good: File path -> line 42
 3. Use words instead of symbols for clarity
 4. Test rendering in multiple contexts
 
+### Dash Usage in Language Text
+
+**CRITICAL: Avoid Dashes in In-Game Text and Flavor Text**
+
+Dashes should not be used to separate clauses or provide explanations in language text (dialogue, descriptions, flavor text, notifications).
+
+**Forbidden**:
+- Using dashes for explanations: "Morning rush - all elevators running"
+- Using dashes for clarifications: "Deep night - all city districts sleeping"
+- Using dashes as separators: "Steep grade - maximum power needed"
+
+**Use Instead**:
+- Colons for explanations: "Morning rush: all elevators running"
+- Commas for continuation: "Deep night, all city districts sleeping"
+- Semicolons for related clauses where appropriate
+- Remove hyphenated phrases where possible
+
+**Examples**:
+```
+Bad:  "Coasting downhill - gravity assist"
+Good: "Coasting downhill: gravity assist"
+
+Bad:  "Night shift - residential districts dormant"
+Good: "Night shift, residential districts dormant"
+
+Bad:  "Noble override - lower districts cut off!"
+Good: "Noble override: lower districts cut off!"
+```
+
+**Why**: Dashes create visual clutter and reduce readability in compact UI text. Colons and commas provide clearer semantic meaning.
+
+**When Writing In-Game Text**:
+1. Use colons (:) for explanations or results
+2. Use commas (,) for continuation or description
+3. Use semicolons (;) for related but distinct clauses
+4. Keep text concise and punchy
+
 ---
 
 ## Automatic Hook System

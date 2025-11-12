@@ -2,7 +2,15 @@
 
 **Status:** Planning
 **Created:** 2025-11-11
+**Updated:** 2025-11-12 (Currency costs reworked for Silver/Gold economy)
 **Dependencies:** Phases 1-4 (basic furnace mechanics, shop system, stats)
+
+**Currency System Note:** All costs in this document use the multi-currency system:
+- 1 Silver = 100 Copper
+- 1 Gold = 100 Silver = 10,000 Copper
+- 1 Platinum = 100 Gold = 10,000 Silver = 1,000,000 Copper
+
+Phase 5 begins at ~35 hours of gameplay, when players have accumulated 1 Gold lifetime. Costs are balanced for Silver and Gold currencies, with Own Furnace purchase anchored at 1 Gold.
 
 ## Overview
 
@@ -96,48 +104,74 @@ max_steam = 500.0 + (capacity_upgrade_lvl * 200.0)
 # Demand reasons (displayed to player)
 DEMAND_REASONS = {
     "zero": [
-        "All trains stopped at stations",
-        "Night shift - depot maintenance",
-        "Track inspection - all traffic halted",
-        "Holiday - minimal operations",
-        "Scheduled maintenance window"
+        "Coasting downhill: gravity assist",
+        "Long downgrade through valley",
+        "Descending eastern slope: minimal power",
+        "Momentum carrying train through lowlands",
+        "Deep night, all train districts sleeping",
+        "Holiday, minimal train systems active",
+        "Lower districts powered down for conservation",
+        "Peasant quarters population reduced, less demand"
     ],
     "very_low": [
-        "Train idling at station",
-        "Coasting downhill - minimal power",
-        "Descending Copper Ridge Pass",
-        "Long downgrade - braking only",
-        "Gravity doing the work",
-        "Backup furnaces handling load"
+        "Gentle downhill run through foothills",
+        "Slight descent, brakes engaged",
+        "Cruising through lowland plains",
+        "Tail wind assisting movement",
+        "Rolling through river valley",
+        "Night shift, residential districts dormant",
+        "Mild weather, reduced heating demands",
+        "Backup furnaces handling train base load",
+        "Worker districts on rationing schedule",
+        "Lower deck amenities disabled"
     ],
     "low": [
-        "Train stopped at Copper Ridge Station",
-        "Light passenger load today",
-        "Gentle descent into valley",
-        "Approaching station - slowing down",
-        "Downhill run through foothills",
-        "Slow operation through town",
-        "Other furnaces covering most load"
+        "Light downgrade into basin",
+        "Steady cruise on flat prairie",
+        "Easy rolling through farmlands",
+        "Gentle curves, maintaining speed",
+        "Approaching downhill section",
+        "Following river downstream",
+        "Off-peak hours, light train demand",
+        "Temperate weather, reduced steam demand",
+        "Other furnaces covering most train needs",
+        "Peasant district scheduled blackout period",
+        "Third class quarters on reduced power allocation"
     ],
     "normal": [
         "Steady run on flat terrain",
-        "Regular freight schedule",
-        "Standard operations"
+        "Cruising across plains",
+        "Maintaining speed through open country",
+        "Regular travel pace",
+        "Standard train operations",
+        "Balanced residential and commercial load",
+        "lower level amenities powered on"
     ],
     "high": [
         "Climbing toward High Peak",
         "Ascending the eastern slope",
-        "Heavy ore shipment",
-        "Pulling uphill through switchyard",
-        "Accelerating from station",
-        "Two furnaces offline for maintenance"
+        "Pulling uphill through switchbacks",
+        "Fighting headwinds across plateau",
+        "Accelerating from reduced speed",
+        "Sharp curves requiring power",
+        "Pushing through mountain pass",
+        "Morning rush: all elevators running",
+        "Factory district at full production",
+        "Cold snap, residential heating surge",
+        "Nobility ball: upper district lighting maxed",
+        "Elite quarter demanding perfect climate control"
     ],
     "critical": [
-        "Emergency! Steep mountain grade!",
-        "Climbing Devil's Backbone!",
+        "Emergency! Climbing Devil's Backbone!",
+        "Steep grade: maximum power needed!",
+        "Triple switchback up Iron Mountain!",
+        "Fighting blizzard headwinds uphill!",
+        "Emergency acceleration required!",
+        "Extreme grade with heavy load!",
         "All other furnaces failed!",
-        "Runaway coal train needs stopping!",
-        "Triple-header up Iron Mountain!"
+        "Catastrophic pressure drop: full steam NOW!",
+        "Noble override: lower districts cut off!",
+        "Aristocrat emergency: maximum power demanded!"
     ]
 }
 ```
@@ -208,21 +242,21 @@ else:
 **Thematic Progression:**
 
 **Tier 1: Steam Accumulator Tank**
-- **Cost:** 300 coins
+- **Cost:** 30 Silver + 30 mechanisms
 - **Capacity:** 200 stored steam
 - **Technology:** Simple insulated pressure vessel
 - **Historical:** 1800s technology, used on traction engines and early locomotives
 - **Description:** "A basic pressure vessel that stores excess steam when demand is low"
 
 **Tier 2: Compressed Steam Reservoir**
-- **Cost:** 800 coins
+- **Cost:** 80 Silver + 50 pipes
 - **Requires:** Steam Accumulator Tank
 - **Capacity:** +300 stored steam (500 total)
 - **Technology:** High-pressure compression system
 - **Description:** "Stores steam at higher pressure for increased capacity"
 
 **Tier 3: Multi-Chamber Storage System**
-- **Cost:** 2,000 coins
+- **Cost:** 200 Silver (or 2 Gold)
 - **Requires:** Compressed Steam Reservoir
 - **Capacity:** +700 stored steam (1,200 total)
 - **Technology:** Multiple interconnected tanks with valves
@@ -230,7 +264,7 @@ else:
 - **Description:** "Interconnected tanks allow precise control over steam release"
 
 **Tier 4: Hydraulic Accumulator**
-- **Cost:** 5,000 coins + 50 mechanisms
+- **Cost:** 5 Gold + 100 mechanisms
 - **Requires:** Multi-Chamber Storage
 - **Capacity:** +1,300 stored steam (2,500 total)
 - **Technology:** Converts steam pressure to hydraulic pressure
@@ -239,7 +273,7 @@ else:
 - **Description:** "Hydraulic system reduces heat loss and provides stable long-term storage"
 
 **Tier 5: Battery Bank** *(Late Game)*
-- **Cost:** 15,000 coins + 100 components + 50 pipes
+- **Cost:** 15 Gold + 300 components
 - **Requires:** Hydraulic Accumulator + Power System unlocked
 - **Capacity:** +2,500 stored steam equivalent (5,000 total)
 - **Technology:** Electrical energy storage charged by steam turbine
@@ -398,22 +432,22 @@ var coins_per_second = base_revenue * revenue_multipliers[performance]
 **Button Properties:**
 - Text: "Buy Furnace Ownership"
 - Position: Right panel, above or below Overtime button
-- Visibility: Requires `lifetimecoins >= 1000` (or other milestone)
-- Cost: 500 coins (significant investment)
+- Visibility: Requires `lifetimecoins >= 10000` (1 Gold lifetime)
+- Cost: 1 Gold (10,000 copper - significant investment)
 
 **Purchase Flow:**
 ```gdscript
 func _on_buy_furnace_button_pressed():
-    var cost = 500
+    var cost = 10000  # 1 Gold
     if Level1Vars.coins >= cost:
         # Confirmation popup
         show_confirmation_popup(
             "Purchase Furnace Ownership?",
-            "You'll become the furnace owner and shift to a new economic model. Cost: %d coins" % cost
+            "You'll become the furnace owner and shift to a new economic model. Cost: 1 Gold"
         )
 
 func confirm_purchase():
-    var cost = 500
+    var cost = 10000  # 1 Gold
     Level1Vars.coins -= cost
     Level1Vars.furnace_owned = true
 
@@ -659,19 +693,19 @@ Three worker types serve different functions in furnace operation:
 - **Role:** Generates heat automatically through coal shoveling
 - **Base Rate:** 1.2 fatigue/sec (hard physical labor)
 - **Heat Generation:** Varies by quality tier (0.6 to 1.5/sec at baseline)
-- **Hire Cost:** 20-1,200 coins depending on quality tier
+- **Hire Cost:** 2-120 Silver (or up to 1.2 Gold) depending on quality tier
 
 **2. Fireman (Heat Manager)**
 - **Role:** Manages furnace heat, reduces decay rate
 - **Base Rate:** 0.8 fatigue/sec (moderate work)
 - **Decay Reduction:** 0.1/sec per fireman (varies by quality)
-- **Hire Cost:** 50-2,600 coins depending on quality tier
+- **Hire Cost:** 5-260 Silver (or up to 2.6 Gold) depending on quality tier
 
 **3. Engineer (Steam Optimizer)**
 - **Role:** Optimizes steam generation efficiency
 - **Base Rate:** 0.6 fatigue/sec (technical work, less physical)
 - **Efficiency Bonus:** +10% per engineer (varies by quality)
-- **Hire Cost:** 100-4,800 coins depending on quality tier
+- **Hire Cost:** 10-480 Silver (or up to 4.8 Gold) depending on quality tier
 
 ---
 
@@ -696,7 +730,7 @@ Quality affects productivity, fatigue resistance, and base morale. **Quality is 
 - **Productivity:** 60% of baseline
 - **Fatigue Accumulation:** +60% (tires 1.6x faster)
 - **Base Morale Contribution:** 25
-- **Hire Cost:** 20 (stoker), 50 (fireman), 100 (engineer)
+- **Hire Cost:** 2 Silver (stoker), 5 Silver (fireman), 10 Silver (engineer)
 - **Availability:** Always available in hiring pool
 
 **Tier 2 - Green Recruit**
@@ -704,7 +738,7 @@ Quality affects productivity, fatigue resistance, and base morale. **Quality is 
 - **Productivity:** 75%
 - **Fatigue Accumulation:** +30%
 - **Base Morale Contribution:** 35
-- **Hire Cost:** 40 (stoker), 100 (fireman), 200 (engineer)
+- **Hire Cost:** 4 Silver (stoker), 10 Silver (fireman), 20 Silver (engineer)
 - **Availability:** Always available
 
 **Tier 3 - Ordinary Laborer**
@@ -712,7 +746,7 @@ Quality affects productivity, fatigue resistance, and base morale. **Quality is 
 - **Productivity:** 90%
 - **Fatigue Accumulation:** +10%
 - **Base Morale Contribution:** 45
-- **Hire Cost:** 80 (stoker), 180 (fireman), 350 (engineer)
+- **Hire Cost:** 8 Silver (stoker), 18 Silver (fireman), 35 Silver (engineer)
 - **Availability:** Always available
 
 **Tier 4 - Steady Hand**
@@ -720,7 +754,7 @@ Quality affects productivity, fatigue resistance, and base morale. **Quality is 
 - **Productivity:** 100% (baseline reference)
 - **Fatigue Accumulation:** 0% (baseline)
 - **Base Morale Contribution:** 55
-- **Hire Cost:** 150 (stoker), 350 (fireman), 650 (engineer)
+- **Hire Cost:** 15 Silver (stoker), 35 Silver (fireman), 65 Silver (engineer)
 - **Availability:** After 15h runtime as owner
 
 **Tier 5 - Capable Hand**
@@ -728,7 +762,7 @@ Quality affects productivity, fatigue resistance, and base morale. **Quality is 
 - **Productivity:** 115%
 - **Fatigue Accumulation:** -15% (tires 0.85x as fast)
 - **Base Morale Contribution:** 65
-- **Hire Cost:** 300 (stoker), 650 (fireman), 1,200 (engineer)
+- **Hire Cost:** 30 Silver (stoker), 65 Silver (fireman), 120 Silver (or 1.2 Gold) (engineer)
 - **Availability:** After 35h runtime as owner
 
 **Tier 6 - Practiced Worker**
@@ -736,7 +770,7 @@ Quality affects productivity, fatigue resistance, and base morale. **Quality is 
 - **Productivity:** 130%
 - **Fatigue Accumulation:** -30%
 - **Base Morale Contribution:** 75
-- **Hire Cost:** 600 (stoker), 1,300 (fireman), 2,400 (engineer)
+- **Hire Cost:** 60 Silver (stoker), 130 Silver (or 1.3 Gold) (fireman), 240 Silver (or 2.4 Gold) (engineer)
 - **Availability:** After 55h runtime as owner
 
 **Tier 7 - Skilled Worker**
@@ -745,7 +779,7 @@ Quality affects productivity, fatigue resistance, and base morale. **Quality is 
 - **Fatigue Accumulation:** -45%
 - **Base Morale Contribution:** 85
 - **Special:** 20% chance to self-rest when fatigue hits 65 (discovered mechanic)
-- **Hire Cost:** 1,200 (stoker), 2,600 (fireman), 4,800 (engineer)
+- **Hire Cost:** 120 Silver (or 1.2 Gold) (stoker), 260 Silver (or 2.6 Gold) (fireman), 480 Silver (or 4.8 Gold) (engineer)
 - **Availability:** After 75h runtime as owner
 
 **Strategic Notes:**
@@ -768,44 +802,44 @@ Quality affects productivity, fatigue resistance, and base morale. **Quality is 
 All bed upgrades purchased in **owned_dorm.tscn** (new scene).
 
 **Tier 1: Bunk Bed Pair**
-- **Cost:** 400 coins
+- **Cost:** 40 Silver
 - **Capacity:** +2 workers (total: 4)
 - **Description:** "Simple wooden bunks"
 - **Unlocks:** Immediately available
 
 **Tier 2: Second Bunk Set**
-- **Cost:** 600 coins
+- **Cost:** 60 Silver
 - **Requires:** 12h runtime
 - **Capacity:** +2 workers (total: 6)
 - **Description:** "Additional sleeping space"
 
 **Tier 3: Third Bunk Set**
-- **Cost:** 900 coins
+- **Cost:** 90 Silver
 - **Requires:** 25h runtime
 - **Capacity:** +2 workers (total: 8)
 - **Description:** "Cramped but functional"
 
 **Tier 4: Fourth Bunk Set**
-- **Cost:** 1,400 coins + 20 components
+- **Cost:** 140 Silver (or 1.4 Gold) + 20 components
 - **Requires:** 40h runtime
 - **Capacity:** +2 workers (total: 10)
 - **Description:** "The dormitory is quite crowded now"
 
 **Tier 5: Reinforced Bunks (Triple-Tier)**
-- **Cost:** 2,500 coins + 50 components
+- **Cost:** 250 Silver (or 2.5 Gold) + 50 components
 - **Requires:** 55h runtime
 - **Capacity:** +3 workers (total: 13)
 - **Description:** "Sturdier construction allows triple-stacking"
 - **Note:** Replaces one bunk pair with stronger 3-tier design
 
 **Tier 6: Second Reinforced Set**
-- **Cost:** 3,000 coins + 70 components + 25 mechanisms
+- **Cost:** 3 Gold + 70 components + 25 mechanisms
 - **Requires:** 70h runtime
 - **Capacity:** +3 workers (total: 16)
 - **Description:** "Maximum occupancy approaching"
 
 **Tier 7: Final Expansion**
-- **Cost:** 4,500 coins + 110 components + 50 mechanisms
+- **Cost:** 4.5 Gold + 110 components + 50 mechanisms
 - **Requires:** 85h runtime
 - **Capacity:** +4 workers (total: 20 maximum)
 - **Description:** "Every inch of space utilized"
@@ -1064,32 +1098,32 @@ Workers consume food while active. Food quality affects fatigue, morale, and rep
 #### Food Quality Tiers
 
 **Tier 1 - Stale Bread**
-- **Cost:** 2 coins per 10 units
+- **Cost:** 0.2 Silver per 10 units (2 copper each)
 - **Effects:** +15% fatigue accumulation, -0.3 morale/min, -0.2 reputation/hour
 - **Description:** "Barely edible scraps"
 - **Strategic Use:** Desperate times only
 
 **Tier 2 - Basic Rations**
-- **Cost:** 5 coins per 10 units
+- **Cost:** 0.5 Silver per 10 units (5 copper each)
 - **Effects:** Neutral (1.0x fatigue, no morale/reputation change)
 - **Description:** "Plain but filling"
 - **Strategic Use:** Early game, cost-conscious
 
 **Tier 3 - Decent Meal**
-- **Cost:** 12 coins per 10 units
+- **Cost:** 1.2 Silver per 10 units (12 copper each)
 - **Effects:** -8% fatigue accumulation, +0.2 morale/min, +0.1 reputation/hour
 - **Description:** "Simple but satisfying"
 - **Strategic Use:** Balanced mid-game choice
 
 **Tier 4 - Quality Food**
-- **Cost:** 25 coins per 10 units
+- **Cost:** 2.5 Silver per 10 units (25 copper each)
 - **Requires:** 20h runtime
 - **Effects:** -15% fatigue, +0.4 morale/min, +0.2/sec recovery, +0.2 reputation/hour
 - **Description:** "Good, hearty portions"
 - **Strategic Use:** Late game, well-funded operations
 
 **Tier 5 - Premium Provisions**
-- **Cost:** 50 coins per 10 units
+- **Cost:** 5 Silver per 10 units (50 copper each)
 - **Requires:** 50h runtime
 - **Effects:** -25% fatigue, +0.6 morale/min, +0.4/sec recovery, +0.3 reputation/hour
 - **Description:** "Surprisingly good for furnace work"
@@ -1173,61 +1207,61 @@ Group breaks trigger special notifications emphasizing camaraderie:
 All amenities are **small-scale** (appropriate for cramped furnace dorm):
 
 **Tier 1: Water Barrels**
-- **Cost:** 300 coins
+- **Cost:** 30 Silver
 - **Description:** "Cool water for the crew"
 - **Vague Benefit:** "Basic necessity"
 - **Hidden Effects:** -5% fatigue accumulation, +0.2/sec recovery, +1 reputation
 
 **Tier 2: Simple Cots**
-- **Cost:** 500 coins, 8h runtime
+- **Cost:** 50 Silver, 8h runtime
 - **Description:** "Mattresses for the bunks"
 - **Vague Benefit:** "Better than the floor"
 - **Hidden Effects:** +0.5/sec recovery when idle, +5 morale, +2 reputation
 
 **Tier 3: Tool Storage Rack**
-- **Cost:** 800 coins, 15h runtime
+- **Cost:** 80 Silver, 15h runtime
 - **Description:** "Organized equipment area"
 - **Vague Benefit:** "Keeps things tidy"
 - **Hidden Effects:** -8% fatigue accumulation, +3 reputation
 
 **Tier 4: Ventilation Grate**
-- **Cost:** 1,500 coins + 20 components, 25h runtime
+- **Cost:** 150 Silver (or 1.5 Gold) + 20 components, 25h runtime
 - **Description:** "Better airflow"
 - **Vague Benefit:** "Makes breathing easier"
 - **Hidden Effects:** -12% fatigue accumulation, +0.3/sec recovery, +8 morale, +4 reputation
 
 **Tier 5: Cushioned Benches**
-- **Cost:** 2,200 coins + 35 components, 35h runtime
+- **Cost:** 220 Silver (or 2.2 Gold) + 35 components, 35h runtime
 - **Description:** "Comfortable seating for breaks"
 - **Vague Benefit:** "Somewhere to rest"
 - **Hidden Effects:** +1.2/sec recovery during breaks, +10 morale, +5 reputation
 
 **Tier 6: Personal Lockers**
-- **Cost:** 3,500 coins + 60 components + 20 mechanisms, 45h runtime
+- **Cost:** 3.5 Gold + 60 components + 20 mechanisms, 45h runtime
 - **Description:** "Storage for belongings"
 - **Vague Benefit:** "A touch of dignity"
 - **Hidden Effects:** +12 morale, -10% fatigue accumulation, +6 reputation
 
 **Tier 7: Better Bedding**
-- **Cost:** 5,000 coins + 90 components + 35 mechanisms, 55h runtime
+- **Cost:** 5 Gold + 90 components + 35 mechanisms, 55h runtime
 - **Description:** "Proper mattresses and blankets"
 - **Vague Benefit:** "Quality rest is important"
 - **Hidden Effects:** +1.8/sec recovery when idle, +15 morale, +7 reputation
 
 **Tier 8: Oil Lamps**
-- **Cost:** 7,500 coins + 130 components + 55 mechanisms, 65h runtime
+- **Cost:** 7.5 Gold + 130 components + 55 mechanisms, 65h runtime
 - **Description:** "Better lighting"
 - **Vague Benefit:** "Easier on the eyes"
 - **Hidden Effects:** +18 morale, -15% fatigue accumulation, +0.8/sec recovery, +8 reputation
 
 **Tier 9: Insulated Walls**
-- **Cost:** 11,000 coins + 180 components + 80 mechanisms + 30 pipes, 75h runtime
+- **Cost:** 11 Gold + 180 components + 80 mechanisms + 30 pipes, 75h runtime
 - **Description:** "Temperature control"
 - **Vague Benefit:** "More comfortable year-round"
 - **Hidden Effects:** -22% fatigue accumulation, +2.2/sec recovery, +20 morale, +10 reputation
 
 **Tier 10: Premium Furnishings**
-- **Cost:** 18,000 coins + 280 components + 140 mechanisms + 70 pipes, 90h runtime
+- **Cost:** 18 Gold + 280 components + 140 mechanisms + 70 pipes, 90h runtime
 - **Description:** "Surprisingly nice accommodations"
 - **Vague Benefit:** "Workers comment on the improvements"
 - **Hidden Effects:** -30% fatigue accumulation, +3.0/sec recovery, +28 morale, +15 reputation, **workers start each session at 0 fatigue**
@@ -1398,31 +1432,31 @@ All worker management happens in **owned_dorm.tscn** (new scene).
 +---------------------------------------+
 | Beds Available: 2 / 10                |
 |                                       |
-| [Refresh Pool - 50 coins]             |
+| [Refresh Pool - 5 Silver]             |
 |                                       |
 | 1. Thomas (Stoker)                    |
 |    "Ordinary Laborer"                 |
-|    Cost: 80 coins                     |
+|    Cost: 8 Silver                     |
 |    [Hire]                             |
 |                                       |
 | 2. Jakob (Fireman)                    |
 |    "Green Recruit"                    |
-|    Cost: 100 coins                    |
+|    Cost: 10 Silver                    |
 |    [Hire]                             |
 |                                       |
 | 3. William (Stoker)                   |
 |    "Sickly Youth"                     |
-|    Cost: 20 coins                     |
+|    Cost: 2 Silver                     |
 |    [Hire]                             |
 |                                       |
 | 4. Elias (Engineer)                   |
 |    "Steady Hand"                      |
-|    Cost: 650 coins                    |
+|    Cost: 65 Silver                    |
 |    [Hire]                             |
 |                                       |
 | 5. Henrik (Stoker)                    |
 |    "Capable Hand"                     |
-|    Cost: 300 coins                    |
+|    Cost: 30 Silver                    |
 |    [Hire]                             |
 +---------------------------------------+
 ```
@@ -1430,7 +1464,7 @@ All worker management happens in **owned_dorm.tscn** (new scene).
 **Features:**
 - Shows 3-8 candidates (based on reputation)
 - Quality distribution based on reputation (hidden)
-- Manual refresh: 50 coins, generates new candidates
+- Manual refresh: 5 Silver, generates new candidates
 - Auto-refresh: Every 2 hours of runtime
 - Cannot hire if no empty beds
 
@@ -1445,22 +1479,22 @@ All worker management happens in **owned_dorm.tscn** (new scene).
 +---------------------------------------+
 | Current: 47 units (Decent Meal)       |
 |                                       |
-| [✓] Stale Bread - 2 coins/10 units    |
+| [✓] Stale Bread - 0.2 Silver/10 units |
 |     "Barely edible scraps"            |
-|     [Buy 50 units - 10 coins]         |
+|     [Buy 50 units - 1 Silver]         |
 |                                       |
-| [✓] Basic Rations - 5 coins/10 units  |
+| [✓] Basic Rations - 0.5 Silver/10 units |
 |     "Plain but filling"               |
-|     [Buy 50 units - 25 coins]         |
+|     [Buy 50 units - 2.5 Silver]       |
 |                                       |
-| [✓] Decent Meal - 12 coins/10 units   |
+| [✓] Decent Meal - 1.2 Silver/10 units |
 |     "Simple but satisfying"           |
-|     [Buy 50 units - 60 coins]         |
+|     [Buy 50 units - 6 Silver]         |
 |                                       |
-| [🔒] Quality Food - 25 coins/10 units |
+| [🔒] Quality Food - 2.5 Silver/10 units |
 |     Requires: 20h runtime             |
 |                                       |
-| [🔒] Premium Provisions               |
+| [🔒] Premium Provisions - 5 Silver/10 units |
 |     Requires: 50h runtime             |
 |                                       |
 | Auto-Purchase Settings:               |
@@ -1493,7 +1527,7 @@ All worker management happens in **owned_dorm.tscn** (new scene).
 |     (Purchased)                       |
 |                                       |
 | [ ] Third Bunk Set - 2 beds           |
-|     Cost: 900 coins                   |
+|     Cost: 90 Silver                   |
 |     Requires: 25h runtime             |
 |     [Purchase]                        |
 |                                       |
@@ -1514,13 +1548,13 @@ All worker management happens in **owned_dorm.tscn** (new scene).
 |     (Purchased)                       |
 |                                       |
 | [ ] Simple Cots                       |
-|     Cost: 500 coins, 8h runtime       |
+|     Cost: 50 Silver, 8h runtime       |
 |     "Mattresses for the bunks"        |
 |     Benefit: "Better than the floor"  |
 |     [Purchase]                        |
 |                                       |
 | [ ] Tool Storage Rack                 |
-|     Cost: 800 coins, 15h runtime      |
+|     Cost: 80 Silver, 15h runtime      |
 |     "Organized equipment area"        |
 |     Benefit: "Keeps things tidy"      |
 |     [Purchase]                        |
@@ -1791,16 +1825,16 @@ The furnace upgrade system is more complex than worker management, so it benefit
 |     (Starting material)          |
 |                                  |
 | [🔒] Wrought Iron - 900°C        |
-|     Cost: 800 coins              |
+|     Cost: 80 Silver              |
 |     Requires: 20 runtime hours   |
 |                                  |
 | [🔒] Mild Steel - 1,100°C        |
-|     Cost: 2,500 coins            |
+|     Cost: 250 Silver (or 2.5 Gold) |
 |     Requires: Wrought Iron +     |
 |               50 runtime hours   |
 |                                  |
 | [🔒] Cupola Design - 1,550°C     |
-|     Cost: 8,000 coins +          |
+|     Cost: 8 Gold +               |
 |           50 components          |
 |     Requires: Mild Steel +       |
 |               100 runtime hours  |
@@ -1819,12 +1853,12 @@ The furnace upgrade system is more complex than worker management, so it benefit
 |     (Included with material)     |
 |                                  |
 | [ ] Standard Wall - 1.15x        |
-|     Cost: 240 coins              |
+|     Cost: 24 Silver              |
 |     Effect: +15% max heat        |
 |             -10% decay rate      |
 |                                  |
 | [ ] Heavy Wall - 1.3x            |
-|     Cost: 480 coins              |
+|     Cost: 48 Silver              |
 |     Effect: +30% max heat        |
 |             -20% decay rate      |
 |                                  |
@@ -1844,13 +1878,13 @@ The furnace upgrade system is more complex than worker management, so it benefit
 | [✓] No Lining - 1.0x             |
 |                                  |
 | [ ] Firebrick - 1.3x             |
-|     Cost: 300 coins              |
+|     Cost: 30 Silver              |
 |     Max: 960°C                   |
 |     Durability: 100 hours        |
 |     Requires: Tier 2+ material   |
 |                                  |
 | [🔒] High-Alumina - 1.6x         |
-|     Cost: 1,200 coins            |
+|     Cost: 120 Silver (or 1.2 Gold) |
 |     Max: 1,788°C                 |
 |     Durability: 200 hours        |
 |     Requires: Tier 3+ material   |
@@ -1870,27 +1904,27 @@ The furnace upgrade system is more complex than worker management, so it benefit
 |                                  |
 | [ ] Steam Reservoir Upgrade      |
 |     Level: 0 → 1                 |
-|     Cost: 150 coins              |
+|     Cost: 15 Silver              |
 |     Effect: +200 max steam       |
 |                                  |
 | [ ] Steam Efficiency Upgrade     |
 |     Level: 0 → 1                 |
-|     Cost: 200 coins              |
+|     Cost: 20 Silver              |
 |     Effect: +20% steam/heat      |
 |                                  |
 | [🔒] Cooling System              |
-|     Cost: 1,500 coins            |
+|     Cost: 150 Silver (or 1.5 Gold) |
 |     Effect: -30% heat decay      |
 |     Requires: Mild Steel+        |
 |                                  |
 | [🔒] Forced Air Injection        |
-|     Cost: 3,000 coins +          |
+|     Cost: 3 Gold +               |
 |           25 mechanisms          |
 |     Effect: +25% heat from coal  |
 |     Requires: Cupola Design+     |
 |                                  |
 | [ ] Temperature Monitoring       |
-|     Cost: 500 coins              |
+|     Cost: 50 Silver              |
 |     Effect: Shows exact temp,    |
 |             advance warnings     |
 +----------------------------------+
@@ -1909,17 +1943,17 @@ The furnace upgrade system is more complex than worker management, so it benefit
 |     Current: 0 capacity          |
 |                                  |
 | [ ] Steam Accumulator Tank       |
-|     Cost: 300 coins              |
+|     Cost: 30 Silver              |
 |     Capacity: +200 storage       |
 |     Efficiency: 80%              |
 |                                  |
 | [🔒] Compressed Steam Reservoir  |
-|     Cost: 800 coins              |
+|     Cost: 80 Silver              |
 |     Capacity: +300 storage       |
 |     Requires: Accumulator Tank   |
 |                                  |
 | [🔒] Multi-Chamber Storage       |
-|     Cost: 2,000 coins            |
+|     Cost: 200 Silver (or 2 Gold) |
 |     Capacity: +700 storage       |
 |     Unlocks: Manual release      |
 |              (10% button) &      |
@@ -1927,14 +1961,14 @@ The furnace upgrade system is more complex than worker management, so it benefit
 |     Requires: Compressed Res.    |
 |                                  |
 | [🔒] Hydraulic Accumulator       |
-|     Cost: 5,000 coins +          |
+|     Cost: 5 Gold +               |
 |           50 mechanisms          |
 |     Capacity: +1,300 storage     |
 |     Efficiency: 90%              |
 |     Requires: Multi-Chamber      |
 |                                  |
 | [🔒] Battery Bank (Late Game)    |
-|     Cost: 15,000 coins +         |
+|     Cost: 15 Gold +              |
 |           100 components +       |
 |           50 pipes               |
 |     Capacity: +2,500 storage     |
@@ -2096,37 +2130,37 @@ Progressive efficiency tiers representing overseer skill and experience.
 
 **Tier 1: Apprentice Overseer**
 - **Efficiency:** 30% of full production
-- **Cost:** 150 coins
+- **Cost:** 15 Silver
 - **Requirements:** Furnace ownership
 - **Description:** "Inexperienced manager, still learning the ropes. Keeps things running at minimal capacity."
 
 **Tier 2: Junior Overseer**
 - **Efficiency:** 50% of full production
-- **Cost:** 400 coins
+- **Cost:** 40 Silver
 - **Requirements:** Apprentice Overseer
 - **Description:** "Competent but cautious manager. Maintains stable operations."
 
 **Tier 3: Experienced Overseer**
 - **Efficiency:** 65% of full production
-- **Cost:** 1,000 coins
+- **Cost:** 100 Silver (or 1 Gold)
 - **Requirements:** Junior Overseer
 - **Description:** "Seasoned manager who knows the furnace well. Good efficiency."
 
 **Tier 4: Senior Overseer**
 - **Efficiency:** 80% of full production
-- **Cost:** 2,500 coins
+- **Cost:** 250 Silver (or 2.5 Gold)
 - **Requirements:** Experienced Overseer
 - **Description:** "Veteran manager with years of experience. Near-optimal operations."
 
 **Tier 5: Master Overseer**
 - **Efficiency:** 90% of full production
-- **Cost:** 6,000 coins + 25 mechanisms
+- **Cost:** 6 Gold + 25 mechanisms
 - **Requirements:** Senior Overseer
 - **Description:** "Expert manager, one of the best in the region. Exceptional efficiency."
 
 **Tier 6: Executive Manager**
 - **Efficiency:** 98% of full production
-- **Cost:** 15,000 coins + 75 mechanisms + 50 components
+- **Cost:** 15 Gold + 75 mechanisms + 50 components
 - **Requirements:** Master Overseer
 - **Description:** "Elite professional manager with formal training. Nearly matches owner's personal oversight."
 
@@ -2143,47 +2177,47 @@ Progressive time limit upgrades allowing longer offline periods.
 
 **Tier 2: Short Shift**
 - **Duration:** 2 hours
-- **Cost:** 100 coins
+- **Cost:** 10 Silver
 - **Description:** "Quick shift for short absences."
 
 **Tier 3: Standard Shift**
 - **Duration:** 4 hours
-- **Cost:** 250 coins
+- **Cost:** 25 Silver
 - **Description:** "Half-day shift for moderate absences."
 
 **Tier 4: Extended Shift**
 - **Duration:** 8 hours
-- **Cost:** 600 coins
+- **Cost:** 60 Silver
 - **Description:** "Full workday shift for daytime management."
 
 **Tier 5: Double Shift**
 - **Duration:** 12 hours
-- **Cost:** 1,200 coins
+- **Cost:** 120 Silver (or 1.2 Gold)
 - **Description:** "Long shift covering business hours and evening operations."
 
 **Tier 6: Long Shift**
 - **Duration:** 18 hours
-- **Cost:** 2,500 coins
+- **Cost:** 250 Silver (or 2.5 Gold)
 - **Description:** "Extended coverage for overnight operations."
 
 **Tier 7: Full Day Shift**
 - **Duration:** 24 hours
-- **Cost:** 5,000 coins + 10 mechanisms
+- **Cost:** 5 Gold + 10 mechanisms
 - **Description:** "Round-the-clock management for full-day absences."
 
 **Tier 8: Extended Day Shift**
 - **Duration:** 36 hours
-- **Cost:** 10,000 coins + 25 mechanisms
+- **Cost:** 10 Gold + 25 mechanisms
 - **Description:** "Day-and-a-half coverage for weekend trips."
 
 **Tier 9: Two-Day Shift**
 - **Duration:** 48 hours
-- **Cost:** 20,000 coins + 50 mechanisms + 25 components
+- **Cost:** 20 Gold + 50 mechanisms + 25 components
 - **Description:** "Full weekend coverage without player oversight."
 
 **Tier 10: Three-Day Shift**
 - **Duration:** 72 hours
-- **Cost:** 40,000 coins + 100 mechanisms + 50 components
+- **Cost:** 40 Gold + 100 mechanisms + 50 components
 - **Description:** "Extended multi-day management for long absences."
 
 ---
@@ -2320,12 +2354,12 @@ func get_management_label(slider_percent: float) -> String:
 | ──────────── QUALITY ──────────────      |
 | Current: Senior Overseer (80%)           |
 | ↑ Upgrade to Master (90%)                |
-|   Cost: 6,000 coins + 25 mechanisms      |
+|   Cost: 6 Gold + 25 mechanisms           |
 |                                          |
 | ──────────── DURATION ──────────────     |
 | Max Shift Length: 18 hours               |
 | ↑ Upgrade to Full Day (24h)              |
-|   Cost: 5,000 coins + 10 mechanisms      |
+|   Cost: 5 Gold + 10 mechanisms           |
 |                                          |
 | ──────────── MANAGEMENT STYLE ────────── |
 |                                          |
@@ -2336,8 +2370,8 @@ func get_management_label(slider_percent: float) -> String:
 |                                          |
 | ────────────────────────────────────     |
 |                                          |
-| Shift Cost: 45 coins/hour                |
-| Total Cost: 810 coins for 18h shift      |
+| Shift Cost: 4.5 Silver/hour              |
+| Total Cost: 81 Silver for 18h shift      |
 |                                          |
 | Set Shift Duration: [slider 1h-18h]      |
 | Selected: 18 hours                       |
@@ -2652,7 +2686,7 @@ Each material upgrade unlocks higher base temperature limits and represents hist
 - **Historical Context:** Mid-1800s improvement for steam locomotives
 - **Real Limitation:** Wrought iron melts at 1,480-1,590°C, more ductile than cast iron
 - **Characteristics:** Better thermal cycling resistance, less likely to crack
-- **Cost:** 800 coins
+- **Cost:** 80 Silver
 - **Requirements:** 20 lifetime furnace runtime hours
 - **Unlocks:** Improved steam pressure capabilities
 
@@ -2661,7 +2695,7 @@ Each material upgrade unlocks higher base temperature limits and represents hist
 - **Historical Context:** Late 1800s standard for industrial boilers
 - **Real Limitation:** Steel softens around 600-700°C but modern designs use water cooling and refractory
 - **Characteristics:** Strong, consistent, allows pressure vessel operations
-- **Cost:** 2,500 coins
+- **Cost:** 250 Silver (or 2.5 Gold)
 - **Requirements:** Wrought iron shell, 50 lifetime hours
 - **Unlocks:** Transition to industrial smelting capabilities
 
@@ -2670,7 +2704,7 @@ Each material upgrade unlocks higher base temperature limits and represents hist
 - **Historical Context:** Traditional cast iron melting furnace (1700s-present)
 - **Real Limitation:** Actual cupola operating temperature
 - **Characteristics:** Cylindrical steel shell with thick refractory lining, continuous operation
-- **Cost:** 8,000 coins + 50 components
+- **Cost:** 8 Gold + 50 components
 - **Requirements:** Mild steel shell, 100 lifetime hours
 - **Unlocks:** Cast iron melting, component self-production
 
@@ -2679,7 +2713,7 @@ Each material upgrade unlocks higher base temperature limits and represents hist
 - **Historical Context:** Large-scale iron production (1500s-present)
 - **Real Limitation:** Industrial blast furnace operating temperature
 - **Characteristics:** Tall design, forced air injection, continuous feed
-- **Cost:** 20,000 coins + 150 components + 100 mechanisms
+- **Cost:** 20 Gold + 150 components + 100 mechanisms
 - **Requirements:** Cupola design, 200 lifetime hours
 - **Unlocks:** Iron ore processing, advanced metallurgy
 
@@ -2688,7 +2722,7 @@ Each material upgrade unlocks higher base temperature limits and represents hist
 - **Historical Context:** Modern foundry standard (1900s-present)
 - **Real Limitation:** Industrial induction furnace typical operating range
 - **Characteristics:** Electromagnetic heating, precise temperature control, clean process
-- **Cost:** 50,000 coins + 300 components + 200 mechanisms + 100 pipes
+- **Cost:** 50 Gold + 300 components + 200 mechanisms + 100 pipes
 - **Requirements:** Blast furnace design, 300 lifetime hours, Power System unlocked
 - **Unlocks:** High-grade steel production, rapid melting
 
@@ -2697,7 +2731,7 @@ Each material upgrade unlocks higher base temperature limits and represents hist
 - **Historical Context:** Modern steelmaking and specialty alloy production
 - **Real Limitation:** Industrial EAF operating temperature
 - **Characteristics:** Arc plasma heating, extreme temperatures, alloy production
-- **Cost:** 150,000 coins + 500 components + 500 mechanisms + 300 pipes
+- **Cost:** 150 Gold + 500 components + 500 mechanisms + 300 pipes
 - **Requirements:** Induction furnace, 500 lifetime hours, Advanced Power System
 - **Unlocks:** Specialty steel, tool steel, high-performance alloys
 
@@ -2747,7 +2781,7 @@ Protective heat-resistant linings that allow shell materials to safely contain h
 - **Max Operating Temp:** 960°C (1,760°F)
 - **Historical Context:** Traditional furnace lining since ancient times
 - **Composition:** Silica and alumina clay bricks
-- **Cost:** 300 coins
+- **Cost:** 30 Silver
 - **Requirements:** Tier 2+ (Wrought iron shell or better)
 - **Effect:** +30% temperature limit
 - **Maintenance:** Degrades slowly, needs replacement every 100 hours
@@ -2757,7 +2791,7 @@ Protective heat-resistant linings that allow shell materials to safely contain h
 - **Max Operating Temp:** 1,788°C (3,250°F)
 - **Historical Context:** 1900s development for high-temperature industry
 - **Composition:** 50-90% alumina content
-- **Cost:** 1,200 coins
+- **Cost:** 120 Silver (or 1.2 Gold)
 - **Requirements:** Tier 3+ (Mild steel or better)
 - **Effect:** +60% temperature limit, excellent thermal shock resistance
 - **Maintenance:** More durable, replacement every 200 hours
@@ -2767,7 +2801,7 @@ Protective heat-resistant linings that allow shell materials to safely contain h
 - **Max Operating Temp:** 2,072°C (3,762°F)
 - **Historical Context:** Modern advanced ceramics
 - **Composition:** Alumina-zirconia composite
-- **Cost:** 5,000 coins + 20 components
+- **Cost:** 5 Gold + 20 components
 - **Requirements:** Tier 5+ (Blast furnace or better)
 - **Effect:** +90% temperature limit, superior slag resistance
 - **Maintenance:** Replacement every 300 hours
@@ -2777,7 +2811,7 @@ Protective heat-resistant linings that allow shell materials to safely contain h
 - **Max Operating Temp:** 2,852°C (5,166°F)
 - **Historical Context:** Modern steelmaking standard
 - **Composition:** Magnesium oxide (MgO)
-- **Cost:** 15,000 coins + 100 components + 50 mechanisms
+- **Cost:** 15 Gold + 100 components + 50 mechanisms
 - **Requirements:** Tier 6+ (Electric induction or better)
 - **Effect:** +120% temperature limit, extreme heat resistance
 - **Maintenance:** Replacement every 400 hours
@@ -2787,7 +2821,7 @@ Protective heat-resistant linings that allow shell materials to safely contain h
 - **Max Operating Temp:** 1,650°C (3,002°F) - *Note: Lower than magnesia but better thermal conductivity*
 - **Historical Context:** Specialty applications, high thermal stress environments
 - **Composition:** SiC ceramic
-- **Cost:** 25,000 coins + 200 components + 100 mechanisms
+- **Cost:** 25 Gold + 200 components + 100 mechanisms
 - **Requirements:** Tier 7 (Electric arc furnace)
 - **Effect:** +150% temperature limit, excellent thermal conductivity, rapid heating
 - **Special:** Oxidizes in air above 1,650°C - requires protective atmosphere
@@ -2879,17 +2913,17 @@ func calculate_max_heat():
 - Core economic upgrade
 
 **Cooling System** *(Tiers 3+)*
-- Cost: 1,500 coins
+- Cost: 150 Silver (or 1.5 Gold)
 - Effect: Allows higher operating temperatures safely, -30% heat decay
 - Requirements: Mild steel shell or better
 
 **Forced Air Injection** *(Tiers 4+)*
-- Cost: 3,000 coins + 25 mechanisms
+- Cost: 3 Gold + 25 mechanisms
 - Effect: +25% heat generation from coal, enables blast furnace operations
 - Requirements: Cupola design or better
 
 **Temperature Monitoring** *(Quality of Life)*
-- Cost: 500 coins
+- Cost: 50 Silver
 - Effect: Shows exact temperature readout, advance warning when approaching limits
 - Visual: Thermometer gauge on UI
 

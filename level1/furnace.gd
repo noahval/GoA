@@ -243,7 +243,7 @@ func update_conversion_buttons():
 			convert_coal_button.text = "Auto-converting..."
 			convert_coal_button.disabled = true
 		else:
-			convert_coal_button.text = "Claim coin"
+			convert_coal_button.text = "Claim Copper Piece"
 			convert_coal_button.disabled = Level1Vars.coal < coal_required
 
 	if toggle_mode_button:

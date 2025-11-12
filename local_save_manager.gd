@@ -127,6 +127,8 @@ func _get_level1_vars_data() -> Dictionary:
 		"coins": Level1Vars.coins,  # Legacy - kept for backward compatibility
 		"currency": Level1Vars.currency,  # New multi-currency system
 		"lifetime_currency": Level1Vars.lifetime_currency,  # Lifetime earnings per currency
+		"unlocked_gold": Level1Vars.unlocked_gold,  # ATM currency tier unlocks
+		"unlocked_platinum": Level1Vars.unlocked_platinum,
 		"components": Level1Vars.components,
 		"mechanisms": Level1Vars.mechanisms,
 		"pipes": Level1Vars.pipes,
@@ -219,6 +221,8 @@ func _set_level1_vars_data(data: Dictionary) -> void:
 		# New format - load currency dictionaries directly
 		Level1Vars.currency = data.get("currency", {"copper": 0.0, "silver": 0.0, "gold": 0.0, "platinum": 0.0})
 		Level1Vars.lifetime_currency = data.get("lifetime_currency", {"copper": 0.0, "silver": 0.0, "gold": 0.0, "platinum": 0.0})
+		Level1Vars.unlocked_gold = data.get("unlocked_gold", false)
+		Level1Vars.unlocked_platinum = data.get("unlocked_platinum", false)
 		Level1Vars.coins = Level1Vars.currency.copper  # Sync legacy variable
 	else:
 		# Old format - migrate single "coins" value to new multi-currency system

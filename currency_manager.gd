@@ -43,12 +43,22 @@ const CONVERSION_RATES = {
 	CurrencyType.PLATINUM: 1000000  # 100 gold = 1 platinum
 }
 
-# Variable conversion rates (for future features like dynamic economy)
+# Variable conversion rates (for dynamic market volatility)
 var conversion_rate_modifiers = {
 	CurrencyType.COPPER: 1.0,
 	CurrencyType.SILVER: 1.0,
 	CurrencyType.GOLD: 1.0,
-	CurrencyType.PLATINUM: 1.0
+	CurrencyType.PLATINUM: 1.0  # Platinum is stable anchor (always 1.0)
+}
+
+# Market volatility system
+var market_update_timer: float = 0.0
+var next_market_update_interval: float = 900.0  # 15 minutes default
+var market_volatility: Dictionary = {
+	CurrencyType.COPPER: 0.0,   # Fluctuates vs silver (laborers)
+	CurrencyType.SILVER: 0.0,   # Fluctuates vs gold (merchants)
+	CurrencyType.GOLD: 0.0      # Fluctuates vs platinum (nobles)
+	# Platinum has no volatility (stable anchor)
 }
 
 # Unlock thresholds (total copper value needed to unlock each currency tier)
@@ -136,8 +146,11 @@ func add_currency(currency_type: int, amount: float, reason: String = "earned") 
 	if Level1Vars.lifetime_currency.has(currency_name):
 		Level1Vars.lifetime_currency[currency_name] += amount
 
-	# Check if this unlocks new currency tiers
+	# Check if this unlocks new currency tiers (CurrencyManager system)
 	_check_currency_unlocks()
+
+	# Check ATM currency tier unlocks (based on current holdings)
+	Level1Vars.check_currency_unlocks()
 
 	# Log the change
 	DebugLogger.log_resource_change(currency_name, old_amount, _get_player_currency(currency_type), reason)
@@ -370,6 +383,76 @@ func is_currency_unlocked(currency_type: int) -> bool:
 	return unlocked_currencies.get(currency_type, false)
 
 
+## Calculate transaction fee for currency exchange
+## Fee scales from 8% for small transactions to 1% for large ones
+## @param amount: float - amount being exchanged
+## @param from_type: CurrencyType enum - currency being converted from
+## @return: float - fee amount in same currency as amount
+func calculate_transaction_fee(amount: float, from_type: int) -> float:
+	var copper_value = amount * CONVERSION_RATES[from_type]
+	var base_fee_percent = 0.08  # 8% base fee
+	var scaling_factor = log(copper_value + 1) / 100000.0
+	var fee_percent = base_fee_percent - (scaling_factor * 0.07)
+	fee_percent = clamp(fee_percent, 0.01, 0.08)  # 1% to 8% range
+
+	# Optional: Charisma reduces fees (2% reduction per level)
+	if Global.charisma > 1:
+		var charisma_reduction = (Global.charisma - 1) * 0.02
+		fee_percent *= (1.0 - charisma_reduction)
+		fee_percent = max(fee_percent, 0.01)  # Minimum 1% fee
+
+	return amount * fee_percent
+
+
+## Exchange currency with transaction fee
+## @param from_type: CurrencyType enum - currency to convert from
+## @param to_type: CurrencyType enum - currency to convert to
+## @param amount: float - amount of from_type to exchange
+## @return: Dictionary with success, fee, received, and market_rate
+func exchange_currency_with_fee(from_type: int, to_type: int, amount: float) -> Dictionary:
+	# Validate player has enough
+	var player_amount = _get_player_currency(from_type)
+	if player_amount < amount:
+		return {"success": false, "error": "insufficient_funds"}
+
+	# Check if target currency is unlocked
+	if not unlocked_currencies[to_type]:
+		return {"success": false, "error": "currency_locked"}
+
+	# Calculate fee
+	var fee = calculate_transaction_fee(amount, from_type)
+	var net_amount = amount - fee
+
+	# Calculate conversion with market rates
+	var from_rate = CONVERSION_RATES[from_type] * conversion_rate_modifiers[from_type]
+	var to_rate = CONVERSION_RATES[to_type] * conversion_rate_modifiers[to_type]
+	var received = (net_amount * from_rate) / to_rate
+
+	# Deduct full amount from player (including fee)
+	_set_player_currency(from_type, player_amount - amount)
+
+	# Add received amount to target currency
+	var target_amount = _get_player_currency(to_type)
+	_set_player_currency(to_type, target_amount + received)
+
+	# Log the exchange
+	var from_name = CURRENCY_NAMES[from_type].to_lower()
+	var to_name = CURRENCY_NAMES[to_type].to_lower()
+	DebugLogger.log_resource_change(from_name, player_amount, player_amount - amount, "exchanged to " + to_name)
+	DebugLogger.log_resource_change(to_name, target_amount, target_amount + received, "exchanged from " + from_name)
+
+	# Award experience based on transaction value
+	var xp_amount = fee * CONVERSION_RATES[from_type]
+	Global.add_stat_exp("charisma", xp_amount)
+
+	return {
+		"success": true,
+		"fee": fee,
+		"received": received,
+		"market_rate": conversion_rate_modifiers[to_type]
+	}
+
+
 ## Reset currencies for prestige (decides what persists)
 ## @param keep_platinum: bool - if true, platinum bonds persist through prestige
 func reset_for_prestige(keep_platinum: bool = true) -> void:
@@ -385,3 +468,94 @@ func reset_for_prestige(keep_platinum: bool = true) -> void:
 
 	# Keep lifetime currencies
 	# Keep unlocks (once unlocked, always unlocked)
+
+
+## Initialize market rates on startup
+func _ready() -> void:
+	update_market_rates()  # Set initial rates
+
+
+## Update market rates over time
+func _process(delta: float) -> void:
+	market_update_timer += delta
+	if market_update_timer >= next_market_update_interval:
+		market_update_timer = 0.0
+		update_market_rates()
+
+
+## Update market exchange rates with bell curve volatility
+func update_market_rates() -> void:
+	# Set next update interval (15-30 minutes random)
+	next_market_update_interval = randf_range(900.0, 1800.0)
+
+	# Update rates with bell curve (Copper, Silver, Gold only)
+	# Platinum is the stable anchor (no volatility)
+	for currency_type in [CurrencyType.COPPER, CurrencyType.SILVER, CurrencyType.GOLD]:
+		var deviation = randfn(0.0, 0.1)  # Normal distribution, std dev 0.1
+		deviation = clamp(deviation, -0.3, 0.3)  # Clamp to +/- 30%
+		market_volatility[currency_type] = deviation
+		conversion_rate_modifiers[currency_type] = 1.0 + deviation
+
+		# Show notification for extremes
+		var notification = get_extreme_market_notification(currency_type)
+		if notification != "":
+			Global.show_stat_notification(notification)
+
+	# Debug logging
+	DebugLogger.log_info("MarketUpdate", "Rates: C=%.2f, S=%.2f, G=%.2f, P=1.00" % [
+		conversion_rate_modifiers[CurrencyType.COPPER],
+		conversion_rate_modifiers[CurrencyType.SILVER],
+		conversion_rate_modifiers[CurrencyType.GOLD]
+	])
+
+
+## Get market notification for extreme volatility events
+## Returns empty string if not extreme, or grimdark flavor text
+func get_extreme_market_notification(currency_type: int) -> String:
+	var volatility = market_volatility.get(currency_type, 0.0)
+
+	# Only return text for extremes (+/- 20-30%)
+	if abs(volatility) < 0.2:
+		return ""
+
+	var is_high = volatility > 0.2
+	var variant = randi() % 3  # Random variant (0, 1, or 2)
+
+	match currency_type:
+		CurrencyType.COPPER:  # Laborers/destitute (fluctuates vs silver)
+			if is_high:  # Laborers doing WELL, copper VALUABLE
+				match variant:
+					0: return "Furnace accident: labor shortage drives copper rates"
+					1: return "Infection culls the workforce: survivors demand more"
+					2: return "Mass conscription: fewer hands, higher wages"
+			else:  # Laborers DESPERATE, copper WEAK
+				match variant:
+					0: return "Coal quotas doubled: labor value plummets"
+					1: return "New work camp opened: copper floods the vaults"
+					2: return "Vagrant roundup successful: desperate hands abundant"
+
+		CurrencyType.SILVER:  # Merchants/artisans (fluctuates vs gold)
+			if is_high:  # Merchants doing WELL, silver VALUABLE
+				match variant:
+					0: return "Supply convoy delayed: merchants hoard reserves"
+					1: return "Black market disrupted: silver gains legitimacy"
+					2: return "Guild masters bribe the Council: rates improve"
+			else:  # Merchants DESPERATE, silver WEAK
+				match variant:
+					0: return "Guild regulations tightened: merchant desperation grows"
+					1: return "Trade permits revoked: silver devalues rapidly"
+					2: return "Factory owners demand tribute: middle class squeezed"
+
+		CurrencyType.GOLD:  # Nobles/gentry (fluctuates vs platinum)
+			if is_high:  # Nobles doing WELL, gold VALUABLE
+				match variant:
+					0: return "Military contracts awarded: nobles enriched"
+					1: return "Land rights restricted: gold becomes scarce"
+					2: return "Royal favor shifts: titled families consolidate"
+			else:  # Nobles DESPERATE, gold WEAK
+				match variant:
+					0: return "Estate taxes raised: nobility liquidating assets"
+					1: return "War bonds called: old money bleeds gold"
+					2: return "Succession crisis: desperate lords sell holdings"
+
+	return ""
