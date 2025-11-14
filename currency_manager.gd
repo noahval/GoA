@@ -61,12 +61,14 @@ var market_volatility: Dictionary = {
 	# Platinum has no volatility (stable anchor)
 }
 
-# Unlock thresholds (total copper value needed to unlock each currency tier)
+# Unlock thresholds
+# Silver: Lifetime-based (total copper value earned across all time)
+# Gold & Platinum: Current-holdings-based (checked in _check_currency_unlocks)
 const UNLOCK_THRESHOLDS = {
-	CurrencyType.COPPER: 0,
-	CurrencyType.SILVER: 500,  # Unlock silver at 500 copper lifetime
-	CurrencyType.GOLD: 50000,  # Unlock gold at 50,000 copper lifetime (500 silver)
-	CurrencyType.PLATINUM: 2500000  # Unlock platinum at 2.5M copper lifetime (25 gold)
+	CurrencyType.COPPER: 0,  # Always unlocked
+	CurrencyType.SILVER: 500,  # Unlock at 500 copper lifetime earnings
+	CurrencyType.GOLD: 6000,  # UNUSED - Gold unlocks at 60 silver in hand (see _check_currency_unlocks)
+	CurrencyType.PLATINUM: 600000  # UNUSED - Platinum unlocks at 60 gold in hand (see _check_currency_unlocks)
 }
 
 # Track unlocked currencies
@@ -358,27 +360,45 @@ func _set_player_currency(currency_type: int, amount: float) -> void:
 			Level1Vars.currency.platinum = amount
 
 
-## Check if player has unlocked new currency tiers based on lifetime earnings
+## Check if player has unlocked new currency tiers
+## Silver: Based on lifetime earnings (500 copper total)
+## Gold: Based on current holdings (60 silver in hand)
+## Platinum: Based on current holdings (60 gold in hand)
 func _check_currency_unlocks() -> void:
-	var total_lifetime_copper = 0.0
-	for currency_name in Level1Vars.lifetime_currency.keys():
-		var currency_type = _get_currency_type_from_name(currency_name)
-		if currency_type != null:
-			total_lifetime_copper += Level1Vars.lifetime_currency[currency_name] * CONVERSION_RATES[currency_type]
+	# Silver unlock: lifetime-based (500 copper earned total)
+	if not unlocked_currencies[CurrencyType.SILVER]:
+		var total_lifetime_copper = 0.0
+		for currency_name in Level1Vars.lifetime_currency.keys():
+			var currency_type = _get_currency_type_from_name(currency_name)
+			if currency_type != null:
+				total_lifetime_copper += Level1Vars.lifetime_currency[currency_name] * CONVERSION_RATES[currency_type]
 
-	# Check each tier
-	for currency_type in UNLOCK_THRESHOLDS.keys():
-		if not unlocked_currencies[currency_type] and total_lifetime_copper >= UNLOCK_THRESHOLDS[currency_type]:
-			unlocked_currencies[currency_type] = true
-
-			# Synchronize with Level1Vars unlock system
-			if currency_type == CurrencyType.GOLD and not Level1Vars._unlocked_gold:
-				Level1Vars._unlocked_gold = true
-			elif currency_type == CurrencyType.PLATINUM and not Level1Vars._unlocked_platinum:
-				Level1Vars._unlocked_platinum = true
-
-			var currency_name = CURRENCY_NAMES_PLURAL[currency_type]
+		if total_lifetime_copper >= UNLOCK_THRESHOLDS[CurrencyType.SILVER]:
+			unlocked_currencies[CurrencyType.SILVER] = true
+			var currency_name = CURRENCY_NAMES_PLURAL[CurrencyType.SILVER]
 			DebugLogger.log_info("CurrencyUnlock", "Unlocked " + currency_name + "!")
+
+	# Gold unlock: current-holdings-based (60 silver in hand)
+	if not unlocked_currencies[CurrencyType.GOLD] and Level1Vars.currency.silver >= 60:
+		unlocked_currencies[CurrencyType.GOLD] = true
+
+		# Synchronize with Level1Vars unlock system
+		if not Level1Vars._unlocked_gold:
+			Level1Vars._unlocked_gold = true
+
+		var currency_name = CURRENCY_NAMES_PLURAL[CurrencyType.GOLD]
+		DebugLogger.log_info("CurrencyUnlock", "Unlocked " + currency_name + "!")
+
+	# Platinum unlock: current-holdings-based (60 gold in hand)
+	if not unlocked_currencies[CurrencyType.PLATINUM] and Level1Vars.currency.gold >= 60:
+		unlocked_currencies[CurrencyType.PLATINUM] = true
+
+		# Synchronize with Level1Vars unlock system
+		if not Level1Vars._unlocked_platinum:
+			Level1Vars._unlocked_platinum = true
+
+		var currency_name = CURRENCY_NAMES_PLURAL[CurrencyType.PLATINUM]
+		DebugLogger.log_info("CurrencyUnlock", "Unlocked " + currency_name + "!")
 
 
 ## Check if a currency type is unlocked

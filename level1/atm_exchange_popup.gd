@@ -372,8 +372,19 @@ func _on_exchange_button_pressed():
 		# Update preview with current amount (keep the entered value for convenience)
 		update_preview()
 
+		# Store current selection before refreshing
+		var previous_selection = selected_currency_type
+
 		# Refresh currency options in case of unlocks
 		setup_currency_options()
+
+		# Restore previous selection if it's still available
+		if currency_option and currency_option.visible:
+			for i in range(currency_option.item_count):
+				if currency_option.get_item_id(i) == previous_selection:
+					currency_option.select(i)
+					selected_currency_type = previous_selection
+					break
 
 		# Emit signal to notify parent scene
 		exchange_completed.emit()

@@ -13,10 +13,9 @@ script = ExtResource("2_script")
 texture = ExtResource("3_texture")
 
 [node name="MarketRatesPanel" type="Panel" parent="HBoxContainer/LeftVBox" index="0"]
-custom_minimum_size = Vector2(0, 140)
+custom_minimum_size = Vector2(0, 220)
 layout_mode = 2
 size_flags_vertical = 0
-clip_contents = true
 z_index = 0
 metadata/_responsive_layout_preserve_height = true
 
@@ -32,14 +31,9 @@ theme_override_constants/margin_top = 5
 theme_override_constants/margin_right = 5
 theme_override_constants/margin_bottom = 5
 
-[node name="RatesLabel" type="Label" parent="HBoxContainer/LeftVBox/MarketRatesPanel/MarginContainer"]
+[node name="RatesVBox" type="VBoxContainer" parent="HBoxContainer/LeftVBox/MarketRatesPanel/MarginContainer"]
 layout_mode = 2
-text = "Currency Exchange
-
-Current Rates:
-1 silver = 100 copper"
-horizontal_alignment = 1
-vertical_alignment = 1
+alignment = 1
 
 [node name="BreakTimerPanel" type="Panel" parent="HBoxContainer/LeftVBox" index="1"]
 theme_type_variation = &"ProgressPanel"
@@ -77,7 +71,6 @@ self_modulate = Color(1, 1, 1, 0.7)
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 size_flags_vertical = 0
-clip_contents = true
 z_index = 0
 script = ExtResource("currency_panel_script")
 vertical_alignment = 1

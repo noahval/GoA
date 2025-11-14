@@ -7,7 +7,7 @@ var max_break_time = 30.0
 @onready var break_timer_bar = $HBoxContainer/LeftVBox/BreakTimerPanel/BreakTimerBar
 @onready var break_timer_label = $HBoxContainer/LeftVBox/BreakTimerPanel/BreakTimer
 @onready var coins_panel = $HBoxContainer/LeftVBox/CoinsPanel
-@onready var market_rates_label = $HBoxContainer/LeftVBox/MarketRatesPanel/MarginContainer/RatesLabel
+@onready var market_rates_vbox = $HBoxContainer/LeftVBox/MarketRatesPanel/MarginContainer/RatesVBox
 @onready var dev_free_currency_button = $HBoxContainer/RightVBox/DevFreeCurrencyButton
 @onready var exchange_popup = $ExchangePopup
 
@@ -131,28 +131,68 @@ func _find_widest_child(node: Node, widest: Control, widest_width: float):
 
 ## Update market rates display panel
 func update_market_rates_display():
-	if not market_rates_label:
+	if not market_rates_vbox:
 		return
 
-	var rates_text = "Currency Exchange\n\nCurrent Rates:\n"
+	# Clear existing children
+	for child in market_rates_vbox.get_children():
+		child.queue_free()
 
-	# Calculate how much copper for 1 silver (when buying 1 silver with copper)
+	# Add subtitle
+	var subtitle_label = Label.new()
+	subtitle_label.text = "Current Rates:"
+	subtitle_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	market_rates_vbox.add_child(subtitle_label)
+
+	# Add spacer
+	var spacer2 = Control.new()
+	spacer2.custom_minimum_size = Vector2(0, 4)
+	market_rates_vbox.add_child(spacer2)
+
+	# Calculate rates
 	var copper_modifier = CurrencyManager.conversion_rate_modifiers[CurrencyManager.CurrencyType.COPPER]
 	var silver_modifier = CurrencyManager.conversion_rate_modifiers[CurrencyManager.CurrencyType.SILVER]
+	var gold_modifier = CurrencyManager.conversion_rate_modifiers[CurrencyManager.CurrencyType.GOLD]
+	var platinum_modifier = CurrencyManager.conversion_rate_modifiers[CurrencyManager.CurrencyType.PLATINUM]
+
 	var copper_per_silver = (100.0 * silver_modifier) / copper_modifier
-	rates_text += "%.0f copper = 1 silver" % copper_per_silver
+	var silver_per_gold = (100.0 * gold_modifier) / silver_modifier
+	var gold_per_platinum = (100.0 * platinum_modifier) / gold_modifier
 
-	# Gold (if unlocked)
-	if Level1Vars.unlocked_gold:
-		var gold_modifier = CurrencyManager.conversion_rate_modifiers[CurrencyManager.CurrencyType.GOLD]
-		var silver_per_gold = (100.0 * gold_modifier) / silver_modifier
-		rates_text += "\n%.0f silver = 1 gold" % silver_per_gold
+	# Add rate rows
+	market_rates_vbox.add_child(_create_rate_row(copper_per_silver, CurrencyManager.CurrencyType.COPPER, CurrencyManager.CurrencyType.SILVER))
+	market_rates_vbox.add_child(_create_rate_row(silver_per_gold, CurrencyManager.CurrencyType.SILVER, CurrencyManager.CurrencyType.GOLD))
+	market_rates_vbox.add_child(_create_rate_row(gold_per_platinum, CurrencyManager.CurrencyType.GOLD, CurrencyManager.CurrencyType.PLATINUM))
 
-	# Platinum (if unlocked) - Platinum is stable (modifier always 1.0)
-	if Level1Vars.unlocked_platinum:
-		var gold_modifier = CurrencyManager.conversion_rate_modifiers[CurrencyManager.CurrencyType.GOLD]
-		var platinum_modifier = CurrencyManager.conversion_rate_modifiers[CurrencyManager.CurrencyType.PLATINUM]
-		var gold_per_platinum = (100.0 * platinum_modifier) / gold_modifier
-		rates_text += "\n%.0f gold = 1 platinum" % gold_per_platinum
+## Create a rate row with icons
+func _create_rate_row(from_amount: float, from_type: int, to_type: int) -> HBoxContainer:
+	var row = HBoxContainer.new()
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
 
-	market_rates_label.text = rates_text
+	# From amount label
+	var amount_label = Label.new()
+	amount_label.text = "%.0f" % from_amount
+	row.add_child(amount_label)
+
+	# From currency icon
+	var from_icon = TextureRect.new()
+	from_icon.custom_minimum_size = Vector2(32, 32)
+	from_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	from_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	from_icon.texture = load(CurrencyManager.get_currency_icon(from_type))
+	row.add_child(from_icon)
+
+	# Equals label
+	var equals_label = Label.new()
+	equals_label.text = " = 1 "
+	row.add_child(equals_label)
+
+	# To currency icon
+	var to_icon = TextureRect.new()
+	to_icon.custom_minimum_size = Vector2(32, 32)
+	to_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	to_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	to_icon.texture = load(CurrencyManager.get_currency_icon(to_type))
+	row.add_child(to_icon)
+
+	return row
