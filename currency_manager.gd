@@ -229,12 +229,9 @@ func format_currency_for_icons(show_all: bool = false) -> Array:
 	for curr in currencies:
 		var amount = Level1Vars.currency[curr.key]
 
-		# Skip if zero and not showing all
-		if not show_all and amount <= 0:
-			continue
-
-		# Skip if not unlocked and zero
-		if not unlocked_currencies[curr.type] and amount <= 0:
+		# Skip if: not showing all AND zero amount AND not unlocked
+		# (Show unlocked currencies even if they have 0 balance)
+		if not show_all and amount <= 0 and not unlocked_currencies[curr.type]:
 			continue
 
 		result.append({
@@ -373,9 +370,15 @@ func _check_currency_unlocks() -> void:
 	for currency_type in UNLOCK_THRESHOLDS.keys():
 		if not unlocked_currencies[currency_type] and total_lifetime_copper >= UNLOCK_THRESHOLDS[currency_type]:
 			unlocked_currencies[currency_type] = true
+
+			# Synchronize with Level1Vars unlock system
+			if currency_type == CurrencyType.GOLD and not Level1Vars._unlocked_gold:
+				Level1Vars._unlocked_gold = true
+			elif currency_type == CurrencyType.PLATINUM and not Level1Vars._unlocked_platinum:
+				Level1Vars._unlocked_platinum = true
+
 			var currency_name = CURRENCY_NAMES_PLURAL[currency_type]
 			DebugLogger.log_info("CurrencyUnlock", "Unlocked " + currency_name + "!")
-			# Could show notification to player here
 
 
 ## Check if a currency type is unlocked
@@ -473,6 +476,31 @@ func reset_for_prestige(keep_platinum: bool = true) -> void:
 ## Initialize market rates on startup
 func _ready() -> void:
 	update_market_rates()  # Set initial rates
+	_sync_unlock_systems()  # Ensure unlock systems are synchronized
+
+
+## Synchronize the two unlock systems (CurrencyManager and Level1Vars)
+## This ensures they stay in sync, especially after loading saves
+func _sync_unlock_systems() -> void:
+	# If Level1Vars has gold unlocked, CurrencyManager should too
+	if Level1Vars.unlocked_gold and not unlocked_currencies[CurrencyType.GOLD]:
+		unlocked_currencies[CurrencyType.GOLD] = true
+		DebugLogger.log_info("CurrencySync", "Synced gold unlock to CurrencyManager")
+
+	# If CurrencyManager has gold unlocked, Level1Vars should too
+	if unlocked_currencies[CurrencyType.GOLD] and not Level1Vars.unlocked_gold:
+		Level1Vars.unlocked_gold = true
+		DebugLogger.log_info("CurrencySync", "Synced gold unlock to Level1Vars")
+
+	# If Level1Vars has platinum unlocked, CurrencyManager should too
+	if Level1Vars.unlocked_platinum and not unlocked_currencies[CurrencyType.PLATINUM]:
+		unlocked_currencies[CurrencyType.PLATINUM] = true
+		DebugLogger.log_info("CurrencySync", "Synced platinum unlock to CurrencyManager")
+
+	# If CurrencyManager has platinum unlocked, Level1Vars should too
+	if unlocked_currencies[CurrencyType.PLATINUM] and not Level1Vars.unlocked_platinum:
+		Level1Vars.unlocked_platinum = true
+		DebugLogger.log_info("CurrencySync", "Synced platinum unlock to Level1Vars")
 
 
 ## Update market rates over time

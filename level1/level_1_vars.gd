@@ -18,8 +18,19 @@ var lifetime_currency = {
 }
 
 # Currency tier unlocks (ATM exchange feature)
-var unlocked_gold: bool = false  # Unlocks at 60 silver
-var unlocked_platinum: bool = false  # Unlocks at 60 gold
+var unlocked_gold: bool:
+	get:
+		return true if Global.dev_speed_mode else _unlocked_gold
+	set(value):
+		_unlocked_gold = value
+var _unlocked_gold: bool = false  # Unlocks at 60 silver
+
+var unlocked_platinum: bool:
+	get:
+		return true if Global.dev_speed_mode else _unlocked_platinum
+	set(value):
+		_unlocked_platinum = value
+var _unlocked_platinum: bool = false  # Unlocks at 60 gold
 
 # Legacy variable for backward compatibility - syncs with currency.copper
 var coins = 0.0:
@@ -167,11 +178,15 @@ func get_offline_cap_seconds() -> int:
 ## Gold unlocks at 60 silver, Platinum unlocks at 60 gold
 func check_currency_unlocks() -> void:
 	# Gold unlocks at 60 silver
-	if not unlocked_gold and currency.silver >= 60:
-		unlocked_gold = true
+	if not _unlocked_gold and currency.silver >= 60:
+		_unlocked_gold = true
+		# Synchronize with CurrencyManager unlock system
+		CurrencyManager.unlocked_currencies[CurrencyManager.CurrencyType.GOLD] = true
 		Global.show_stat_notification("Trading in gold now permitted")
 
 	# Platinum unlocks at 60 gold
-	if not unlocked_platinum and currency.gold >= 60:
-		unlocked_platinum = true
+	if not _unlocked_platinum and currency.gold >= 60:
+		_unlocked_platinum = true
+		# Synchronize with CurrencyManager unlock system
+		CurrencyManager.unlocked_currencies[CurrencyManager.CurrencyType.PLATINUM] = true
 		Global.show_stat_notification("Trading in platinum bonds now permitted")

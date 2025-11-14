@@ -14,6 +14,7 @@ var auto_conversion_timer = 0.0  # Timer for auto conversion interval
 var cached_mood_text: String = ""  # Cached mood text for delayed display updates
 var mood_display_timer: float = 0.0  # Timer for random mood display updates
 var next_mood_update_delay: float  # Random delay between 4-10 seconds
+var last_coal_value: int = -1  # Track last coal value to avoid unnecessary updates
 @onready var left_vbox = $HBoxContainer/LeftVBox
 @onready var right_vbox = $HBoxContainer/RightVBox
 @onready var coal_label = $HBoxContainer/LeftVBox/CoalPanel/CoalLabel
@@ -47,6 +48,8 @@ func _update_currency_display():
 		coins_panel.setup_currency_display(currency_data)
 
 func _process(delta):
+	var ui_needs_update = false
+
 	# Auto shovel interval-based generation
 	if Level1Vars.auto_shovel_lvl > 0:
 		auto_shovel_timer += delta
@@ -55,6 +58,7 @@ func _process(delta):
 			# Multiply quantity of auto-shovels by coal per tick
 			Level1Vars.coal += Level1Vars.auto_shovel_lvl * Level1Vars.auto_shovel_coal_per_tick
 			auto_shovel_timer -= Level1Vars.auto_shovel_freq  # Preserve excess time for accuracy
+			ui_needs_update = true
 
 	# Decrease stimulated_remaining by 1 per second
 	if Level1Vars.stimulated_remaining > 0:
@@ -66,6 +70,7 @@ func _process(delta):
 		if Level1Vars.stimulated_remaining < 2 and not Level1Vars.shown_tired_notification:
 			Global.show_stat_notification("You feel tired again")
 			Level1Vars.shown_tired_notification = true
+			ui_needs_update = true
 
 	# Decrease resilient_remaining by 1 per second
 	if Level1Vars.resilient_remaining > 0:
@@ -77,6 +82,7 @@ func _process(delta):
 		if Level1Vars.resilient_remaining < 2 and not Level1Vars.shown_lazy_notification:
 			Global.show_stat_notification("You feel lazy again")
 			Level1Vars.shown_lazy_notification = true
+			ui_needs_update = true
 
 	# Phase 1: Auto-conversion mode
 	if Level1Vars.auto_conversion_enabled and Level1Vars.coal >= OverseerMood.get_coal_per_coin():
@@ -84,6 +90,7 @@ func _process(delta):
 		if auto_conversion_timer >= 5.0:  # Auto-convert every 5 seconds
 			auto_conversion_timer = 0.0
 			perform_auto_conversion()
+			ui_needs_update = true
 
 	# Random delayed mood display update (4-10 second intervals)
 	mood_display_timer += delta
@@ -93,16 +100,21 @@ func _process(delta):
 		# Reset timer and set new random delay
 		mood_display_timer = 0.0
 		next_mood_update_delay = randf_range(4.0, 10.0)
+		ui_needs_update = true
 
-	if coal_label:
-		coal_label.text = "Coal Shoveled: " + str(int(Level1Vars.coal))
-	_update_currency_display()
-	update_stamina_bar()
-	update_suspicion_bar()
-	update_mood_panel_visibility()
-	update_mood_display()
-	update_conversion_buttons()
-	update_dev_buttons()
+	# Only update UI when coal value changes or when other updates are needed
+	var current_coal = int(Level1Vars.coal)
+	if current_coal != last_coal_value or ui_needs_update:
+		last_coal_value = current_coal
+		if coal_label:
+			coal_label.text = "Coal Shoveled: " + str(current_coal)
+		_update_currency_display()
+		update_stamina_bar()
+		update_suspicion_bar()
+		update_mood_panel_visibility()
+		update_mood_display()
+		update_conversion_buttons()
+		update_dev_buttons()
 
 func _on_shovel_coal_button_pressed():
 	# Reduce stamina (less if resilient)

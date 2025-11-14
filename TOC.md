@@ -105,6 +105,8 @@
 
 ### Scripts (.gd)
 - [level1/atm.gd](level1/atm.gd)  
+- [level1/atm_debug.gd](level1/atm_debug.gd)  
+- [level1/atm_exchange_popup.gd](level1/atm_exchange_popup.gd)  
 - [level1/bar.gd](level1/bar.gd)  
 - [level1/coppersmith_carriage.gd](level1/coppersmith_carriage.gd)  
 - [level1/dorm.gd](level1/dorm.gd)  
@@ -127,6 +129,7 @@
 
 ### Scenes (.tscn)
 - [level1/atm.tscn](level1/atm.tscn)  
+- [level1/atm_exchange_popup.tscn](level1/atm_exchange_popup.tscn)  
 - [level1/bar.tscn](level1/bar.tscn)  
 - [level1/coppersmith_carriage.tscn](level1/coppersmith_carriage.tscn)  
 - [level1/dorm.tscn](level1/dorm.tscn)  

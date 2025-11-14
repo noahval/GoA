@@ -3,23 +3,13 @@ extends Control
 var break_time = 30.0
 var max_break_time = 30.0
 
-# Exchange state
-var from_currency_type: int = CurrencyManager.CurrencyType.COPPER
-var to_currency_type: int = CurrencyManager.CurrencyType.SILVER
-var exchange_amount: float = 0.0
-
-# Node references - existing
+# Node references
 @onready var break_timer_bar = $HBoxContainer/LeftVBox/BreakTimerPanel/BreakTimerBar
 @onready var break_timer_label = $HBoxContainer/LeftVBox/BreakTimerPanel/BreakTimer
 @onready var coins_panel = $HBoxContainer/LeftVBox/CoinsPanel
-
-# Node references - new exchange UI
 @onready var market_rates_label = $HBoxContainer/LeftVBox/MarketRatesPanel/MarginContainer/RatesLabel
-@onready var from_option = $HBoxContainer/RightVBox/ExchangePanel/MarginContainer/VBox/FromCurrencyOption
-@onready var to_option = $HBoxContainer/RightVBox/ExchangePanel/MarginContainer/VBox/ToCurrencyOption
-@onready var amount_input = $HBoxContainer/RightVBox/ExchangePanel/MarginContainer/VBox/AmountInput
-@onready var preview_label = $HBoxContainer/RightVBox/ExchangePanel/MarginContainer/VBox/PreviewLabel
-@onready var exchange_button = $HBoxContainer/RightVBox/ExchangeButton
+@onready var dev_free_currency_button = $HBoxContainer/RightVBox/DevFreeCurrencyButton
+@onready var exchange_popup = $ExchangePopup
 
 func _ready():
 	# Set the actual maximum break time
@@ -37,13 +27,29 @@ func _ready():
 
 	ResponsiveLayout.apply_to_scene(self)
 
-	# Setup exchange UI
-	setup_currency_options()
-	update_market_rates_display()
-	connect_signals()
+	# Show/hide developer button based on dev_speed_mode
+	if dev_free_currency_button:
+		dev_free_currency_button.visible = Global.dev_speed_mode
 
-	update_labels()
-	update_preview()
+	# Connect exchange popup signal
+	if exchange_popup:
+		exchange_popup.exchange_completed.connect(_on_exchange_completed)
+
+	# Defer currency/market updates to ensure CurrencyManager is fully initialized
+	call_deferred("_deferred_ready")
+
+func _deferred_ready():
+	# Check currency unlocks based on current holdings
+	Level1Vars.check_currency_unlocks()
+
+	# Update market rates display
+	update_market_rates_display()
+
+	# Update currency display
+	_update_currency_display()
+
+	# Debug: Check popup size after layout (needs further deferral for rendering)
+	call_deferred("_debug_check_popup_size")
 
 func _process(delta):
 	break_time -= delta
@@ -65,9 +71,22 @@ func _process(delta):
 func _on_to_coppersmith_carriage_button_pressed():
 	Global.change_scene_with_check(get_tree(), "res://level1/coppersmith_carriage.tscn")
 
-func update_labels():
-	# Update coins display
+func _on_exchange_completed():
+	# Update currency display after exchange
 	_update_currency_display()
+	# Also update market rates in case new currencies were unlocked
+	update_market_rates_display()
+
+func _on_dev_free_currency_button_pressed():
+	CurrencyManager.add_currency(CurrencyManager.CurrencyType.SILVER, 150, "debug/cheat")
+	CurrencyManager.add_currency(CurrencyManager.CurrencyType.GOLD, 150, "debug/cheat")
+	_update_currency_display()
+
+	# Also print debug info
+	if Global.dev_speed_mode:
+		print("\n[DEV] Free currency added!")
+		var atm_debug = load("res://level1/atm_debug.gd")
+		atm_debug.print_currency_state()
 
 ## Update currency panel with current currency values
 func _update_currency_display():
@@ -76,44 +95,39 @@ func _update_currency_display():
 		coins_panel.setup_currency_display(currency_data)
 
 
-## Setup currency dropdown options (only show unlocked currencies)
-func setup_currency_options():
-	if not from_option or not to_option:
-		return
+## Debug function to check popup size
+func _debug_check_popup_size():
+	await get_tree().process_frame
+	await get_tree().process_frame
 
-	from_option.clear()
-	to_option.clear()
+	var popup = $ExchangePopup
+	if popup:
+		print("\n=== ATM SCENE: Popup Size Check ===")
+		print("Popup size: ", popup.size)
+		print("Popup offsets: L=", popup.offset_left, " R=", popup.offset_right, " T=", popup.offset_top, " B=", popup.offset_bottom)
+		print("Popup anchors: L=", popup.anchor_left, " R=", popup.anchor_right, " T=", popup.anchor_top, " B=", popup.anchor_bottom)
+		print("Popup parent: ", popup.get_parent().name if popup.get_parent() else "null")
+		print("Popup clip_contents: ", popup.clip_contents)
+		print("Popup size_flags_horizontal: ", popup.size_flags_horizontal)
 
-	var currency_names = ["Copper", "Silver", "Gold", "Platinum"]
-	var currency_types = [
-		CurrencyManager.CurrencyType.COPPER,
-		CurrencyManager.CurrencyType.SILVER,
-		CurrencyManager.CurrencyType.GOLD,
-		CurrencyManager.CurrencyType.PLATINUM
-	]
+		# Check widest child
+		var widest_child = null
+		var widest_width = 0.0
+		_find_widest_child(popup, widest_child, widest_width)
+		if widest_child:
+			print("Widest child: ", widest_child.name, " width: ", widest_width)
+		print("=== END Popup Size Check ===\n")
 
-	for i in range(4):
-		var can_show = true
+func _find_widest_child(node: Node, widest: Control, widest_width: float):
+	if node is Control:
+		var control = node as Control
+		if control.size.x > widest_width:
+			widest = control
+			widest_width = control.size.x
+			print("  Found wide child: ", control.name, " (", control.get_class(), ") width: ", control.size.x)
 
-		# Filter based on Level1Vars unlocks
-		if i == 2:  # Gold
-			can_show = Level1Vars.unlocked_gold
-		elif i == 3:  # Platinum
-			can_show = Level1Vars.unlocked_platinum
-
-		if can_show:
-			from_option.add_item(currency_names[i], currency_types[i])
-			to_option.add_item(currency_names[i], currency_types[i])
-
-	# Set default selection
-	if from_option.item_count > 0:
-		from_option.select(0)
-	if to_option.item_count > 1:
-		to_option.select(1)
-
-	from_currency_type = CurrencyManager.CurrencyType.COPPER
-	to_currency_type = CurrencyManager.CurrencyType.SILVER
-
+	for child in node.get_children():
+		_find_widest_child(child, widest, widest_width)
 
 ## Update market rates display panel
 func update_market_rates_display():
@@ -122,133 +136,23 @@ func update_market_rates_display():
 
 	var rates_text = "Currency Exchange\n\nCurrent Rates:\n"
 
-	# Calculate how much copper for 1 silver
+	# Calculate how much copper for 1 silver (when buying 1 silver with copper)
 	var copper_modifier = CurrencyManager.conversion_rate_modifiers[CurrencyManager.CurrencyType.COPPER]
 	var silver_modifier = CurrencyManager.conversion_rate_modifiers[CurrencyManager.CurrencyType.SILVER]
-	var copper_per_silver = (100.0 * copper_modifier) / silver_modifier
-	rates_text += "1 silver = %.0f copper" % copper_per_silver
+	var copper_per_silver = (100.0 * silver_modifier) / copper_modifier
+	rates_text += "%.0f copper = 1 silver" % copper_per_silver
 
 	# Gold (if unlocked)
 	if Level1Vars.unlocked_gold:
 		var gold_modifier = CurrencyManager.conversion_rate_modifiers[CurrencyManager.CurrencyType.GOLD]
-		var silver_per_gold = (100.0 * silver_modifier) / gold_modifier
-		rates_text += "\n1 gold = %.0f silver" % silver_per_gold
+		var silver_per_gold = (100.0 * gold_modifier) / silver_modifier
+		rates_text += "\n%.0f silver = 1 gold" % silver_per_gold
 
 	# Platinum (if unlocked) - Platinum is stable (modifier always 1.0)
 	if Level1Vars.unlocked_platinum:
 		var gold_modifier = CurrencyManager.conversion_rate_modifiers[CurrencyManager.CurrencyType.GOLD]
-		var gold_per_platinum = 100.0 / gold_modifier  # Gold fluctuates vs stable platinum
-		rates_text += "\n1 platinum = %.0f gold" % gold_per_platinum
+		var platinum_modifier = CurrencyManager.conversion_rate_modifiers[CurrencyManager.CurrencyType.PLATINUM]
+		var gold_per_platinum = (100.0 * platinum_modifier) / gold_modifier
+		rates_text += "\n%.0f gold = 1 platinum" % gold_per_platinum
 
 	market_rates_label.text = rates_text
-
-
-## Update exchange preview
-func update_preview():
-	if not preview_label:
-		return
-
-	if exchange_amount <= 0:
-		preview_label.text = "Enter amount to exchange"
-		if exchange_button:
-			exchange_button.disabled = true
-		return
-
-	# Check if player has enough
-	var player_amount = CurrencyManager._get_player_currency(from_currency_type)
-	if player_amount < exchange_amount:
-		preview_label.text = "Insufficient funds"
-		if exchange_button:
-			exchange_button.disabled = true
-		return
-
-	# Calculate preview
-	var fee = CurrencyManager.calculate_transaction_fee(exchange_amount, from_currency_type)
-	var net_amount = exchange_amount - fee
-
-	var from_rate = CurrencyManager.CONVERSION_RATES[from_currency_type] * CurrencyManager.conversion_rate_modifiers[from_currency_type]
-	var to_rate = CurrencyManager.CONVERSION_RATES[to_currency_type] * CurrencyManager.conversion_rate_modifiers[to_currency_type]
-
-	var received = (net_amount * from_rate) / to_rate
-
-	# Format preview text
-	var from_name = get_currency_name(from_currency_type)
-	var to_name = get_currency_name(to_currency_type)
-
-	preview_label.text = "%.1f %s -> %.2f %s\n(broker takes %.1f %s)" % [
-		exchange_amount, from_name,
-		received, to_name,
-		fee, from_name
-	]
-
-	if exchange_button:
-		exchange_button.disabled = false
-
-
-## Get currency name from type
-func get_currency_name(type: int) -> String:
-	match type:
-		CurrencyManager.CurrencyType.COPPER:
-			return "copper"
-		CurrencyManager.CurrencyType.SILVER:
-			return "silver"
-		CurrencyManager.CurrencyType.GOLD:
-			return "gold"
-		CurrencyManager.CurrencyType.PLATINUM:
-			return "platinum"
-	return ""
-
-
-## Connect UI signals
-func connect_signals():
-	if from_option:
-		from_option.item_selected.connect(_on_from_currency_selected)
-	if to_option:
-		to_option.item_selected.connect(_on_to_currency_selected)
-	if amount_input:
-		amount_input.text_changed.connect(_on_amount_text_changed)
-	if exchange_button:
-		exchange_button.pressed.connect(_on_exchange_button_pressed)
-
-
-## Signal handlers
-func _on_from_currency_selected(index: int):
-	from_currency_type = from_option.get_item_id(index)
-	update_preview()
-
-
-func _on_to_currency_selected(index: int):
-	to_currency_type = to_option.get_item_id(index)
-	update_preview()
-
-
-func _on_amount_text_changed(new_text: String):
-	exchange_amount = new_text.to_float()
-	update_preview()
-
-
-func _on_exchange_button_pressed():
-	var result = CurrencyManager.exchange_currency_with_fee(
-		from_currency_type,
-		to_currency_type,
-		exchange_amount
-	)
-
-	if result.success:
-		var to_name = get_currency_name(to_currency_type)
-		Global.show_stat_notification("Exchange complete: received %.2f %s" % [result.received, to_name])
-
-		# Reset form
-		if amount_input:
-			amount_input.text = ""
-		exchange_amount = 0.0
-		update_preview()
-		update_labels()
-	else:
-		match result.get("error", "unknown"):
-			"insufficient_funds":
-				Global.show_stat_notification("Insufficient funds for exchange")
-			"currency_locked":
-				Global.show_stat_notification("Currency not yet accessible")
-			_:
-				Global.show_stat_notification("Exchange failed")

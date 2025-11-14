@@ -79,7 +79,7 @@ text = "Follow whispering voice"
 
 [node name="DeveloperFreeCoinsButton" type="Button" parent="HBoxContainer/RightVBox" index="4"]
 layout_mode = 2
-text = "Developer: Free Coins"
+text = "Developer: Free Copper"
 
 [node name="ToDormButton" type="Button" parent="HBoxContainer/RightVBox" index="5"]
 visible = false

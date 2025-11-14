@@ -792,11 +792,22 @@ func position_popups_in_play_area(scene_root: Control, is_portrait: bool, popup_
 		# Without this, clicks will pass through the popup
 		popup.mouse_filter = Control.MOUSE_FILTER_STOP
 
+		# CRITICAL: Enable clip_contents to enforce size constraints
+		# Without this, child controls can push the popup wider than the offsets
+		popup.clip_contents = true
+
+		# CRITICAL: Set size flags to prevent expansion beyond offset constraints
+		# SIZE_SHRINK_BEGIN prevents the popup from expanding to fit oversized children
+		popup.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+		popup.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+
 		# Debug: print popup state
-		print("ResponsiveLayout: Set popup '", popup.name, "' mouse_filter to STOP")
+		print("ResponsiveLayout: Set popup '", popup.name, "' mouse_filter to STOP, clip_contents to TRUE")
 		print("  - Parent: ", popup.get_parent().name if popup.get_parent() else "null")
 		print("  - Visible: ", popup.visible)
 		print("  - Z-index: ", popup.z_index)
+		print("  - clip_contents: ", popup.clip_contents)
+		print("  - custom_minimum_size: ", popup.custom_minimum_size)
 
 		# Position popup based on parent - center it within its parent container
 		if (is_portrait and popup.get_parent() == middle_area) or (not is_portrait and popup.get_parent() == center_area):
@@ -845,7 +856,55 @@ func position_popups_in_play_area(scene_root: Control, is_portrait: bool, popup_
 			print("ResponsiveLayout: Calculated width from offsets: ", popup.offset_right - popup.offset_left)
 
 		print("ResponsiveLayout: Constrained popup '", popup.name, "' to size: ", max_popup_width, "x", max_popup_height)
+
+		# Defer width verification to next frame after layout completes
+		call_deferred("_verify_popup_width", popup, max_popup_width)
+
 		print("=== END ResponsiveLayout popup processing ===\n")
+
+## Verify popup width matches intended constraints
+func _verify_popup_width(popup: Control, intended_width: float) -> void:
+	# Wait for layout to complete
+	await get_tree().process_frame
+	await get_tree().process_frame
+
+	var actual_width = popup.size.x
+	var offset_width = popup.offset_right - popup.offset_left
+	var width_diff = actual_width - intended_width
+
+	print("\n=== POPUP WIDTH VERIFICATION: ", popup.name, " ===")
+	print("Intended width: ", intended_width)
+	print("Offset width: ", offset_width)
+	print("Actual rendered width: ", actual_width)
+	print("Difference: ", width_diff, " pixels")
+	print("clip_contents: ", popup.clip_contents)
+	print("size_flags_horizontal: ", popup.size_flags_horizontal)
+
+	if abs(width_diff) > 10:  # Allow 10px tolerance
+		push_warning("PopupSystem: Popup '", popup.name, "' width mismatch! Intended: ", intended_width, " Actual: ", actual_width, " Diff: ", width_diff)
+
+		# Find widest child
+		var widest_child = null
+		var widest_width = 0.0
+		_find_widest_child_recursive(popup, widest_child, widest_width)
+
+		if widest_child:
+			print("Widest child: ", widest_child.name, " (", widest_child.get_class(), ") width: ", widest_width)
+	else:
+		print("Width verification PASSED!")
+
+	print("=== END POPUP WIDTH VERIFICATION ===\n")
+
+## Helper to find the widest child control recursively
+func _find_widest_child_recursive(node: Node, widest: Control, widest_width: float) -> void:
+	if node is Control:
+		var control = node as Control
+		if control.size.x > widest_width:
+			widest = control
+			widest_width = control.size.x
+
+	for child in node.get_children():
+		_find_widest_child_recursive(child, widest, widest_width)
 
 ## Debug function to print CenterArea size after layout
 func _debug_print_center_area_size(center_area: Control) -> void:
@@ -941,19 +1000,23 @@ func _scale_popup_controls_recursive(node: Node, is_portrait: bool, viewport_siz
 
 	# Scale labels
 	if node is Label:
-		# Enable word wrapping for ALL labels in popups (both portrait and landscape)
-		# This prevents horizontal overflow and better utilizes vertical space
-		node.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-
-		# CRITICAL: Constrain the label AND its parent containers to prevent horizontal expansion
-		# DON'T set custom_minimum_size - it uses stale popup width values and causes overflow
-		# Instead, rely on SIZE_FILL + autowrap + parent constraints to naturally fill available space
-
-		# Constrain the label itself
-		node.custom_minimum_size = Vector2(0, 0)  # No minimum - let it fill naturally
-		node.size_flags_horizontal = Control.SIZE_FILL  # Fill available width
-		node.size_flags_vertical = Control.SIZE_EXPAND_FILL  # Expand vertically as text wraps
-		node.clip_text = false  # Don't clip - let text wrap
+		# Label behavior depends on parent container
+		var label_parent = node.get_parent()
+		if label_parent and label_parent is HBoxContainer:
+			# Labels in HBoxContainer should display on single line
+			# Autowrap causes character-by-character wrapping when constrained
+			node.autowrap_mode = TextServer.AUTOWRAP_OFF
+			node.size_flags_horizontal = Control.SIZE_SHRINK_CENTER  # Shrink to content width
+			node.size_flags_vertical = Control.SIZE_SHRINK_CENTER  # Shrink to content height
+			node.clip_text = true  # Clip if too long
+			print("ResponsiveLayout: Label '", node.name, "' in HBoxContainer set to single-line mode")
+		else:
+			# Labels in VBoxContainer should wrap text
+			node.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+			node.custom_minimum_size = Vector2(0, 0)
+			node.size_flags_horizontal = Control.SIZE_FILL  # Fill available width
+			node.size_flags_vertical = Control.SIZE_EXPAND_FILL  # Expand vertically as text wraps
+			node.clip_text = false  # Don't clip - let text wrap
 
 		# CRITICAL: Constrain parent containers to prevent pushing popup wider
 		var parent = node.get_parent()
@@ -1043,6 +1106,25 @@ func _scale_popup_controls_recursive(node: Node, is_portrait: bool, viewport_siz
 				node.remove_theme_font_size_override("font_size")
 
 		print("ResponsiveLayout: Scaled popup button '", node.name, "' to height ", button_height)
+
+	# Handle LineEdit controls to prevent infinite expansion in HBoxContainers
+	elif node is LineEdit:
+		var lineedit_parent = node.get_parent()
+		if lineedit_parent and lineedit_parent is HBoxContainer:
+			# LineEdit in HBoxContainer should fill available space but not expand infinitely
+			# Remove SIZE_EXPAND flag (value 3) and use SIZE_FILL only (value 1)
+			node.size_flags_horizontal = Control.SIZE_FILL
+			node.size_flags_stretch_ratio = 1.0
+			print("ResponsiveLayout: LineEdit '", node.name, "' in HBoxContainer set to SIZE_FILL (no expand)")
+
+	# Handle OptionButton controls to prevent infinite expansion in HBoxContainers
+	elif node is OptionButton:
+		var optionbutton_parent = node.get_parent()
+		if optionbutton_parent and optionbutton_parent is HBoxContainer:
+			# OptionButton in HBoxContainer should fill available space but not expand infinitely
+			node.size_flags_horizontal = Control.SIZE_FILL
+			node.size_flags_stretch_ratio = 1.0
+			print("ResponsiveLayout: OptionButton '", node.name, "' in HBoxContainer set to SIZE_FILL (no expand)")
 
 	# Recurse through children
 	for child in node.get_children():
