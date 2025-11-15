@@ -19,6 +19,7 @@
 - [reusable_popup.gd](reusable_popup.gd)  
 - [settings_overlay.gd](settings_overlay.gd)  
 - [test_button_layout.gd](test_button_layout.gd)  
+- [test_currency_redesign.gd](test_currency_redesign.gd)  
 - [test_progress_bar_theme.gd](test_progress_bar_theme.gd)  
 - [toc_updater.gd](toc_updater.gd)  
 - [tool_generate_icons.gd](tool_generate_icons.gd)  
