@@ -56,7 +56,17 @@ func _process(delta):
 		# When timer reaches the frequency interval, generate coal
 		if auto_shovel_timer >= Level1Vars.auto_shovel_freq:
 			# Multiply quantity of auto-shovels by coal per tick
-			Level1Vars.coal += Level1Vars.auto_shovel_lvl * Level1Vars.auto_shovel_coal_per_tick
+			var coal_to_add = Level1Vars.auto_shovel_lvl * Level1Vars.auto_shovel_coal_per_tick
+			var coal_cap = Level1Vars.get_coal_cap()
+
+			# Check if we would exceed cap
+			if Level1Vars.coal + coal_to_add > coal_cap:
+				coal_to_add = max(0, coal_cap - Level1Vars.coal)
+				if coal_to_add <= 0:
+					# Show warning once when hitting cap
+					Global.show_stat_notification("Coal tracking limit reached - convert some to copper!")
+
+			Level1Vars.coal += coal_to_add
 			auto_shovel_timer -= Level1Vars.auto_shovel_freq  # Preserve excess time for accuracy
 			ui_needs_update = true
 
@@ -138,12 +148,22 @@ func _on_shovel_coal_button_pressed():
 	if Level1Vars.stimulated_remaining > 1.0:
 		coal_gained *= 1.4
 
-	Level1Vars.coal += coal_gained
+	# Check coal cap before adding
+	var coal_cap = Level1Vars.get_coal_cap()
+	if Level1Vars.coal >= coal_cap:
+		Global.show_stat_notification("Coal tracking limit reached - convert some to copper!")
+		coal_label.text = "Coal Shoveled: " + str(int(Level1Vars.coal))
+		return
+
+	# Add coal, capped to maximum
+	var coal_to_add = min(coal_gained, coal_cap - Level1Vars.coal)
+	Level1Vars.coal += coal_to_add
 
 	# 3% chance per strength point to get a second coal
 	var bonus_coal_chance = Global.strength * 0.03
 	if randf() < bonus_coal_chance:
-		Level1Vars.coal += coal_gained
+		var bonus_coal = min(coal_gained, coal_cap - Level1Vars.coal)
+		Level1Vars.coal += bonus_coal
 
 	coal_label.text = "Coal Shoveled: " + str(int(Level1Vars.coal))
 	click_count += 1

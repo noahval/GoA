@@ -57,10 +57,11 @@ func _ready():
 	overtime_button = get_node_or_null("HBoxContainer/RightVBox/OvertimeButton")
 	if overtime_button:
 		overtime_button.pressed.connect(_on_overtime_button_pressed)
+		# Set metadata flag EARLY so ResponsiveLayout knows to preserve custom height
+		overtime_button.set_meta("_responsive_layout_preserve_height", true)
 
 	update_labels()
 	update_suspicion_bar()
-	update_overtime_button()
 
 	# Load questions from file
 	load_questions()
@@ -68,6 +69,10 @@ func _ready():
 	# Debug: Detailed button and container info
 	await get_tree().process_frame
 	await get_tree().process_frame
+
+	# NOW update overtime button after ResponsiveLayout has run with correct orientation
+	update_overtime_button()
+
 	print("\n=== OVERSEER'S OFFICE DEBUG ===")
 	var viewport = get_viewport().get_visible_rect().size
 	print("Viewport: ", viewport, " | Portrait: ", viewport.y > viewport.x)
@@ -91,6 +96,12 @@ func _ready():
 	print("RightVBox size: ", right_vbox.size)
 	print("RightVBox rect (global): ", Rect2(right_vbox.global_position, right_vbox.size))
 	print("\n--- Button States ---")
+	var prev_button_bottom = 0.0
+	var separation = 10  # Default separation
+	if right_vbox.has_theme_constant_override("separation"):
+		separation = right_vbox.get_theme_constant("separation", "VBoxContainer")
+	print("VBox separation: ", separation, "px\n")
+
 	for i in range(right_vbox.get_child_count()):
 		var child = right_vbox.get_child(i)
 		if child is Button:
@@ -99,8 +110,25 @@ func _ready():
 			print("  - disabled: ", child.disabled)
 			print("  - global_position: ", child.global_position)
 			print("  - size: ", child.size)
+			print("  - custom_minimum_size: ", child.custom_minimum_size)
 			print("  - in viewport: ", child.global_position.y >= 0 and child.global_position.y + child.size.y <= viewport.y)
 			print("  - mouse_filter: ", child.mouse_filter)
+
+			# Check for metadata
+			if child.has_meta("_responsive_layout_preserve_height"):
+				print("  - [!] Has preserve_height metadata: ", child.get_meta("_responsive_layout_preserve_height"))
+
+			# Overlap detection
+			var button_top = child.global_position.y
+			var button_bottom = button_top + child.size.y
+			if i > 0 and prev_button_bottom > 0:
+				var gap = button_top - prev_button_bottom
+				print("  - Gap from previous: ", gap, "px")
+				if gap < 0:
+					print("  - [X] OVERLAP! ", abs(gap), "px overlap detected")
+				elif gap < separation:
+					print("  - [!] WARNING: Gap less than separation (", separation, "px)")
+			prev_button_bottom = button_bottom
 	print("\n--- PopupContainer ---")
 	print("PopupContainer visible: ", popup_container.visible)
 	print("PopupContainer z_index: ", popup_container.z_index)
@@ -488,7 +516,8 @@ func update_overtime_button():
 	for child in overtime_button.get_children():
 		child.queue_free()
 
-	# Get next hours
+	# Get current and next hours
+	var current_hours = OfflineEarningsManager.get_cap_hours_for_level(Level1Vars.overtime_lvl)
 	var next_hours = OfflineEarningsManager.get_cap_hours_for_level(Level1Vars.overtime_lvl + 1)
 
 	# Get currency display info
@@ -500,31 +529,43 @@ func update_overtime_button():
 	var is_portrait = viewport_size.y > viewport_size.x
 	var icon_size = 34 if is_portrait else 32
 
-	# Create HBoxContainer for layout
-	var hbox = HBoxContainer.new()
-	hbox.name = "CurrencyLayout"
-	hbox.set_anchors_preset(Control.PRESET_FULL_RECT)
-	hbox.alignment = BoxContainer.ALIGNMENT_CENTER
-	overtime_button.add_child(hbox)
+	# Create VBoxContainer for two-line layout
+	var vbox = VBoxContainer.new()
+	vbox.name = "CurrencyLayout"
+	vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
+	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	vbox.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	vbox.mouse_filter = Control.MOUSE_FILTER_IGNORE  # Don't block mouse events or draw background
+	vbox.add_theme_stylebox_override("panel", StyleBoxEmpty.new())  # Remove any background
+	overtime_button.add_child(vbox)
 
-	# Get default font size from theme (25px standard, scaled for portrait if needed)
+	# Use default font size to match other buttons
 	var default_font_size = 25
-	if is_portrait:
-		default_font_size = int(default_font_size * ResponsiveLayout.PORTRAIT_FONT_SCALE)
 
-	# Label 1: "Increase overtime limit to "
-	var label1 = Label.new()
-	label1.text = "Increase overtime limit to "
-	label1.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	label1.add_theme_font_size_override("font_size", default_font_size)
-	hbox.add_child(label1)
+	# First line: "Increase overtime limit"
+	var label_line1 = Label.new()
+	label_line1.text = "Increase overtime limit"
+	label_line1.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label_line1.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label_line1.add_theme_font_size_override("font_size", default_font_size)
+	label_line1.add_theme_stylebox_override("normal", StyleBoxEmpty.new())  # Remove label background
+	vbox.add_child(label_line1)
 
-	# Label 2: "[X]H "
-	var label2 = Label.new()
-	label2.text = "%.0fH " % next_hours
-	label2.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	label2.add_theme_font_size_override("font_size", default_font_size)
-	hbox.add_child(label2)
+	# Second line: HBoxContainer with "From XH to YH [icon]: cost"
+	var hbox_line2 = HBoxContainer.new()
+	hbox_line2.alignment = BoxContainer.ALIGNMENT_CENTER
+	hbox_line2.mouse_filter = Control.MOUSE_FILTER_IGNORE  # Don't block mouse events or draw background
+	hbox_line2.add_theme_stylebox_override("panel", StyleBoxEmpty.new())  # Remove any background
+	vbox.add_child(hbox_line2)
+
+	# Label: "From [current]H to [next]H "
+	var label_hours = Label.new()
+	label_hours.text = "From %.0fH to %.0fH " % [current_hours, next_hours]
+	label_hours.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label_hours.add_theme_font_size_override("font_size", default_font_size)
+	label_hours.add_theme_stylebox_override("normal", StyleBoxEmpty.new())  # Remove label background
+	hbox_line2.add_child(label_hours)
 
 	# Currency Icon
 	var icon = TextureRect.new()
@@ -537,14 +578,36 @@ func update_overtime_button():
 	else:
 		DebugLogger.log_error("OvertimeButton", "Currency icon not found: %s" % currency_info.icon_path)
 
-	hbox.add_child(icon)
+	hbox_line2.add_child(icon)
 
-	# Label 3: ": [Y]"
-	var label3 = Label.new()
-	label3.text = ": %s" % formatted_cost
-	label3.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	label3.add_theme_font_size_override("font_size", default_font_size)
-	hbox.add_child(label3)
+	# Label: ": [cost]"
+	var label_cost = Label.new()
+	label_cost.text = ": %s" % formatted_cost
+	label_cost.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label_cost.add_theme_font_size_override("font_size", default_font_size)
+	label_cost.add_theme_stylebox_override("normal", StyleBoxEmpty.new())  # Remove label background
+	hbox_line2.add_child(label_cost)
+
+	# Calculate and set proper button height for ResponsiveLayout
+	# This tells the responsive layout system how much vertical space this button needs
+	var base_height = ResponsiveLayout.PORTRAIT_ELEMENT_HEIGHT if is_portrait else ResponsiveLayout.LANDSCAPE_ELEMENT_HEIGHT
+	var font_scale = ResponsiveLayout.PORTRAIT_FONT_SCALE if is_portrait else ResponsiveLayout.get_landscape_font_scale(viewport_size.x)
+	var single_line_height = base_height * font_scale
+
+	# 2.0x multiplier for tighter padding to match other buttons
+	var needed_height = single_line_height * 2.0
+	overtime_button.custom_minimum_size.y = needed_height
+
+	# Debug logging
+	print("\n[DEBUG] OvertimeButton sizing:")
+	print("  - Orientation: ", "Portrait" if is_portrait else "Landscape")
+	print("  - Base height: ", base_height)
+	print("  - Font scale: ", font_scale)
+	print("  - Single line height: ", single_line_height)
+	print("  - Needed height (3.5x): ", needed_height)
+	print("  - Button custom_minimum_size: ", overtime_button.custom_minimum_size)
+	print("  - Button actual size: ", overtime_button.size)
+	print("  - Metadata preserved: ", overtime_button.get_meta("_responsive_layout_preserve_height"))
 
 ## Handle overtime button press
 func _on_overtime_button_pressed():

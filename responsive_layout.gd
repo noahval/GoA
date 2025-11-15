@@ -442,9 +442,16 @@ func _apply_landscape_adjustments(left_vbox: VBoxContainer, right_vbox: VBoxCont
 	for button in right_vbox.get_children():
 		if button is Button:
 			button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-			button.custom_minimum_size = Vector2(0, scaled_element_height)
+
+			# Check if button wants to preserve its custom height
+			var button_height = scaled_element_height
+			if button.has_meta("_responsive_layout_preserve_height") and button.get_meta("_responsive_layout_preserve_height"):
+				button_height = button.custom_minimum_size.y
+				print("ResponsiveLayout: Preserving custom height ", button_height, " for button")
+
+			button.custom_minimum_size = Vector2(0, button_height)
 			button.size_flags_horizontal = Control.SIZE_FILL
-			print("ResponsiveLayout: Button '", button.text.substr(0, 30), "...' autowrap enabled, height: ", scaled_element_height)
+			print("ResponsiveLayout: Button '", button.text.substr(0, 30), "...' autowrap enabled, height: ", button_height)
 
 	# Apply final widths - RESPECT stretch ratios by NOT expanding beyond base widths
 	# Left menu can expand for long panel text, but right menu stays at 25% (buttons wrap instead)
@@ -470,7 +477,13 @@ func _scale_for_portrait(left_vbox: VBoxContainer, right_vbox: VBoxContainer) ->
 	# SECOND PASS: Apply UNIVERSAL HEIGHT and WIDTH to all buttons
 	for button in right_vbox.get_children():
 		if button is Button:
-			button.custom_minimum_size = Vector2(max_button_width, scaled_height)
+			# Check if button wants to preserve its custom height
+			var button_height = scaled_height
+			if button.has_meta("_responsive_layout_preserve_height") and button.get_meta("_responsive_layout_preserve_height"):
+				button_height = button.custom_minimum_size.y
+				print("ResponsiveLayout: Preserving custom height ", button_height, " for button (portrait)")
+
+			button.custom_minimum_size = Vector2(max_button_width, button_height)
 			button.size_flags_horizontal = Control.SIZE_FILL  # Fill container width but don't force expansion
 			var current_size = button.get_theme_font_size("font_size")
 			if current_size <= 0:

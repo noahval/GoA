@@ -36,6 +36,80 @@ func get_coal_per_tick_upgrade_cost() -> int:
 func get_frequency_upgrade_cost() -> int:
 	return int(75 * pow(1.8, Level1Vars.auto_shovel_freq_upgrade_lvl))
 
+# Storage capacity upgrade data and costs
+const STORAGE_UPGRADE_NAMES = [
+	"Belt Pouch",
+	"Leather Purse",
+	"Reinforced Pouch",
+	"Heavy Coin Bag",
+	"Merchant's Satchel",
+	"Trader's Case",
+	"Banker's Chest",
+	"Strongbox Key",
+	"Vault Access",
+	"Private Vault",
+	"Master Vault",
+	"Noble's Treasury"
+]
+
+const STORAGE_UPGRADE_COSTS = [
+	{"copper": 175},
+	{"copper": 250},
+	{"copper": 400},
+	{"copper": 800},
+	{"silver": 2},
+	{"silver": 6},
+	{"silver": 20},
+	{"silver": 70},
+	{"silver": 250},
+	{"gold": 1},
+	{"gold": 5},
+	{"gold": 50}
+]
+
+# Coal tracking upgrade data and costs
+const COAL_TRACKING_NAMES = [
+	"Chalk Marks",
+	"Wax Tablet",
+	"Ledger Book",
+	"Accounting System",
+	"Master Records",
+	"Overseer's Trust"
+]
+
+const COAL_TRACKING_COSTS = [
+	50,
+	150,
+	400,
+	1000,
+	3000,
+	8000
+]
+
+func get_storage_upgrade_cost():
+	var level = Level1Vars.storage_capacity_level
+	if level >= STORAGE_UPGRADE_COSTS.size():
+		return null  # Max level reached
+	return STORAGE_UPGRADE_COSTS[level]
+
+func get_storage_upgrade_name() -> String:
+	var level = Level1Vars.storage_capacity_level
+	if level >= STORAGE_UPGRADE_NAMES.size():
+		return "Max Capacity"
+	return STORAGE_UPGRADE_NAMES[level]
+
+func get_coal_tracking_cost() -> int:
+	var level = Level1Vars.coal_tracking_level
+	if level >= COAL_TRACKING_COSTS.size():
+		return -1  # Max level reached
+	return COAL_TRACKING_COSTS[level]
+
+func get_coal_tracking_name() -> String:
+	var level = Level1Vars.coal_tracking_level
+	if level >= COAL_TRACKING_NAMES.size():
+		return "Overseer's Trust (Max)"
+	return COAL_TRACKING_NAMES[level]
+
 func _ready():
 	# Set the actual maximum break time (not the remaining time)
 	max_break_time = Level1Vars.starting_break_time + Level1Vars.overseer_lvl
@@ -194,6 +268,49 @@ func _on_frequency_upgrade_pressed():
 			DebugLogger.log_shop_purchase("Frequency Upgrade", cost, Level1Vars.auto_shovel_freq_upgrade_lvl)
 			update_labels()
 			update_auto_shovels_popup_labels()
+
+func _on_storage_upgrade_pressed():
+	var cost = get_storage_upgrade_cost()
+	if cost == null:
+		Global.show_stat_notification("Storage capacity already maxed")
+		return
+
+	if CurrencyManager.can_afford(cost):
+		if CurrencyManager.deduct_currency(cost):
+			Level1Vars.storage_capacity_level += 1
+			var new_cap = Level1Vars.get_currency_cap()
+			var upgrade_name = get_storage_upgrade_name()
+
+			# Track equipment value (convert to copper equivalent)
+			var copper_equiv = 0
+			if cost.has("copper"):
+				copper_equiv = cost.copper
+			elif cost.has("silver"):
+				copper_equiv = cost.silver * 1000
+			elif cost.has("gold"):
+				copper_equiv = cost.gold * 1000000
+
+			UpgradeTypesConfig.track_equipment_purchase("storage_capacity", copper_equiv)
+			DebugLogger.log_shop_purchase(upgrade_name, copper_equiv, Level1Vars.storage_capacity_level)
+			Global.show_stat_notification("Currency capacity increased to " + str(new_cap))
+			update_labels()
+
+func _on_coal_tracking_upgrade_pressed():
+	var cost = get_coal_tracking_cost()
+	if cost < 0:
+		Global.show_stat_notification("Coal tracking already maxed")
+		return
+
+	if CurrencyManager.can_afford(cost):
+		if CurrencyManager.deduct_currency(cost):
+			Level1Vars.coal_tracking_level += 1
+			var new_cap = Level1Vars.get_coal_cap()
+			var upgrade_name = get_coal_tracking_name()
+
+			UpgradeTypesConfig.track_equipment_purchase("coal_tracking", cost)
+			DebugLogger.log_shop_purchase(upgrade_name, cost, Level1Vars.coal_tracking_level)
+			Global.show_stat_notification("Coal tracking capacity increased to " + str(new_cap))
+			update_labels()
 
 func update_shovels_popup_labels():
 	if shovel_button:

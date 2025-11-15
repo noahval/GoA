@@ -1,7 +1,7 @@
 extends Node
 
 ## Currency Manager - Handles all multi-currency operations for GoA
-## Currencies: Copper Pieces (1x) -> Silver Marks (100x) -> Gold Crowns (10,000x) -> Platinum Bonds (1,000,000x)
+## Currencies: Copper Pieces (1x) -> Silver Marks (1000x) -> Gold Crowns (1,000,000x) -> Platinum Bonds (1,000,000,000x)
 
 # Currency type constants
 enum CurrencyType {
@@ -38,9 +38,9 @@ const CURRENCY_NAMES_PLURAL = {
 # Conversion rates (how many of lower tier = 1 of this tier)
 const CONVERSION_RATES = {
 	CurrencyType.COPPER: 1,
-	CurrencyType.SILVER: 100,
-	CurrencyType.GOLD: 10000,  # 100 silver = 1 gold
-	CurrencyType.PLATINUM: 1000000  # 100 gold = 1 platinum
+	CurrencyType.SILVER: 1000,
+	CurrencyType.GOLD: 1000000,  # 1000 silver = 1 gold
+	CurrencyType.PLATINUM: 1000000000  # 1000 gold = 1 platinum
 }
 
 # Variable conversion rates (for dynamic market volatility)
@@ -135,13 +135,27 @@ func deduct_currency(cost) -> bool:
 	return false
 
 
-## Add currency to player
+## Add currency to player (with cap checking)
 ## @param currency_type: CurrencyType enum value (e.g., CurrencyType.COPPER)
 ## @param amount: float - amount to add
 ## @param reason: string - reason for logging (optional)
-func add_currency(currency_type: int, amount: float, reason: String = "earned") -> void:
+## @return: float - actual amount added (may be less than requested if capped)
+func add_currency(currency_type: int, amount: float, reason: String = "earned") -> float:
 	var old_amount = _get_player_currency(currency_type)
-	_set_player_currency(currency_type, old_amount + amount)
+	var cap = Level1Vars.get_currency_cap()
+	var new_amount = old_amount + amount
+
+	# Check if we would exceed cap
+	if new_amount > cap:
+		new_amount = cap
+		amount = cap - old_amount
+		# Show warning if hitting cap
+		if amount <= 0:
+			var currency_name = CURRENCY_NAMES[currency_type]
+			Global.show_stat_notification("Your pockets are full of " + currency_name.to_lower() + "!")
+			return 0.0
+
+	_set_player_currency(currency_type, new_amount)
 
 	# Also add to lifetime currency
 	var currency_name = CURRENCY_NAMES[currency_type].to_lower()
@@ -155,7 +169,9 @@ func add_currency(currency_type: int, amount: float, reason: String = "earned") 
 	Level1Vars.check_currency_unlocks()
 
 	# Log the change
-	DebugLogger.log_resource_change(currency_name, old_amount, _get_player_currency(currency_type), reason)
+	DebugLogger.log_resource_change(currency_name, old_amount, new_amount, reason)
+
+	return amount
 
 
 ## Convert currency from one type to another
@@ -378,8 +394,8 @@ func _check_currency_unlocks() -> void:
 			var currency_name = CURRENCY_NAMES_PLURAL[CurrencyType.SILVER]
 			DebugLogger.log_info("CurrencyUnlock", "Unlocked " + currency_name + "!")
 
-	# Gold unlock: current-holdings-based (60 silver in hand)
-	if not unlocked_currencies[CurrencyType.GOLD] and Level1Vars.currency.silver >= 60:
+	# Gold unlock: current-holdings-based (50 silver in hand)
+	if not unlocked_currencies[CurrencyType.GOLD] and Level1Vars.currency.silver >= 50:
 		unlocked_currencies[CurrencyType.GOLD] = true
 
 		# Synchronize with Level1Vars unlock system
@@ -389,8 +405,8 @@ func _check_currency_unlocks() -> void:
 		var currency_name = CURRENCY_NAMES_PLURAL[CurrencyType.GOLD]
 		DebugLogger.log_info("CurrencyUnlock", "Unlocked " + currency_name + "!")
 
-	# Platinum unlock: current-holdings-based (60 gold in hand)
-	if not unlocked_currencies[CurrencyType.PLATINUM] and Level1Vars.currency.gold >= 60:
+	# Platinum unlock: current-holdings-based (50 gold in hand)
+	if not unlocked_currencies[CurrencyType.PLATINUM] and Level1Vars.currency.gold >= 50:
 		unlocked_currencies[CurrencyType.PLATINUM] = true
 
 		# Synchronize with Level1Vars unlock system
@@ -427,15 +443,18 @@ func calculate_transaction_fee(amount: float, from_type: int) -> float:
 	return amount * fee_percent
 
 
-## Exchange currency with transaction fee
+## Exchange currency with transaction fee (can use pocket + ATM deposits)
 ## @param from_type: CurrencyType enum - currency to convert from
 ## @param to_type: CurrencyType enum - currency to convert to
 ## @param amount: float - amount of from_type to exchange
 ## @return: Dictionary with success, fee, received, and market_rate
 func exchange_currency_with_fee(from_type: int, to_type: int, amount: float) -> Dictionary:
-	# Validate player has enough
+	# Validate player has enough (check both pocket and ATM)
 	var player_amount = _get_player_currency(from_type)
-	if player_amount < amount:
+	var atm_amount = get_atm_balance(from_type)
+	var total_available = player_amount + atm_amount
+
+	if total_available < amount:
 		return {"success": false, "error": "insufficient_funds"}
 
 	# Check if target currency is unlocked
@@ -451,8 +470,16 @@ func exchange_currency_with_fee(from_type: int, to_type: int, amount: float) -> 
 	var to_rate = CONVERSION_RATES[to_type] * conversion_rate_modifiers[to_type]
 	var received = (net_amount * from_rate) / to_rate
 
-	# Deduct full amount from player (including fee)
-	_set_player_currency(from_type, player_amount - amount)
+	# Deduct from pocket first, then ATM if needed
+	var remaining_to_deduct = amount
+	var from_pocket = min(player_amount, remaining_to_deduct)
+	_set_player_currency(from_type, player_amount - from_pocket)
+	remaining_to_deduct -= from_pocket
+
+	if remaining_to_deduct > 0:
+		# Pull remainder from ATM
+		var currency_name = CURRENCY_NAMES[from_type].to_lower()
+		Level1Vars.atm_deposits[currency_name] -= remaining_to_deduct
 
 	# Add received amount to target currency
 	var target_amount = _get_player_currency(to_type)
@@ -474,6 +501,122 @@ func exchange_currency_with_fee(from_type: int, to_type: int, amount: float) -> 
 		"received": received,
 		"market_rate": conversion_rate_modifiers[to_type]
 	}
+
+
+## Calculate deposit fee based on charisma
+## Fee starts at 12% and reduces by 0.5% per charisma level (minimum 1%)
+func calculate_deposit_fee() -> float:
+	var base_fee = 0.12  # 12% base fee
+	if Global.charisma > 1:
+		var charisma_reduction = (Global.charisma - 1) * 0.005  # 0.5% per level
+		base_fee -= charisma_reduction
+	return max(base_fee, 0.01)  # Minimum 1% fee
+
+
+## Deposit currency to ATM storage
+## @param currency_type: CurrencyType enum value
+## @param amount: float - amount to deposit
+## @return: Dictionary with success, fee, and deposited amount
+func deposit_to_atm(currency_type: int, amount: float) -> Dictionary:
+	var player_amount = _get_player_currency(currency_type)
+	if player_amount < amount:
+		return {"success": false, "error": "insufficient_funds"}
+
+	var fee_percent = calculate_deposit_fee()
+	var fee = amount * fee_percent
+	var net_amount = amount - fee
+
+	# Deduct full amount from player
+	_set_player_currency(currency_type, player_amount - amount)
+
+	# Add net amount to ATM deposits
+	var currency_name = CURRENCY_NAMES[currency_type].to_lower()
+	Level1Vars.atm_deposits[currency_name] += net_amount
+
+	# Award charisma XP based on fee
+	var xp_amount = fee * CONVERSION_RATES[currency_type]
+	Global.add_stat_exp("charisma", xp_amount)
+
+	# Log the transaction
+	DebugLogger.log_resource_change(currency_name, player_amount, player_amount - amount, "deposited to ATM")
+
+	return {
+		"success": true,
+		"fee": fee,
+		"deposited": net_amount,
+		"fee_percent": fee_percent
+	}
+
+
+## Withdraw currency from ATM storage
+## @param currency_type: CurrencyType enum value
+## @param amount: float - amount to withdraw
+## @return: Dictionary with success and withdrawn amount
+func withdraw_from_atm(currency_type: int, amount: float) -> Dictionary:
+	var currency_name = CURRENCY_NAMES[currency_type].to_lower()
+	var atm_balance = Level1Vars.atm_deposits.get(currency_name, 0.0)
+
+	if atm_balance < amount:
+		return {"success": false, "error": "insufficient_atm_balance"}
+
+	# Check if player has room in pocket
+	var player_amount = _get_player_currency(currency_type)
+	var cap = Level1Vars.get_currency_cap()
+	if player_amount + amount > cap:
+		return {"success": false, "error": "pocket_full"}
+
+	# Deduct from ATM
+	Level1Vars.atm_deposits[currency_name] -= amount
+
+	# Add to player
+	_set_player_currency(currency_type, player_amount + amount)
+
+	# Log the transaction
+	DebugLogger.log_resource_change(currency_name, player_amount, player_amount + amount, "withdrawn from ATM")
+
+	return {
+		"success": true,
+		"withdrawn": amount
+	}
+
+
+## Get total ATM balance for a currency type
+## @param currency_type: CurrencyType enum value
+## @return: float - ATM balance
+func get_atm_balance(currency_type: int) -> float:
+	var currency_name = CURRENCY_NAMES[currency_type].to_lower()
+	return Level1Vars.atm_deposits.get(currency_name, 0.0)
+
+
+## Migrate existing saves to new currency scaling (1000:1 ratio)
+## Multiplies all existing currency by 10 to maintain relative value
+## Call this once on first load after updating to new system
+func migrate_to_new_currency_scale() -> void:
+	# Check if migration has already been done (using a flag)
+	if Level1Vars.currency.get("_migration_v2_done", false):
+		return
+
+	print("[CurrencyMigration] Migrating to 1000:1 currency scale...")
+
+	# Multiply all current currency by 10
+	Level1Vars.currency.copper *= 10.0
+	Level1Vars.currency.silver *= 10.0
+	Level1Vars.currency.gold *= 10.0
+	Level1Vars.currency.platinum *= 10.0
+
+	# Multiply all lifetime currency by 10
+	Level1Vars.lifetime_currency.copper *= 10.0
+	Level1Vars.lifetime_currency.silver *= 10.0
+	Level1Vars.lifetime_currency.gold *= 10.0
+	Level1Vars.lifetime_currency.platinum *= 10.0
+
+	# Multiply legacy lifetimecoins
+	Level1Vars.lifetimecoins *= 10.0
+
+	# Mark migration as complete
+	# Note: This will need to be saved in the save system
+	print("[CurrencyMigration] Migration complete. All currency values multiplied by 10.")
+	Global.show_stat_notification("Currency system updated - values adjusted for new scale")
 
 
 ## Reset currencies for prestige (decides what persists)

@@ -30,7 +30,31 @@ var unlocked_platinum: bool:
 		return true if Global.dev_speed_mode else _unlocked_platinum
 	set(value):
 		_unlocked_platinum = value
-var _unlocked_platinum: bool = false  # Unlocks at 60 gold
+var _unlocked_platinum: bool = false  # Unlocks at 50 gold
+
+# Storage capacity system (unified for all currencies)
+var storage_capacity_level: int = 0
+var storage_capacity_caps: Array[int] = [200, 300, 450, 650, 900, 1250, 1750, 2500, 3500, 5000, 7000, 8500, 10000]
+
+# Coal record-keeping system
+var coal_tracking_level: int = 0
+var coal_tracking_caps: Array[int] = [1000, 2000, 4000, 7000, 12000, 20000, 35000]
+
+# ATM deposit system (stored currency beyond pocket capacity)
+var atm_deposits = {
+	"copper": 0.0,
+	"silver": 0.0,
+	"gold": 0.0,
+	"platinum": 0.0
+}
+
+# Phase progression system
+var current_phase: int = 1  # 1, 2, or 3
+var phase_2_unlocked: bool = false
+var phase_3_unlocked: bool = false
+var leadership_exam_passed: bool = false
+var leadership_exam_attempts: int = 0
+var leadership_exam_cooldown_until: int = 0  # timestamp
 
 # Legacy variable for backward compatibility - syncs with currency.copper
 var coins = 0.0:
@@ -146,6 +170,10 @@ func reset_for_prestige():
 	# - overtime_lvl (persistent upgrade)
 	# - offline_cap_hours (based on overtime_lvl)
 	# - last_played_timestamp (for offline earnings calculation)
+	# - storage_capacity_level (persistent upgrade)
+	# - coal_tracking_level (persistent upgrade)
+	# - atm_deposits (banked currency persists)
+	# - phase unlocks and progression (persistent progress)
 
 	# Apply starting resource upgrades based on reputation upgrades
 	# Placeholder: When upgrades are finalized, add checks here
@@ -168,24 +196,64 @@ func reset_all():
 	offline_cap_hours = 8.0
 	last_played_timestamp = 0
 	pipe_puzzle_grid = []
+	storage_capacity_level = 0
+	coal_tracking_level = 0
+	atm_deposits = {"copper": 0.0, "silver": 0.0, "gold": 0.0, "platinum": 0.0}
+	current_phase = 1
+	phase_2_unlocked = false
+	phase_3_unlocked = false
+	leadership_exam_passed = false
+	leadership_exam_attempts = 0
+	leadership_exam_cooldown_until = 0
 
 ## Helper function: Get offline cap in seconds
 func get_offline_cap_seconds() -> int:
 	return int(offline_cap_hours * 3600)
 
 
+## Helper function: Get current currency storage cap
+func get_currency_cap() -> int:
+	if storage_capacity_level >= storage_capacity_caps.size():
+		return storage_capacity_caps[storage_capacity_caps.size() - 1]
+	return storage_capacity_caps[storage_capacity_level]
+
+
+## Helper function: Get current coal tracking cap
+func get_coal_cap() -> int:
+	if coal_tracking_level >= coal_tracking_caps.size():
+		return coal_tracking_caps[coal_tracking_caps.size() - 1]
+	return coal_tracking_caps[coal_tracking_level]
+
+
+## Helper function: Check if currency would overflow cap
+func would_exceed_currency_cap(currency_type: String, amount: float) -> bool:
+	var cap = get_currency_cap()
+	return currency[currency_type] + amount > cap
+
+
+## Helper function: Check if coal would overflow cap
+func would_exceed_coal_cap(amount: float) -> bool:
+	var cap = get_coal_cap()
+	return coal + amount > cap
+
+
+## Helper function: Get combined stats level (for phase gates)
+func get_combined_stats_level() -> int:
+	return Global.strength + Global.dexterity + Global.constitution + Global.intelligence + Global.wisdom + Global.charisma
+
+
 ## Check and unlock currency tiers based on current holdings
-## Gold unlocks at 60 silver, Platinum unlocks at 60 gold
+## Gold unlocks at 50 silver, Platinum unlocks at 50 gold
 func check_currency_unlocks() -> void:
-	# Gold unlocks at 60 silver
-	if not _unlocked_gold and currency.silver >= 60:
+	# Gold unlocks at 50 silver
+	if not _unlocked_gold and currency.silver >= 50:
 		_unlocked_gold = true
 		# Synchronize with CurrencyManager unlock system
 		CurrencyManager.unlocked_currencies[CurrencyManager.CurrencyType.GOLD] = true
 		Global.show_stat_notification("Trading in gold now permitted")
 
-	# Platinum unlocks at 60 gold
-	if not _unlocked_platinum and currency.gold >= 60:
+	# Platinum unlocks at 50 gold
+	if not _unlocked_platinum and currency.gold >= 50:
 		_unlocked_platinum = true
 		# Synchronize with CurrencyManager unlock system
 		CurrencyManager.unlocked_currencies[CurrencyManager.CurrencyType.PLATINUM] = true

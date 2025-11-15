@@ -9,6 +9,8 @@ const EQUIPMENT_UPGRADES = [
 	"auto_shovel",
 	"coal_per_tick",
 	"frequency",
+	"storage_capacity",  # Currency storage upgrade (affects all currencies)
+	"coal_tracking",     # Coal record-keeping upgrade
 
 	# Workshop scene - component-based (future)
 	# Example: "forge_hammer", "anvil", etc.

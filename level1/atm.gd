@@ -155,9 +155,9 @@ func update_market_rates_display():
 	var gold_modifier = CurrencyManager.conversion_rate_modifiers[CurrencyManager.CurrencyType.GOLD]
 	var platinum_modifier = CurrencyManager.conversion_rate_modifiers[CurrencyManager.CurrencyType.PLATINUM]
 
-	var copper_per_silver = (100.0 * silver_modifier) / copper_modifier
-	var silver_per_gold = (100.0 * gold_modifier) / silver_modifier
-	var gold_per_platinum = (100.0 * platinum_modifier) / gold_modifier
+	var copper_per_silver = (1000.0 * silver_modifier) / copper_modifier
+	var silver_per_gold = (1000.0 * gold_modifier) / silver_modifier
+	var gold_per_platinum = (1000.0 * platinum_modifier) / gold_modifier
 
 	# Add rate rows
 	market_rates_vbox.add_child(_create_rate_row(copper_per_silver, CurrencyManager.CurrencyType.COPPER, CurrencyManager.CurrencyType.SILVER))
