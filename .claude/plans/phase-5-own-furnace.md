@@ -6,11 +6,11 @@
 **Dependencies:** Phases 1-4 (basic furnace mechanics, shop system, stats)
 
 **Currency System Note:** All costs in this document use the multi-currency system:
-- 1 Silver = 100 Copper
-- 1 Gold = 100 Silver = 10,000 Copper
-- 1 Platinum = 100 Gold = 10,000 Silver = 1,000,000 Copper
+- 1 Silver = 1000 Copper
+- 1 Gold = 1000 Silver
+- 1 Platinum = 1000 Gold
 
-Phase 5 begins at ~35 hours of gameplay, when players have accumulated 1 Gold lifetime. Costs are balanced for Silver and Gold currencies, with Own Furnace purchase anchored at 1 Gold.
+Phase 5 begins at ~20 hours of gameplay, when players spend 1 gold to buy their own furnace.
 
 ## Overview
 
