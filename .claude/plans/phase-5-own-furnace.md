@@ -51,7 +51,7 @@ Phase 5 represents a major shift in gameplay from being a worker in the Blackbor
 
 **Formula:**
 ```gdscript
-heat_per_shovel = 1.0 + (Global.strength * 0.1)  # Strength bonus
+heat_per_shovel = 1.0
 heat_decay_rate = 0.5  # per second
 current_heat = clamp(current_heat - (heat_decay_rate * delta), 0, max_heat)
 ```
@@ -67,6 +67,8 @@ See "Furnace Material & Construction System" section below for detailed progress
 ### 2. Steam Generation
 
 **Purpose:** Primary output resource that fulfills demand
+
+mongoose
 
 **Properties:**
 - Type: Float, accumulates in steam reservoir
