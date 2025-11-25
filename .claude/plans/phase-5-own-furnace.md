@@ -64,48 +64,61 @@ max_heat = base_temp_limit * thickness_multiplier * lining_multiplier
 
 See "Furnace Material & Construction System" section below for detailed progression.
 
-### 2. Steam Generation
+### 2. Steam Production
 
-**Purpose:** Primary output resource that fulfills demand
-
-mongoose
+**Purpose:** Primary output resource that fulfills demand, measured in pounds per hour (lb/h)
 
 **Properties:**
-- Type: Float, accumulates in steam reservoir
-- Generation rate: Based on current heat level
-- Storage: Limited by furnace capacity (upgradeable)
-- Display: Steam pressure gauge
+- Type: Float, measured in lb/h (pounds per hour)
+- Production rate: Based on current heat level
+- **No initial storage** - steam converts directly to gold payment
+- Storage: Purchasable upgrade (unlocks about 3H into own furnace phase, starts at 5 gold)
+- Display: Production rate gauge in lb/h
 
 **Formula:**
 ```gdscript
-steam_per_second = (current_heat / 10.0) * steam_efficiency
+# Steam production in pounds per hour (lb/h)
+steam_production_rate_lbh = (current_heat / 10.0) * steam_efficiency
 steam_efficiency = 1.0 + (furnace_upgrade_lvl * 0.2)
-max_steam = 500.0 + (capacity_upgrade_lvl * 200.0)
+
+# Starting production: 10 lb/h
+base_production = 10.0  # lb/h at base heat and efficiency
+
+# Storage only available after purchase
+has_storage_system = false  # Initially no storage
+max_storage_lbs = 0.0  # Set when storage purchased (e.g., 500 lb for Tier 1)
 ```
 
 ### 3. Steam Demand (Dynamic System) ⭐
 
-**Purpose:** Creates dynamic gameplay with fluctuating requirements
+**Purpose:** Creates dynamic gameplay with fluctuating requirements, measured in decimals of gold coin per lb/h
 
 **Demand States:**
-- **Zero Demand** (0.0x base): Train completely stopped, no consumption
-- **Very Low Demand** (0.2x base): Train idling, coasting downhill
-- **Low Demand** (0.5x base): Light load, slow operation
-- **Normal Demand** (1.0x base): Steady operation on flat terrain
-- **High Demand** (1.5x base): Climbing grade, accelerating, heavy load
-- **Critical Demand** (2.5x base): Steep hill, multiple trains, furnace failures
+- **Very Low Demand**: Range 0.0x - 0.45x (avg ~0.225x) - Train idling, coasting downhill, rare low revenue/storage opportunity
+  - Oscillation period: 40-60s (slow, lazy drift)
+- **Low Demand**: Range 0.45x - 0.75x (avg ~0.6x) - Light load, slow operation, reduced payment
+  - Oscillation period: 30-40s (relaxed variation)
+- **Medium Demand**: Range 0.75x - 1.35x (avg ~1.05x) - Steady operation on flat terrain, baseline payment
+  - Oscillation period: 25-30s (standard rhythm)
+- **High Demand**: Range 1.35x - 2.65x (avg ~2.0x) - Climbing grade, accelerating, bonus revenue opportunity
+  - Oscillation period: 15-25s (urgent fluctuation)
+- **Critical Demand**: Range 2.65x - 3.75x (avg ~3.2x) - Steep hill, emergency conditions, maximum revenue/stress event
+  - Oscillation period: 10-20s (frantic, emergency pace)
+
+**Note:** Multipliers smoothly interpolate within each state's range using sine wave oscillation with state-dependent periods. When state changes, multiplier starts at a random point within the new state's range for unpredictable transitions.
 
 **Properties:**
-- Type: Float, represents steam consumption rate
-- Base demand: 5.0 steam per second
-- Multiplier: 0.5x to 2.5x based on current state
-- Transition: Changes every 15-45 seconds with gradual ramping
+- Type: Float, represents steam demand rate in lb/h (pounds per hour)
+- Base demand: Starting around 10-15 lb/h at medium state
+- Demand scales with train progression and upgrades
+- Transition: Changes every 1-5 minutes (triangular distribution, avg ~2.5 min)
+- Payment: Steam production × demand multiplier → Gold coins
 
 **Environmental Factors:**
 ```gdscript
 # Demand reasons (displayed to player)
 DEMAND_REASONS = {
-    "zero": [
+    "very_low": [
         "Coasting downhill: gravity assist",
         "Long downgrade through valley",
         "Descending eastern slope: minimal power",
@@ -113,9 +126,7 @@ DEMAND_REASONS = {
         "Deep night, all train districts sleeping",
         "Holiday, minimal train systems active",
         "Lower districts powered down for conservation",
-        "Peasant quarters population reduced, less demand"
-    ],
-    "very_low": [
+        "Peasant quarters population reduced, less demand",
         "Gentle downhill run through foothills",
         "Slight descent, brakes engaged",
         "Cruising through lowland plains",
@@ -180,42 +191,63 @@ DEMAND_REASONS = {
 
 **Demand Fluctuation Logic:**
 ```gdscript
-var demand_state: String = "normal"
-var demand_multiplier: float = 1.0
-var target_multiplier: float = 1.0
-var demand_transition_speed: float = 0.1
+# Range definitions for each demand state
+const DEMAND_RANGES = {
+    "very_low": {"min": 0.0, "max": 0.45},      # Avg ~0.225x (replaces "zero")
+    "low": {"min": 0.45, "max": 0.75},          # Avg ~0.6x
+    "medium": {"min": 0.75, "max": 1.35},       # Avg ~1.05x
+    "high": {"min": 1.35, "max": 2.65},         # Avg ~2.0x
+    "critical": {"min": 2.65, "max": 3.75}      # Avg ~3.2x
+}
+
+# State variables
+var demand_state: String = "medium"
+var demand_multiplier: float = 1.05
+var target_range_min: float = 0.75
+var target_range_max: float = 1.35
+var interpolation_time: float = 0.0
+var interpolation_speed: float = 0.3  # Controls oscillation period (~27s)
+var demand_timer: float = 150.0
 
 func _process(delta):
-    # Gradually transition to target
-    demand_multiplier = lerp(demand_multiplier, target_multiplier, demand_transition_speed * delta)
+    # Smooth sine wave interpolation within current range
+    interpolation_time += delta * interpolation_speed
+    var normalized = (sin(interpolation_time) + 1.0) / 2.0
+    demand_multiplier = lerp(target_range_min, target_range_max, normalized)
 
     # Check for state change (timer-based)
+    demand_timer -= delta
     if demand_timer <= 0:
         change_demand_state()
-        # Triangular distribution: 1-5 minutes, weighted toward 2 minutes
+        # Triangular distribution: 1-5 minutes, weighted toward 2.5 minutes
         var rand1 = randf_range(60.0, 180.0)  # 1-3 minutes
         var rand2 = randf_range(60.0, 300.0)  # 1-5 minutes
         demand_timer = (rand1 + rand2) / 2.0  # Averages ~2.5 minutes
 
 func change_demand_state():
-    # Weighted random selection
+    # Weighted random selection (5 states - "zero" removed)
     var roll = randf()
-    if roll < 0.10:  # 10% zero (rare - creates strategic storage opportunity)
-        set_demand_state("zero", 0.0)
-    elif roll < 0.20:  # 10% very_low
-        set_demand_state("very_low", 0.2)
+    if roll < 0.20:  # 20% very_low (+10% from removed "zero")
+        set_demand_state("very_low")
     elif roll < 0.35:  # 15% low
-        set_demand_state("low", 0.5)
-    elif roll < 0.70:  # 35% normal
-        set_demand_state("normal", 1.0)
+        set_demand_state("low")
+    elif roll < 0.70:  # 35% medium
+        set_demand_state("medium")
     elif roll < 0.85:  # 15% high
-        set_demand_state("high", 1.5)
+        set_demand_state("high")
     else:  # 15% critical
-        set_demand_state("critical", 2.5)
+        set_demand_state("critical")
 
-func set_demand_state(state: String, multiplier: float):
+func set_demand_state(state: String):
     demand_state = state
-    target_multiplier = multiplier
+    target_range_min = DEMAND_RANGES[state]["min"]
+    target_range_max = DEMAND_RANGES[state]["max"]
+
+    # Reset to middle of new range for smooth transitions
+    demand_multiplier = (target_range_min + target_range_max) / 2.0
+    interpolation_time = 0.0
+
+    # Show notification with random reason
     var reason = DEMAND_REASONS[state][randi() % DEMAND_REASONS[state].size()]
     show_demand_notification(state, reason)
 ```
@@ -237,112 +269,211 @@ else:
     performance = "failing"  # Severely underproducing
 ```
 
-### 4. Steam Storage System ⭐
+### 4. Steam Storage System ⭐ (PURCHASABLE UPGRADE - Not Available Initially)
 
-**Purpose:** Capture excess steam during low/zero demand periods for use during high demand spikes
+**Purpose:** **Optional upgrade** to capture excess steam during low/zero demand periods for use during high demand spikes
 
-**Thematic Progression:**
+**Important:** Players start with **NO storage** - steam converts directly to Gold payment. Storage must be purchased as an upgrade.
 
-**Tier 1: Steam Accumulator Tank**
-- **Cost:** 30 Silver + 30 mechanisms
-- **Capacity:** 200 stored steam
+**Unlock Requirements:**
+- Capacity Tier 1 purchase unlocks the entire storage system (with 50% base efficiency)
+
+**NEW: Two Independent Upgrade Paths**
+
+The storage system now offers two separate upgrade progressions:
+- **Capacity Upgrades:** Increase storage tank size (5 tiers)
+- **Efficiency Upgrades:** Reduce storage loss (5 tiers)
+
+Both paths are sequential within themselves but independent of each other. Players can prioritize capacity, efficiency, or balance both based on strategy and budget.
+
+---
+
+#### A. Storage Capacity Upgrades (5 Tiers)
+
+**Capacity Tier 1: Steam Accumulator Tank** *(First Purchase Unlocks Storage)*
+- **Cost:** 5 gold
+- **Capacity:** 300 lb storage
+- **Base Efficiency:** 50% (requires efficiency upgrades to improve)
 - **Technology:** Simple insulated pressure vessel
 - **Historical:** 1800s technology, used on traction engines and early locomotives
 - **Description:** "A basic pressure vessel that stores excess steam when demand is low"
+- **Unlocks:** has_storage_system = true, storage_capacity_tier = 1, storage_efficiency_tier = 0
 
-**Tier 2: Compressed Steam Reservoir**
-- **Cost:** 80 Silver + 50 pipes
-- **Requires:** Steam Accumulator Tank
-- **Capacity:** +300 stored steam (500 total)
+**Capacity Tier 2: Compressed Steam Reservoir**
+- **Cost:** 20 gold
+- **Requires:** Capacity Tier 1
+- **Capacity:** 800 lb total (+500 lb)
 - **Technology:** High-pressure compression system
 - **Description:** "Stores steam at higher pressure for increased capacity"
 
-**Tier 3: Multi-Chamber Storage System**
-- **Cost:** 200 Silver (or 2 Gold)
-- **Requires:** Compressed Steam Reservoir
-- **Capacity:** +700 stored steam (1,200 total)
+**Capacity Tier 3: Multi-Chamber Storage System**
+- **Cost:** 75 gold
+- **Requires:** Capacity Tier 2
+- **Capacity:** 1,500 lb total (+700 lb)
 - **Technology:** Multiple interconnected tanks with valves
 - **Feature:** Unlocks manual release controls (10% increments) and auto-release system
 - **Description:** "Interconnected tanks allow precise control over steam release"
 
-**Tier 4: Hydraulic Accumulator**
-- **Cost:** 5 Gold + 100 mechanisms
-- **Requires:** Multi-Chamber Storage
-- **Capacity:** +1,300 stored steam (2,500 total)
+**Capacity Tier 4: Hydraulic Accumulator**
+- **Cost:** 200 gold
+- **Requires:** Capacity Tier 3
+- **Capacity:** 2,500 lb total (+1,000 lb)
 - **Technology:** Converts steam pressure to hydraulic pressure
-- **Efficiency:** Upgraded to 90% (from 80%)
 - **Historical:** Used in Victorian-era hydraulic power networks (London, 1880s)
-- **Description:** "Hydraulic system reduces heat loss and provides stable long-term storage"
+- **Description:** "Hydraulic system provides stable long-term storage"
 
-**Tier 5: Battery Bank** *(Late Game)*
-- **Cost:** 15 Gold + 300 components
-- **Requires:** Hydraulic Accumulator + Power System unlocked
-- **Capacity:** +2,500 stored steam equivalent (5,000 total)
+**Capacity Tier 5: Battery Bank** *(Late Game)*
+- **Cost:** 500 gold
+- **Requires:** Capacity Tier 4 + Power System unlocked
+- **Capacity:** 5,000 lb total (+2,500 lb)
 - **Technology:** Electrical energy storage charged by steam turbine
-- **Efficiency:** 100% (no storage loss)
-- **Feature:** Instant response, no decay
-- **Description:** "Modern electrical storage eliminates all inefficiencies"
+- **Feature:** Maximum capacity for endgame storage needs
+- **Description:** "Modern electrical storage provides massive capacity"
 
-**Storage Mechanics:**
+---
+
+#### B. Storage Efficiency Upgrades (5 Tiers)
+
+**Base:** 50% efficiency (when Capacity Tier 1 is purchased)
+
+**Efficiency Tier 1: Improved Insulation**
+- **Cost:** 7 gold
+- **Requires:** Capacity Tier 1 (storage system unlocked)
+- **Efficiency:** 60% (10% improvement from base)
+- **Technology:** Cork and asbestos insulation layers
+- **Description:** "Better insulation reduces heat loss when storing steam"
+
+**Efficiency Tier 2: Double-Wall Construction**
+- **Cost:** 25 gold
+- **Requires:** Efficiency Tier 1
+- **Efficiency:** 70% (20% total improvement from base)
+- **Technology:** Vacuum-sealed double walls
+- **Description:** "Double-wall design with vacuum gap minimizes thermal transfer"
+
+**Efficiency Tier 3: Steam Trap System**
+- **Cost:** 90 gold
+- **Requires:** Efficiency Tier 2
+- **Efficiency:** 80% (30% total improvement from base)
+- **Technology:** Automatic condensate removal
+- **Description:** "Prevents condensation losses with automatic steam traps"
+
+**Efficiency Tier 4: Superheater Integration**
+- **Cost:** 225 gold
+- **Requires:** Efficiency Tier 3
+- **Efficiency:** 90% (40% total improvement from base)
+- **Technology:** Re-heats stored steam before use
+- **Description:** "Superheater restores temperature to stored steam, reducing waste"
+
+**Efficiency Tier 5: Perfect Thermal Management**
+- **Cost:** 550 gold
+- **Requires:** Efficiency Tier 4
+- **Efficiency:** 100% (50% total improvement, no loss)
+- **Technology:** Advanced thermal regulation and active heating
+- **Description:** "Zero-loss storage through active thermal management"
+
+**Storage Mechanics (Only Active After Purchase):**
 
 ```gdscript
-# New Level1Vars variables
-var stored_steam: float = 0.0
-var max_stored_steam: float = 0.0  # Starts at 0, unlocked by purchases
-var storage_efficiency: float = 0.8  # 80% base, upgradeable to 90%, then 100%
+# Level1Vars variables - NO initial storage
+var has_storage_system: bool = false  # Must purchase Capacity Tier 1 to unlock
+var storage_capacity_tier: int = 0  # 0 = none, 1-5 = capacity upgrade tiers
+var storage_efficiency_tier: int = 0  # 0 = base (50%), 1-5 = efficiency upgrade tiers
+var stored_steam_lbs: float = 0.0  # Pounds of stored steam
+var max_storage_lbs: float = 0.0  # Starts at 0, set by capacity tier (300/800/1500/2500/5000 lb)
+var storage_efficiency: float = 0.5  # 50% base, set by efficiency tier (60%/70%/80%/90%/100%)
 var storage_diversion_percentage: float = 0.0  # % of steam production diverted to storage (0-100)
-var auto_release_enabled: bool = false  # Unlocked at Tier 3
-var auto_release_threshold: float = 0.6  # Auto-release when main steam < 60%
+var auto_release_enabled: bool = false  # Unlocked at Capacity Tier 3
+var auto_release_threshold: float = 1.8  # Auto-release when multiplier >= 1.8x (during high/critical demand)
 
-# In process_steam()
-func process_steam(delta):
-    # ... existing steam generation code ...
+# Capacity tier -> max storage mapping
+const STORAGE_CAPACITIES = {
+    0: 0.0,      # No storage
+    1: 300.0,    # Steam Accumulator Tank
+    2: 800.0,    # Compressed Steam Reservoir
+    3: 1500.0,   # Multi-Chamber Storage
+    4: 2500.0,   # Hydraulic Accumulator
+    5: 5000.0    # Battery Bank
+}
 
-    # Active diversion: Player chooses % of production to store (strategic play)
-    if Level1Vars.storage_diversion_percentage > 0 and Level1Vars.max_stored_steam > 0:
-        if Level1Vars.stored_steam < Level1Vars.max_stored_steam:
-            var steam_to_divert = Level1Vars.current_steam * (Level1Vars.storage_diversion_percentage / 100.0)
-            var storage_space = Level1Vars.max_stored_steam - Level1Vars.stored_steam
-            var actually_diverted = min(steam_to_divert, storage_space)
+# Efficiency tier -> storage efficiency mapping
+const STORAGE_EFFICIENCIES = {
+    0: 0.5,   # Base 50%
+    1: 0.6,   # Improved Insulation
+    2: 0.7,   # Double-Wall Construction
+    3: 0.8,   # Steam Trap System
+    4: 0.9,   # Superheater Integration
+    5: 1.0    # Perfect Thermal Management
+}
 
-            # Apply storage efficiency and move steam
-            Level1Vars.stored_steam += actually_diverted * Level1Vars.storage_efficiency
-            Level1Vars.current_steam -= actually_diverted
+# Payment variables (no initial storage, direct conversion)
+var steam_production_rate_lbh: float = 10.0  # Starting: 10 lb/h
+var demand_multiplier: float = 1.0  # Payment multiplier based on demand state
+var gold_progress: float = 0.0  # Fractional gold accumulated
 
-    # Automatic overflow storage (when main reservoir full, regardless of diversion)
-    if Level1Vars.current_steam >= Level1Vars.max_steam:
-        if Level1Vars.max_stored_steam > 0 and Level1Vars.stored_steam < Level1Vars.max_stored_steam:
-            var overflow = Level1Vars.current_steam - Level1Vars.max_steam
-            var storage_space = Level1Vars.max_stored_steam - Level1Vars.stored_steam
-            var to_store = min(overflow, storage_space)
+# In _process()
+func _process(delta):
+    # Calculate steam produced this tick (in pounds)
+    var steam_lbs_this_tick = steam_production_rate_lbh * (delta / 3600.0)
 
-            # Apply storage efficiency (80%, 90%, or 100% depending on upgrades)
-            Level1Vars.stored_steam += to_store * Level1Vars.storage_efficiency
-            Level1Vars.current_steam -= to_store
+    # WITHOUT STORAGE (initial state): Direct conversion to gold
+    if not has_storage_system:
+        var gold_earned = steam_lbs_this_tick * demand_multiplier * PAYMENT_RATE_CONSTANT
+        gold_progress += gold_earned
 
-            # Optional notification when storage starts
-            if Level1Vars.stored_steam > 0 and not storage_notified:
-                show_notification("Excess steam diverted to storage")
-                storage_notified = true
+        # Award whole gold coins
+        if gold_progress >= 1.0:
+            var whole_gold = floor(gold_progress)
+            Level1Vars.current_gold += whole_gold
+            gold_progress -= whole_gold
 
-    # Auto-release during high demand (if enabled)
-    if Level1Vars.auto_release_enabled and Level1Vars.demand_state in ["high", "critical"]:
-        var steam_percentage = Level1Vars.current_steam / Level1Vars.max_steam
-        if steam_percentage < Level1Vars.auto_release_threshold and Level1Vars.stored_steam > 0:
-            release_stored_steam(1.0)  # Release 100%
+    # WITH STORAGE (after purchase): Handle storage/overflow logic
+    else:
+        # Check if producing excess steam relative to demand
+        var demand_lbs = current_demand_rate_lbh * (delta / 3600.0)
 
-func release_stored_steam(percentage: float):
-    # Release stored steam back to main reservoir
-    # percentage is based on max_stored_steam, not current stored amount
-    var release_amount = Level1Vars.max_stored_steam * percentage
-    var available_to_release = min(release_amount, Level1Vars.stored_steam)
-    var space_available = Level1Vars.max_steam - Level1Vars.current_steam
-    var actually_released = min(available_to_release, space_available)
+        if steam_lbs_this_tick >= demand_lbs:
+            # Excess steam - can store it
+            var excess_lbs = steam_lbs_this_tick - demand_lbs
+            var storable_lbs = excess_lbs * storage_efficiency
+            var actually_stored = min(storable_lbs, max_storage_lbs - stored_steam_lbs)
+            stored_steam_lbs += actually_stored
 
-    Level1Vars.current_steam += actually_released
-    Level1Vars.stored_steam -= actually_released
+            # Payment from what was demanded
+            var gold_earned = demand_lbs * demand_multiplier * PAYMENT_RATE_CONSTANT
+            gold_progress += gold_earned
+        else:
+            # Deficit - use storage if available
+            var deficit_lbs = demand_lbs - steam_lbs_this_tick
+            var from_storage = min(deficit_lbs, stored_steam_lbs)
+            stored_steam_lbs -= from_storage
 
-    show_notification("Released %d steam from storage" % int(actually_released))
+            # Payment from production + storage
+            var total_delivered = steam_lbs_this_tick + from_storage
+            var gold_earned = total_delivered * demand_multiplier * PAYMENT_RATE_CONSTANT
+            gold_progress += gold_earned
+
+        # Award whole gold coins
+        if gold_progress >= 1.0:
+            var whole_gold = floor(gold_progress)
+            Level1Vars.current_gold += whole_gold
+            gold_progress -= whole_gold
+
+    # Auto-release during high demand (if enabled and storage exists)
+    # Uses multiplier-based trigger for precise control (not state-based)
+    if has_storage_system and auto_release_enabled and demand_multiplier >= auto_release_threshold:
+        if stored_steam_lbs > 0:
+            release_stored_steam_manual(1.0)  # Release 100%
+
+func release_stored_steam_manual(percentage: float):
+    # Manual release of stored steam (increases production temporarily)
+    var release_amount_lbs = max_storage_lbs * percentage
+    var available_to_release = min(release_amount_lbs, stored_steam_lbs)
+
+    # Boost production rate temporarily
+    steam_production_rate_lbh += (available_to_release / delta) * 3600.0  # Convert back to per-hour
+    stored_steam_lbs -= available_to_release
+
+    show_notification("Released %d lb steam from storage" % int(available_to_release))
 ```
 
 **UI Elements:**
@@ -367,7 +498,7 @@ Storage: 450 / 1200
 4. Steam production: 25/sec → Main gets 15/sec, Storage gets 10/sec (before efficiency loss)
 5. Storage builds: 200 → 400 → 600 steam over 3 minutes
 6. Demand shifts to "High" (1.5x) - trains climbing steep grade
-7. Payment jumps to 3.0 coins/sec!
+7. Payment jumps to higher value rate
 8. Player sets diversion back to 0%, clicks "Release 10%" three times
 9. Storage floods main reservoir with 360 steam (3 × 120)
 10. Player exceeds high demand, earns maximum revenue for 2 minutes
@@ -386,9 +517,11 @@ Storage: 450 / 1200
 10. Player maintains "Excellent" performance during spike
 11. Earns bonus revenue for exceeding critical demand
 
-### 5. Train Speed & Revenue
+### 5. Train Speed & Payment
 
-**Purpose:** Convert performance into currency
+mongoose
+
+**Purpose:** Convert steam production into Gold currency
 
 **Train Speed:**
 ```gdscript
@@ -398,30 +531,56 @@ var speed_multiplier = fulfillment_rate  # 0.0 to 1.5 (can exceed with surplus)
 var current_train_speed = base_train_speed * speed_multiplier
 ```
 
-**Revenue Calculation:**
+**Payment Calculation (Direct Steam-to-Gold Conversion):**
 ```gdscript
-# Base payment per second
-var base_revenue = 0.1  # coins per second
+# Payment Rate Constant
+const PAYMENT_RATE_CONSTANT = 0.01  # Tune for desired earning speed
+# Example: 10 lb/h × 1.0 multiplier × 0.01 = 0.1 gold/hour = 6 gold/hour
 
-# Performance multipliers
-var revenue_multipliers = {
-    "excellent": 1.5,  # +50% bonus
-    "good": 1.0,       # Standard rate
-    "poor": 0.6,       # -40% penalty
-    "failing": 0.3     # -70% penalty
+# Demand Multiplier Ranges (affects payment rate)
+# Each state has a min/max range. Actual multiplier interpolates smoothly via sine wave.
+# See DEMAND_RANGES constant in Demand Fluctuation Logic section for full definitions.
+var demand_ranges = {
+    "very_low": {"min": 0.0, "max": 0.45},   # Avg ~0.225x
+    "low": {"min": 0.45, "max": 0.75},       # Avg ~0.6x
+    "medium": {"min": 0.75, "max": 1.35},    # Avg ~1.05x
+    "high": {"min": 1.35, "max": 2.65},      # Avg ~2.0x
+    "critical": {"min": 2.65, "max": 3.75}   # Avg ~3.2x
 }
 
-# Bonus for exceeding demand during critical periods
-if performance == "excellent" and demand_state == "critical":
-    revenue_multipliers["excellent"] = 2.5  # +150% during crisis
+# Current demand multiplier (interpolated value within current state's range)
+var demand_multiplier: float = 1.05  # Starts at medium midpoint
 
-var coins_per_second = base_revenue * revenue_multipliers[performance]
+# Gold accumulation (fractional)
+var gold_progress: float = 0.0
+
+# In _process(delta)
+var steam_lbs_this_tick = steam_production_rate_lbh * (delta / 3600.0)
+var gold_earned = steam_lbs_this_tick * demand_multiplier * PAYMENT_RATE_CONSTANT
+gold_progress += gold_earned
+
+# Award whole gold coins
+if gold_progress >= 1.0:
+    var whole_gold = floor(gold_progress)
+    Level1Vars.current_gold += whole_gold
+    gold_progress -= whole_gold
+
+# Calculate earning rate for display (gold per minute)
+var gold_per_minute = (steam_production_rate_lbh * demand_multiplier * PAYMENT_RATE_CONSTANT) / 60.0
+var minutes_per_gold = 1.0 / gold_per_minute if gold_per_minute > 0 else 0
 ```
+
+**Payment Display (Option 2):**
+- Progress bar showing fractional gold accumulated (0.0 - 1.0)
+- Earning rate: "Earning: 1 Gold / 10.5 minutes"
+- Visual progress: `[=====>--------------] 0.25 Gold`
+- See detailed mockups in approved plan
 
 **Payment Timing:**
 - Continuous accrual while in owned_furnace scene
-- Display: "Revenue: +0.15 coins/sec" with color coding
-- Lifetime earnings tracking
+- Pays in **Gold** coins (not Silver)
+- Display updates in real-time
+- No payment during ZERO demand state
 
 ---
 
@@ -496,24 +655,31 @@ Inherit from scene_template.tscn (3-panel layout)
   - Shows current_heat / max_heat
   - Color: Red/orange gradient
   - Label: "Heat: 45 / 100"
-- **Steam Gauge** (ProgressBar)
-  - Shows current_steam / max_steam
-  - Color: White/blue gradient
-  - Label: "Steam: 250 / 500"
-- **Steam Storage Gauge** (ProgressBar) *(visible only when storage purchased)*
-  - Shows stored_steam / max_stored_steam
-  - Color: Cyan/blue gradient (distinct from main steam)
-  - Label: "Storage: 450 / 1200"
-  - Shows efficiency: "Efficiency: 80%" (subtle, small text)
+- **Steam Production Display** (Label)
+  - Shows steam_production_rate_lbh
+  - Format: "Production: 10 lb/h"
+  - Color: White text
 - **Demand Indicator** (Panel with RichTextLabel)
-  - Shows current demand state (zero/very_low/low/normal/high/critical)
-  - Shows demand reason text
-  - Color-coded: Dark Blue/Green/Yellow/Orange/Red
-- **Performance Display**
-  - "Performance: Excellent" (color-coded)
-  - "Revenue: +0.15 coins/sec" (green if positive)
+  - Shows current demand state and rate
+  - Format: "Demand: 15 lb/h (MEDIUM)"
+  - Color-coded: Dark Blue (ZERO) / Green (LOW) / Yellow (MEDIUM) / Orange (HIGH) / Red (CRITICAL)
+  - Shows demand reason text below
+- **Payment Progress Display** (Option 2 Format)
+  - **Earning Rate Label:** "Earning: 1 Gold / 10 minutes"
+  - **Progress Bar:** Shows gold_progress (0.0 - 1.0)
+    - Color: Gold/yellow gradient
+    - Visual: [=====>--------------]
+  - **Progress Label:** "0.25 Gold"
+  - Updates in real-time
+  - Shows "[!] No demand - no payment" during ZERO state
+- **Steam Storage Gauge** (ProgressBar) *(visible only when storage purchased)*
+  - Shows stored_steam_lbs / max_storage_lbs
+  - Color: Cyan/blue gradient (distinct from production)
+  - Label: "Storage: 180 / 500 lb"
+  - Shows efficiency: "Efficiency: 80%" (subtle, small text)
+  - **Hidden by default** - only shows when has_storage_system = true
 - **Resource Display**
-  - Coins
+  - Gold coins (current_gold)
   - Coal (still used for shoveling)
 
 **Right Panel Buttons:**
@@ -3010,7 +3176,7 @@ var storage_efficiency: float = 0.8  # 80% base, upgradeable to 90%, then 100%
 var storage_tier: int = 0  # 0=none, 1=accumulator, 2=compressed, 3=multi-chamber, 4=hydraulic, 5=battery
 var storage_diversion_percentage: float = 0.0  # % of steam production to divert to storage (0-100)
 var auto_release_enabled: bool = false  # Unlocked at Tier 3
-var auto_release_threshold: float = 0.6  # Auto-release when main steam drops below 60%
+var auto_release_threshold: float = 1.8  # Auto-release when demand multiplier >= 1.8x (during high/critical demand)
 
 # Material Upgrades Unlocked
 var materials_unlocked: Dictionary = {
@@ -3037,10 +3203,14 @@ var cooling_system_installed: bool = false
 var forced_air_installed: bool = false
 var temp_monitoring_installed: bool = false
 
-# Demand System
-var demand_state: String = "normal"
-var demand_multiplier: float = 1.0
-var base_demand_rate: float = 5.0
+# Demand System (Range-Based Multipliers)
+var demand_state: String = "medium"  # Current demand state
+var demand_multiplier: float = 1.05  # Current interpolated multiplier (starts at medium midpoint)
+var target_range_min: float = 0.75  # Min multiplier for current state
+var target_range_max: float = 1.35  # Max multiplier for current state
+var interpolation_time: float = 0.0  # Time accumulator for sine wave
+var interpolation_speed: float = 0.3  # Oscillation speed (~27s period)
+var base_demand_rate: float = 5.0  # Base demand in lb/h
 
 # Performance Tracking
 var performance_rating: String = "good"
