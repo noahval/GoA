@@ -519,17 +519,7 @@ Storage: 450 / 1200
 
 ### 5. Train Speed & Payment
 
-mongoose
-
 **Purpose:** Convert steam production into Gold currency
-
-**Train Speed:**
-```gdscript
-# Speed affected by how well demand is met
-var base_train_speed = 50.0  # km/h
-var speed_multiplier = fulfillment_rate  # 0.0 to 1.5 (can exceed with surplus)
-var current_train_speed = base_train_speed * speed_multiplier
-```
 
 **Payment Calculation (Direct Steam-to-Gold Conversion):**
 ```gdscript
@@ -572,15 +562,13 @@ var minutes_per_gold = 1.0 / gold_per_minute if gold_per_minute > 0 else 0
 
 **Payment Display (Option 2):**
 - Progress bar showing fractional gold accumulated (0.0 - 1.0)
-- Earning rate: "Earning: 1 Gold / 10.5 minutes"
 - Visual progress: `[=====>--------------] 0.25 Gold`
 - See detailed mockups in approved plan
 
 **Payment Timing:**
 - Continuous accrual while in owned_furnace scene
-- Pays in **Gold** coins (not Silver)
+- Pays in **Gold** coins
 - Display updates in real-time
-- No payment during ZERO demand state
 
 ---
 
@@ -592,9 +580,9 @@ var minutes_per_gold = 1.0 / gold_per_minute if gold_per_minute > 0 else 0
 
 **Button Properties:**
 - Text: "Buy Furnace Ownership"
-- Position: Right panel, above or below Overtime button
+- Position: Right panel, below Overtime button
 - Visibility: Requires `lifetimecoins >= 10000` (1 Gold lifetime)
-- Cost: 1 Gold (10,000 copper - significant investment)
+- Cost: 1 Gold
 
 **Purchase Flow:**
 ```gdscript
@@ -604,7 +592,7 @@ func _on_buy_furnace_button_pressed():
         # Confirmation popup
         show_confirmation_popup(
             "Purchase Furnace Ownership?",
-            "You'll become the furnace owner and shift to a new economic model. Cost: 1 Gold"
+            "You'll become a furnace owner. Cost: 1 Gold"
         )
 
 func confirm_purchase():
@@ -619,7 +607,7 @@ func confirm_purchase():
     DebugLogger.log_shop_purchase("Furnace Ownership", cost, 1)
 
     # Show success notification
-    show_notification("You are now the owner of a furnace! Report to your new station.")
+    show_notification("You are now the owner of your own furnace")
 
     # Transition to owned furnace
     Global.change_scene_with_check(get_tree(), "res://level1/owned_furnace.tscn")
@@ -642,12 +630,12 @@ func confirm_purchase():
 - Overseer interaction
 - Coal → Coins conversion
 
-### New Owned Furnace (owned_furnace.tscn)
+### New Owned Furnace (own_furnace.tscn)
 
 **Purpose:** Manager/owner perspective with new mechanics
 
 **Scene Structure:**
-Inherit from scene_template.tscn (3-panel layout)
+Inherit from scene_template.tscn and set background to own-furnace.jpg
 
 **Left Panel:**
 - Title: "Your Furnace - Manager's Station"
@@ -661,17 +649,14 @@ Inherit from scene_template.tscn (3-panel layout)
   - Color: White text
 - **Demand Indicator** (Panel with RichTextLabel)
   - Shows current demand state and rate
-  - Format: "Demand: 15 lb/h (MEDIUM)"
+  - Format: "Demand: gold per lb/h (MEDIUM)"
   - Color-coded: Dark Blue (ZERO) / Green (LOW) / Yellow (MEDIUM) / Orange (HIGH) / Red (CRITICAL)
   - Shows demand reason text below
 - **Payment Progress Display** (Option 2 Format)
-  - **Earning Rate Label:** "Earning: 1 Gold / 10 minutes"
   - **Progress Bar:** Shows gold_progress (0.0 - 1.0)
     - Color: Gold/yellow gradient
     - Visual: [=====>--------------]
-  - **Progress Label:** "0.25 Gold"
   - Updates in real-time
-  - Shows "[!] No demand - no payment" during ZERO state
 - **Steam Storage Gauge** (ProgressBar) *(visible only when storage purchased)*
   - Shows stored_steam_lbs / max_storage_lbs
   - Color: Cyan/blue gradient (distinct from production)
@@ -683,19 +668,18 @@ Inherit from scene_template.tscn (3-panel layout)
   - Coal (still used for shoveling)
 
 **Right Panel Buttons:**
-- **Lead by Example** - Manager helps with shoveling (replaces old coal generation)
+- **Shovel Coal** - Manager helps with shoveling (replaces old coal generation)
   - Costs stamina
-  - Gives charisma XP (not strength - you're leading, not laboring)
+  - Gives charisma XP and strength
   - Generates small amount of heat
   - Temporarily boosts worker morale/efficiency
-- **Visit Dormitory** - Transitions to owned_dorm.tscn for worker management ⭐ NEW
+- **To Dormitory** - Transitions to owned_dorm.tscn for worker management ⭐ NEW
 - **Upgrade Furnace** - Opens furnace upgrade popup
 - **Storage Controls** *(visible only when Tier 3+ storage purchased)*
   - Opens storage control popup with release buttons and auto-release settings
 - **Take Break** - Returns to bar
 
 **Center Area:**
-- Background: Could reuse furnace.jpg or create owned_furnace.jpg
 - Could display animated elements (heat glow, steam pipes) in future
 
 **Color Indicator** (subtle discovery mechanic):
@@ -716,7 +700,7 @@ Duplicate existing [level1/dorm.tscn](level1/dorm.tscn) → owned_dorm.tscn
 - Bed count increases as upgrades purchased (visual progression)
 - Workers visible when idle/on break
 
-**Left Panel: Worker Roster**
+**Panel 1 (Left in Landscape / Top in Portrait): Worker Roster**
 - Title: "Worker Roster"
 - **Scrollable list** of hired workers (up to 20)
 - Each worker entry shows:
@@ -731,17 +715,9 @@ Duplicate existing [level1/dorm.tscn](level1/dorm.tscn) → owned_dorm.tscn
     - [Send on Break] - 5min recovery break
     - [Fire] - Remove worker (confirmation required)
 
-**Right Panel Buttons:**
-- **Hire Workers** - Opens hiring pool dialog (shows 3-8 candidates)
-- **Send All on Break** - Group break, enhanced recovery ⭐
-  - Shows "Cooldown: 12:34" if recently used (15min cooldown)
-- **Buy Food** - Opens food shop (5 quality tiers)
-- **Dormitory Upgrades** - Opens upgrade menu
-  - **Beds Tab:** Purchase bed expansions (7 tiers, 2 → 20 capacity)
-  - **Amenities Tab:** Purchase quality-of-life upgrades (10 tiers)
-- **Return to Furnace** - Goes back to owned_furnace.tscn
+**Panel 2 (Right in Landscape / Bottom in Portrait): Status & Controls**
 
-**Top Panel Info:**
+*Status Info Section (Top):*
 - **Food Supply:** "Food: 47 units (Decent Meal quality)"
   - Warning color if low (< 15 units: orange, < 5 units: red)
 - **Dormitory Capacity:** "Beds: 8 / 10 occupied"
@@ -749,14 +725,24 @@ Duplicate existing [level1/dorm.tscn](level1/dorm.tscn) → owned_dorm.tscn
   - High reputation (70+): "Workers speak well of this place"
   - Medium reputation (30-70): "Your reputation is mixed"
   - Low reputation (< 30): "Conditions here are poorly regarded"
-
-**Bottom Panel:**
-- **Auto-Break Policy:** Dropdown selector
-  - Options: Never / Conservative / Balanced / Aggressive / Preventive
-  - Applies to all workers (individual breaks only)
 - **Worker Status Indicator:** Color dot (discovery mechanic)
   - Green/Yellow/Red based on crew health
   - No explicit explanation - players discover meaning
+
+*Action Buttons Section (Middle):*
+- **[Hire Workers]** - Opens hiring pool dialog (shows 3-8 candidates)
+- **[Send All on Break]** - Group break, enhanced recovery ⭐
+  - Shows "Cooldown: 12:34" if recently used (15min cooldown)
+- **[Buy Food]** - Opens food shop (5 quality tiers)
+- **[Dormitory Upgrades]** - Opens upgrade menu
+  - **Beds Tab:** Purchase bed expansions (7 tiers, 2 → 20 capacity)
+  - **Amenities Tab:** Purchase quality-of-life upgrades (10 tiers)
+- **[Return to Furnace]** - Goes back to owned_furnace.tscn
+
+*Settings Section (Bottom):*
+- **Auto-Break Policy:** Dropdown selector
+  - Options: Never / Conservative / Balanced / Aggressive / Preventive
+  - Applies to all workers (individual breaks only)
 
 **Dialogs Opened from owned_dorm.tscn:**
 
@@ -841,9 +827,9 @@ Phase 5 introduces a comprehensive **individual worker management system** where
 - Reputation system affects hiring pool quality (hidden mechanic)
 
 **Individual Agency:**
-- Each worker has a procedurally generated name (Thomas, Jakob, William, etc.)
+- Each worker has a procedurally generated steampunk fantasy name
 - Players develop attachment to specific workers
-- Firing workers has real consequences (morale penalty, reputation hit)
+- Firing workers has real social / morale consequences or benefits
 - Active/idle/break management per worker
 
 **Strategic Depth:**
@@ -882,12 +868,11 @@ Three worker types serve different functions in furnace operation:
 #### Worker Data Structure
 
 Each worker in the roster has:
-- **Name**: Procedurally generated (Thomas, Jakob, William, Elias, Henrik, etc.)
+- **Name**: Procedurally generated 
 - **Type**: Stoker, Fireman, or Engineer
 - **Quality Tier**: 1-7 (Sickly Youth → Skilled Worker)
 - **Current Fatigue**: 0.0 (fresh) to 100.0 (exhausted) - **hidden from player**
 - **Status**: Active (working), Idle (resting), or On Break
-- **Hire Timestamp**: When worker was hired
 
 #### Worker Quality Tiers (7 Tiers)
 
@@ -1093,7 +1078,7 @@ Reputation is **never shown as a number** - players discover through:
 - Tier 7 (Skilled Worker): 10%
 
 **Pool Refresh:**
-- **Manual refresh:** 50 coins, generates new pool immediately
+- **Manual refresh:** 200 silver, generates new pool immediately
 - **Auto-refresh:** Pool regenerates every 2 hours of runtime
 - **Notifications:** "A skilled worker has applied for a position!" when Tier 6-7 appears
 
@@ -1123,7 +1108,6 @@ fatigue_rate = base_rate * demand_multiplier * management_style_multiplier *
 **Fatigue Drivers:**
 
 **Demand State Multiplier:**
-- Zero Demand: 0.5x (train stopped, easy work)
 - Very Low: 0.7x
 - Low: 0.85x
 - Normal: 1.0x
