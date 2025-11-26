@@ -99,6 +99,38 @@ signal health_changed(new_value)
 signal item_purchased(item_name, cost)
 ```
 
+### File Naming Conventions
+
+**File Names**: `kebab-case` (dashes)
+```
+zone-out-focus-system.md
+level-1-vars.gd
+loading-screen.tscn
+currency-manager.gd
+```
+
+**Why Dashes for Files**:
+- Consistent with modern web/markdown conventions
+- More readable in file browsers
+- URL-friendly
+- Clear visual separation
+
+**Important**: Variable names in GDScript MUST use `snake_case` (underscores) because dashes are interpreted as the subtraction operator:
+
+```gdscript
+# Valid variable names
+var shovel_repetitions = 0
+var zone_out_rate = 1.5
+
+# INVALID - GDScript interprets as subtraction!
+var shovel-repetitions = 0  # Error: trying to subtract 'repetitions' from 'shovel'
+var zone-out-rate = 1.5     # Error: syntax error
+```
+
+**Summary**:
+- File names → `kebab-case` (with dashes)
+- Variable/function names → `snake_case` (with underscores)
+
 ### Type Hints
 
 **Always use type hints** for clarity and performance:

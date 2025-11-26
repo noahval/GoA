@@ -2,98 +2,67 @@
 
 This document lists every feature in sequential implementation order for rebuilding the game from scratch. Each feature is numbered for tracking and reference.
 
+### Known Conflicts to Resolve
+1. **Phase 2 Identity**: Current offline earnings vs "Overseer for Hire" shift work
+2. **Platinum Persistence**: Conflicting docs on whether it persists through prestige
+3. **Worker Treatment Integration**: How Phase 6 moral system integrates with Phase 5 worker management
+
 ---
 
-## 1. FOUNDATION SYSTEMS
+## 1. base systems
 1. Project Setup - Godot 4.5 project with GL Compatibility renderer
-1. Main Scene Architecture - Loading screen as main entry point (level1/loading_screen.tscn)
-1. Global Autoload - Global.gd with stats system and game state management
-1. Level Variables Autoload - level_1_vars.gd for level-specific state
+1. project Architecture - global-vars, level 1 folder, level-1-vars
 1. Nakama Server
+1. Global Autoload - Global.gd with stats system and game state management
+1. Level Variables Autoload - level-1-vars.gd for level-specific state
 1. Save System Local Storage - JSON-based local save/load with player progress persistence
 1. Save System Cloud Storage - Cloud backup integration for cross-device play
+1. default scene
 1. Default Theme - UI theme resource (default_theme.tres) for consistent styling
 1. Scene Management - Global scene changing with validation and transition effects
-
----
-
-## 2. PHASE 1 - FURNACE WORKER
-1. Coal Resource - Basic coal tracking variable and display
-1. Manual Coal Shoveling - Click-to-add coal mechanic with visual feedback
-1. Copper Currency - Base currency for Phase 1 economy
-1. Coal-to-Copper Conversion - Manual button to convert coal to copper
-1. Conversion Price Scaling - Price increases by +1 coal per conversion
-1. Overseer NPC - Character that manages conversion process
-1. Overseer Mood System - Dynamic mood with adjective descriptions affecting conversion rates
-1. Multi-Currency Foundation - Silver, gold, and platinum currencies with tracking
-1. Currency Conversion Ratios - 1000:1 ratios (1 silver = 1000 copper, 1 gold = 1000 silver, 1 platinum = 1000 gold)
-1. Shop Scene - Dedicated shop UI for purchasing upgrades
-1. Manual Shovel Upgrade - Increase coal per click (multiple tiers)
-1. Plow Upgrade - Further increase coal per click efficiency
-1. Auto-Shovel System - Automatic coal generation over time
-1. Auto-Shovel Upgrades - Multiple tiers increasing auto-generation rate
-1. Auto-Conversion Mode - Automatic coal-to-copper with 70% efficiency penalty
-1. Six-Stat System - Strength, Dexterity, Constitution, Intelligence, Wisdom, Charisma
+1. responsive layout guide - scaling guidelines for screen layout on different resolutions
+1. game menu with dev speed mode, save reset, sfx / music volume sliders
+1. auth screen and background loading while in auth screen
+1. Currencies - copper, Silver, gold, and platinum currencies. Approx Conversion Ratios 1000:1 (1 silver = 1000 copper, 1 gold = 1000 silver, 1 platinum = 1000 gold)
+1. Notifications - notification system that displays messages
+1. Six-Stat System - Strength, Dexterity, Constitution, Intelligence, Wisdom, Charisma. general vars, not level-1-vars
 1. Experience System - XP tracking per stat with level-up mechanics
 1. Stat Notification System - Visual feedback for stat gains (Global.show_stat_notification)
-1. Add Stat Experience Function - Centralized stat XP addition (Global.add_stat_exp)
-1. Break Timer System - Time-based work/break cycle
-1. Equipment Value Tracking - Lifetime coins and equipment value for prestige calculations
-1. Victory Condition - Victory scene with progression tracking
-1. Storage Capacity System - 12-tier upgrades (200 -> 10,000 cap)
-1. Coal Tracking Cap System - 7-tier upgrades (1000 -> 35,000 cap)
+1. Network of scenes - showing links to transition from scene to scene
 
 ---
 
-## 3. PHASE 2 - OFFLINE PROGRESSION
+## 2. copper era
+
+1. Coal shoveled Resource - Basic coal tracking variable and display
+1. Manual Coal Shoveling - in play area, drag coal from pile to furnace
+1. pay - converts automatically when exceeds ever-increasing threshold
+1. Shop - Dedicated shop scene for purchasing shovelling upgrades
+1. Manual Shovel Upgrade - Increase coal per drag (multiple tiers)
+1. zone-out - Automatic coal generation over time
+1. Break Timer System - Time-based work/break cycle
+1. Prestige - Lifetime equipment value tracking, reputation is currency for prestige, Clear currency and progress, retain upgrades, Skill Tree in dorm scene with nodes to purchase
+1. Storage Capacity System - 12-tier upgrades (200 -> 10,000 coin cap)
 1. Timestamp Tracking - Save last_played timestamp on save, load on game start
 1. Time Away Calculation - Calculate elapsed time since last play session
-1. Offline Earnings Formula - 50% efficiency multiplier for offline production
-1. Overtime Base Duration - 8-hour base cap for offline earnings
-1. Overtime Upgrade System - 9 tiers: 8h -> 12h -> 16h -> 20h -> 24h -> 26h -> 28h -> 30h -> 36h
-1. Overtime Purchase Logic - Shop integration with cost scaling (300 -> 3375 coins)
-1. Overtime Persistence - Upgrades persist through prestige (QoL feature)
-1. Welcome Back Notification - Summary of offline earnings and time away
-1. Missed Hours Warning - Alert when offline time exceeds current cap
 
 ---
 
-## 4. PHASE 3 - ECONOMIC SYSTEMS
+## 4. economy
 1. ATM Scene - Dedicated currency exchange interface
 1. Market Rate System - Dynamic exchange rates for copper/silver/gold
 1. Bell Curve Volatility - Normal distribution within ±30% range of base rates
 1. Market Update Timer - Rates change every 15-30 minutes (randomized)
 1. Transaction Fee System - 8% base fee reducing to 1% floor based on volume
-1. Charisma Fee Reduction - 0.5% fee reduction per Charisma level
+1. Charisma Fee Reduction - 0.25% fee reduction per Charisma level
 1. Market Notification System - 18 classist grimdark messages for extreme market events
-1. Currency Unlock Progression - Silver always available, gold at 50 silver, platinum at 50 gold
+1. Currency Unlock Progression - each currency unlocks when the player has 800 of the previous currency
 1. Platinum Stability - Platinum has no market volatility (anchor currency)
 1. Inverted Rate Display - Shows "1 silver = X copper" format for clarity
-1. ATM Deposit System - 12% base fee (reduces to 1% with Charisma)
-1. ATM Withdrawal System - Instant, no fee
-1. Unlimited ATM Storage - Store currency beyond pocket capacity
-1. Exchange Deposited Currency - Can trade currency in ATM storage
-1. Storage vs Deposit Strategy - Balance one-time storage upgrades vs repeated deposit fees
 
 ---
 
-## 5. PHASE 4 - PRESTIGE FRAMEWORK
-1. Reputation Currency - Spendable currency for skill trees
-1. Lifetime Reputation Tracking - Total reputation earned across all prestiges
-1. Prestige Reset Mechanics - Clear currency and progress, retain upgrades
-1. Skill Tree Tab UI - Three tabbed interface in dormitory scene
-1. Laborer's Wisdom Tree - Phase 1 focus, 8-12 nodes, 1-5 reputation cost
-1. Overseer's Cunning Tree - Phase 2 focus, 8-12 nodes, 3-8 reputation cost, requires Phase 2 unlock
-1. Magnate's Empire Tree - Phase 3 focus, 8-12 nodes, 5-12 reputation cost, requires Phase 3 unlock
-1. Skill Node Purchase System - Spend reputation to unlock nodes with permanent benefits
-1. Phase Gate Phase 1 to Phase 2 - Requirements: 800 copper + Rep 5 + Stats 30 + Quest + Overseer Relations
-1. Phase Gate Phase 2 to Phase 3 - Requirements: 800 silver + Rep 15 + Stats 45 + Leadership Exam + Furnace Deed
-1. Phase Gate Validation - Check all requirements before allowing phase transition
-1. Platinum Persistence Rule - Clarify if platinum persists through prestige (conflicting docs)
-
----
-
-## 6. PHASE 2B - OVERSEER FOR HIRE
+## 6. silver era
 1. Shift Work System - Time-limited assignments covering for other overseers
 1. Silver-Based Economy - Distinct from Phase 1 copper, earned through shifts
 1. Overseer Personality System - 5-8 unique overseers on cruelty spectrum
@@ -105,7 +74,7 @@ This document lists every feature in sequential implementation order for rebuild
 
 ---
 
-## 7. PHASE 5 - OWN FURNACE
+## 7. gold era
 1. Furnace Purchase Option - Available in Overseer's Office for 1 gold (10,000 copper)
 1. Purchase Validation - Check lifetime coins >= 10,000 before allowing purchase
 1. One-Time Purchase Lock - Cannot be reversed once purchased
@@ -254,7 +223,7 @@ This document lists every feature in sequential implementation order for rebuild
 
 ---
 
-## 8. PHASE 6 - ENVIRONMENTAL COMPLEXITY
+## 8. environmental complexity
 1. Phase 6 Progressive Introduction - 2 systems per prestige cycle increase to avoid overwhelming
 1. Coal Quality Types - 3 types: Regular, Fine, Coarse with different properties
 1. Temperature Regulation System - 800-1500°F range with performance sweet spots
@@ -287,17 +256,10 @@ This document lists every feature in sequential implementation order for rebuild
 
 ---
 
-## 9. ENDGAME & FUTURE CONTENT
-1. Worker Treatment Moral System - Poor/Fair/Good treatment with mechanical consequences and skill-based balance
+## 9. escape
+1. Worker Treatment Morality System - Poor/Fair/Good treatment with mechanical consequences and skill-based balance
 1. Harmful Furnace Upgrades - High-productivity upgrades with moral costs (worker harm, environmental damage)
 1. Moral Choice Framework - "It's very hard to be good" - system rewards efficiency over ethics, player chooses path
 1. Nobility Credit System - Endgame currency for train escape prerequisites
 1. Train Escape Sequence - Final challenge to leave the train city
 1. Level 2 Transition - New location/era after escaping train
-
-
-### Known Conflicts to Resolve
-
-1. **Phase 2 Identity**: Current offline earnings vs "Overseer for Hire" shift work
-2. **Platinum Persistence**: Conflicting docs on whether it persists through prestige
-3. **Worker Treatment Integration**: How Phase 6 moral system integrates with Phase 5 worker management
