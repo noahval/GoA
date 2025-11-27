@@ -289,13 +289,57 @@ For Windows PowerShell:
 
 ---
 
+---
+
+### TOC Plan Sync Hook [STAR]
+
+**Files**: `sync-toc-plans.ps1` (Sync script) / `toc-change-hook.ps1` (Hook wrapper)
+
+**Purpose**: Automatically syncs plan file numbering with TOC and marks missing plan files.
+
+**How It Works**:
+1. Hook runs after Write/Edit tools modify TOC.md
+2. Parses TOC to extract section numbers and line items
+3. Renames existing plan files to match TOC numbering (e.g., if core-loop moves from 2.1 to 2.2, renames file)
+4. Adds [!] markers in TOC for line items without corresponding plan files
+5. Removes [!] markers when plan files are created
+
+**Example**:
+- You add a new item as section 2, line 1 in TOC.md
+- Existing `2.1-core-loop.md` automatically renames to `2.2-core-loop.md`
+- TOC shows `1. [!] new-feature` for the new item (no plan file yet)
+- When you create `2.1-new-feature.md`, the [!] marker is removed
+
+**Benefits**:
+- Keeps plan files numbered correctly as TOC evolves
+- Visual indicators ([!]) show which features need planning
+- No manual file renaming needed
+- Maintains consistency between TOC and plans folder
+
+---
+
+### Audio Done Hook [STAR]
+
+**Files**: `stop/audio-done.ps1`
+
+**Purpose**: Plays a C note (262 Hz) when Claude finishes responding so you know to review the response.
+
+**How It Works**:
+1. Hook runs when Claude completes a response (Stop event)
+2. Uses PowerShell console beep at C4 frequency (262 Hz) for 300ms
+3. Provides audio feedback that response is ready for review
+
+**Benefits**:
+- Notification when Claude is done responding
+- Helpful for multitasking or looking away from screen
+- Simple, non-intrusive audio cue
+
+---
+
 ### Potential Future Hooks
 
 ### Testing Hook
 Run automated tests before commits to catch regressions.
-
-### Documentation Hook
-Auto-update TOC.md when files change (already implemented via toc_updater.gd).
 
 ### Debug Log Hook
 Archive debug logs before new sessions.

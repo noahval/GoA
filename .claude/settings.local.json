@@ -25,16 +25,23 @@
         ]
       }
     ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '{\"file_path\": \"{file_path}\"}' | powershell -ExecutionPolicy Bypass -File .claude/hooks/toc-change-hook.ps1"
+          }
+        ]
+      }
+    ],
     "Stop": [
       {
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -ExecutionPolicy Bypass -File .claude/hooks/stop/gdscript-validator.ps1"
-          },
-          {
-            "type": "command",
-            "command": "powershell -ExecutionPolicy Bypass -File .claude/hooks/stop/game-mechanics-check.ps1"
+            "command": "powershell -ExecutionPolicy Bypass -File c:/GoA/.claude/hooks/stop/audio-done.ps1"
           }
         ]
       }
