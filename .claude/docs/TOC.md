@@ -2,6 +2,25 @@
 
 This document lists every feature in sequential implementation order for rebuilding the game from scratch. Each feature is numbered for tracking and reference.
 
+## Active Implementation Plans
+
+### Roguelite Redesign (Current Focus)
+- [2-copper-rogue.md](../plans/2-copper-rogue.md) - Master design document
+- [plucky-mapping-pretzel.md](../plans/plucky-mapping-pretzel.md) - Full implementation plan
+
+### Phase-by-Phase Implementation (60-100 hours total)
+1. [2.1-core-loop-mvp.md](../plans/2.1-core-loop-mvp.md) - Core Loop MVP (12-15h)
+2. [2.2-permanent-progression.md](../plans/2.2-permanent-progression.md) - Permanent Progression (15-20h)
+3. [2.3-roguelite-techniques.md](../plans/2.3-roguelite-techniques.md) - Roguelite Techniques (18-25h)
+4. [2.4-breaks-and-demand.md](../plans/2.4-breaks-and-demand.md) - Breaks & Demand Events (12-18h)
+5. [2.5-discovery-mechanics.md](../plans/2.5-discovery-mechanics.md) - Discovery Mechanics (20-25h)
+6. [2.6-content-and-balance.md](../plans/2.6-content-and-balance.md) - Content & Balance (25-30h)
+
+### Special Topics
+- [zone-out-integration-summary.md](../plans/zone-out-integration-summary.md) - Zone-Out system integration across Phases 2.2-2.6
+
+---
+
 ### Known Conflicts to Resolve
 1. **Phase 2 Identity**: Current offline earnings vs "Overseer for Hire" shift work
 2. **Platinum Persistence**: Conflicting docs on whether it persists through prestige
@@ -34,6 +53,7 @@ This document lists every feature in sequential implementation order for rebuild
 
 ## 2. copper era
 
+1. copper-rogue
 1. Coal shoveled Resource - Basic coal tracking variable and display
 1. Manual Coal Shoveling - in play area, drag coal from pile to furnace
 1. pay - converts automatically when exceeds ever-increasing threshold
