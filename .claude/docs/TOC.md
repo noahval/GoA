@@ -13,15 +13,8 @@ This document lists every feature in sequential implementation order for buildin
 
 ## Active Implementation Plans
 
-### Known Conflicts to Resolve
-1. [!] **Phase 2 Identity**: Current offline earnings vs "Overseer for Hire" shift work
-2. [!] **Platinum Persistence**: Conflicting docs on whether it persists through prestige
-3. [!] **Worker Treatment Integration**: How Phase 6 moral system integrates with Phase 5 worker management
-
----
-
 ## 1. base systems
-1. [!] Project Setup - Godot 4.5 project with GL Compatibility renderer
+1. Project Setup - Godot 4.5 project with GL Compatibility renderer
 1. [!] Project Architecture - global-vars, level 1 folder, level-1-vars
 1. [!] Global Autoload - Global.gd with stats system and game state management
 1. [!] Level Variables Autoload - level-1-vars.gd for level-specific state
@@ -30,8 +23,8 @@ This document lists every feature in sequential implementation order for buildin
 1. [!] Experience System - XP tracking per stat with level-up mechanics
 1. [!] Scene Management - Global scene changing with validation, transition effects, and scene network map
 1. [!] Default Scene - Initial scene setup
-1. [!] Default Theme - UI theme resource (default_theme.tres) for consistent styling
-1. [!] Responsive Layout Guide - Scaling guidelines for screen layout on different resolutions
+1. Default Theme - UI theme resource (default_theme.tres) for consistent styling
+1. Responsive Layout Guide - Scaling guidelines for screen layout on different resolutions
 1. [!] Audio System - Audio manager with music and SFX playback, volume control
 1. [!] Input System - Unified input handling for mouse, touch, and keyboard
 1. [!] Notifications - Notification system that displays messages
@@ -46,10 +39,7 @@ This document lists every feature in sequential implementation order for buildin
 1. [!] Auth Screen - Authentication UI and background loading during auth
 1. [!] Game Menu - Dev speed mode, save reset, SFX/music volume sliders
 
----
-
 ## 2. copper era
-
 1. core-loop - Complete one work day with satisfying coal-shoveling feel
 1. permanent-progression - Prestige system with skill tree and persistent upgrades
 1. roguelite-techniques - Run-based mechanics with meta-progression
@@ -74,8 +64,6 @@ This document lists every feature in sequential implementation order for buildin
 1. [!] Timestamp Tracking - Save last_played timestamp on save, load on game start
 1. [!] Time Away Calculation - Calculate elapsed time since last play session
 
----
-
 ## 3. economy
 1. [!] ATM Scene - Dedicated currency exchange interface
 1. [!] Market Rate System - Dynamic exchange rates for copper/silver/gold
@@ -88,8 +76,6 @@ This document lists every feature in sequential implementation order for buildin
 1. [!] Platinum Stability - Platinum has no market volatility (anchor currency)
 1. [!] Inverted Rate Display - Shows "1 silver = X copper" format for clarity
 
----
-
 ## 4. silver era
 1. [!] Shift Work System - Time-limited assignments covering for other overseers
 1. [!] Silver-Based Economy - Distinct from Phase 1 copper, earned through shifts
@@ -100,18 +86,13 @@ This document lists every feature in sequential implementation order for buildin
 1. [!] Bribery System - Pay to unlock access to specific overseers
 1. [!] Referral System - Progressive unlocking of overseer network through relationships
 
----
-
 ## 5. gold era
-
-1. **Core Systems** - Heat/steam production, dynamic demand (5 states), storage system, steam-to-gold payment
-1. [!] **Scenes & Navigation** - Furnace purchase, owned_furnace/owned_dorm scenes, navigation updates
-1. **Worker Management** - 3 types, 7 quality tiers, hidden fatigue/morale, breaks, hiring, food, amenities
-1. [!] **Worker UI & Formulas** - Roster display, hiring/food/upgrade dialogs, production formulas
-1. **Hired Overseer** - Offline progression with quality/duration/style upgrades, hidden charisma gain
-1. **Furnace Upgrades** - Materials (7 tiers, 700°C-3,000°C), thickness, linings, special systems
-
----
+1. Core Systems - Heat/steam production, dynamic demand (5 states), storage system, steam-to-gold payment
+1. Scenes-Navigation - Furnace purchase, owned_furnace/owned_dorm scenes, navigation update
+1. Worker Management - 3 types, 7 quality tiers, hidden fatigue/morale, breaks, hiring, food, amenities
+1. Worker UI Formulas - Roster display, hiring/food/upgrade dialogs, production formulas
+1. Hired Overseer - Offline progression with quality/duration/style upgrades, hidden charisma gain
+1. Furnace Upgrades - Materials (7 tiers, 700°C-3,000°C), thickness, linings, special systems
 
 ## 6. environmental complexity
 1. [!] Phase 6 Progressive Introduction - 2 systems per prestige cycle increase to avoid overwhelming
@@ -142,14 +123,11 @@ This document lists every feature in sequential implementation order for buildin
 1. [!] Discovery-Based Learning - No explicit tutorials, players learn through observation
 1. [!] Stat-Based Knowledge Reveals - Int/Wis/Dex/Con/Str/Cha provide different insights into hidden systems
 1. [!] Environmental Pattern Recognition - Players discover optimal combinations through experimentation
-1. [!] Community Discovery Expectation - Complex hidden mechanics designed for community collaboration (Reddit/Discord)
-
----
+1. [!] Worker Treatment Morality System - Poor/Fair/Good treatment with mechanical consequences
+1. [!] Harmful Furnace Upgrades - High-productivity upgrades with moral costs (worker harm, environmental damage)
+1. [!] Moral Choice Framework - system rewards efficiency over ethics, player chooses path
 
 ## 7. escape
-1. [!] Worker Treatment Morality System - Poor/Fair/Good treatment with mechanical consequences and skill-based balance
-1. [!] Harmful Furnace Upgrades - High-productivity upgrades with moral costs (worker harm, environmental damage)
-1. [!] Moral Choice Framework - "It's very hard to be good" - system rewards efficiency over ethics, player chooses path
 1. [!] Nobility Credit System - Endgame currency for train escape prerequisites
 1. [!] Train Escape Sequence - Final challenge to leave the train city
 1. [!] Level 2 Transition - New location/era after escaping train
