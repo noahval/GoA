@@ -4,21 +4,27 @@ This document lists every feature in sequential implementation order for buildin
 
 ## How to Use This Document
 
+**IMPORTANT: Complete Rewrite Project**
+This roadmap is for a complete game rewrite from scratch. All features listed should be implemented fresh with clean architecture - do not worry about maintaining backward compatibility with legacy files or old save systems.
+
 **Line Items and Plan Docs:**
 - Each line item represents a feature or system to implement
 - Plan docs are located in `.claude/plans/` folder
 - Plan doc naming: `[section].[subsection]-[feature-name].md` (e.g., `2.1-core-loop.md`, `6.3-worker-management.md`)
 - When a line item matches an existing plan doc name (e.g., "core-loop" -> `2.1-core-loop.md`), consult that doc for detailed implementation steps
 - Check the plans folder if unsure whether a plan doc exists for a specific feature
+- `[!]` markers indicate features that need a plan document created
 
 ## Active Implementation Plans
 
 ## 1. base systems
 1. Project Setup - Godot 4.5 project with GL Compatibility renderer
-1. [!] Project Architecture - global-vars, level 1 folder, level-1-vars
-1. [!] Global Autoload - Global.gd with stats system and game state management
+1. Project Architecture - global-vars, level 1 folder, level-1-vars
+1. Global Autoload - Global.gd with stats system and game state management (Plan: 1.3-global-autoload.md)
 1. [!] Level Variables Autoload - level-1-vars.gd for level-specific state
-1. [!] Currencies - Copper, Silver, Gold, and Platinum currencies. Approx Conversion Ratios 1000:1 (1 silver = 1000 copper, 1 gold = 1000 silver, 1 platinum = 1000 gold)
+1. Currencies - Copper, Silver, Gold, and Platinum currencies with current and lifetime tracking (Plan: 1.5-currencies.md)
+1. Currency Manager - Currency exchange system with market rate hooks, transaction fees, and purse capacity (Plan: 1.6-currency-manager.md)
+1. ATM Scene - Currency exchange UI with live market rate display and transaction preview (Plan: 1.7-atm-scene.md)
 1. [!] Six-Stat System - Strength, Dexterity, Constitution, Intelligence, Wisdom, Charisma (Global vars, not level-1-vars)
 1. [!] Experience System - XP tracking per stat with level-up mechanics
 1. [!] Scene Management - Global scene changing with validation, transition effects, and scene network map
@@ -65,16 +71,8 @@ This document lists every feature in sequential implementation order for buildin
 1. [!] Time Away Calculation - Calculate elapsed time since last play session
 
 ## 3. economy
-1. [!] ATM Scene - Dedicated currency exchange interface
-1. [!] Market Rate System - Dynamic exchange rates for copper/silver/gold
-1. [!] Bell Curve Volatility - Normal distribution within ±30% range of base rates
-1. [!] Market Update Timer - Rates change every 15-30 minutes (randomized)
-1. [!] Transaction Fee System - 8% base fee reducing to 1% floor based on volume
-1. [!] Charisma Fee Reduction - 0.25% fee reduction per Charisma level
-1. [!] Market Notification System - 18 classist grimdark messages for extreme market events
+1. Market Volatility - Dynamic exchange rate modifiers with bell curve distribution, market events, and notifications (Plan: 3.1-market-volatility.md)
 1. [!] Currency Unlock Progression - each currency unlocks when the player has 800 of the previous currency
-1. [!] Platinum Stability - Platinum has no market volatility (anchor currency)
-1. [!] Inverted Rate Display - Shows "1 silver = X copper" format for clarity
 
 ## 4. silver era
 1. [!] Shift Work System - Time-limited assignments covering for other overseers
