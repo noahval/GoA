@@ -47,6 +47,12 @@ GoA/
 - Confirm assumptions before making changes
 - This collaborative approach ensures better outcomes and alignment
 
+**Planning Workflow**
+- When asked to "write a plan" or "create a plan", ONLY write the plan document
+- NEVER automatically implement the plan after writing it
+- Wait for explicit user approval before implementing
+- Plans are saved to .claude/plans/ folder for review before execution
+
 ## Development Guidelines
 1. **GDScript Style**: Use snake_case for variables and functions
 2. **Stat Changes**: Always use the global experience system via `Global.add_stat_exp()`

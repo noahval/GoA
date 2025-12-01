@@ -20,37 +20,37 @@ This roadmap is for a complete game rewrite from scratch. All features listed sh
 ## 1. base systems
 1. Project Setup - Godot 4.5 project with GL Compatibility renderer
 1. Project Architecture - global-vars, level 1 folder, level-1-vars
-1. Global Autoload - Global.gd with stats system and game state management (Plan: 1.3-global-autoload.md)
+1. Global Autoload - Global.gd with stats system and game state management
 1. [!] Level Variables Autoload - level-1-vars.gd for level-specific state
-1. Currencies - Copper, Silver, Gold, and Platinum currencies with current and lifetime tracking (Plan: 1.5-currencies.md)
-1. Currency Manager - Currency exchange system with market rate hooks, transaction fees, and purse capacity (Plan: 1.6-currency-manager.md)
-1. ATM Scene - Currency exchange UI with live market rate display and transaction preview (Plan: 1.7-atm-scene.md)
-1. Stats & Experience System - Six stats (STR/DEX/CON/INT/WIS/CHA) with XP tracking and level-up mechanics (Plan: 1.8-stats-and-experience.md)
-1. Scene Management - Generic scene changing with validation framework and save integration (Plan: 1.9-scene-management.md)
-1. Default Theme - UI theme resource (default_theme.tres) for consistent styling (Plan: 1.10-default-theme.md)
-1. Responsive Layout Guide - Scaling guidelines for screen layout on different resolutions (Plan: 1.11-responsive-layout-guide.md)
-1. UI Scale Slider - User-adjustable UI scale (0.8x-1.2x) on top of automatic resolution scaling (Plan: 1.12-ui-scale-slider.md)
-1. [!] Default Scene - Initial scene setup
-1. [!] Audio System - Audio manager with music and SFX playback, volume control
-1. [!] Input System - Unified input handling for mouse, touch, and keyboard
-1. Notifications - Unified notification system with queueing, stat variety, and history tracking (Plan: 1.13-notifications.md)
-1. Notification History Panel - Interactive history viewer in play area with filtering (Plan: 1.14-notification-history-panel.md)
+1. Currencies - Copper, Silver, Gold, and Platinum currencies with current and lifetime tracking
+1. Currency Manager - Currency exchange system with market rate hooks, transaction fees, and purse capacity
+1. ATM Scene - Currency exchange UI with live market rate display and transaction preview
+1. [!] Stats & Experience System - Six stats (STR/DEX/CON/INT/WIS/CHA) with XP tracking and level-up mechanics
+1. Scene Management - Generic scene changing with validation framework and save integration
+1. Default Theme - UI theme resource (default_theme.tres) for consistent styling
+1. Responsive Layout Guide - Scaling guidelines for screen layout on different resolutions
+1. UI Scale Slider - User-adjustable UI scale (0.8x-1.2x) on top of automatic resolution scaling
+1. Scene Template - Base scene structure for all game scenes (inherits from scene_template.tscn)
+1. Button Hierarchy - Automatic button ordering system (Action, Forward Nav, Back Nav)
+1. Audio System - Audio manager with music and SFX playback, volume control
+1. Settings Panel - Settings menu button and panel display in play area
+1. Notifications - Unified notification system with queueing, stat variety, and history tracking
+1. Notification History Panel - Interactive history viewer in play area with filtering
+1. [!] Nakama Server - Server setup for cloud features
+1. [!] Save System Cloud Storage - Cloud backup integration for cross-device play
+1. [!] Auth Screen - Authentication UI and background loading during auth
 1. [!] Logging and Debug System - Debug console, error logging, performance monitoring
 1. [!] Error Handling - Global error handling and crash recovery
 1. [!] Version Management - Game version tracking for save compatibility
 1. [!] Settings Persistence - Player settings (volume, resolution, etc.) separate from game save
 1. [!] Save System Local Storage - JSON-based local save/load with player progress persistence
-1. [!] Nakama Server - Server setup for cloud features
-1. [!] Save System Cloud Storage - Cloud backup integration for cross-device play
-1. [!] Auth Screen - Authentication UI and background loading during auth
-1. [!] Game Menu - Dev speed mode, save reset, SFX/music volume sliders
 
 ## 2. copper era
+1. [!] Scene Network (Level 1) - Centralized scene registry and navigation map for all Level 1 scenes (copper, silver, gold eras)
 1. core-loop - Complete one work day with satisfying coal-shoveling feel
-1. Scene Network (Level 1) - Centralized scene registry and navigation map for all Level 1 scenes (copper, silver, gold eras) (Plan: 2.2-scene-network.md)
 1. permanent-progression - Prestige system with skill tree and persistent upgrades
 1. roguelite-techniques - Run-based mechanics with meta-progression
-1. [!] Breaks & Demand Events - Timed breaks, rush orders, and pressure mechanics
+1. [!] Breaks & Demand Events - Timed breaks(actions not clock), rush orders, and pressure mechanics
 1. Discovery Mechanics - Hidden systems revealed through experimentation
 1. content-and-balance - Tuning for difficulty curve and engagement
 1. [!] Tutorial and FTUE - First-time user experience and onboarding
@@ -73,7 +73,7 @@ This roadmap is for a complete game rewrite from scratch. All features listed sh
 1. [!] Cast
 
 ## 3. economy
-1. Market Volatility - Dynamic exchange rate modifiers with bell curve distribution, market events, and notifications (Plan: 3.1-market-volatility.md)
+1. Market Volatility - Dynamic exchange rate modifiers with bell curve distribution, market events, and notifications
 1. [!] Currency Unlock Progression - each currency unlocks when the player has 800 of the previous currency
 
 ## 4. silver era
