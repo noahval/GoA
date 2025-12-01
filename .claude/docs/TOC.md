@@ -5,7 +5,7 @@ This document lists every feature in sequential implementation order for buildin
 ## How to Use This Document
 
 **IMPORTANT: Complete Rewrite Project**
-This roadmap is for a complete game rewrite from scratch. All features listed should be implemented fresh with clean architecture - do not worry about maintaining backward compatibility with legacy files or old save systems.
+This roadmap is for a complete game rewrite from scratch. All features listed should be implemented fresh with clean architecture - do not worry about maintaining backward compatibility with legacy files or old save systems. the legacy systems can be viewed for inspiration.
 
 **Line Items and Plan Docs:**
 - Each line item represents a feature or system to implement
@@ -25,16 +25,16 @@ This roadmap is for a complete game rewrite from scratch. All features listed sh
 1. Currencies - Copper, Silver, Gold, and Platinum currencies with current and lifetime tracking (Plan: 1.5-currencies.md)
 1. Currency Manager - Currency exchange system with market rate hooks, transaction fees, and purse capacity (Plan: 1.6-currency-manager.md)
 1. ATM Scene - Currency exchange UI with live market rate display and transaction preview (Plan: 1.7-atm-scene.md)
-1. [!] Six-Stat System - Strength, Dexterity, Constitution, Intelligence, Wisdom, Charisma (Global vars, not level-1-vars)
-1. [!] Experience System - XP tracking per stat with level-up mechanics
-1. [!] Scene Management - Global scene changing with validation, transition effects, and scene network map
+1. Stats & Experience System - Six stats (STR/DEX/CON/INT/WIS/CHA) with XP tracking and level-up mechanics (Plan: 1.8-stats-and-experience.md)
+1. Scene Management - Generic scene changing with validation framework and save integration (Plan: 1.9-scene-management.md)
+1. Default Theme - UI theme resource (default_theme.tres) for consistent styling (Plan: 1.10-default-theme.md)
+1. Responsive Layout Guide - Scaling guidelines for screen layout on different resolutions (Plan: 1.11-responsive-layout-guide.md)
+1. UI Scale Slider - User-adjustable UI scale (0.8x-1.2x) on top of automatic resolution scaling (Plan: 1.12-ui-scale-slider.md)
 1. [!] Default Scene - Initial scene setup
-1. Default Theme - UI theme resource (default_theme.tres) for consistent styling
-1. Responsive Layout Guide - Scaling guidelines for screen layout on different resolutions
 1. [!] Audio System - Audio manager with music and SFX playback, volume control
 1. [!] Input System - Unified input handling for mouse, touch, and keyboard
-1. [!] Notifications - Notification system that displays messages
-1. [!] Stat Notification System - Visual feedback for stat gains (Global.show_stat_notification)
+1. Notifications - Unified notification system with queueing, stat variety, and history tracking (Plan: 1.13-notifications.md)
+1. Notification History Panel - Interactive history viewer in play area with filtering (Plan: 1.14-notification-history-panel.md)
 1. [!] Logging and Debug System - Debug console, error logging, performance monitoring
 1. [!] Error Handling - Global error handling and crash recovery
 1. [!] Version Management - Game version tracking for save compatibility
@@ -47,6 +47,7 @@ This roadmap is for a complete game rewrite from scratch. All features listed sh
 
 ## 2. copper era
 1. core-loop - Complete one work day with satisfying coal-shoveling feel
+1. Scene Network (Level 1) - Centralized scene registry and navigation map for all Level 1 scenes (copper, silver, gold eras) (Plan: 2.2-scene-network.md)
 1. permanent-progression - Prestige system with skill tree and persistent upgrades
 1. roguelite-techniques - Run-based mechanics with meta-progression
 1. [!] Breaks & Demand Events - Timed breaks, rush orders, and pressure mechanics
@@ -69,6 +70,7 @@ This roadmap is for a complete game rewrite from scratch. All features listed sh
 1. [!] Prestige System - Lifetime equipment value tracking, reputation currency, clear progress, retain upgrades, skill tree in dorm scene
 1. [!] Timestamp Tracking - Save last_played timestamp on save, load on game start
 1. [!] Time Away Calculation - Calculate elapsed time since last play session
+1. [!] Cast
 
 ## 3. economy
 1. Market Volatility - Dynamic exchange rate modifiers with bell curve distribution, market events, and notifications (Plan: 3.1-market-volatility.md)

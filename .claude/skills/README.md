@@ -44,6 +44,7 @@ This project includes 18 general-purpose development skills organized into 4 cat
 |-------|---------|----------|
 | [brainstorming.md](brainstorming.md) | Socratic design refinement | brainstorm, design, planning |
 | [writing-plans.md](writing-plans.md) | Detailed implementation roadmaps | plan, roadmap, task breakdown |
+| [plan-scope-decisions.md](plan-scope-decisions.md) | Decide when to combine vs split plans | combine, split, plan scope |
 | [executing-plans.md](executing-plans.md) | Batch execution with checkpoints | execute plan, implementation |
 | [dispatching-parallel-agents.md](dispatching-parallel-agents.md) | Concurrent task management | parallel agents, concurrent |
 | [requesting-code-review.md](requesting-code-review.md) | Initiate code reviews | code review, review request |

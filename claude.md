@@ -40,6 +40,13 @@ GoA/
 - **Modified files**: global.gd, shop files, loading screen, project.godot
 - **Untracked files**: victory scene files
 
+## Interaction Guidelines
+**Always ask clarifying questions before proceeding with tasks**
+- When given a new task or request, first ask questions to ensure full understanding
+- Clarify ambiguous requirements, implementation preferences, and scope
+- Confirm assumptions before making changes
+- This collaborative approach ensures better outcomes and alignment
+
 ## Development Guidelines
 1. **GDScript Style**: Use snake_case for variables and functions
 2. **Stat Changes**: Always use the global experience system via `Global.add_stat_exp()`
