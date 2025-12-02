@@ -2,6 +2,10 @@ extends Node
 
 var dev_speed_mode = false
 
+# Singleton panel instances
+var settings_panel_instance = null
+var error_panel_instance = null
+
 # ===== VICTORY CONDITION CONFIGURATION =====
 # Configure these values to change when the player wins
 var victory_conditions = {
@@ -571,9 +575,12 @@ func _on_autosave_timeout():
 func change_scene_with_check(scene_tree: SceneTree, scene_path: String):
 	var current_scene = scene_tree.current_scene.scene_file_path if scene_tree.current_scene else "unknown"
 
-	# Save progress before scene change (cloud if authenticated, local if offline)
+	# Save to cloud before scene change (from plan 1.20)
 	if NakamaManager.is_authenticated:
-		NakamaManager.save_game()
+		var save_result = await NakamaManager.save_game()
+		if not save_result:
+			# Save failed - notify player
+			ErrorHandler.handle_save_failure("Save before scene change failed")
 		DebugLogger.log_info("SceneChange", "Cloud save before scene transition")
 	else:
 		LocalSaveManager.save_game()
@@ -582,14 +589,14 @@ func change_scene_with_check(scene_tree: SceneTree, scene_path: String):
 	# Check for victory conditions first
 	if check_victory_conditions():
 		DebugLogger.log_scene_change(current_scene, "res://victory.tscn", "Victory conditions met")
-		scene_tree.change_scene_to_file("res://victory.tscn")
+		ErrorHandler.safe_change_scene(scene_tree, "res://victory.tscn", "res://level1/loading_screen.tscn")
 		return
 
 	# Check if player gets caught before scene change
 	if not check_get_caught():
 		# If not caught, proceed with scene change
 		DebugLogger.log_scene_change(current_scene, scene_path, "Normal scene transition")
-		scene_tree.change_scene_to_file(scene_path)
+		ErrorHandler.safe_change_scene(scene_tree, scene_path, "res://level1/loading_screen.tscn")
 
 # Check if victory conditions have been met
 func check_victory_conditions() -> bool:
