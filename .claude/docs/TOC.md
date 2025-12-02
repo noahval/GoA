@@ -36,10 +36,10 @@ This roadmap is for a complete game rewrite from scratch. All features listed sh
 1. Settings Panel - Settings menu button and panel display in play area
 1. Notifications - Unified notification system with queueing, stat variety, and history tracking
 1. Notification History Panel - Interactive history viewer in play area with filtering
-1. [!] Nakama Server - Server setup for cloud features
-1. [!] Save System Cloud Storage - Cloud backup integration for cross-device play
+1. Nakama Server - Server setup for cloud features
+1. Save System Cloud - Cloud backup integration for cross-device play
 1. [!] Auth Screen - Authentication UI and background loading during auth
-1. [!] Logging and Debug System - Debug console, error logging, performance monitoring
+1. Logging Debug System - Debug console, error logging, performance monitoring
 1. [!] Error Handling - Global error handling and crash recovery
 1. [!] Version Management - Game version tracking for save compatibility
 1. [!] Settings Persistence - Player settings (volume, resolution, etc.) separate from game save
