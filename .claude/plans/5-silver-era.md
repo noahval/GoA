@@ -1,4 +1,4 @@
-# Phase 2 Gameplay: Overseer for Hire
+# silver era - Overseer for Hire
 
 ## Overview
 Phase 2 introduces a silver-based economy where players pick up short shifts covering for other overseers. This phase explores the moral theme "it's very hard to be good" through the cruelty spectrum of overseers.

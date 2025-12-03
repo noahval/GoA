@@ -4,10 +4,6 @@
 
 **Success Criteria**: [How you know this feature is complete and working]
 
-**Prerequisites**: [List of phases or features that must exist first, or "None"]
-
----
-
 ## Overview
 
 [Brief description of the feature, its purpose in the game, and how it fits into the overall experience. 2-4 sentences.]
@@ -167,25 +163,6 @@ godot --headless --script res://tests/test_runner.gd
 +------------------------------------------+
 ```
 
----
-
-## Dependencies & Integration
-
-[How this feature integrates with existing systems]
-
-**Depends On:**
-- [Feature 1] - [Why needed]
-- [Feature 2] - [Why needed]
-
-**Used By:**
-- [Future feature 1] - [How it uses this]
-- [Future feature 2] - [How it uses this]
-
-**Conflicts:**
-- [Any known conflicts or incompatibilities]
-
----
-
 ## Balance Tuning Notes
 
 [For designers/future balance passes]
@@ -202,20 +179,6 @@ godot --headless --script res://tests/test_runner.gd
 **Warning Signs:**
 - If [X happens], increase [Y]
 - If [X happens], decrease [Y]
-
----
-
-## Phase Status
-
-**Status**: [Planning / Ready for Implementation / In Progress / Complete]
-
-**Estimated Time**: [X-Y hours]
-
-**Dependencies Complete**: [Yes/No - list incomplete dependencies]
-
-**Previous Phase**: [Link to previous plan doc if applicable]
-
-**Next Phase**: [Link to next plan doc if applicable]
 
 ---
 

@@ -17,6 +17,30 @@
 - **Follow**: `.claude/plans/TEMPLATE.md`
 - **Study examples**: `1.5-currencies.md`, `1.6-currency-manager.md`, `1.8-stats-and-experience.md`
 
+### Cross-Referencing Plans
+When referencing other plans in documentation, use the glob pattern format:
+- **Format**: `1.x-feature-name.md`
+- **Example**: "See 1.x-settings-panel.md for details"
+- **Example**: "Coordinate with 1.x-global-autoload.md"
+
+**Why this format:**
+- Resilient to plan renumbering (plans may be reordered for dependency reasons)
+- AI-friendly: Claude can use `Glob pattern="*-settings-panel.md"` to find files
+- Human-readable: Descriptive filename part makes purpose clear
+- No maintenance: References stay valid even when plan numbers change
+
+**Where to use:**
+- Dependencies sections
+- Integration notes
+- Code comments referencing plans
+- Success criteria
+- Implementation checklist items
+
+**Don't use:**
+- ❌ "plan 1.16" (breaks when renumbered)
+- ❌ "the settings panel plan" (ambiguous, harder to glob)
+- ✅ "1.x-settings-panel.md" (resilient and clear)
+
 ---
 
 ## Planning Process

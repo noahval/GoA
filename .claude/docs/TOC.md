@@ -15,6 +15,12 @@ This roadmap is for a complete game rewrite from scratch. All features listed sh
 - Check the plans folder if unsure whether a plan doc exists for a specific feature
 - `[!]` markers indicate features that need a plan document created
 
+**Cross-Referencing Plans:**
+- When plans reference other plans, use the format: `1.x-feature-name.md`
+- Example: "See 1.x-settings-panel.md for details"
+- This format is resilient to plan renumbering and makes files easy to find with glob patterns
+- Do NOT use "plan 1.16" style references as these break when plans are reordered
+
 ## Active Implementation Plans
 
 ## 1. base systems
@@ -42,9 +48,7 @@ This roadmap is for a complete game rewrite from scratch. All features listed sh
 1. Logging Debug System - Debug console, error logging, performance monitoring
 1. Error Handling - Global error handling and crash recovery
 1. Version Management - Game version tracking for save compatibility
-1. Deployment Pipeline - 
-1. [!] Settings Persistence - Player settings (volume, resolution, etc.) separate from game save
-1. [!] Save System Local Storage - JSON-based local save/load with player progress persistence
+1. Deployment Pipeline - Dev/main git workflow with automated GitHub Actions builds, version incrementing, and deployment
 
 ## 2. copper era
 1. [!] Scene Network (Level 1) - Centralized scene registry and navigation map for all Level 1 scenes (copper, silver, gold eras)

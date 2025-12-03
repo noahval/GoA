@@ -53,6 +53,13 @@ GoA/
 - Wait for explicit user approval before implementing
 - Plans are saved to .claude/plans/ folder for review before execution
 
+**Plan Cross-References**
+- When referencing other plans, use the format: `1.x-feature-name.md`
+- Example: "See 1.x-settings-panel.md for details"
+- This format is resilient to plan renumbering (plans may be reordered for dependency reasons)
+- Do NOT use "plan 1.16" style references as these break when reordered
+- This makes it easy to find plans with glob patterns regardless of numbering
+
 ## Development Guidelines
 1. **GDScript Style**: Use snake_case for variables and functions
 2. **Stat Changes**: Always use the global experience system via `Global.add_stat_exp()`

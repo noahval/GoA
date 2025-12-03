@@ -1,11 +1,4 @@
-# Prestige Skill Trees Plan
-
-## Document Version
-- **Created**: 2025-01-14
-- **Status**: Planning (separated from currency redesign)
-- **Context**: Part of larger progression redesign, see [currency-scaling-redesign.md](currency-scaling-redesign.md)
-
----
+# reputation - Prestige Skill Trees Plan
 
 ## Overview
 
