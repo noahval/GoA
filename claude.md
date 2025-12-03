@@ -15,6 +15,10 @@ Claude has full permissions to:
 - **Resolution**: 1438x817
 - **Primary Language**: GDScript
 
+## Quick Commands
+**Ultra-fast command triggers - user says these, you execute immediately:**
+- **"toc"** or **"sync toc"** → Run `.claude\hooks\sync-toc-plans.ps1` to sync plan numbering with TOC.md
+
 ## Core Systems
 
 - idle game mechanics

@@ -1,8 +1,10 @@
-# Sync TOC plan numbering and add markers for missing plans
+# Sync TOC plan numbering and create missing plans from template
 # This script:
 # 1. Parses TOC.md to extract line items with plan file references
 # 2. Renames existing plan files to match TOC numbering
-# 3. Adds [!] markers to TOC for missing plan files
+# 3. Creates new plan files from template (0.0-TEMPLATE.md) for missing plans
+# 4. Detects orphaned plans (files with no TOC line) and prompts to archive them
+# Note: [!] markers indicate incomplete plans and are managed manually by the user
 
 param(
     [string]$TocPath = "c:\GoA\.claude\docs\TOC.md",
@@ -29,7 +31,6 @@ if (-not (Test-Path $TocPath)) {
     exit 1
 }
 
-$tocContent = Get-Content $TocPath -Raw
 $tocLines = Get-Content $TocPath
 
 # Parse TOC to extract line items
@@ -46,13 +47,18 @@ foreach ($line in $tocLines) {
         continue
     }
 
-    # Detect line items (1. feature-name or 1. [!] feature-name)
-    if ($line -match '^\s*\d+\.\s+(?:\[!\]\s+)?(.+)$') {
+    # Detect line items (1. feature-name or 1. [!] feature-name or blank 1. )
+    if ($line -match '^\s*\d+\.\s+(?:\[!\]\s+)?(.*)$') {
         $subsectionCounter++
-        $rest = $matches[1].Trim()
+        $rest = $matches[1]
+
+        # Skip processing if blank line item
+        if ($rest.Trim() -eq '') {
+            continue
+        }
 
         # Extract feature name (everything before " - " or end of line)
-        if ($rest -match '^(.+?)\s+-\s+') {
+        if ($rest -match '^(.+?)\s+-') {
             $featureName = $matches[1].Trim()
         } else {
             $featureName = $rest.Trim()
@@ -75,8 +81,8 @@ foreach ($line in $tocLines) {
 Write-Host "${Blue}Found $($lineItems.Count) line items in TOC${Reset}"
 Write-Host ""
 
-# Find existing plan files
-$existingPlans = Get-ChildItem -Path $PlansDir -Filter "*.md" | Where-Object { $_.Name -match '^\d+\.\d+-.+\.md$' }
+# Find existing plan files (recursively scan subdirectories)
+$existingPlans = Get-ChildItem -Path $PlansDir -Filter "*.md" -Recurse | Where-Object { $_.Name -match '^\d+\.\d+-.+\.md$' }
 
 # Build mapping of slug -> existing file
 $slugToFile = @{}
@@ -90,22 +96,35 @@ foreach ($file in $existingPlans) {
 # Track renames and missing plans
 $renames = @()
 $missingPlans = @()
+$createdPlans = @()
+$matchedSlugs = @{}  # Track which slugs were matched to TOC lines
 
 # Process each line item
 foreach ($item in $lineItems) {
     $expectedFilename = "$($item.Number)-$($item.Slug).md"
-    $expectedPath = Join-Path $PlansDir $expectedFilename
+
+    # Determine target folder based on section number (1.x goes to folder 1/, 2.x to 2/, etc.)
+    $sectionFolder = Join-Path $PlansDir $item.Section
+    $expectedPath = Join-Path $sectionFolder $expectedFilename
 
     if ($slugToFile.ContainsKey($item.Slug)) {
         $existingFile = $slugToFile[$item.Slug]
+        $matchedSlugs[$item.Slug] = $true  # Mark this slug as matched
 
-        # Check if rename is needed
-        if ($existingFile.Name -ne $expectedFilename) {
+        # Check if rename/move is needed (name or location changed)
+        if ($existingFile.FullName -ne $expectedPath) {
+            # Ensure target folder exists
+            if (-not (Test-Path $sectionFolder)) {
+                New-Item -Path $sectionFolder -ItemType Directory -Force | Out-Null
+            }
+
             $renames += @{
                 OldPath = $existingFile.FullName
                 NewPath = $expectedPath
                 OldName = $existingFile.Name
                 NewName = $expectedFilename
+                OldFolder = $existingFile.DirectoryName
+                NewFolder = $sectionFolder
             }
         }
     } else {
@@ -114,96 +133,115 @@ foreach ($item in $lineItems) {
     }
 }
 
-# Perform renames
+# Perform renames/moves
 if ($renames.Count -gt 0) {
-    Write-Host "${Yellow}Renaming $($renames.Count) plan file(s) to match TOC numbering:${Reset}"
+    Write-Host "${Yellow}Renaming/moving $($renames.Count) plan file(s) to match TOC numbering:${Reset}"
     foreach ($rename in $renames) {
         try {
             Move-Item -Path $rename.OldPath -Destination $rename.NewPath -Force
-            Write-Host "  ${Green}[RENAMED]${Reset} $($rename.OldName) -> $($rename.NewName)"
+
+            # Show appropriate message based on whether folder changed
+            if ($rename.OldFolder -ne $rename.NewFolder) {
+                $oldRelative = Split-Path -Leaf $rename.OldFolder
+                $newRelative = Split-Path -Leaf $rename.NewFolder
+                Write-Host "  ${Green}[MOVED]${Reset} $oldRelative/$($rename.OldName) -> $newRelative/$($rename.NewName)"
+            } else {
+                Write-Host "  ${Green}[RENAMED]${Reset} $($rename.OldName) -> $($rename.NewName)"
+            }
         } catch {
-            Write-Host "  ${Red}[ERROR]${Reset} Failed to rename $($rename.OldName): $_"
+            Write-Host "  ${Red}[ERROR]${Reset} Failed to move $($rename.OldName): $_"
         }
     }
     Write-Host ""
 } else {
-    Write-Host "${Green}All plan files already have correct numbering${Reset}"
+    Write-Host "${Green}All plan files already have correct numbering and locations${Reset}"
     Write-Host ""
 }
 
-# Update TOC with [!] markers for missing plans
-if ($missingPlans.Count -gt 0) {
-    Write-Host "${Yellow}Adding [!] markers for $($missingPlans.Count) missing plan file(s):${Reset}"
+# Create plan files from template for missing plans
+$templatePath = Join-Path $PlansDir "0.0-TEMPLATE.md"
 
-    $newTocLines = @()
-    $lineIndex = 0
-    $modified = $false
+if ($missingPlans.Count -gt 0 -and (Test-Path $templatePath)) {
+    Write-Host "${Yellow}Creating $($missingPlans.Count) plan file(s) from template:${Reset}"
 
-    foreach ($line in $tocLines) {
-        # Check if this line matches a missing plan item
-        $matchedMissing = $null
-        foreach ($missing in $missingPlans) {
-            if ($line -eq $missing.OriginalLine) {
-                $matchedMissing = $missing
-                break
+    foreach ($missing in $missingPlans) {
+        $expectedFilename = "$($missing.Number)-$($missing.Slug).md"
+        $sectionFolder = Join-Path $PlansDir $missing.Section
+        $expectedPath = Join-Path $sectionFolder $expectedFilename
+
+        try {
+            # Ensure target folder exists
+            if (-not (Test-Path $sectionFolder)) {
+                New-Item -Path $sectionFolder -ItemType Directory -Force | Out-Null
             }
-        }
 
-        if ($matchedMissing) {
-            # Add [!] marker if not already present
-            if ($line -notmatch '\[!\]') {
-                # Insert [!] after the number
-                $markedLine = $line -replace '(^\s*\d+\.)\s+', '$1 [!] '
-                $newTocLines += $markedLine
-                Write-Host "  ${Yellow}[MARKED]${Reset} $($matchedMissing.Number). $($matchedMissing.FeatureName)"
-                $modified = $true
-            } else {
-                $newTocLines += $line
-            }
-        } else {
-            # Check if line has [!] but shouldn't (plan file now exists)
-            if ($line -match '^\s*(\d+)\.\s+\[!\]\s+(.+)$') {
-                $subsection = [int]$matches[1]
-                $rest = $matches[2]
+            # Copy template to new location
+            Copy-Item -Path $templatePath -Destination $expectedPath -Force
 
-                # Extract feature name
-                if ($rest -match '^(.+?)\s+-\s+') {
-                    $featureName = $matches[1].Trim()
-                } else {
-                    $featureName = $rest.Trim()
-                }
+            $relativePath = "$($missing.Section)/$expectedFilename"
+            Write-Host "  ${Green}[CREATED]${Reset} $relativePath"
 
-                $slug = $featureName.ToLower() -replace '\s+', '-' -replace '[^a-z0-9-]', ''
-
-                # Check if plan file exists for this slug
-                if ($slugToFile.ContainsKey($slug)) {
-                    # Remove [!] marker
-                    $unmarkedLine = $line -replace '\[!\]\s+', ''
-                    $newTocLines += $unmarkedLine
-                    Write-Host "  ${Green}[UNMARKED]${Reset} Plan file now exists for: $featureName"
-                    $modified = $true
-                } else {
-                    $newTocLines += $line
-                }
-            } else {
-                $newTocLines += $line
-            }
+            # Track created plans
+            $createdPlans += $missing
+        } catch {
+            Write-Host "  ${Red}[ERROR]${Reset} Failed to create $expectedFilename`: $_"
         }
     }
-
-    # Write updated TOC if modified
-    if ($modified) {
-        $newTocContent = $newTocLines -join "`n"
-        Set-Content -Path $TocPath -Value $newTocContent -NoNewline
-        Write-Host ""
-        Write-Host "${Green}TOC.md updated with markers${Reset}"
-    } else {
-        Write-Host "  ${Blue}All markers already up to date${Reset}"
-    }
+    Write-Host ""
+} elseif ($missingPlans.Count -gt 0) {
+    Write-Host "${Yellow}Note: $($missingPlans.Count) plan file(s) missing but template not found at:${Reset}"
+    Write-Host "  $templatePath"
     Write-Host ""
 } else {
     Write-Host "${Green}All line items have corresponding plan files${Reset}"
     Write-Host ""
+}
+
+# Detect orphaned plans (plans with no corresponding TOC line)
+$orphanedPlans = @()
+foreach ($slug in $slugToFile.Keys) {
+    if (-not $matchedSlugs.ContainsKey($slug)) {
+        $orphanedPlans += $slugToFile[$slug]
+    }
+}
+
+# Handle orphaned plans
+if ($orphanedPlans.Count -gt 0) {
+    Write-Host "${Yellow}Found $($orphanedPlans.Count) orphaned plan file(s) with no TOC line:${Reset}"
+    foreach ($orphan in $orphanedPlans) {
+        $relativeFolder = Split-Path -Leaf (Split-Path -Parent $orphan.FullName)
+        Write-Host "  ${Yellow}[ORPHAN]${Reset} $relativeFolder/$($orphan.Name)"
+    }
+    Write-Host ""
+
+    # Prompt user for archive confirmation
+    $response = Read-Host "Archive these orphaned plans? [y/n]"
+
+    if ($response -eq 'y' -or $response -eq 'Y') {
+        $archiveDir = Join-Path $PlansDir "archive"
+        $timestamp = Get-Date -Format "yyyy-MM-dd_HHmmss"
+        $archiveSubDir = Join-Path $archiveDir $timestamp
+
+        # Create archive directory
+        if (-not (Test-Path $archiveSubDir)) {
+            New-Item -Path $archiveSubDir -ItemType Directory -Force | Out-Null
+        }
+
+        Write-Host "${Yellow}Archiving orphaned plans to archive/$timestamp/:${Reset}"
+        foreach ($orphan in $orphanedPlans) {
+            try {
+                $destinationPath = Join-Path $archiveSubDir $orphan.Name
+                Move-Item -Path $orphan.FullName -Destination $destinationPath -Force
+                Write-Host "  ${Green}[ARCHIVED]${Reset} $($orphan.Name)"
+            } catch {
+                Write-Host "  ${Red}[ERROR]${Reset} Failed to archive $($orphan.Name): $_"
+            }
+        }
+        Write-Host ""
+    } else {
+        Write-Host "${Blue}Skipped archiving orphaned plans${Reset}"
+        Write-Host ""
+    }
 }
 
 Write-Host "${Cyan}=================================${Reset}"

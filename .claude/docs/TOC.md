@@ -27,7 +27,7 @@ This roadmap is for a complete game rewrite from scratch. All features listed sh
 1. Project Setup - Godot 4.5 project with GL Compatibility renderer
 1. Project Architecture - global-vars, level 1 folder, level-1-vars
 1. Global Autoload - Global.gd with stats system and game state management
-1. [!] Level Variables Autoload - level-1-vars.gd for level-specific state
+1. [!] Level 1 Variables Autoload - level-1-vars.gd for level-specific state
 1. Currencies - Copper, Silver, Gold, and Platinum currencies with current and lifetime tracking
 1. Currency Manager - Currency exchange system with market rate hooks, transaction fees, and purse capacity
 1. ATM Scene - Currency exchange UI with live market rate display and transaction preview
@@ -51,11 +51,20 @@ This roadmap is for a complete game rewrite from scratch. All features listed sh
 1. Deployment Pipeline - Dev/main git workflow with automated GitHub Actions builds, version incrementing, and deployment
 
 ## 2. copper era
-1. [!] Scene Network (Level 1) - Centralized scene registry and navigation map for all Level 1 scenes (copper, silver, gold eras)
+1. Scene Network - Centralized scene registry and navigation map for all Level 1 scenes (copper, silver, gold eras)
+1. level1-scene-content - 
+1. day cycle - 
+1. eve amenities - 
+1. 
+1. 
+1. 
+1. 
+1. 
+1. 
 1. core-loop - Complete one work day with satisfying coal-shoveling feel
 1. permanent-progression - Prestige system with skill tree and persistent upgrades
 1. roguelite-techniques - Run-based mechanics with meta-progression
-1. [!] Breaks & Demand Events - Timed breaks(actions not clock), rush orders, and pressure mechanics
+1. Breaks and Demand - Timed breaks(actions not clock), rush orders, and pressure mechanics
 1. Discovery Mechanics - Hidden systems revealed through experimentation
 1. content-and-balance - Tuning for difficulty curve and engagement
 1. [!] Tutorial and FTUE - First-time user experience and onboarding
@@ -123,11 +132,6 @@ This roadmap is for a complete game rewrite from scratch. All features listed sh
 1. [!] Equipment Failure Event - Random breakdowns requiring repair decisions
 1. [!] Water Supply System - Affects worker health and performance
 1. [!] Population Pressure System - Train city population affecting worker availability and quotas
-1. [!] Food Distribution Network - City-wide food supply affecting worker desperation and costs
-1. [!] Guard Patrol Intensity - Security level affecting freedom and suspicion mechanics
-1. [!] Discovery-Based Learning - No explicit tutorials, players learn through observation
-1. [!] Stat-Based Knowledge Reveals - Int/Wis/Dex/Con/Str/Cha provide different insights into hidden systems
-1. [!] Environmental Pattern Recognition - Players discover optimal combinations through experimentation
 1. [!] Worker Treatment Morality System - Poor/Fair/Good treatment with mechanical consequences
 1. [!] Harmful Furnace Upgrades - High-productivity upgrades with moral costs (worker harm, environmental damage)
 1. [!] Moral Choice Framework - system rewards efficiency over ethics, player chooses path
