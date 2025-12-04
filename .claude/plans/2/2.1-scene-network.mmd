@@ -1,47 +1,36 @@
 graph TB
     %% === COPPER ERA SCENES ===
 
-    furnace["<b>Furnace</b><br/>---<br/>Actions:<br/>- Shovel Coal<br/>- Buy Auto-Shovel<br/>Forward Nav:<br/>- To Bar<br/>Back Nav:<br/>- (none)"]
+    furnace["<b>Furnace</b><br/>Buttons:<br/>- Shovel Coal<br/>- Buy Auto-Shovel"]
 
-    bar["<b>Bar</b><br/>---<br/>Actions:<br/>- (list here)<br/>Forward Nav:<br/>- Enter Secret Passage<br/>- To Coppersmith Carriage<br/>Back Nav:<br/>- To Furnace"]
+    bar["<b>Bar</b><br/>Buttons:<br/>- (list here)"]
 
-    shop["<b>Shop</b><br/>---<br/>Actions:<br/>- (upgrades)<br/>Forward Nav:<br/>- (none)<br/>Back Nav:<br/>- (auto-returns)"]
+    shop["<b>Shop</b><br/>Buttons:<br/>- (upgrades)"]
 
-    dream["<b>Dream</b><br/>---<br/>Actions:<br/>- (rest)<br/>Forward Nav:<br/>- (none)<br/>Back Nav:<br/>- (auto-returns)"]
+    dream["<b>Dream</b><br/>Buttons:<br/>- (rest)"]
 
-    carriage["<b>Coppersmith Carriage</b><br/>---<br/>Actions:<br/>- (list here)<br/>Forward Nav:<br/>- To ATM<br/>- To Overseer Office<br/>Back Nav:<br/>- To Bar"]
+    carriage["<b>Coppersmith Carriage</b><br/>Buttons:<br/>- (list here)"]
 
-    atm["<b>ATM</b><br/>---<br/>Actions:<br/>- Withdraw<br/>- Deposit<br/>Forward Nav:<br/>- (none)<br/>Back Nav:<br/>- To Carriage"]
+    atm["<b>ATM</b><br/>Buttons:<br/>- Withdraw<br/>- Deposit"]
 
-    dorm["<b>Dormitory</b><br/>---<br/>Actions:<br/>- Sleep<br/>Forward Nav:<br/>- (none)<br/>Back Nav:<br/>- To Bar"]
+    dorm["<b>Dormitory</b><br/>Buttons:<br/>- Sleep"]
 
-    secret["<b>Secret Passage</b><br/>---<br/>Actions:<br/>- Investigate<br/>Forward Nav:<br/>- Enter Puzzle<br/>Back Nav:<br/>- To Bar"]
+    secret["<b>Secret Passage</b><br/>Buttons:<br/>- Investigate"]
 
-    puzzle["<b>Secret Puzzle</b><br/>---<br/>Actions:<br/>- Solve<br/>Forward Nav:<br/>- (none)<br/>Back Nav:<br/>- To Passage"]
+    puzzle["<b>Secret Puzzle</b><br/>Buttons:<br/>- Solve"]
 
-    office["<b>Overseer Office</b><br/>---<br/>Actions:<br/>- Bribe<br/>Forward Nav:<br/>- (none)<br/>Back Nav:<br/>- To Carriage"]
+    office["<b>Overseer Office</b><br/>Buttons:<br/>- Bribe"]
 
-    %% Forward Navigation (thick arrows)
-    furnace ==>|Forward Nav| bar
-    furnace ==>|Forward Nav| shop
-    furnace ==>|Forward Nav| dream
-    bar ==>|Forward Nav| carriage
-    bar ==>|Forward Nav| dorm
-    bar ==>|Forward Nav| secret
-    carriage ==>|Forward Nav| atm
-    carriage ==>|Forward Nav| office
-    secret ==>|Forward Nav| puzzle
-
-    %% Back Navigation (dotted arrows)
-    bar -.->|Back Nav| furnace
-    shop -.->|Back Nav| furnace
-    dream -.->|Back Nav| furnace
-    carriage -.->|Back Nav| bar
-    dorm -.->|Back Nav| bar
-    secret -.->|Back Nav| bar
-    atm -.->|Back Nav| carriage
-    office -.->|Back Nav| carriage
-    puzzle -.->|Back Nav| secret
+    %% Bidirectional Navigation (one arrow = forward + back buttons)
+    furnace ==> bar
+    furnace ==> shop
+    furnace ==> dream
+    bar ==> carriage
+    bar ==> dorm
+    bar ==> secret
+    carriage ==> atm
+    carriage ==> office
+    secret ==> puzzle
 
     %% Styling
     classDef copperScene fill:#5c2e00,stroke:#9a6229,stroke-width:2px,color:#fff

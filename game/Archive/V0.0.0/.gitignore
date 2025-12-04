@@ -1,0 +1,10 @@
+# Godot 4+ specific ignores
+.godot/
+
+# Build outputs
+build/
+*.zip
+*.pck
+
+# Windows-specific: nul file created by Git Bash commands
+nul

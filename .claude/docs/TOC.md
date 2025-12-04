@@ -31,7 +31,7 @@ This roadmap is for a complete game rewrite from scratch. All features listed sh
 1. Currencies - Copper, Silver, Gold, and Platinum currencies with current and lifetime tracking
 1. Currency Manager - Currency exchange system with market rate hooks, transaction fees, and purse capacity
 1. ATM Scene - Currency exchange UI with live market rate display and transaction preview
-1. [!] Stats & Experience System - Six stats (STR/DEX/CON/INT/WIS/CHA) with XP tracking and level-up mechanics
+1. [!] Stats and Experience - Six stats (STR/DEX/CON/INT/WIS/CHA) with XP tracking and level-up mechanics
 1. Scene Management - Generic scene changing with validation framework and save integration
 1. Default Theme - UI theme resource (default_theme.tres) for consistent styling
 1. Responsive Layout Guide - Scaling guidelines for screen layout on different resolutions
@@ -52,12 +52,11 @@ This roadmap is for a complete game rewrite from scratch. All features listed sh
 
 ## 2. copper era
 1. Scene Network - Centralized scene registry and navigation map for all Level 1 scenes (copper, silver, gold eras)
-1. level1-scene-content - 
-1. day cycle - 
-1. eve amenities - 
+1. day cycle - day and evening rotation
 1. 
+1. [!] Manual Coal Shoveling - In play area, drag coal from pile to furnace
 1. 
-1. 
+1. [!] Shop - shop scene for purchasing shoveling upgrades
 1. 
 1. 
 1. 
@@ -67,24 +66,14 @@ This roadmap is for a complete game rewrite from scratch. All features listed sh
 1. Breaks and Demand - Timed breaks(actions not clock), rush orders, and pressure mechanics
 1. Discovery Mechanics - Hidden systems revealed through experimentation
 1. content-and-balance - Tuning for difficulty curve and engagement
-1. [!] Tutorial and FTUE - First-time user experience and onboarding
-1. [!] Coal Resource - Basic coal tracking variable and display
-1. [!] Manual Coal Shoveling - In play area, drag coal from pile to furnace
-1. [!] Furnace Visualization - Visual representation of furnace and heat
-1. [!] Stat Progression Mechanics - How stats increase during copper era gameplay (STR from shoveling, DEX from accuracy, etc.)
+1. [!] Tutorial and FTUE - onboarding
 1. [!] Feedback Systems - Particles, screen shake, sound effects for player actions
 1. [!] Tooltip System - UI help text and explanations
-1. [!] Pay Conversion - Copper converts to Silver when exceeding threshold
-1. [!] Shop - Dedicated shop scene for purchasing shoveling upgrades
 1. [!] Manual Shovel Upgrade - Increase coal per drag (multiple tiers)
-1. Offline Earnings - Automatic coal generation over time when away
-1. [!] Break Timer System - Time-based work/break cycle
-1. [!] Break Activities - What happens during breaks (shop access, stamina recovery, etc.)
-1. [!] Victory Condition - Goal or achievement system for copper era
+1. Offline Earnings - Automatic
+1. [!] Break Timer System - time spent away from furnace
 1. [!] Prestige System - Lifetime equipment value tracking, reputation currency, clear progress, retain upgrades, skill tree in dorm scene
-1. [!] Timestamp Tracking - Save last_played timestamp on save, load on game start
-1. [!] Time Away Calculation - Calculate elapsed time since last play session
-1. [!] Cast
+1. [!] Victory Condition - Goal or achievement system for copper era
 
 ## 3. economy
 1. Market Volatility - Dynamic exchange rate modifiers with bell curve distribution, market events, and notifications
