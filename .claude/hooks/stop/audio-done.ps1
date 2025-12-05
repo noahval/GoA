@@ -1,10 +1,6 @@
 # Audio Done Hook
 # Plays a windchime sound when Claude finishes responding
 
-# Debug: Log that hook is running
-$timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
-"[$timestamp] Audio hook triggered" | Out-File -FilePath "c:\GoA\.claude\hooks\audio-debug.log" -Append
-
 # Setup path to windchime file
 $audioFile = "c:\GoA\.claude\hooks\stop\Windchime.mp3"
 
@@ -34,9 +30,8 @@ if (Test-Path $audioFile) {
         $mediaPlayer.Close()
 
         $played = $true
-        "[$timestamp] Played windchime audio file" | Out-File -FilePath "c:\GoA\.claude\hooks\audio-debug.log" -Append
     } catch {
-        "[$timestamp] Failed to play windchime: $_" | Out-File -FilePath "c:\GoA\.claude\hooks\audio-debug.log" -Append
+        # Silently fail and use fallback
     }
 }
 
@@ -45,9 +40,8 @@ if (-not $played) {
     try {
         # Middle C (C4) is 262 Hz
         [console]::beep(262, 800)
-        "[$timestamp] Played fallback beep (262 Hz)" | Out-File -FilePath "c:\GoA\.claude\hooks\audio-debug.log" -Append
     } catch {
-        "[$timestamp] Fallback beep failed: $_" | Out-File -FilePath "c:\GoA\.claude\hooks\audio-debug.log" -Append
+        # Silently fail
     }
 }
 
