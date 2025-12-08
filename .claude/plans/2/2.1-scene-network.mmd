@@ -1,37 +1,5 @@
-graph TB
-    %% === COPPER ERA SCENES ===
-
-    furnace["<b>Furnace</b><br/>Buttons:<br/>- Shovel Coal<br/>- Buy Auto-Shovel"]
-
-    bar["<b>Bar</b><br/>Buttons:<br/>- (list here)"]
-
-    shop["<b>Shop</b><br/>Buttons:<br/>- (upgrades)"]
-
-    dream["<b>Dream</b><br/>Buttons:<br/>- (rest)"]
-
-    carriage["<b>Coppersmith Carriage</b><br/>Buttons:<br/>- (list here)"]
-
-    atm["<b>ATM</b><br/>Buttons:<br/>- Withdraw<br/>- Deposit"]
-
-    dorm["<b>Dormitory</b><br/>Buttons:<br/>- Sleep"]
-
-    secret["<b>Secret Passage</b><br/>Buttons:<br/>- Investigate"]
-
-    puzzle["<b>Secret Puzzle</b><br/>Buttons:<br/>- Solve"]
-
-    office["<b>Overseer Office</b><br/>Buttons:<br/>- Bribe"]
-
-    %% Bidirectional Navigation (one arrow = forward + back buttons)
-    furnace ==> bar
-    furnace ==> shop
-    furnace ==> dream
-    bar ==> carriage
-    bar ==> dorm
-    bar ==> secret
-    carriage ==> atm
-    carriage ==> office
-    secret ==> puzzle
-
-    %% Styling
-    classDef copperScene fill:#5c2e00,stroke:#9a6229,stroke-width:2px,color:#fff
-    class furnace,bar,shop,dream,carriage,atm,dorm,secret,puzzle,office copperScene
+flowchart TB
+    dorm["<b>Dormitory</b><br>Buttons:<br>- Sleep"] --> bar["<b>Bar</b><br>Buttons:<br>- (list here)"] & carriage["<b>Coppersmith Carriage</b><br>Buttons:<br>- (list here)"] & n2["Mess Hall<br>- Eat Rations"]
+    furnace["<b>Furnace</b><br>Buttons:<br>- Shovel Coal<br>- Buy Auto-Shovel"] --> n1["Mind<br>Buttons"]
+    carriage --> secret["<b>Secret Passage</b><br>Buttons:<br>- Investigate"] & atm["<b>ATM</b><br>Buttons:<br>- Withdraw<br>- Deposit"] & office["<b>Overseer Office</b><br>Buttons:<br>- Bribe"] & shop["<b>Shop</b><br>Buttons:<br>- (upgrades)"]
+    secret --> puzzle["<b>Secret Puzzle</b><br>Buttons:<br>- Solve"]

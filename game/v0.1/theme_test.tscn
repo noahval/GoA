@@ -1,0 +1,195 @@
+[gd_scene format=3]
+
+[node name="ThemeTest" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ColorRect" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.1, 0.1, 0.1, 1)
+
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -600.0
+offset_top = -340.0
+offset_right = 600.0
+offset_bottom = 340.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 20
+
+[node name="Title" type="Label" parent="Panel/VBoxContainer"]
+layout_mode = 2
+text = "Theme Test - All Button Types and States"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="Panel/VBoxContainer"]
+layout_mode = 2
+
+[node name="StandardButtons" type="VBoxContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Label" type="Label" parent="Panel/VBoxContainer/StandardButtons"]
+layout_mode = 2
+text = "Standard Buttons (Orange)"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Panel/VBoxContainer/StandardButtons"]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="StandardNormal" type="Button" parent="Panel/VBoxContainer/StandardButtons/HBoxContainer"]
+custom_minimum_size = Vector2(150, 50)
+layout_mode = 2
+text = "Standard"
+
+[node name="StandardDisabled" type="Button" parent="Panel/VBoxContainer/StandardButtons/HBoxContainer"]
+custom_minimum_size = Vector2(150, 50)
+layout_mode = 2
+disabled = true
+text = "Disabled"
+
+[node name="AffirmativeButtons" type="VBoxContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Label" type="Label" parent="Panel/VBoxContainer/AffirmativeButtons"]
+layout_mode = 2
+text = "Affirmative Buttons (Blue)"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Panel/VBoxContainer/AffirmativeButtons"]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="AffirmativeNormal" type="Button" parent="Panel/VBoxContainer/AffirmativeButtons/HBoxContainer"]
+custom_minimum_size = Vector2(150, 50)
+layout_mode = 2
+theme_type_variation = &"AffirmativeButton"
+text = "Confirm"
+
+[node name="AffirmativeDisabled" type="Button" parent="Panel/VBoxContainer/AffirmativeButtons/HBoxContainer"]
+custom_minimum_size = Vector2(150, 50)
+layout_mode = 2
+theme_type_variation = &"AffirmativeButton"
+disabled = true
+text = "Disabled"
+
+[node name="ForwardNavButtons" type="VBoxContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Label" type="Label" parent="Panel/VBoxContainer/ForwardNavButtons"]
+layout_mode = 2
+text = "Forward Navigation Buttons (Light Blue, 2px Border)"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Panel/VBoxContainer/ForwardNavButtons"]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="ForwardNavNormal" type="Button" parent="Panel/VBoxContainer/ForwardNavButtons/HBoxContainer"]
+custom_minimum_size = Vector2(150, 50)
+layout_mode = 2
+theme_type_variation = &"ForwardNavButton"
+text = "Enter"
+
+[node name="ForwardNavDisabled" type="Button" parent="Panel/VBoxContainer/ForwardNavButtons/HBoxContainer"]
+custom_minimum_size = Vector2(150, 50)
+layout_mode = 2
+theme_type_variation = &"ForwardNavButton"
+disabled = true
+text = "Disabled"
+
+[node name="BackNavButtons" type="VBoxContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Label" type="Label" parent="Panel/VBoxContainer/BackNavButtons"]
+layout_mode = 2
+text = "Back Navigation Buttons (Navy Blue, 1px Border)"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Panel/VBoxContainer/BackNavButtons"]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="BackNavNormal" type="Button" parent="Panel/VBoxContainer/BackNavButtons/HBoxContainer"]
+custom_minimum_size = Vector2(150, 50)
+layout_mode = 2
+theme_type_variation = &"BackNavButton"
+text = "Return"
+
+[node name="BackNavDisabled" type="Button" parent="Panel/VBoxContainer/BackNavButtons/HBoxContainer"]
+custom_minimum_size = Vector2(150, 50)
+layout_mode = 2
+theme_type_variation = &"BackNavButton"
+disabled = true
+text = "Disabled"
+
+[node name="DangerButtons" type="VBoxContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Label" type="Label" parent="Panel/VBoxContainer/DangerButtons"]
+layout_mode = 2
+text = "Danger Buttons (Red, 2px Warning Border)"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Panel/VBoxContainer/DangerButtons"]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="DangerNormal" type="Button" parent="Panel/VBoxContainer/DangerButtons/HBoxContainer"]
+custom_minimum_size = Vector2(150, 50)
+layout_mode = 2
+theme_type_variation = &"DangerButton"
+text = "Delete"
+
+[node name="DangerDisabled" type="Button" parent="Panel/VBoxContainer/DangerButtons/HBoxContainer"]
+custom_minimum_size = Vector2(150, 50)
+layout_mode = 2
+theme_type_variation = &"DangerButton"
+disabled = true
+text = "Disabled"
+
+[node name="HSeparator2" type="HSeparator" parent="Panel/VBoxContainer"]
+layout_mode = 2
+
+[node name="ProgressBarsSection" type="VBoxContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Label" type="Label" parent="Panel/VBoxContainer/ProgressBarsSection"]
+layout_mode = 2
+text = "Progress Bars (Health Example)"
+
+[node name="ProgressBar" type="ProgressBar" parent="Panel/VBoxContainer/ProgressBarsSection"]
+custom_minimum_size = Vector2(400, 25)
+layout_mode = 2
+value = 75.0
+show_percentage = false
+
+[node name="Instructions" type="Label" parent="Panel/VBoxContainer"]
+layout_mode = 2
+text = "Hover over buttons to see hover state. Click to see pressed state.
+All button types inherit the theme automatically."
+horizontal_alignment = 1

@@ -30,11 +30,10 @@ This roadmap is for a complete game rewrite from scratch. All features listed sh
 1. [!] Level 1 Variables Autoload - level-1-vars.gd for level-specific state
 1. Currencies - Copper, Silver, Gold, and Platinum currencies with current and lifetime tracking
 1. Currency Manager - Currency exchange system with market rate hooks, transaction fees, and purse capacity
-1. ATM Scene - Currency exchange UI with live market rate display and transaction preview
 1. [!] Stats and Experience - Six stats (STR/DEX/CON/INT/WIS/CHA) with XP tracking and level-up mechanics
 1. Scene Management - Generic scene changing with validation framework and save integration
 1. Default Theme - UI theme resource (default_theme.tres) for consistent styling
-1. Responsive Layout Guide - Scaling guidelines for screen layout on different resolutions
+1. Responsive Layout - Scaling guidelines for screen layout on different resolutions
 1. UI Scale Slider - User-adjustable UI scale (0.8x-1.2x) on top of automatic resolution scaling
 1. Scene Template - Base scene structure for all game scenes (inherits from scene_template.tscn)
 1. Button Hierarchy - Automatic button ordering system (Action, Forward Nav, Back Nav)
@@ -52,7 +51,8 @@ This roadmap is for a complete game rewrite from scratch. All features listed sh
 
 ## 2. copper era
 1. Scene Network - Centralized scene registry and navigation map for all Level 1 scenes (copper, silver, gold eras)
-1. day cycle - day and evening rotation
+1. 
+1. [!] day cycle - day and evening rotation
 1. 
 1. [!] Manual Coal Shoveling - In play area, drag coal from pile to furnace
 1. 
@@ -72,6 +72,7 @@ This roadmap is for a complete game rewrite from scratch. All features listed sh
 1. [!] Manual Shovel Upgrade - Increase coal per drag (multiple tiers)
 1. Offline Earnings - Automatic
 1. [!] Break Timer System - time spent away from furnace
+1. ATM Scene - Currency exchange UI with live market rate display and transaction preview
 1. [!] Prestige System - Lifetime equipment value tracking, reputation currency, clear progress, retain upgrades, skill tree in dorm scene
 1. [!] Victory Condition - Goal or achievement system for copper era
 

@@ -1,0 +1,46 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="GoA"
+run/main_scene="res://theme_test.tscn"
+config/features=PackedStringArray("4.5", "GL Compatibility")
+boot_splash/bg_color=Color(0, 0, 0, 1)
+config/icon="res://icon.svg"
+boot_splash/minimum_display_time=1000
+
+[autoload]
+
+ErrorHandler="*res://autoloads/error_handler.gd"
+Global="*res://autoloads/global.gd"
+SettingsManager="*res://autoloads/settings_manager.gd"
+DevTools="*res://autoloads/dev_tools.gd"
+DebugLogger="*res://autoloads/debug_logger.gd"
+LocalSaveManager="*res://autoloads/local_save_manager.gd"
+NakamaManager="*res://autoloads/nakama_manager.gd"
+ResponsiveLayout="*res://responsive_layout.gd"
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/size/mode=2
+window/stretch/mode="viewport"
+window/stretch/aspect="expand"
+
+[gui]
+
+theme/custom="res://default_theme.tres"
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
