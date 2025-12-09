@@ -4,12 +4,12 @@ extends Node
 # Full implementation in Phase 1.x
 
 func _ready() -> void:
-	print("LocalSaveManager initialized (stub)")
+	DebugLogger.info("LocalSaveManager initialized (stub)", "SAVE")
 
 func save_game() -> void:
-	print("[LocalSaveManager] Saving game locally (stub)")
+	DebugLogger.info("Saving game locally (stub)", "SAVE")
 	# TODO: Implement actual save logic in Phase 1.x
 
 func load_game() -> void:
-	print("[LocalSaveManager] Loading game locally (stub)")
+	DebugLogger.info("Loading game locally (stub)", "SAVE")
 	# TODO: Implement actual load logic in Phase 1.x

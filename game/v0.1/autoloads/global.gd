@@ -511,3 +511,5 @@ func reset_stats() -> void:
 
 func _ready() -> void:
 	print("Global autoload initialized (v%s)" % GAME_VERSION)
+	DebugLogger.info("Game started - version %s" % GAME_VERSION, "GAME")
+	DebugLogger.info("Save version: %d" % SAVE_VERSION, "GAME")

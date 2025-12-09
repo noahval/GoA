@@ -162,6 +162,9 @@ func _apply_layout(scene_root: Control) -> void:
 		push_warning("ResponsiveLayout: Scene missing required layout nodes")
 		return
 
+	# Load background image based on scene location and root node name
+	_load_scene_background(scene_root, main_container)
+
 	# Set aspect ratio container
 	if aspect_container and aspect_container is AspectRatioContainer:
 		aspect_container.ratio = BASE_ASPECT_RATIO
@@ -178,6 +181,10 @@ func _apply_layout(scene_root: Control) -> void:
 	# Set notification bar height (dynamically calculated)
 	if notification_bar:
 		notification_bar.custom_minimum_size.y = float(get_notification_bar_height())
+
+	# Sort buttons in menu by hierarchy
+	if menu:
+		ButtonHierarchy.sort_buttons_in_container(menu)
 
 	# Apply font scaling to all labels and buttons
 	_apply_font_scaling(scene_root)
@@ -223,3 +230,53 @@ func _set_mouse_filters(scene_root: Control) -> void:
 	var main_layout = scene_root.get_node_or_null("AspectContainer/MainContainer/mainarea")
 	if main_layout:
 		main_layout.mouse_filter = Control.MOUSE_FILTER_PASS
+
+func _load_scene_background(scene_root: Control, main_container: Control) -> void:
+	"""
+	Automatically load background image based on scene location and root node name.
+
+	Logic:
+	- Scene in level1/ folder -> looks in level1/backgrounds/
+	- Scene in level2/ folder -> looks in level2/backgrounds/
+	- Root node named "Furnace" -> looks for furnace.jpg or furnace.png (case-insensitive)
+	- If no background file found, shows no background (TextureRect remains empty)
+
+	Examples:
+	- level1/furnace.tscn with root "Furnace" -> level1/backgrounds/furnace.jpg or furnace.png
+	- level2/shop.tscn with root "Shop" -> level2/backgrounds/shop.jpg or shop.png
+	"""
+	if not main_container:
+		return
+
+	var background_node = main_container.get_node_or_null("Background")
+	if not background_node or not background_node is TextureRect:
+		return
+
+	# Get scene file path to determine level folder
+	var scene_path = scene_root.scene_file_path
+	if scene_path == "":
+		return
+
+	# Extract folder name (e.g., "level1" from "res://level1/furnace.tscn")
+	var path_parts = scene_path.split("/")
+	if path_parts.size() < 2:
+		return
+
+	var level_folder = path_parts[path_parts.size() - 2]  # Second to last part (folder name)
+
+	# Get root node name and convert to lowercase for case-insensitive matching
+	var root_name = scene_root.name.to_lower()
+
+	# Try to load background image (check both jpg and png)
+	var base_path = "res://" + level_folder + "/backgrounds/" + root_name
+	var extensions = [".jpg", ".png"]
+
+	for ext in extensions:
+		var full_path = base_path + ext
+		if ResourceLoader.exists(full_path):
+			var texture = load(full_path)
+			if texture:
+				background_node.texture = texture
+				return
+
+	# If no background file found, do nothing (leave TextureRect empty)

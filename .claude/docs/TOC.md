@@ -44,17 +44,20 @@ This roadmap is for a complete game rewrite from scratch. All features listed sh
 1. Nakama Server - Clean cloud backend client with auth and save/load framework
 1. Save System Cloud - Cloud backup integration for cross-device play
 1. Auth Screen - Authentication UI and background loading during auth
-1. Logging Debug System - Debug console, error logging, performance monitoring
+1. Simple Logging - Session-based logging with automatic rotation and memory buffer
+1. Advanced Logging - Bug report UI with screenshot capture and Nakama integration
 1. Error Handling - Global error handling and crash recovery
 1. Version Management - Game version tracking for save compatibility
 1. Deployment Pipeline - Dev/main git workflow with automated GitHub Actions builds, version incrementing, and deployment
 
 ## 2. copper era
-1. Scene Network - Centralized scene registry and navigation map for all Level 1 scenes (copper, silver, gold eras)
-1. 
+1. scene Network - Centralized scene registry and navigation map for all Level 1 scenes (copper, silver, gold eras)
+1. Physics Objects Setup - Coal pile, furnace opening with obstacles, and shovel surface
+1. Coal Physics Spawning - Coal piece RigidBody2D with physics properties and scooping mechanism
+1. Coal Tracking System - Track dropped vs delivered coal with Level1Vars integration
+1. Testing Polish - Unit tests, integration tests, and physics tuning for shovelling mechanic
 1. [!] day cycle - day and evening rotation
 1. 
-1. [!] Manual Coal Shoveling - In play area, drag coal from pile to furnace
 1. 
 1. [!] Shop - shop scene for purchasing shoveling upgrades
 1. 

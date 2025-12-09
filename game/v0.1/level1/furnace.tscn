@@ -1,0 +1,60 @@
+[gd_scene load_steps=7 format=3 uid="uid://cq8ywm7dxvvqp"]
+
+[ext_resource type="PackedScene" uid="uid://drfp4vl2w1wvr" path="res://level1/scene_template.tscn" id="1_furnace_template"]
+[ext_resource type="Script" path="res://level1/furnace.gd" id="2_furnace_script"]
+[ext_resource type="Script" path="res://level1/shovel.gd" id="3_shovel_script"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_coal_pile"]
+radius = 100.0
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_obstacle"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_shovel"]
+size = Vector2(80, 12)
+
+[node name="Furnace" instance=ExtResource("1_furnace_template")]
+script = ExtResource("2_furnace_script")
+
+[node name="CoalPile" type="Node2D" parent="AspectContainer/MainContainer/mainarea/PlayArea" index="0"]
+
+[node name="Polygon2D" type="Polygon2D" parent="AspectContainer/MainContainer/mainarea/PlayArea/CoalPile"]
+color = Color(0.164706, 0.164706, 0.164706, 1)
+polygon = PackedVector2Array(-80, 0, -60, -40, -20, -60, 20, -60, 60, -40, 80, 0, 60, 20, -60, 20)
+
+[node name="CoalPileArea" type="Area2D" parent="AspectContainer/MainContainer/mainarea/PlayArea/CoalPile"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="AspectContainer/MainContainer/mainarea/PlayArea/CoalPile/CoalPileArea"]
+shape = SubResource("CircleShape2D_coal_pile")
+
+[node name="FurnaceWall" type="Node2D" parent="AspectContainer/MainContainer/mainarea/PlayArea" index="1"]
+
+[node name="TopLine" type="Line2D" parent="AspectContainer/MainContainer/mainarea/PlayArea/FurnaceWall"]
+
+[node name="BottomLine" type="Line2D" parent="AspectContainer/MainContainer/mainarea/PlayArea/FurnaceWall"]
+
+[node name="TopObstacle" type="StaticBody2D" parent="AspectContainer/MainContainer/mainarea/PlayArea/FurnaceWall"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="AspectContainer/MainContainer/mainarea/PlayArea/FurnaceWall/TopObstacle"]
+shape = SubResource("RectangleShape2D_obstacle")
+
+[node name="BottomObstacle" type="StaticBody2D" parent="AspectContainer/MainContainer/mainarea/PlayArea/FurnaceWall"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="AspectContainer/MainContainer/mainarea/PlayArea/FurnaceWall/BottomObstacle"]
+shape = SubResource("RectangleShape2D_obstacle")
+
+[node name="Shovel" type="Node2D" parent="AspectContainer/MainContainer/mainarea/PlayArea" index="2"]
+
+[node name="AnimatableBody2D" type="AnimatableBody2D" parent="AspectContainer/MainContainer/mainarea/PlayArea/Shovel"]
+script = ExtResource("3_shovel_script")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="AspectContainer/MainContainer/mainarea/PlayArea/Shovel/AnimatableBody2D"]
+shape = SubResource("RectangleShape2D_shovel")
+
+[node name="OutlineLine2D" type="Line2D" parent="AspectContainer/MainContainer/mainarea/PlayArea/Shovel/AnimatableBody2D"]
+
+[node name="Line2D" type="Line2D" parent="AspectContainer/MainContainer/mainarea/PlayArea/Shovel/AnimatableBody2D"]
+
+[node name="ToMindButton" type="Button" parent="AspectContainer/MainContainer/mainarea/Menu" index="0"]
+layout_mode = 2
+theme_type_variation = &"ForwardNavButton"
+text = "To Mind"

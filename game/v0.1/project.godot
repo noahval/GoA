@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="GoA"
-run/main_scene="res://theme_test.tscn"
+run/main_scene="uid://cq8ywm7dxvvqp"
 config/features=PackedStringArray("4.5", "GL Compatibility")
 boot_splash/bg_color=Color(0, 0, 0, 1)
 config/icon="res://icon.svg"
@@ -27,6 +27,13 @@ DebugLogger="*res://autoloads/debug_logger.gd"
 LocalSaveManager="*res://autoloads/local_save_manager.gd"
 NakamaManager="*res://autoloads/nakama_manager.gd"
 ResponsiveLayout="*res://responsive_layout.gd"
+ButtonHierarchy="*res://button_hierarchy.gd"
+SceneNetwork="*res://level1/scene_network.gd"
+
+[debug]
+
+disk_log_level=1
+enable_logging=true
 
 [display]
 

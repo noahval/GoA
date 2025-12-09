@@ -18,6 +18,7 @@ func _ready() -> void:
 		return  # Don't load dev tools in production
 
 	print("DevTools initialized (dev mode)")
+	DebugLogger.info("DevTools initialized - dev mode enabled", "DEVTOOLS")
 
 	# Create performance overlay
 	_create_performance_overlay()
@@ -85,6 +86,7 @@ func cheat_add_stat_exp(stat_name: String, amount: float) -> void:
 
 	Global.add_stat_exp(stat_name, amount)
 	print("CHEAT: Added %d XP to %s" % [amount, stat_name])
+	DebugLogger.warn("CHEAT: Added %d XP to %s" % [amount, stat_name], "DEVTOOLS")
 
 # Set stat to specific level (cheat)
 func cheat_set_stat_level(stat_name: String, level: int) -> void:
@@ -95,3 +97,4 @@ func cheat_set_stat_level(stat_name: String, level: int) -> void:
 	if stat_data:
 		Global.set(stat_data.stat_var, level)
 		print("CHEAT: Set %s to level %d" % [stat_name, level])
+		DebugLogger.warn("CHEAT: Set %s to level %d" % [stat_name, level], "DEVTOOLS")

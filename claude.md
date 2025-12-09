@@ -57,7 +57,10 @@ Claude has full permissions to:
 
 ## Development Guidelines
 1. **GDScript Style**: Use snake_case for variables and functions
-6. **No Unicode Symbols**: Never use emoji or unicode symbols in code - use plain ASCII instead ([!], [x], ->, etc.) as they display incorrectly on web
+2. **String Operations**:
+   - Use `"text".repeat(N)` for string repetition, NOT `"text" * N` (Python syntax doesn't work in GDScript)
+   - Example: `"=".repeat(60)` not `"=" * 60`
+3. **No Unicode Symbols**: Never use emoji or unicode symbols in code - use plain ASCII instead ([!], [x], ->, etc.) as they display incorrectly on web
 
 ## Documentation System (BIBLE)
 

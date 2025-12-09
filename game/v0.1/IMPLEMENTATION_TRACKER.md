@@ -8,3 +8,7 @@
 1.9-default-theme
 1.10-responsive-layout
 1.12-scene-template
+1.15-settings-panel
+1.21-simple-logging
+
+2.2-physics-objects-setup
