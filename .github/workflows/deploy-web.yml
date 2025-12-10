@@ -1,4 +1,4 @@
-name: Deploy Web Build to Cloudflare Pages
+name: Deploy Web Build to itch.io
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  export-web:
+  export-and-deploy:
     runs-on: ubuntu-22.04
 
     steps:
@@ -31,24 +31,19 @@ jobs:
           cd game/v0.1
           godot --headless --export-release "Web" ../../build/web/index.html
 
-      - name: Add COOP/COEP headers
-        run: |
-          cat > build/web/_headers << 'EOF'
-          /*
-            Cross-Origin-Opener-Policy: same-origin
-            Cross-Origin-Embedder-Policy: require-corp
-          EOF
-
       - name: Verify build output
         run: |
           ls -lah build/web/
           echo "Build artifacts:"
           find build/web -type f
+          du -sh build/web/*
 
-      - name: Deploy to Cloudflare Pages
-        uses: cloudflare/pages-action@v1
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: goa
-          directory: build/web
+      - name: Deploy to itch.io
+        uses: manleydev/butler-publish-itchio-action@v1.0.3
+        env:
+          BUTLER_CREDENTIALS: ${{ secrets.ITCH_API_KEY }}
+          CHANNEL: html5
+          ITCH_GAME: ${{ secrets.ITCH_GAME }}
+          ITCH_USER: ${{ secrets.ITCH_USER }}
+          PACKAGE: build/web
+          VERSION: ${{ github.sha }}
