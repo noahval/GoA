@@ -25,6 +25,10 @@ const SCOOP_UPWARD_THRESHOLD: float = 50.0  # Minimum upward pixels for scoop
 var active_coal_count: int = 0
 const MAX_COAL_PIECES: int = 100  # Performance limit
 
+# Track which mouse button is held
+var left_mouse_held: bool = false
+var right_mouse_held: bool = false
+
 func _ready():
 	ResponsiveLayout.apply_to_scene(self)  # REQUIRED
 	connect_navigation()
@@ -110,6 +114,12 @@ func _process(delta):
 	if scoop_cooldown_timer > 0.0:
 		scoop_cooldown_timer -= delta
 
+	# Apply continuous tilt torque while mouse buttons are held
+	if left_mouse_held:
+		shovel_body.tilt_left(delta)
+	if right_mouse_held:
+		shovel_body.tilt_right(delta)
+
 	# Poll for shovel overlap with coal pile (signals don't work with direct position setting)
 	# Calculate distance between shovel and coal pile center
 	var pile_center = coal_pile_position
@@ -140,11 +150,11 @@ func _process(delta):
 		shovel_was_in_pile = false
 
 func _input(event):
-	if event is InputEventMouseButton and event.pressed:
+	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_LEFT:
-			shovel_body.tilt_left()
+			left_mouse_held = event.pressed
 		elif event.button_index == MOUSE_BUTTON_RIGHT:
-			shovel_body.tilt_right()
+			right_mouse_held = event.pressed
 
 func connect_navigation():
 	# Connect navigation buttons (adjust based on .mmd connections)

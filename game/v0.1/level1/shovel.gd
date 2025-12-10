@@ -3,6 +3,9 @@ extends RigidBody2D
 const SHOVEL_WIDTH: float = 80.0
 const SHOVEL_PHYSICS_MAT = preload("res://level1/shovel_physics_material.tres")
 const FOLLOW_SPEED: float = 3000.0  # How fast shovel moves toward mouse
+const TILT_TORQUE: float = 108000.0  # Torque applied per second when holding
+const MAX_ROTATION_DEGREES: float = 45.0  # Maximum tilt angle
+const BOUNCE_BACK_TORQUE: float = 200.0  # Torque applied when hitting max tilt
 
 var shovel_curve: PackedVector2Array
 var line_2d: Line2D
@@ -15,10 +18,11 @@ func _ready():
 	playarea = get_parent().get_parent()
 
 	# RigidBody2D physics setup
-	lock_rotation = true  # Keep shovel level for now
-	mass = 5.0  # Light enough to be responsive
+	lock_rotation = false  # Allow rotation for tilt mechanic
+	mass = 20.0  # Heavy enough to resist coal pushing it around
 	gravity_scale = 0.0  # No gravity
 	linear_damp = 15.0  # High damping for responsive stop
+	angular_damp = 2.0  # Dampen rotation over time
 
 	# Collision layers
 	collision_layer = 2
@@ -65,12 +69,25 @@ func _physics_process(delta):
 	# Set velocity toward mouse (physics-based movement)
 	linear_velocity = direction * FOLLOW_SPEED * delta
 
+	# Clamp rotation to max angle
+	var current_rotation_deg = rad_to_deg(rotation)
+	if abs(current_rotation_deg) > MAX_ROTATION_DEGREES:
+		# Clamp rotation
+		rotation = deg_to_rad(clamp(current_rotation_deg, -MAX_ROTATION_DEGREES, MAX_ROTATION_DEGREES))
+		# Apply bounce back torque in opposite direction
+		var bounce_direction = -sign(current_rotation_deg)
+		apply_torque_impulse(bounce_direction * BOUNCE_BACK_TORQUE)
+
 	# Update cooldown timer
 	if scoop_cooldown_timer > 0.0:
 		scoop_cooldown_timer -= delta
 
-func tilt_left():
-	pass  # Disabled for now
+func tilt_left(delta: float):
+	# Apply counter-clockwise torque (negative in Godot)
+	# Scale by delta for consistent speed regardless of framerate
+	apply_torque_impulse(-TILT_TORQUE * delta)
 
-func tilt_right():
-	pass  # Disabled for now
+func tilt_right(delta: float):
+	# Apply clockwise torque (positive in Godot)
+	# Scale by delta for consistent speed regardless of framerate
+	apply_torque_impulse(TILT_TORQUE * delta)
