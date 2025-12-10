@@ -1,10 +1,10 @@
-extends AnimatableBody2D
+extends RigidBody2D
 
 const SHOVEL_WIDTH: float = 80.0
 const SHOVEL_PHYSICS_MAT = preload("res://level1/shovel_physics_material.tres")
+const FOLLOW_SPEED: float = 3000.0  # How fast shovel moves toward mouse
 
 var shovel_curve: PackedVector2Array
-var shovel_previous_position: Vector2
 var line_2d: Line2D
 var outline_line: Line2D
 var scoop_cooldown_timer: float = 0.0
@@ -14,6 +14,16 @@ func _ready():
 	# Get reference to playarea (parent's parent)
 	playarea = get_parent().get_parent()
 
+	# RigidBody2D physics setup
+	lock_rotation = true  # Keep shovel level for now
+	mass = 5.0  # Light enough to be responsive
+	gravity_scale = 0.0  # No gravity
+	linear_damp = 15.0  # High damping for responsive stop
+
+	# Collision layers
+	collision_layer = 2
+	collision_mask = 1 | 4  # World (layer 1) + coal (layer 3)
+
 	# Define shovel visual curve (for aesthetics only)
 	shovel_curve = PackedVector2Array([
 		Vector2(-40, -5),   # Left edge, slightly raised
@@ -22,10 +32,6 @@ func _ready():
 		Vector2(20, 5),     # Right-center, deeper
 		Vector2(40, -5)     # Right edge, slightly raised
 	])
-
-	# Setup collision shape
-	var collision_shape = get_node("CollisionShape2D")
-	collision_shape.rotation_degrees = -5  # Slight upward tilt
 
 	# Setup outline (gray, thicker) - draws first (behind)
 	outline_line = get_node("OutlineLine2D")
@@ -44,15 +50,8 @@ func _ready():
 	# Apply shared physics material
 	physics_material_override = SHOVEL_PHYSICS_MAT
 
-	# Initialize position tracking
-	shovel_previous_position = get_global_mouse_position()
-	global_position = shovel_previous_position
-
 func _physics_process(delta):
-	# Store previous position for future scoop detection
-	shovel_previous_position = global_position
-
-	# Get mouse position and constrain to playarea bounds
+	# Get mouse position
 	var mouse_pos = get_global_mouse_position()
 
 	if playarea:
@@ -60,9 +59,18 @@ func _physics_process(delta):
 		mouse_pos.x = clamp(mouse_pos.x, playarea_rect.position.x, playarea_rect.position.x + playarea_rect.size.x)
 		mouse_pos.y = clamp(mouse_pos.y, playarea_rect.position.y, playarea_rect.position.y + playarea_rect.size.y)
 
-	# Move to constrained position (AnimatableBody2D handles physics sync)
-	global_position = mouse_pos
+	# Calculate direction to mouse
+	var direction = mouse_pos - global_position
 
-	# Update cooldown timer (for future use)
+	# Set velocity toward mouse (physics-based movement)
+	linear_velocity = direction * FOLLOW_SPEED * delta
+
+	# Update cooldown timer
 	if scoop_cooldown_timer > 0.0:
 		scoop_cooldown_timer -= delta
+
+func tilt_left():
+	pass  # Disabled for now
+
+func tilt_right():
+	pass  # Disabled for now

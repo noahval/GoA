@@ -10,7 +10,7 @@ radius = 100.0
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_obstacle"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_shovel"]
-size = Vector2(80, 12)
+size = Vector2(80, 20)
 
 [node name="Furnace" instance=ExtResource("1_furnace_template")]
 script = ExtResource("2_furnace_script")
@@ -22,6 +22,8 @@ color = Color(0.164706, 0.164706, 0.164706, 1)
 polygon = PackedVector2Array(-80, 0, -60, -40, -20, -60, 20, -60, 60, -40, 80, 0, 60, 20, -60, 20)
 
 [node name="CoalPileArea" type="Area2D" parent="AspectContainer/MainContainer/mainarea/PlayArea/CoalPile"]
+collision_layer = 4
+collision_mask = 2
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="AspectContainer/MainContainer/mainarea/PlayArea/CoalPile/CoalPileArea"]
 shape = SubResource("CircleShape2D_coal_pile")
@@ -33,26 +35,29 @@ shape = SubResource("CircleShape2D_coal_pile")
 [node name="BottomLine" type="Line2D" parent="AspectContainer/MainContainer/mainarea/PlayArea/FurnaceWall"]
 
 [node name="TopObstacle" type="StaticBody2D" parent="AspectContainer/MainContainer/mainarea/PlayArea/FurnaceWall"]
+collision_layer = 1
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="AspectContainer/MainContainer/mainarea/PlayArea/FurnaceWall/TopObstacle"]
 shape = SubResource("RectangleShape2D_obstacle")
 
 [node name="BottomObstacle" type="StaticBody2D" parent="AspectContainer/MainContainer/mainarea/PlayArea/FurnaceWall"]
+collision_layer = 1
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="AspectContainer/MainContainer/mainarea/PlayArea/FurnaceWall/BottomObstacle"]
 shape = SubResource("RectangleShape2D_obstacle")
 
 [node name="Shovel" type="Node2D" parent="AspectContainer/MainContainer/mainarea/PlayArea" index="2"]
 
-[node name="AnimatableBody2D" type="AnimatableBody2D" parent="AspectContainer/MainContainer/mainarea/PlayArea/Shovel"]
+[node name="RigidBody2D" type="RigidBody2D" parent="AspectContainer/MainContainer/mainarea/PlayArea/Shovel"]
 script = ExtResource("3_shovel_script")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="AspectContainer/MainContainer/mainarea/PlayArea/Shovel/AnimatableBody2D"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="AspectContainer/MainContainer/mainarea/PlayArea/Shovel/RigidBody2D"]
+position = Vector2(0, 2)
 shape = SubResource("RectangleShape2D_shovel")
 
-[node name="OutlineLine2D" type="Line2D" parent="AspectContainer/MainContainer/mainarea/PlayArea/Shovel/AnimatableBody2D"]
+[node name="OutlineLine2D" type="Line2D" parent="AspectContainer/MainContainer/mainarea/PlayArea/Shovel/RigidBody2D"]
 
-[node name="Line2D" type="Line2D" parent="AspectContainer/MainContainer/mainarea/PlayArea/Shovel/AnimatableBody2D"]
+[node name="Line2D" type="Line2D" parent="AspectContainer/MainContainer/mainarea/PlayArea/Shovel/RigidBody2D"]
 
 [node name="ToMindButton" type="Button" parent="AspectContainer/MainContainer/mainarea/Menu" index="0"]
 layout_mode = 2
