@@ -85,8 +85,8 @@ func cheat_add_stat_exp(stat_name: String, amount: float) -> void:
 		return
 
 	Global.add_stat_exp(stat_name, amount)
-	print("CHEAT: Added %d XP to %s" % [amount, stat_name])
-	DebugLogger.warn("CHEAT: Added %d XP to %s" % [amount, stat_name], "DEVTOOLS")
+	print("CHEAT: Added %.1f XP to %s" % [amount, stat_name])
+	DebugLogger.warn("CHEAT: Added %.1f XP to %s" % [amount, stat_name], "DEVTOOLS")
 
 # Set stat to specific level (cheat)
 func cheat_set_stat_level(stat_name: String, level: int) -> void:

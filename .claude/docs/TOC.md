@@ -49,6 +49,7 @@ This roadmap is for a complete game rewrite from scratch. All features listed sh
 1. Error Handling - Global error handling and crash recovery
 1. Version Management - Game version tracking for save compatibility
 1. Deployment Pipeline - Dev/main git workflow with automated GitHub Actions builds, version incrementing, and deployment
+1. web hosting - 
 
 ## 2. copper era
 1. scene Network - Centralized scene registry and navigation map for all Level 1 scenes (copper, silver, gold eras)

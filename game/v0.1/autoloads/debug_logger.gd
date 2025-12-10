@@ -146,8 +146,8 @@ func _rotate_old_logs():
 
 	# Calculate total size
 	var total_size = 0
-	for log in log_files:
-		total_size += log.size
+	for log_entry in log_files:
+		total_size += log_entry.size
 
 	# Delete oldest logs if over total size limit OR over max file count
 	while log_files.size() >= MAX_LOG_FILES or total_size > MAX_TOTAL_LOG_SIZE:
@@ -224,7 +224,7 @@ func get_recent_logs(count: int = 150) -> Array[Dictionary]:
 
 # Get errors and warnings only
 func get_error_logs(count: int = 50) -> Array[Dictionary]:
-	var errors = recent_logs.filter(func(log): return log.level == "ERROR" or log.level == "WARN")
+	var errors = recent_logs.filter(func(log_entry): return log_entry.level == "ERROR" or log_entry.level == "WARN")
 	var start_index = max(0, errors.size() - count)
 	return errors.slice(start_index)
 

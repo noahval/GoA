@@ -178,9 +178,10 @@ func change_scene(scene_path: String, skip_validation: bool = false, transition_
 
 	# Validate scene transition (with reason tracking)
 	if not skip_validation:
-		var block_reason = ""
-		if not can_change_to_scene(scene_path, block_reason):
+		var validation = can_change_to_scene(scene_path)
+		if not validation.allowed:
 			# Show user-friendly error message
+			var block_reason = validation.reason
 			if not block_reason.is_empty():
 				show_notification(block_reason)
 			push_warning("Scene transition blocked: " + block_reason)
@@ -206,7 +207,7 @@ func change_scene(scene_path: String, skip_validation: bool = false, transition_
 	DebugLogger.log_scene_change(from_scene, scene_path, "Scene transition (%s)" % transition_type)
 
 	# Update scene history stack (before the change)
-	_update_scene_history(from_scene, scene_path)
+	_update_scene_history(from_scene)
 
 	# Execute async scene change with error recovery
 	await _change_scene_async(scene_path)
@@ -330,7 +331,7 @@ func clear_scene_history() -> void:
 	DebugLogger.log_info("SceneHistory", "Scene history cleared")
 
 # Update scene history when changing scenes
-func _update_scene_history(from_scene: String, to_scene: String) -> void:
+func _update_scene_history(from_scene: String) -> void:
 	# Don't add empty scenes
 	if from_scene.is_empty():
 		return
@@ -379,19 +380,19 @@ func unregister_scene_validator(validator: Callable) -> void:
 			return
 
 # Check if scene transition is allowed (with reason tracking)
-# block_reason is an output parameter that gets set to why the transition was blocked
-func can_change_to_scene(scene_path: String, block_reason: String = "") -> bool:
+# Returns Dictionary: {allowed: bool, reason: String}
+func can_change_to_scene(scene_path: String) -> Dictionary:
 	# Built-in validation: Scene file must exist
 	if not scene_exists(scene_path):
-		block_reason = "Scene file does not exist: " + scene_path
-		push_error(block_reason)
-		return false
+		var reason = "Scene file does not exist: " + scene_path
+		push_error(reason)
+		return {"allowed": false, "reason": reason}
 
 	# Built-in validation: Don't transition to same scene
 	if is_current_scene(scene_path):
-		block_reason = "Already in this scene"
-		push_warning(block_reason)
-		return false
+		var reason = "Already in this scene"
+		push_warning(reason)
+		return {"allowed": false, "reason": reason}
 
 	# Run custom validators in priority order
 	for validator_data in scene_validators:
@@ -404,20 +405,20 @@ func can_change_to_scene(scene_path: String, block_reason: String = "") -> bool:
 		# Handle bool return (backward compatible)
 		if result is bool:
 			if not result:
-				block_reason = "Blocked by validator: " + validator_name
+				var reason = "Blocked by validator: " + validator_name
 				DebugLogger.log_info("Validators", "Scene transition blocked by: " + validator_name)
-				return false
+				return {"allowed": false, "reason": reason}
 
 		# Handle Dictionary return {allowed: bool, reason: String}
 		elif result is Dictionary:
 			if not result.get("allowed", false):
-				block_reason = result.get("reason", "Blocked by " + validator_name)
-				DebugLogger.log_info("Validators", "Scene transition blocked: " + block_reason)
-				return false
+				var reason = result.get("reason", "Blocked by " + validator_name)
+				DebugLogger.log_info("Validators", "Scene transition blocked: " + reason)
+				return {"allowed": false, "reason": reason}
 		else:
 			push_error("Validator returned invalid type: " + validator_name)
 
-	return true  # All validators passed
+	return {"allowed": true, "reason": ""}  # All validators passed
 
 # ===== SCENE PRELOADING (Phase 1.8) =====
 

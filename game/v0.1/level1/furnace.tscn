@@ -9,8 +9,17 @@ radius = 100.0
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_obstacle"]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_shovel"]
-size = Vector2(80, 20)
+[sub_resource type="SegmentShape2D" id="SegmentShape2D_left_wall"]
+a = Vector2(-40, -5)
+b = Vector2(-18, 8)
+
+[sub_resource type="SegmentShape2D" id="SegmentShape2D_bottom_wall"]
+a = Vector2(-18, 8)
+b = Vector2(18, 8)
+
+[sub_resource type="SegmentShape2D" id="SegmentShape2D_right_wall"]
+a = Vector2(18, 8)
+b = Vector2(40, -5)
 
 [node name="Furnace" instance=ExtResource("1_furnace_template")]
 script = ExtResource("2_furnace_script")
@@ -51,9 +60,14 @@ shape = SubResource("RectangleShape2D_obstacle")
 [node name="RigidBody2D" type="RigidBody2D" parent="AspectContainer/MainContainer/mainarea/PlayArea/Shovel"]
 script = ExtResource("3_shovel_script")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="AspectContainer/MainContainer/mainarea/PlayArea/Shovel/RigidBody2D"]
-position = Vector2(0, 2)
-shape = SubResource("RectangleShape2D_shovel")
+[node name="LeftWall" type="CollisionShape2D" parent="AspectContainer/MainContainer/mainarea/PlayArea/Shovel/RigidBody2D"]
+shape = SubResource("SegmentShape2D_left_wall")
+
+[node name="BottomWall" type="CollisionShape2D" parent="AspectContainer/MainContainer/mainarea/PlayArea/Shovel/RigidBody2D"]
+shape = SubResource("SegmentShape2D_bottom_wall")
+
+[node name="RightWall" type="CollisionShape2D" parent="AspectContainer/MainContainer/mainarea/PlayArea/Shovel/RigidBody2D"]
+shape = SubResource("SegmentShape2D_right_wall")
 
 [node name="OutlineLine2D" type="Line2D" parent="AspectContainer/MainContainer/mainarea/PlayArea/Shovel/RigidBody2D"]
 
