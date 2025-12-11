@@ -40,7 +40,10 @@ jobs:
 
       - name: Install Butler
         run: |
-          curl -L -o butler.zip https://github.com/itchio/butler/releases/latest/download/butler-linux-amd64.zip
+          # Get the latest release download URL
+          BUTLER_URL=$(curl -s https://api.github.com/repos/itchio/butler/releases/latest | grep "browser_download_url.*linux-amd64" | cut -d '"' -f 4)
+          echo "Downloading Butler from: $BUTLER_URL"
+          curl -L -o butler.zip "$BUTLER_URL"
           unzip butler.zip
           chmod +x butler
           ./butler -V
