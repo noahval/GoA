@@ -38,12 +38,15 @@ jobs:
           find build/web -type f
           du -sh build/web/*
 
+      - name: Install Butler
+        run: |
+          curl -L -o butler.zip https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default
+          unzip butler.zip
+          chmod +x butler
+          ./butler -V
+
       - name: Deploy to itch.io
-        uses: manleydev/butler-publish-itchio-action@v1.0.3
         env:
-          BUTLER_CREDENTIALS: ${{ secrets.ITCH_API_KEY }}
-          CHANNEL: html5
-          ITCH_GAME: ${{ secrets.ITCH_GAME }}
-          ITCH_USER: ${{ secrets.ITCH_USER }}
-          PACKAGE: build/web
-          VERSION: ${{ github.sha }}
+          BUTLER_API_KEY: ${{ secrets.ITCH_API_KEY }}
+        run: |
+          ./butler push build/web ${{ secrets.ITCH_USER }}/${{ secrets.ITCH_GAME }}:html5 --userversion ${{ github.sha }}
