@@ -1,0 +1,50 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash",
+      "Read",
+      "Write",
+      "Edit",
+      "Glob",
+      "Grep",
+      "WebFetch",
+      "WebSearch",
+      "Bash(git commit -m \"$(cat <<''EOF''\nadd full tool permissions to settings.local.json\n\nAdded automatic permissions for Read, Write, Edit, Glob, Grep,\nWebFetch, and WebSearch tools to enable unrestricted file operations,\nweb access, and search capabilities.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
+    ],
+    "deny": [],
+    "ask": []
+  },
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -ExecutionPolicy Bypass -File .claude/hooks/bible-check.ps1 '{message}'"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '{\"file_path\": \"{file_path}\"}' | powershell -ExecutionPolicy Bypass -File .claude/hooks/toc-change-hook.ps1"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -ExecutionPolicy Bypass -File c:/GoA/.claude/hooks/stop/audio-done.ps1"
+          }
+        ]
+      }
+    ]
+  }
+}

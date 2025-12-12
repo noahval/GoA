@@ -1,0 +1,72 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  export-game:
+    runs-on: ubuntu-latest
+    name: Export Game
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Export Game
+        id: export
+        uses: firebelley/godot-export@v5.2.1
+        with:
+          godot_executable_download_url: https://github.com/godotengine/godot/releases/download/4.5-stable/Godot_v4.5-stable_linux.x86_64.zip
+          godot_export_templates_download_url: https://github.com/godotengine/godot/releases/download/4.5-stable/Godot_v4.5-stable_export_templates.tpz
+          relative_project_path: ./
+          relative_export_path: ./build
+
+      - name: Prepare build files
+        run: |
+          echo "=== Initial build directory structure ==="
+          ls -laR build/ || echo "Build directory not found"
+
+          # Check if files are in build/ or build/Web/
+          if [ -d "build/Web" ]; then
+            echo "Files are in build/Web/, moving to build/"
+            mv build/Web/* build/
+            rmdir build/Web
+          fi
+
+          # Copy level assets
+          mkdir -p build/level1
+          cp level1/Title.jpg build/level1/
+          cp level1/begin.jpg build/level1/
+          if [ -f level1/title.webm ]; then cp level1/title.webm build/level1/; fi
+
+          echo "=== Final build directory contents ==="
+          ls -la build/
+          echo "=== Checking for critical files ==="
+          ls -la build/*.html build/*.pck build/*.wasm 2>/dev/null || echo "WARNING: Missing critical files!"
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./build
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: export-game
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

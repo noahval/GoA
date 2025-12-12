@@ -1,0 +1,724 @@
+{
+  "questions": [
+    {
+      "question": "In stakeholder theory, how does the framework address conflicting interests between different stakeholder groups?",
+      "answers": {
+        "A": "It always prioritizes shareholders over other stakeholders",
+        "B": "It assigns fixed weights to each stakeholder category",
+        "C": "It requires balancing competing claims through ethical deliberation",
+        "D": "It eliminates conflicts by satisfying only the largest stakeholder group"
+      },
+      "correct": "C"
+    },
+    {
+      "question": "Which principle distinguishes rule utilitarianism from act utilitarianism?",
+      "answers": {
+        "A": "Rule utilitarianism evaluates actions based on adherence to rules that maximize overall utility",
+        "B": "Rule utilitarianism rejects the greatest happiness principle entirely",
+        "C": "Rule utilitarianism focuses on individual virtues rather than consequences",
+        "D": "Rule utilitarianism applies only to government policies, not individual actions"
+      },
+      "correct": "A"
+    },
+    {
+      "question": "How does opportunity cost differ from sunk cost in economic decision-making?",
+      "answers": {
+        "A": "Opportunity cost is always larger than sunk cost",
+        "B": "Sunk costs are recoverable while opportunity costs are not",
+        "C": "Opportunity cost represents forgone alternatives; sunk cost represents past irrecoverable expenditures",
+        "D": "They are equivalent concepts with different names"
+      },
+      "correct": "C"
+    },
+    {
+      "question": "In Plato's cave allegory, what does the journey out of the cave represent philosophically?",
+      "answers": {
+        "A": "The transition from sensory perception to understanding Forms and true knowledge",
+        "B": "Physical travel to new locations",
+        "C": "Rejection of all philosophical inquiry",
+        "D": "The development of mathematical reasoning only"
+      },
+      "correct": "A"
+    },
+    {
+      "question": "What distinguishes the marketing concept from earlier production-oriented approaches?",
+      "answers": {
+        "A": "It focuses on manufacturing efficiency above all else",
+        "B": "It prioritizes understanding and satisfying customer needs as the path to profitability",
+        "C": "It eliminates all consideration of production costs",
+        "D": "It requires companies to produce only luxury goods"
+      },
+      "correct": "B"
+    },
+    {
+      "question": "How does Kant's categorical imperative differ from hypothetical imperatives?",
+      "answers": {
+        "A": "Hypothetical imperatives are absolute duties while categorical imperatives are conditional",
+        "B": "Categorical imperatives apply universally regardless of personal desires or goals",
+        "C": "Categorical imperatives only apply to political leaders",
+        "D": "Hypothetical imperatives are based on emotion rather than reason"
+      },
+      "correct": "B"
+    },
+    {
+      "question": "Why might a high ROI not always indicate a sound investment decision?",
+      "answers": {
+        "A": "ROI is measured incorrectly in most cases",
+        "B": "High ROI always guarantees future success",
+        "C": "ROI doesn't account for risk, time value of money, or opportunity costs",
+        "D": "ROI only applies to real estate investments"
+      },
+      "correct": "C"
+    },
+    {
+      "question": "How does epistemology relate to the concept of justified true belief?",
+      "answers": {
+        "A": "Epistemology rejects the possibility of justified belief",
+        "B": "Justified true belief is the traditional definition of knowledge, though Gettier problems challenge it",
+        "C": "Epistemology only studies false beliefs",
+        "D": "Justified true belief applies only to mathematical knowledge"
+      },
+      "correct": "B"
+    },
+    {
+      "question": "What happens to equilibrium price when both supply and demand increase simultaneously?",
+      "answers": {
+        "A": "Quantity definitely increases, but price change depends on the relative magnitudes",
+        "B": "Price always doubles",
+        "C": "Supply and demand cannot both increase at the same time",
+        "D": "Price and quantity both remain constant"
+      },
+      "correct": "A"
+    },
+    {
+      "question": "What methodological approach did Descartes use to arrive at 'cogito ergo sum'?",
+      "answers": {
+        "A": "Empirical observation of brain activity",
+        "B": "Mathematical proof from axioms",
+        "C": "Systematic doubt of all beliefs that could possibly be doubted",
+        "D": "Analysis of language and meaning"
+      },
+      "correct": "C"
+    },
+    {
+      "question": "How does the Ship of Theseus relate to the philosophical problem of identity over time?",
+      "answers": {
+        "A": "It demonstrates that ships cannot maintain identity",
+        "B": "It questions whether objects with completely replaced parts retain numerical identity",
+        "C": "It proves that identity never changes",
+        "D": "It only applies to maritime vessels"
+      },
+      "correct": "B"
+    },
+    {
+      "question": "What economic inefficiencies typically result from monopolies?",
+      "answers": {
+        "A": "Monopolies always produce at maximum efficiency",
+        "B": "Deadweight loss from reduced output and higher prices compared to competitive markets",
+        "C": "Monopolies eliminate all production costs",
+        "D": "Monopolies always benefit consumers through economies of scale"
+      },
+      "correct": "B"
+    },
+    {
+      "question": "According to Aristotle, what role does practical wisdom (phronesis) play in achieving eudaimonia?",
+      "answers": {
+        "A": "It is unnecessary for human flourishing",
+        "B": "It enables the correct application of virtue in specific situations",
+        "C": "It replaces virtue entirely",
+        "D": "It only applies to intellectual pursuits"
+      },
+      "correct": "B"
+    },
+    {
+      "question": "What philosophical justification underlies Occam's Razor?",
+      "answers": {
+        "A": "Simple explanations are always true",
+        "B": "Complexity proves validity",
+        "C": "Among competing hypotheses with equal explanatory power, the simplest requires fewer assumptions",
+        "D": "All explanations are equally probable"
+      },
+      "correct": "C"
+    },
+    {
+      "question": "How does portfolio diversification reduce risk according to modern portfolio theory?",
+      "answers": {
+        "A": "By investing in more assets regardless of correlation",
+        "B": "By combining assets with low or negative correlation to reduce overall volatility",
+        "C": "By guaranteeing positive returns",
+        "D": "By eliminating all systematic risk"
+      },
+      "correct": "B"
+    },
+    {
+      "question": "What principle would people choose behind Rawls's veil of ignorance?",
+      "answers": {
+        "A": "Maximize average utility regardless of distribution",
+        "B": "Give everyone exactly equal resources",
+        "C": "The difference principle: inequalities are just only if they benefit the least advantaged",
+        "D": "Prioritize the most talented individuals"
+      },
+      "correct": "C"
+    },
+    {
+      "question": "What distinguishes a business plan's financial projections from mere speculation?",
+      "answers": {
+        "A": "Financial projections are always accurate",
+        "B": "They are based on market research, reasonable assumptions, and documented methodology",
+        "C": "Business plans never include projections",
+        "D": "Projections only cover one month ahead"
+      },
+      "correct": "B"
+    },
+    {
+      "question": "How does John Locke's tabula rasa contrast with rationalist theories of innate ideas?",
+      "answers": {
+        "A": "Locke argues all knowledge derives from experience, not inborn concepts",
+        "B": "Locke claims we are born with complete knowledge",
+        "C": "Locke agrees entirely with rationalist innate ideas",
+        "D": "Locke rejects the possibility of learning anything new"
+      },
+      "correct": "A"
+    },
+    {
+      "question": "Why is the problem of induction considered philosophically significant?",
+      "answers": {
+        "A": "It proves induction always works",
+        "B": "It shows we cannot justify inferring universal laws from particular observations without circular reasoning",
+        "C": "It demonstrates deduction is impossible",
+        "D": "It only applies to scientific theories, not everyday reasoning"
+      },
+      "correct": "B"
+    },
+    {
+      "question": "How does SWOT analysis integrate internal and external strategic factors?",
+      "answers": {
+        "A": "SWOT only examines external factors",
+        "B": "It matches internal strengths/weaknesses with external opportunities/threats",
+        "C": "It treats all factors as equally important without distinction",
+        "D": "It focuses exclusively on current state without future considerations"
+      },
+      "correct": "B"
+    },
+    {
+      "question": "What distinguishes existentialism's approach to meaning from essentialist philosophies?",
+      "answers": {
+        "A": "Existentialism claims meaning is predetermined by nature",
+        "B": "Existentialism holds that individuals create their own meaning through choices and actions",
+        "C": "Existentialism denies the possibility of any meaning",
+        "D": "Existentialism and essentialism are identical approaches"
+      },
+      "correct": "B"
+    },
+    {
+      "question": "Why must assets always equal liabilities plus equity in the accounting equation?",
+      "answers": {
+        "A": "It's an arbitrary convention with no logical basis",
+        "B": "Assets represent what the company owns, which must be financed by debt or owner investment",
+        "C": "This equation only applies to certain types of businesses",
+        "D": "Assets are always larger than liabilities and equity combined"
+      },
+      "correct": "B"
+    },
+    {
+      "question": "What makes a deductive argument valid even if its conclusion is false?",
+      "answers": {
+        "A": "Deductive arguments can never be valid with false conclusions",
+        "B": "Validity only requires that IF the premises were true, the conclusion must follow",
+        "C": "The number of premises determines validity",
+        "D": "Validity and truth are the same concept"
+      },
+      "correct": "B"
+    },
+    {
+      "question": "How does liquidity risk affect financial decision-making?",
+      "answers": {
+        "A": "Liquidity only matters for water companies",
+        "B": "Liquidity has no relationship to risk",
+        "C": "High liquidity assets may offer lower returns but provide flexibility for unexpected needs",
+        "D": "All assets have identical liquidity"
+      },
+      "correct": "C"
+    },
+    {
+      "question": "According to Marx, how does alienation affect the worker's relationship to the product of labor?",
+      "answers": {
+        "A": "Workers always feel connected to products they create",
+        "B": "Alienation only affects management, not workers",
+        "C": "The product becomes alien, controlled by capital rather than the worker who created it",
+        "D": "Marx believed alienation was beneficial for productivity"
+      },
+      "correct": "C"
+    },
+    {
+      "question": "How does a balance sheet differ from an income statement in what it reveals about a company?",
+      "answers": {
+        "A": "Balance sheets show financial position at a point in time; income statements show performance over a period",
+        "B": "They contain identical information in different formats",
+        "C": "Balance sheets only apply to manufacturing companies",
+        "D": "Income statements are optional while balance sheets are required"
+      },
+      "correct": "A"
+    },
+    {
+      "question": "What makes the Socratic method effective for examining unexamined assumptions?",
+      "answers": {
+        "A": "It provides direct answers to all questions",
+        "B": "It relies on memorization rather than critical thinking",
+        "C": "It uses systematic questioning to reveal contradictions and gaps in understanding",
+        "D": "It avoids challenging any beliefs"
+      },
+      "correct": "C"
+    },
+    {
+      "question": "Why must a value proposition address customer pain points specifically?",
+      "answers": {
+        "A": "Value propositions should ignore customer problems",
+        "B": "Generic benefits apply equally to all customers",
+        "C": "Customers choose solutions that best address their specific unmet needs",
+        "D": "Price is the only factor customers consider"
+      },
+      "correct": "C"
+    },
+    {
+      "question": "How does hard determinism challenge the concept of moral responsibility?",
+      "answers": {
+        "A": "Determinism has no relationship to moral responsibility",
+        "B": "Determinism proves free will definitely exists",
+        "C": "If all actions are causally determined, it questions whether people can be truly responsible",
+        "D": "Moral responsibility is only relevant in indeterministic systems"
+      },
+      "correct": "C"
+    },
+    {
+      "question": "What strategic implications arise from the relationship between fixed and variable costs?",
+      "answers": {
+        "A": "Cost structure affects break-even points and the impact of volume changes on profitability",
+        "B": "All businesses should eliminate fixed costs entirely",
+        "C": "Variable costs are always preferable to fixed costs",
+        "D": "The ratio between them has no strategic significance"
+      },
+      "correct": "A"
+    },
+    {
+      "question": "How does Nietzsche's Übermensch relate to his critique of traditional morality?",
+      "answers": {
+        "A": "The Übermensch blindly follows conventional moral rules",
+        "B": "Nietzsche believed traditional morality was perfect",
+        "C": "The Übermensch creates new values after recognizing traditional morality's limitations",
+        "D": "The concept has no connection to morality"
+      },
+      "correct": "C"
+    },
+    {
+      "question": "What criteria determine effective market segmentation?",
+      "answers": {
+        "A": "Segments should be random and overlapping",
+        "B": "Any division of customers constitutes effective segmentation",
+        "C": "Segments must be measurable, substantial, accessible, and actionable",
+        "D": "Market segmentation should create as many segments as possible"
+      },
+      "correct": "C"
+    },
+    {
+      "question": "What epistemological problem does solipsism present?",
+      "answers": {
+        "A": "How to prove other minds exist if we only directly experience our own consciousness",
+        "B": "How to learn new languages",
+        "C": "Whether the sun exists",
+        "D": "How to measure temperature accurately"
+      },
+      "correct": "A"
+    },
+    {
+      "question": "How should a mission statement guide organizational decision-making?",
+      "answers": {
+        "A": "Mission statements should change weekly based on trends",
+        "B": "Mission statements serve only marketing purposes with no operational relevance",
+        "C": "Only executives need to consider the mission statement",
+        "D": "It provides criteria for evaluating whether decisions align with core purpose and values"
+      },
+      "correct": "D"
+    },
+    {
+      "question": "What makes the mind-body problem particularly resistant to resolution?",
+      "answers": {
+        "A": "The difficulty explaining how physical brain states give rise to subjective conscious experience",
+        "B": "The mind and body are obviously identical",
+        "C": "The problem was definitively solved in ancient Greece",
+        "D": "Only medical professionals can address this question"
+      },
+      "correct": "A"
+    },
+    {
+      "question": "At what point do economies of scale potentially become diseconomies of scale?",
+      "answers": {
+        "A": "Economies of scale always continue indefinitely",
+        "B": "Immediately upon any increase in production",
+        "C": "Diseconomies of scale never occur",
+        "D": "When coordination costs and organizational complexity outweigh production efficiency gains"
+      },
+      "correct": "D"
+    },
+    {
+      "question": "How do Locke's natural rights provide a foundation for limiting government power?",
+      "answers": {
+        "A": "Governments have unlimited authority regardless of rights",
+        "B": "Natural rights only apply in the absence of government",
+        "C": "Locke argued for absolute monarchy",
+        "D": "Pre-existing rights constrain legitimate government action to protecting those rights"
+      },
+      "correct": "D"
+    },
+    {
+      "question": "What strategic decisions does break-even analysis inform?",
+      "answers": {
+        "A": "Break-even analysis only applies to accounting, not strategy",
+        "B": "Break-even points are irrelevant to business decisions",
+        "C": "Only startups need to consider break-even points",
+        "D": "Pricing, sales targets, and cost structure decisions based on volume requirements"
+      },
+      "correct": "D"
+    },
+    {
+      "question": "How does philosophical pragmatism evaluate competing truth claims?",
+      "answers": {
+        "A": "By examining which beliefs lead to successful predictions and useful outcomes",
+        "B": "By ignoring all evidence and choosing randomly",
+        "C": "By accepting all claims as equally true",
+        "D": "By rejecting the concept of truth entirely"
+      },
+      "correct": "A"
+    },
+    {
+      "question": "What makes brand equity valuable even when products are functionally similar to competitors?",
+      "answers": {
+        "A": "Brand equity has no value if products are similar",
+        "B": "Brand equity only matters for luxury goods",
+        "C": "Functional similarity guarantees identical brand value",
+        "D": "Positive brand associations create differentiation and pricing power beyond functional attributes"
+      },
+      "correct": "D"
+    },
+    {
+      "question": "What ethical principles does the trolley problem help examine?",
+      "answers": {
+        "A": "Whether public transportation should be funded",
+        "B": "How to solve engineering problems",
+        "C": "The trolley problem has no ethical implications",
+        "D": "The distinction between causing harm and allowing harm, and consequentialist vs. deontological ethics"
+      },
+      "correct": "D"
+    },
+    {
+      "question": "How does working capital differ from fixed capital in business operations?",
+      "answers": {
+        "A": "Working capital funds day-to-day operations; fixed capital funds long-term assets",
+        "B": "They are identical concepts",
+        "C": "Working capital is always larger than fixed capital",
+        "D": "Only manufacturing businesses use working capital"
+      },
+      "correct": "A"
+    },
+    {
+      "question": "What problem does Cartesian dualism face in explaining causal interaction?",
+      "answers": {
+        "A": "Dualism easily explains all mind-body interactions",
+        "B": "Descartes rejected all forms of causation",
+        "C": "The interaction problem only applies to modern neuroscience",
+        "D": "How immaterial mind can causally affect material body if they are fundamentally different substances"
+      },
+      "correct": "D"
+    },
+    {
+      "question": "How does sustainable competitive advantage differ from temporary advantages?",
+      "answers": {
+        "A": "All competitive advantages last forever",
+        "B": "Temporary advantages are always preferable",
+        "C": "The distinction is meaningless in practice",
+        "D": "Sustainable advantages resist imitation and erosion over time through barriers to replication"
+      },
+      "correct": "D"
+    },
+    {
+      "question": "What challenge does cultural relativism pose for universal human rights?",
+      "answers": {
+        "A": "Cultural relativism supports universal rights unconditionally",
+        "B": "Human rights only exist within single cultures",
+        "C": "Cultural relativism and universal rights are identical concepts",
+        "D": "If morality is culturally relative, it's difficult to justify rights that transcend cultural boundaries"
+      },
+      "correct": "D"
+    },
+    {
+      "question": "Why is time value of money fundamental to investment appraisal?",
+      "answers": {
+        "A": "Money's value is constant across time periods",
+        "B": "Time value only applies to savings accounts",
+        "C": "Investment decisions ignore timing of cash flows",
+        "D": "Future cash flows must be discounted to present value for meaningful comparison"
+      },
+      "correct": "D"
+    },
+    {
+      "question": "How does Hobbes's state of nature justify the need for sovereign authority?",
+      "answers": {
+        "A": "Hobbes argued government was unnecessary",
+        "B": "The state of nature was perfect and needed no government",
+        "C": "Hobbes only discussed theoretical states with no political implications",
+        "D": "The brutality of the state of nature makes rational individuals consent to authoritative governance"
+      },
+      "correct": "D"
+    },
+    {
+      "question": "What economic rationale justifies intellectual property protection?",
+      "answers": {
+        "A": "Intellectual property laws have no economic purpose",
+        "B": "All information should be freely available without exception",
+        "C": "Intellectual property only applies to physical inventions",
+        "D": "Protection incentivizes innovation by allowing creators to capture returns on investment"
+      },
+      "correct": "D"
+    },
+    {
+      "question": "Why is the is-ought gap significant for moral philosophy?",
+      "answers": {
+        "A": "Descriptive facts alone don't logically entail normative conclusions without additional moral premises",
+        "B": "Hume proved that ought follows automatically from is",
+        "C": "The gap only matters for grammar, not philosophy",
+        "D": "Moral philosophy rejects all factual claims"
+      },
+      "correct": "A"
+    },
+    {
+      "question": "How does strong organizational culture affect performance and adaptability?",
+      "answers": {
+        "A": "Strong culture guarantees high performance without drawbacks",
+        "B": "Organizational culture has no impact on performance",
+        "C": "Weak cultures are always superior to strong ones",
+        "D": "It can enhance coordination and commitment but may resist necessary change"
+      },
+      "correct": "D"
+    },
+    {
+      "question": "What distinguishes phenomenology from other approaches to studying consciousness?",
+      "answers": {
+        "A": "Phenomenology examines conscious experience as it appears to the experiencing subject",
+        "B": "Phenomenology only studies unconscious mental processes",
+        "C": "Phenomenology is identical to behaviorism",
+        "D": "Phenomenology rejects the existence of consciousness"
+      },
+      "correct": "A"
+    },
+    {
+      "question": "What components must a business model articulate to be complete?",
+      "answers": {
+        "A": "Only the product being sold",
+        "B": "Business models only describe marketing strategies",
+        "C": "A single sentence description is sufficient",
+        "D": "Value proposition, customer segments, revenue streams, cost structure, and key resources/activities"
+      },
+      "correct": "D"
+    },
+    {
+      "question": "How does Sartre's 'existence precedes essence' challenge traditional metaphysics?",
+      "answers": {
+        "A": "It claims humans are born with fixed natures",
+        "B": "It denies any possibility of human action",
+        "C": "It asserts humans exist first without predetermined nature, creating essence through choices",
+        "D": "It accepts traditional essentialist views entirely"
+      },
+      "correct": "C"
+    },
+    {
+      "question": "Why might companies with high gross margins still fail financially?",
+      "answers": {
+        "A": "High gross margin guarantees profitability",
+        "B": "Gross margin is unrelated to business success",
+        "C": "Companies should always minimize gross margins",
+        "D": "Operating expenses, debt service, or insufficient volume can overwhelm gross profit"
+      },
+      "correct": "D"
+    },
+    {
+      "question": "What response does direct realism offer to the veil of perception problem?",
+      "answers": {
+        "A": "We perceive external objects directly, not merely sense data representing them",
+        "B": "Direct realism accepts that we only experience sense data",
+        "C": "Direct realism denies perception exists",
+        "D": "The veil of perception is insurmountable for all theories"
+      },
+      "correct": "A"
+    },
+    {
+      "question": "How does the triple bottom line expand the concept of business sustainability?",
+      "answers": {
+        "A": "It focuses exclusively on environmental issues",
+        "B": "It only applies to non-profit organizations",
+        "C": "It rejects economic considerations entirely",
+        "D": "It measures performance across economic, social, and environmental dimensions"
+      },
+      "correct": "D"
+    },
+    {
+      "question": "What limitation does Mill identify in applying the harm principle?",
+      "answers": {
+        "A": "Harm is always easy to define precisely",
+        "B": "The harm principle allows unlimited restriction of liberty",
+        "C": "Mill believed no actions should ever be limited",
+        "D": "Determining what constitutes genuine harm versus mere offense can be complex"
+      },
+      "correct": "D"
+    },
+    {
+      "question": "Why is positive cash flow insufficient to guarantee business survival?",
+      "answers": {
+        "A": "Cash flow is the only metric that matters",
+        "B": "Positive cash flow guarantees permanent success",
+        "C": "Companies need adequate cash flow relative to obligations, with timing matching needs",
+        "D": "Negative cash flow is always preferable"
+      },
+      "correct": "C"
+    },
+    {
+      "question": "How does Aristotle's doctrine of the mean avoid relativism?",
+      "answers": {
+        "A": "The mean is always the mathematical midpoint between extremes",
+        "B": "Aristotle embraced complete moral relativism",
+        "C": "The doctrine of the mean applies only to mathematics",
+        "D": "Virtue is relative to the individual and circumstances but guided by practical wisdom, not arbitrary"
+      },
+      "correct": "D"
+    },
+    {
+      "question": "What distinguishes stakeholders from shareholders in corporate governance?",
+      "answers": {
+        "A": "The terms are interchangeable",
+        "B": "Only shareholders matter in business decisions",
+        "C": "Stakeholders have no legitimate claims on corporations",
+        "D": "Shareholders own equity; stakeholders include all parties affected by the business"
+      },
+      "correct": "D"
+    },
+    {
+      "question": "How do theodicies attempt to resolve the problem of evil?",
+      "answers": {
+        "A": "By denying evil exists",
+        "B": "By proving God does not exist",
+        "C": "The problem of evil is unsolvable by definition",
+        "D": "By explaining how evil might be compatible with divine attributes through free will or soul-building"
+      },
+      "correct": "D"
+    },
+    {
+      "question": "What determines the appropriate depreciation method for an asset?",
+      "answers": {
+        "A": "All assets must use identical depreciation methods",
+        "B": "Depreciation methods are chosen randomly",
+        "C": "Only the straight-line method is permitted",
+        "D": "The pattern of economic benefit consumption and asset type"
+      },
+      "correct": "D"
+    },
+    {
+      "question": "What criticism led to the decline of logical positivism?",
+      "answers": {
+        "A": "The verification principle itself appears neither empirically verifiable nor logically necessary",
+        "B": "Logical positivism was never criticized",
+        "C": "It succeeded in verifying all meaningful statements",
+        "D": "The movement ended due to historical accidents, not philosophical problems"
+      },
+      "correct": "A"
+    },
+    {
+      "question": "How does market share relate to profitability?",
+      "answers": {
+        "A": "Market share and profitability always move in perfect correlation",
+        "B": "Market share has no relationship to financial performance",
+        "C": "Companies should always maximize market share regardless of profitability",
+        "D": "High market share can enable economies of scale, but low-margin share may be unprofitable"
+      },
+      "correct": "D"
+    },
+    {
+      "question": "What tension exists within Spinoza's monist system regarding individual agency?",
+      "answers": {
+        "A": "Spinoza's system has no internal tensions",
+        "B": "Spinoza explicitly rejected any form of causation",
+        "C": "Monism and individual agency are obviously compatible",
+        "D": "If everything is one substance following necessity, explaining human freedom and responsibility is challenging"
+      },
+      "correct": "D"
+    },
+    {
+      "question": "What risks does outsourcing introduce despite potential cost savings?",
+      "answers": {
+        "A": "Outsourcing eliminates all business risks",
+        "B": "Outsourcing only has benefits without any drawbacks",
+        "C": "Outsourcing is illegal in most jurisdictions",
+        "D": "Loss of control over quality, intellectual property risks, and coordination challenges"
+      },
+      "correct": "D"
+    },
+    {
+      "question": "How does the Frankfurt School's critique apply to modern corporate management?",
+      "answers": {
+        "A": "Instrumental reason has no relevance to business",
+        "B": "The Frankfurt School endorsed instrumental rationality completely",
+        "C": "The critique only applies to government, not corporations",
+        "D": "Narrow focus on efficiency metrics can neglect meaningful work and human flourishing"
+      },
+      "correct": "D"
+    },
+    {
+      "question": "What makes venture capital different from traditional debt financing?",
+      "answers": {
+        "A": "Venture capital provides loans with interest payments",
+        "B": "Venture capital and debt financing are identical",
+        "C": "Venture capital only funds established corporations",
+        "D": "Venture capital takes equity stakes expecting high returns from growth, accepting higher risk"
+      },
+      "correct": "D"
+    },
+    {
+      "question": "How does Kierkegaard's leap of faith relate to his critique of Hegelian rationalism?",
+      "answers": {
+        "A": "Kierkegaard believed everything could be rationally proven",
+        "B": "Kierkegaard fully accepted Hegel's philosophical system",
+        "C": "The leap of faith is a purely rational decision",
+        "D": "Religious commitment requires passionate subjective choice beyond objective rational systems"
+      },
+      "correct": "D"
+    },
+    {
+      "question": "What strategic advantage comes from supply chain integration?",
+      "answers": {
+        "A": "Supply chains should never be integrated",
+        "B": "Integration always increases costs without benefits",
+        "C": "Supply chain management only matters for retailers",
+        "D": "Better coordination can reduce costs, improve responsiveness, and enhance quality control"
+      },
+      "correct": "D"
+    },
+    {
+      "question": "How does Heidegger's Being-toward-death enable authentic existence?",
+      "answers": {
+        "A": "Awareness of mortality helps one live according to genuine possibilities rather than social conformity",
+        "B": "Being-toward-death means avoiding all thoughts of mortality",
+        "C": "Heidegger believed death was irrelevant to how we live",
+        "D": "Authentic existence requires ignoring one's finitude"
+      },
+      "correct": "A"
+    },
+    {
+      "question": "What tensions can arise between CSR initiatives and fiduciary duties to shareholders?",
+      "answers": {
+        "A": "CSR and shareholder interests always perfectly align",
+        "B": "CSR is legally prohibited in all jurisdictions",
+        "C": "Shareholders universally oppose all CSR activities",
+        "D": "Social investments may reduce short-term profits, raising questions about managerial obligations"
+      },
+      "correct": "D"
+    }
+  ]
+}

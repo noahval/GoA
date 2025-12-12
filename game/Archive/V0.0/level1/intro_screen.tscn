@@ -1,0 +1,71 @@
+[gd_scene load_steps=4 format=3 uid="uid://crrnf428pod80"]
+
+[ext_resource type="Texture2D" uid="uid://c3c3jf1kxg8ab" path="res://level1/intro.jpg" id="1_intro"]
+[ext_resource type="Script" uid="uid://binq7opgvqapl" path="res://level1/intro_screen.gd" id="2_script"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_vqmvq"]
+font_size = 35
+font_color = Color(1, 0.5134818, 0.32398444, 1)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_transparent"]
+
+[node name="IntroScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("2_script")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 1)
+
+[node name="IntroImage" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("1_intro")
+expand_mode = 2
+
+[node name="FadeOverlay" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 1)
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+
+[node name="Text" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -50.0
+offset_right = 200.0
+offset_bottom = 50.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/normal = SubResource("StyleBoxEmpty_transparent")
+text = "You wake for another
+day of shoveling coal.
+But today feels different"
+label_settings = SubResource("LabelSettings_vqmvq")
+horizontal_alignment = 1
+vertical_alignment = 1

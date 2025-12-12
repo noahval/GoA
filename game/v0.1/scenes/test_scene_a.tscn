@@ -1,0 +1,53 @@
+[gd_scene load_steps=2 format=3 uid="uid://test_scene_a"]
+
+[ext_resource type="Script" path="res://scenes/test_scene_a.gd" id="1"]
+
+[node name="TestSceneA" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.2, 0.3, 0.5, 1)
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+text = "Test Scene A"
+horizontal_alignment = 1
+
+[node name="GoToB" type="Button" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+text = "Go to Scene B"
+
+[node name="GoBack" type="Button" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+text = "Go Back"
+
+[node name="TestError" type="Button" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+text = "Test Error Recovery (Invalid Scene)"
+
+[connection signal="pressed" from="CenterContainer/VBoxContainer/GoToB" to="." method="_on_go_to_b_pressed"]
+[connection signal="pressed" from="CenterContainer/VBoxContainer/GoBack" to="." method="_on_go_back_pressed"]
+[connection signal="pressed" from="CenterContainer/VBoxContainer/TestError" to="." method="_on_test_error_pressed"]

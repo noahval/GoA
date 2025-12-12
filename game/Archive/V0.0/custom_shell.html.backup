@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
+	<title>GoA</title>
+	<style>
+		body {
+			margin: 0;
+			padding: 0;
+			background-color: #000000;
+			overflow: hidden;
+		}
+		#canvas {
+			display: block;
+			margin: 0;
+			color: white;
+		}
+		#canvas:focus {
+			outline: none;
+		}
+		#status {
+			position: absolute;
+			left: 0;
+			top: 0;
+			right: 0;
+			bottom: 0;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			flex-direction: column;
+			background-color: #000000;
+		}
+		#status-splash {
+			max-width: 100%;
+			max-height: 100%;
+			width: 100%;
+			height: 100%;
+			object-fit: contain;
+		}
+		#status-splash img {
+			max-width: 90%;
+			max-height: 90%;
+			object-fit: contain;
+		}
+		#status-progress {
+			width: 50%;
+			height: 10px;
+			background-color: #333333;
+			border-radius: 5px;
+			margin-top: 20px;
+			overflow: hidden;
+		}
+		#status-progress-inner {
+			height: 100%;
+			width: 0%;
+			background-color: #9d4edd;
+			transition: width 0.3s;
+		}
+		#status.hidden {
+			display: none;
+		}
+		#start-overlay {
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			background-color: rgba(0, 0, 0, 0.9);
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			z-index: 10000;
+			cursor: pointer;
+		}
+		#start-overlay.hidden {
+			display: none;
+		}
+		#start-button {
+			max-width: 90%;
+			max-height: 90%;
+			object-fit: contain;
+			cursor: pointer;
+		}
+	</style>
+</head>
+<body>
+	<div id="start-overlay">
+		<img id="start-button" src="level1/begin.jpg" alt="Click to Start">
+	</div>
+	<canvas id="canvas">
+		Your browser does not support the canvas tag.
+	</canvas>
+	<div id="status">
+		<video id="status-splash" autoplay loop muted playsinline style="max-width: 90%; max-height: 90%; object-fit: contain;">
+			<source src="level1/title.webm" type="video/webm">
+			<img src="level1/Title.jpg" alt="Loading..." onerror="this.style.display='none'">
+		</video>
+		<div id="status-progress">
+			<div id="status-progress-inner"></div>
+		</div>
+	</div>
+
+	<script src="$GODOT_URL"></script>
+	<script>
+		const GODOT_CONFIG = $GODOT_CONFIG;
+		const engine = new Engine(GODOT_CONFIG);
+
+		const statusElement = document.getElementById('status');
+		const statusProgressInner = document.getElementById('status-progress-inner');
+		const video = document.getElementById('status-splash');
+		const startOverlay = document.getElementById('start-overlay');
+		const startButton = document.getElementById('start-button');
+
+		let gameStarted = false;
+		let preloadComplete = false;
+		let startTime = 0;
+
+		// Preload the engine before user interaction
+		(async function() {
+			try {
+				await engine.preloadFile('GoA.pck');
+				preloadComplete = true;
+			} catch (e) {
+				console.log('Preload skipped or failed:', e);
+				preloadComplete = true; // Continue anyway
+			}
+		})();
+
+		// Handle start button click
+		const startGame = () => {
+			if (gameStarted) return;
+			gameStarted = true;
+			startTime = Date.now();
+
+			// Hide the start overlay
+			startOverlay.classList.add('hidden');
+
+			// Start playing the video
+			if (video && video.tagName === 'VIDEO') {
+				video.play().catch(e => console.log('Video play error:', e));
+			}
+
+			// Start the engine
+			engine.startGame({
+				'onProgress': function (current, total) {
+					console.log('Progress callback:', current, '/', total);
+					if (total > 0) {
+						const progress = (current / total * 100);
+						statusProgressInner.style.width = progress + '%';
+						console.log('Loading progress:', progress.toFixed(1) + '%');
+					} else {
+						// If total is 0 or unknown, show indeterminate progress
+						const elapsed = Date.now() - startTime;
+						const fakeProgress = Math.min(90, (elapsed / 20)); // Faster progress, cap at 90% until complete
+						statusProgressInner.style.width = fakeProgress + '%';
+					}
+				}
+			}).then(() => {
+				console.log('Game loaded, setting progress to 100%');
+				// Set to 100% when complete
+				statusProgressInner.style.width = '100%';
+				// Keep video playing for 3 seconds after loading, then hide
+				setTimeout(() => {
+					statusElement.classList.add('hidden');
+				}, 3000);
+			}, (err) => {
+				console.error(err);
+				statusElement.innerHTML = '<p style="color: red;">Error: ' + err.message + '</p>';
+			});
+		};
+
+		// Add click handlers for start button
+		startButton.addEventListener('click', startGame);
+		startOverlay.addEventListener('click', startGame);
+	</script>
+</body>
+</html>

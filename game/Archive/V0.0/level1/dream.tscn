@@ -1,0 +1,63 @@
+[gd_scene load_steps=4 format=3 uid="uid://c2qus2204pgky"]
+
+[ext_resource type="PackedScene" path="res://level1/scene_template.tscn" id="1_base"]
+[ext_resource type="Script" uid="uid://covx5m8lhrp3h" path="res://level1/dream.gd" id="2_script"]
+[ext_resource type="Texture2D" uid="uid://lpei21lrh7e0" path="res://level1/dream.jpg" id="3_texture"]
+
+[node name="Dream" instance=ExtResource("1_base")]
+script = ExtResource("2_script")
+
+[node name="Background" parent="." index="0"]
+texture = ExtResource("3_texture")
+
+[node name="TitlePanel" type="Panel" parent="HBoxContainer/LeftVBox" index="0"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="HBoxContainer/LeftVBox/TitlePanel" index="0"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Dream"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="StaminaPanel" type="Panel" parent="HBoxContainer/LeftVBox" index="1"]
+theme_type_variation = &"ProgressPanel"
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+
+[node name="StaminaBar" type="ProgressBar" parent="HBoxContainer/LeftVBox/StaminaPanel" index="0"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+value = 100.0
+show_percentage = false
+
+[node name="StaminaLabel" type="Label" parent="HBoxContainer/LeftVBox/StaminaPanel" index="1"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Stamina"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BackButton" type="Button" parent="HBoxContainer/RightVBox" index="0"]
+layout_mode = 2
+text = "Try to Wake Up"
+
+[node name="WillpowerButton" type="Button" parent="HBoxContainer/RightVBox" index="1"]
+layout_mode = 2
+text = "Dream of Willpower"
+
+[connection signal="pressed" from="HBoxContainer/RightVBox/BackButton" to="." method="_on_back_button_pressed"]
+[connection signal="pressed" from="HBoxContainer/RightVBox/WillpowerButton" to="." method="_on_willpower_button_pressed"]

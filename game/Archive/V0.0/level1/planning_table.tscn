@@ -1,0 +1,104 @@
+[gd_scene load_steps=4 format=3 uid="uid://dd0mrwbnv8jnk"]
+
+[ext_resource type="PackedScene" path="res://level1/scene_template.tscn" id="1_base"]
+[ext_resource type="Script" uid="uid://1vxrmtrokvy5" path="res://level1/planning_table.gd" id="2_script"]
+[ext_resource type="Texture2D" uid="uid://be0rm3txsqqyb" path="res://level1/planning_table.jpg" id="3_texture"]
+
+[node name="PlanningTable" instance=ExtResource("1_base")]
+script = ExtResource("2_script")
+
+[node name="Background" parent="." index="0"]
+texture = ExtResource("3_texture")
+
+[node name="TitlePanel" type="Panel" parent="HBoxContainer/LeftVBox" index="0"]
+custom_minimum_size = Vector2(0, 24)
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="HBoxContainer/LeftVBox/TitlePanel" index="0"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Planning Table"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BreakTimerPanel" type="Panel" parent="HBoxContainer/LeftVBox" index="1"]
+theme_type_variation = &"ProgressPanel"
+custom_minimum_size = Vector2(0, 24)
+layout_mode = 2
+
+[node name="BreakTimerBar" type="ProgressBar" parent="HBoxContainer/LeftVBox/BreakTimerPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+value = 100.0
+show_percentage = false
+
+[node name="BreakTimer" type="Label" parent="HBoxContainer/LeftVBox/BreakTimerPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Break Timer"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="StolenCoalPanel" type="Panel" parent="HBoxContainer/LeftVBox" index="2"]
+custom_minimum_size = Vector2(0, 24)
+layout_mode = 2
+
+[node name="StolenCoalLabel" type="Label" parent="HBoxContainer/LeftVBox/StolenCoalPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Stolen Coal: 0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="StolenWritsPanel" type="Panel" parent="HBoxContainer/LeftVBox" index="3"]
+custom_minimum_size = Vector2(0, 24)
+layout_mode = 2
+
+[node name="StolenWritsLabel" type="Label" parent="HBoxContainer/LeftVBox/StolenWritsPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Stolen Writs: 0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="MechanismsPanel" type="Panel" parent="HBoxContainer/LeftVBox" index="4"]
+custom_minimum_size = Vector2(0, 24)
+layout_mode = 2
+
+[node name="MechanismsLabel" type="Label" parent="HBoxContainer/LeftVBox/MechanismsPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Mechanisms: 0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BackToWorkshopButton" type="Button" parent="HBoxContainer/RightVBox" index="0"]
+layout_mode = 2
+theme_type_variation = &"BackNavButton"
+text = "Back to Workshop"
+
+[connection signal="pressed" from="HBoxContainer/RightVBox/BackToWorkshopButton" to="." method="_on_back_to_workshop_button_pressed"]

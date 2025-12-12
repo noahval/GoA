@@ -1,0 +1,52 @@
+name: Deploy Web Build to itch.io
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  export-and-deploy:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Godot
+        uses: chickensoft-games/setup-godot@v2
+        with:
+          version: 4.5.0
+          use-dotnet: false
+          include-templates: true
+
+      - name: Verify Godot installation
+        run: |
+          godot --version
+          godot --help
+
+      - name: Export for Web
+        run: |
+          mkdir -p build/web
+          cd game/v0.1
+          godot --headless --export-release "Web" ../../build/web/index.html
+
+      - name: Verify build output
+        run: |
+          ls -lah build/web/
+          echo "Build artifacts:"
+          find build/web -type f
+          du -sh build/web/*
+
+      - name: Install Butler
+        run: |
+          curl -L -o butler.zip https://broth.itch.zone/butler/linux-amd64/LATEST/archive/default
+          unzip butler.zip
+          chmod +x butler
+          ./butler -V
+
+      - name: Deploy to itch.io
+        env:
+          BUTLER_API_KEY: ${{ secrets.ITCH_API_KEY }}
+        run: |
+          ./butler push build/web ${{ secrets.ITCH_USER }}/${{ secrets.ITCH_GAME }}:html5 --userversion ${{ github.sha }}

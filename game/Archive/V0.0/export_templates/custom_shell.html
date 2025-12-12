@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
+	<title>GoA</title>
+	<style>
+		body {
+			margin: 0;
+			padding: 0;
+			background-color: #000000;
+			overflow: hidden;
+		}
+		#canvas {
+			display: block;
+			margin: 0;
+			color: white;
+		}
+		#status {
+			position: absolute;
+			left: 0;
+			top: 0;
+			right: 0;
+			bottom: 0;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			background-color: #000000;
+			color: white;
+			font-family: 'Noto Sans', 'Droid Sans', Arial, sans-serif;
+			font-size: 14px;
+			z-index: 9999;
+		}
+	</style>
+</head>
+<body>
+	<canvas id="canvas">
+		Your browser does not support the canvas element.
+	</canvas>
+
+	<div id="status">
+		<div id="status-progress" style="display: none;">
+			<div style="margin-bottom: 10px;">Loading...</div>
+			<div style="background-color: #333; padding: 2px;">
+				<div id="status-progress-inner" style="height: 20px; background-color: #4CAF50; width: 0%;"></div>
+			</div>
+		</div>
+		<div id="status-indeterminate" style="display: none;">
+			Loading...
+		</div>
+		<div id="status-notice" style="display: none;"></div>
+	</div>
+
+	<!-- Google Identity Services (GIS) Library - New API -->
+	<script src="https://accounts.google.com/gsi/client" async defer onload="onGoogleLibraryLoad()"></script>
+
+	<!-- Google Auth Integration - Inlined -->
+	<script>
+		// Google OAuth Integration for Godot Web Export
+		// This script handles Google Sign-In and passes the ID token to Godot
+		// Uses Google Identity Services (GIS) - the new Google Sign-In API
+
+		// Replace with your actual Google Client ID from Google Cloud Console
+		const GOOGLE_CLIENT_ID = '576123704732-193gub53ckjq33a3fqik3d3pcvagkde2.apps.googleusercontent.com';
+
+		let googleInitialized = false;
+
+		// Initialize Google Identity Services
+		function initGoogleSignIn() {
+			console.log('[GoogleAuth] Initializing Google Identity Services...');
+
+			// Check if google.accounts is available
+			if (typeof google === 'undefined' || !google.accounts) {
+				console.error('[GoogleAuth] Google Identity Services library not loaded');
+				// Retry after a delay
+				setTimeout(initGoogleSignIn, 500);
+				return;
+			}
+
+			try {
+				// Initialize the Google Identity Services
+				google.accounts.id.initialize({
+					client_id: GOOGLE_CLIENT_ID,
+					callback: handleCredentialResponse,
+					auto_select: false,
+					cancel_on_tap_outside: true
+				});
+
+				googleInitialized = true;
+				console.log('[GoogleAuth] Google Identity Services initialized successfully');
+			} catch (error) {
+				console.error('[GoogleAuth] Failed to initialize:', error);
+			}
+		}
+
+		// Handle the credential response from Google
+		function handleCredentialResponse(response) {
+			console.log('[GoogleAuth] Sign-in successful');
+			console.log('[GoogleAuth] Received credential response');
+
+			// The response.credential contains the JWT ID token
+			const idToken = response.credential;
+
+			// Send token to Godot
+			if (window.godotGoogleAuthCallback) {
+				window.godotGoogleAuthCallback(idToken);
+			} else {
+				console.error('[GoogleAuth] Godot callback not found');
+			}
+		}
+
+		// Trigger Google Sign-In flow using popup
+		function signInWithGoogle() {
+			console.log('[GoogleAuth] Starting Google Sign-In flow...');
+
+			if (!googleInitialized) {
+				console.error('[GoogleAuth] Google Auth not initialized yet');
+				if (window.godotGoogleAuthErrorCallback) {
+					window.godotGoogleAuthErrorCallback('Google Auth not initialized. Please wait and try again.');
+				}
+				return;
+			}
+
+			try {
+				// Use the new popup method
+				google.accounts.id.prompt((notification) => {
+					console.log('[GoogleAuth] Prompt notification:', notification);
+
+					if (notification.isNotDisplayed()) {
+						console.log('[GoogleAuth] Prompt not displayed, reason:', notification.getNotDisplayedReason());
+						// Fallback: Try the direct popup method
+						triggerDirectSignIn();
+					} else if (notification.isSkippedMoment()) {
+						console.log('[GoogleAuth] User skipped the prompt');
+						if (window.godotGoogleAuthErrorCallback) {
+							window.godotGoogleAuthErrorCallback('Sign-in cancelled');
+						}
+					} else if (notification.isDismissedMoment()) {
+						console.log('[GoogleAuth] User dismissed the prompt');
+						if (window.godotGoogleAuthErrorCallback) {
+							window.godotGoogleAuthErrorCallback('Sign-in cancelled');
+						}
+					}
+				});
+			} catch (error) {
+				console.error('[GoogleAuth] Sign-in failed:', error);
+				if (window.godotGoogleAuthErrorCallback) {
+					window.godotGoogleAuthErrorCallback(error.message || 'Sign-in failed');
+				}
+			}
+		}
+
+		// Fallback method using OAuth 2.0 popup
+		function triggerDirectSignIn() {
+			console.log('[GoogleAuth] Using fallback OAuth popup method');
+
+			const client = google.accounts.oauth2.initTokenClient({
+				client_id: GOOGLE_CLIENT_ID,
+				scope: 'profile email',
+				callback: (response) => {
+					if (response.error) {
+						console.error('[GoogleAuth] OAuth error:', response.error);
+						if (window.godotGoogleAuthErrorCallback) {
+							window.godotGoogleAuthErrorCallback(response.error);
+						}
+						return;
+					}
+
+					// For OAuth2, we get an access token, not an ID token
+					// We need to exchange it or use the ID token flow instead
+					console.log('[GoogleAuth] OAuth response received');
+
+					// This is a fallback - ideally the prompt() method should work
+					if (window.godotGoogleAuthCallback) {
+						// Note: This returns an access token, not an ID token
+						// For Nakama, we need an ID token, so this is not ideal
+						console.warn('[GoogleAuth] Using access token as fallback - may not work with Nakama');
+						window.godotGoogleAuthCallback(response.access_token);
+					}
+				}
+			});
+
+			client.requestAccessToken();
+		}
+
+		// Sign out
+		function signOutGoogle() {
+			if (googleInitialized) {
+				google.accounts.id.disableAutoSelect();
+				console.log('[GoogleAuth] Signed out');
+			}
+		}
+
+		// Initialize when the Google library loads
+		function onGoogleLibraryLoad() {
+			console.log('[GoogleAuth] Google library loaded, initializing...');
+			initGoogleSignIn();
+		}
+
+		// Try to initialize immediately if library is already loaded
+		if (typeof google !== 'undefined' && google.accounts) {
+			initGoogleSignIn();
+		} else {
+			// Wait for library to load
+			window.addEventListener('load', function() {
+				setTimeout(initGoogleSignIn, 500);
+			});
+		}
+	</script>
+
+	<!-- Godot Engine -->
+	<script src="$GODOT_BASENAME.js"></script>
+	<script>
+		const GODOT_CONFIG = $GODOT_CONFIG;
+		const engine = new Engine(GODOT_CONFIG);
+
+		(function() {
+			const statusProgress = document.getElementById('status-progress');
+			const statusProgressInner = document.getElementById('status-progress-inner');
+			const statusIndeterminate = document.getElementById('status-indeterminate');
+			const statusNotice = document.getElementById('status-notice');
+
+			let initializing = true;
+			let statusMode = 'hidden';
+
+			function setStatusMode(mode) {
+				if (statusMode === mode || !initializing) {
+					return;
+				}
+				[statusProgress, statusIndeterminate, statusNotice].forEach((elem) => {
+					elem.style.display = 'none';
+				});
+				switch (mode) {
+					case 'progress':
+						statusProgress.style.display = 'block';
+						break;
+					case 'indeterminate':
+						statusIndeterminate.style.display = 'block';
+						break;
+					case 'notice':
+						statusNotice.style.display = 'block';
+						break;
+					default:
+						break;
+				}
+				statusMode = mode;
+			}
+
+			function setStatusNotice(text) {
+				while (statusNotice.lastChild) {
+					statusNotice.removeChild(statusNotice.lastChild);
+				}
+				const lines = text.split('\n');
+				lines.forEach((line) => {
+					statusNotice.appendChild(document.createTextNode(line));
+					statusNotice.appendChild(document.createElement('br'));
+				});
+			}
+
+			function displayFailureNotice(err) {
+				console.error(err);
+				if (err instanceof Error) {
+					setStatusNotice(err.message);
+				} else if (typeof err === 'string') {
+					setStatusNotice(err);
+				} else {
+					setStatusNotice('An unknown error occurred');
+				}
+				setStatusMode('notice');
+				initializing = false;
+			}
+
+			if (!Engine.isWebGLAvailable()) {
+				displayFailureNotice('WebGL not available');
+			} else {
+				setStatusMode('indeterminate');
+				engine.startGame({
+					'onProgress': function(current, total) {
+						if (current > 0 && total > 0) {
+							setStatusMode('progress');
+							statusProgressInner.style.width = (current / total * 100) + '%';
+							setStatusMode('indeterminate');
+						}
+					}
+				}).then(() => {
+					setStatusMode('hidden');
+					initializing = false;
+
+					// Setup Godot <-> JavaScript bridge for Google Auth
+					setupGodotGoogleBridge();
+
+				}, displayFailureNotice);
+			}
+		})();
+
+		// Setup bridge between Godot and Google Auth
+		function setupGodotGoogleBridge() {
+			console.log('[Bridge] Setting up Godot-Google bridge...');
+
+			// Expose function that Godot can call
+			window.triggerGoogleSignIn = function() {
+				console.log('[Bridge] Godot requested Google Sign-In');
+				signInWithGoogle();
+			};
+
+			// Callback for successful authentication
+			window.godotGoogleAuthCallback = function(idToken) {
+				console.log('[Bridge] Sending ID token to Godot');
+
+				// Call Godot function via JavaScriptBridge
+				if (window.godot && window.godot.GodotWebAuth) {
+					window.godot.GodotWebAuth.on_google_token_received(idToken);
+				} else {
+					console.error('[Bridge] Godot WebAuth interface not found');
+				}
+			};
+
+			// Callback for authentication errors
+			window.godotGoogleAuthErrorCallback = function(error) {
+				console.log('[Bridge] Sending auth error to Godot');
+
+				if (window.godot && window.godot.GodotWebAuth) {
+					window.godot.GodotWebAuth.on_google_auth_failed(error);
+				}
+			};
+
+			console.log('[Bridge] Bridge setup complete');
+		}
+	</script>
+</body>
+</html>

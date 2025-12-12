@@ -1,0 +1,91 @@
+[gd_scene load_steps=6 format=3 uid="uid://atm_scene"]
+
+[ext_resource type="PackedScene" uid="uid://base_scene_template" path="res://level1/scene_template.tscn" id="1_base"]
+[ext_resource type="Script" path="res://level1/atm.gd" id="2_script"]
+[ext_resource type="Texture2D" path="res://level1/atm.jpg" id="3_texture"]
+[ext_resource type="Script" path="res://currency_panel.gd" id="currency_panel_script"]
+[ext_resource type="PackedScene" path="res://level1/atm_exchange_popup.tscn" id="5_exchange_popup"]
+
+[node name="ATM" instance=ExtResource("1_base")]
+script = ExtResource("2_script")
+
+[node name="Background" parent="." index="0"]
+texture = ExtResource("3_texture")
+
+[node name="MarketRatesPanel" type="Panel" parent="HBoxContainer/LeftVBox" index="0"]
+custom_minimum_size = Vector2(0, 220)
+layout_mode = 2
+size_flags_vertical = 0
+z_index = 0
+metadata/_responsive_layout_preserve_height = true
+
+[node name="MarginContainer" type="MarginContainer" parent="HBoxContainer/LeftVBox/MarketRatesPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 5
+
+[node name="RatesVBox" type="VBoxContainer" parent="HBoxContainer/LeftVBox/MarketRatesPanel/MarginContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="BreakTimerPanel" type="Panel" parent="HBoxContainer/LeftVBox" index="1"]
+theme_type_variation = &"ProgressPanel"
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+size_flags_vertical = 0
+clip_contents = true
+z_index = 0
+
+[node name="BreakTimerBar" type="ProgressBar" parent="HBoxContainer/LeftVBox/BreakTimerPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+value = 100.0
+show_percentage = false
+z_index = 0
+
+[node name="BreakTimer" type="Label" parent="HBoxContainer/LeftVBox/BreakTimerPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Break Timer"
+horizontal_alignment = 1
+vertical_alignment = 1
+z_index = 1
+
+[node name="CoinsPanel" type="Panel" parent="HBoxContainer/LeftVBox" index="2"]
+self_modulate = Color(1, 1, 1, 0.7)
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+size_flags_vertical = 0
+z_index = 0
+script = ExtResource("currency_panel_script")
+vertical_alignment = 1
+
+[node name="ToCoppersmithCarriageButton" type="Button" parent="HBoxContainer/RightVBox" index="0"]
+layout_mode = 2
+theme_type_variation = &"BackNavButton"
+text = "To Coppersmith Carriage Hall"
+
+[node name="DevFreeCurrencyButton" type="Button" parent="HBoxContainer/RightVBox" index="1"]
+layout_mode = 2
+text = "Developer: free S+G"
+visible = false
+
+[node name="ExchangePopup" parent="." instance=ExtResource("5_exchange_popup")]
+
+[connection signal="pressed" from="HBoxContainer/RightVBox/ToCoppersmithCarriageButton" to="." method="_on_to_coppersmith_carriage_button_pressed"]
+[connection signal="pressed" from="HBoxContainer/RightVBox/DevFreeCurrencyButton" to="." method="_on_dev_free_currency_button_pressed"]

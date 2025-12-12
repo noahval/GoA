@@ -1,0 +1,337 @@
+[gd_scene load_steps=8 format=3 uid="uid://skill_scene"]
+
+[ext_resource type="Script" path="res://level1/skill.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://level1/Dorm.jpg" id="2_texture"]
+[ext_resource type="Script" path="res://level1/skill_tree_canvas.gd" id="3_skill_tree"]
+[ext_resource type="Texture2D" path="res://level1/skill_placeholder.png" id="4_skill_icon"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_scrollbar"]
+bg_color = Color(0.8, 0.4, 0.1, 0.3)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_grabber"]
+bg_color = Color(0.8, 0.4, 0.1, 0.3)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_grabber_hover"]
+bg_color = Color(0.8, 0.4, 0.1, 0.5)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[node name="Skill" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="Background" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_texture")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="HeaderBar" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 60.0
+grow_horizontal = 2
+
+[node name="BreakTimerPanel" type="Panel" parent="HeaderBar"]
+theme_type_variation = &"ProgressPanel"
+custom_minimum_size = Vector2(200, 50)
+layout_mode = 2
+
+[node name="BreakTimerBar" type="ProgressBar" parent="HeaderBar/BreakTimerPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+value = 100.0
+show_percentage = false
+
+[node name="BreakTimer" type="Label" parent="HeaderBar/BreakTimerPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Break Timer"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="TitleLabel" type="Label" parent="HeaderBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Reputation Skills"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ReputationLabel" type="Label" parent="HeaderBar"]
+layout_mode = 2
+text = "Reputation: 0"
+vertical_alignment = 1
+
+[node name="CloseButton" type="Button" parent="HeaderBar"]
+custom_minimum_size = Vector2(60, 60)
+layout_mode = 2
+text = "×"
+
+[node name="LandscapeContainer" type="HBoxContainer" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 60.0
+offset_bottom = -100.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="SkillTreePanel" type="Control" parent="LandscapeContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 0.7
+
+[node name="ScrollContainer" type="ScrollContainer" parent="LandscapeContainer/SkillTreePanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/scroll = SubResource("StyleBoxFlat_scrollbar")
+theme_override_styles/grabber = SubResource("StyleBoxFlat_grabber")
+theme_override_styles/grabber_highlight = SubResource("StyleBoxFlat_grabber_hover")
+theme_override_styles/grabber_pressed = SubResource("StyleBoxFlat_grabber_hover")
+horizontal_scroll_mode = 0
+
+[node name="SkillTreeCanvas" type="Control" parent="LandscapeContainer/SkillTreePanel/ScrollContainer"]
+custom_minimum_size = Vector2(750, 450)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+script = ExtResource("3_skill_tree")
+
+[node name="DetailPanel" type="Control" parent="LandscapeContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 0.3
+
+[node name="MarginContainer" type="MarginContainer" parent="LandscapeContainer/DetailPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="VBoxContainer" type="VBoxContainer" parent="LandscapeContainer/DetailPanel/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="SkillIconPanel" type="Panel" parent="LandscapeContainer/DetailPanel/MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 200)
+layout_mode = 2
+size_flags_vertical = 0
+
+[node name="SkillIcon" type="TextureRect" parent="LandscapeContainer/DetailPanel/MarginContainer/VBoxContainer/SkillIconPanel"]
+texture = ExtResource("4_skill_icon")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="SkillCostOverlay" type="Label" parent="LandscapeContainer/DetailPanel/MarginContainer/VBoxContainer/SkillIconPanel"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -60.0
+offset_right = -10.0
+offset_top = 10.0
+offset_bottom = 40.0
+grow_horizontal = 0
+text = "0"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="SkillName" type="Label" parent="LandscapeContainer/DetailPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "Select a skill"
+horizontal_alignment = 1
+
+[node name="PrerequisitesLabel" type="RichTextLabel" parent="LandscapeContainer/DetailPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "Prerequisites: None"
+autowrap_mode = 3
+bbcode_enabled = true
+fit_content = true
+scroll_active = false
+
+[node name="DescriptionLabel" type="Label" parent="LandscapeContainer/DetailPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "Click on a skill node to view details"
+autowrap_mode = 3
+
+[node name="CostLabel" type="Label" parent="LandscapeContainer/DetailPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "Reputation: 0"
+horizontal_alignment = 1
+
+[node name="PurchaseButton" type="Button" parent="LandscapeContainer/DetailPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_type_variation = &"PrimaryActionButton"
+text = "Purchase"
+
+[node name="Spacer" type="Control" parent="LandscapeContainer/DetailPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="PortraitContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 80.0
+offset_bottom = -100.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="SkillTreePanel" type="Control" parent="PortraitContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.6
+
+[node name="ScrollContainer" type="ScrollContainer" parent="PortraitContainer/SkillTreePanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/scroll = SubResource("StyleBoxFlat_scrollbar")
+theme_override_styles/grabber = SubResource("StyleBoxFlat_grabber")
+theme_override_styles/grabber_highlight = SubResource("StyleBoxFlat_grabber_hover")
+theme_override_styles/grabber_pressed = SubResource("StyleBoxFlat_grabber_hover")
+horizontal_scroll_mode = 0
+
+[node name="DetailPanel" type="Control" parent="PortraitContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.4
+
+[node name="MarginContainer" type="MarginContainer" parent="PortraitContainer/DetailPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PortraitContainer/DetailPanel/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="SkillIconPanel" type="Panel" parent="PortraitContainer/DetailPanel/MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 200)
+layout_mode = 2
+size_flags_vertical = 0
+
+[node name="SkillIcon" type="TextureRect" parent="PortraitContainer/DetailPanel/MarginContainer/VBoxContainer/SkillIconPanel"]
+texture = ExtResource("4_skill_icon")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="SkillCostOverlay" type="Label" parent="PortraitContainer/DetailPanel/MarginContainer/VBoxContainer/SkillIconPanel"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -60.0
+offset_right = -10.0
+offset_top = 10.0
+offset_bottom = 40.0
+grow_horizontal = 0
+text = "0"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="SkillName" type="Label" parent="PortraitContainer/DetailPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "Select a skill"
+horizontal_alignment = 1
+
+[node name="PrerequisitesLabel" type="RichTextLabel" parent="PortraitContainer/DetailPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "Prerequisites: None"
+autowrap_mode = 3
+bbcode_enabled = true
+fit_content = true
+scroll_active = false
+
+[node name="DescriptionLabel" type="Label" parent="PortraitContainer/DetailPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "Click on a skill node to view details"
+autowrap_mode = 3
+
+[node name="CostLabel" type="Label" parent="PortraitContainer/DetailPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "Reputation: 0"
+horizontal_alignment = 1
+
+[node name="PurchaseButton" type="Button" parent="PortraitContainer/DetailPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_type_variation = &"PrimaryActionButton"
+text = "Purchase"
+
+[node name="Spacer" type="Control" parent="PortraitContainer/DetailPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="NotificationBar" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -100.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[connection signal="pressed" from="HeaderBar/CloseButton" to="." method="_on_close_button_pressed"]
+[connection signal="pressed" from="LandscapeContainer/DetailPanel/MarginContainer/VBoxContainer/PurchaseButton" to="." method="_on_purchase_button_pressed"]
+[connection signal="pressed" from="PortraitContainer/DetailPanel/MarginContainer/VBoxContainer/PurchaseButton" to="." method="_on_purchase_button_pressed"]

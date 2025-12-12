@@ -1,0 +1,53 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="GoA"
+run/main_scene="res://level1/loading_screen.tscn"
+config/features=PackedStringArray("4.5", "GL Compatibility")
+boot_splash/bg_color=Color(0, 0, 0, 1)
+boot_splash/minimum_display_time=3000
+
+[autoload]
+
+Global="*res://global.gd"
+Level1Vars="*res://level1/level_1_vars.gd"
+ResponsiveLayout="*res://responsive_layout.gd"
+Nakama="*res://addons/com.heroiclabs.nakama/Nakama.gd"
+DebugLogger="*res://debug_logger.gd"
+NakamaManager="*res://nakama_client.gd"
+GodotWebAuth="*res://godot_web_auth.gd"
+LocalSaveManager="*res://local_save_manager.gd"
+OverseerMood="*res://level1/overseer_mood.gd"
+ButtonHierarchy="*res://button_hierarchy_config.gd"
+
+[display]
+
+window/size/viewport_width=450
+window/size/viewport_height=900
+window/size/resizable=true
+window/size/mode=0
+window/dpi/allow_hidpi=false
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+
+[gui]
+
+theme/custom="res://default_theme.tres"
+
+[network]
+
+ssl/certificates=""
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"

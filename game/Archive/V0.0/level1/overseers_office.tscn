@@ -1,0 +1,211 @@
+[gd_scene load_steps=6 format=3 uid="uid://b4q8x7nan2pls"]
+
+[ext_resource type="PackedScene" uid="uid://base_scene_template" path="res://level1/scene_template.tscn" id="1_base"]
+[ext_resource type="Script" uid="uid://dcqlw1fqjrlfm" path="res://level1/overseers_office.gd" id="2_script"]
+[ext_resource type="Texture2D" uid="uid://dsrnv7h3utneg" path="res://level1/overseers_office.jpg" id="3_bg"]
+[ext_resource type="PackedScene" uid="uid://reusable_popup" path="res://reusable_popup.tscn" id="4_popup"]
+[ext_resource type="Script" path="res://currency_panel.gd" id="currency_panel_script"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_DarkPanel"]
+content_margin_left = 20.0
+content_margin_top = 20.0
+content_margin_right = 20.0
+content_margin_bottom = 20.0
+bg_color = Color(0.25, 0.25, 0.25, 0.15)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.6, 0.6, 0.6, 0.5)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+shadow_color = Color(0, 0, 0, 0.1)
+shadow_size = 8
+shadow_offset = Vector2(0, 4)
+
+[node name="OverseersOffice" instance=ExtResource("1_base")]
+script = ExtResource("2_script")
+
+[node name="Background" parent="." index="0"]
+texture = ExtResource("3_bg")
+
+[node name="TitlePanel" type="Panel" parent="HBoxContainer/LeftVBox" index="0"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="HBoxContainer/LeftVBox/TitlePanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Overseer's Office"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BreakTimerPanel" type="Panel" parent="HBoxContainer/LeftVBox" index="1"]
+theme_type_variation = &"ProgressPanel"
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+
+[node name="BreakTimerBar" type="ProgressBar" parent="HBoxContainer/LeftVBox/BreakTimerPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+value = 100.0
+show_percentage = false
+
+[node name="BreakTimer" type="Label" parent="HBoxContainer/LeftVBox/BreakTimerPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Break Timer"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="SuspicionPanel" type="Panel" parent="HBoxContainer/LeftVBox" index="2"]
+theme_type_variation = &"ProgressPanel"
+visible = false
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+
+[node name="SuspicionBar" type="ProgressBar" parent="HBoxContainer/LeftVBox/SuspicionPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_type_variation = "SuspicionProgressBar"
+show_percentage = false
+
+[node name="SuspicionLabel" type="Label" parent="HBoxContainer/LeftVBox/SuspicionPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Suspicion"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CoinsPanel" type="Panel" parent="HBoxContainer/LeftVBox" index="3"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+script = ExtResource("currency_panel_script")
+vertical_alignment = 1
+
+[node name="TalkButton" type="Button" parent="HBoxContainer/RightVBox" index="0"]
+visible = false
+layout_mode = 2
+text = "Talk"
+
+[node name="StealWritButton" type="Button" parent="HBoxContainer/RightVBox" index="1"]
+visible = false
+layout_mode = 2
+text = "Steal Writ of Passage"
+
+[node name="AskCoinSlotButton" type="Button" parent="HBoxContainer/RightVBox" index="2"]
+visible = false
+layout_mode = 2
+text = "Ask about Coin Allocation Machine"
+
+[node name="OvertimeButton" type="Button" parent="HBoxContainer/RightVBox" index="3"]
+layout_mode = 2
+text = "Negotiate Overtime"
+
+[node name="BackButton" type="Button" parent="HBoxContainer/RightVBox" index="4"]
+layout_mode = 2
+theme_type_variation = &"BackNavButton"
+text = "To Coppersmith Carriage Hall"
+
+[node name="ConfirmationPopup" parent="PopupContainer" instance=ExtResource("4_popup")]
+
+[node name="TalkQuestionsPopup" type="Panel" parent="PopupContainer"]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -300.0
+offset_top = -150.0
+offset_right = 300.0
+offset_bottom = 150.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_type_variation = &"StyledPopup"
+theme_override_styles/panel = SubResource("StyleBoxFlat_DarkPanel")
+
+[node name="MarginContainer" type="MarginContainer" parent="PopupContainer/TalkQuestionsPopup"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="ScrollContainer" type="ScrollContainer" parent="PopupContainer/TalkQuestionsPopup/MarginContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+follow_focus = true
+horizontal_scroll_mode = 0
+
+[node name="QuizVBox" type="VBoxContainer" parent="PopupContainer/TalkQuestionsPopup/MarginContainer/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"PopupVBox"
+
+[node name="QuestionLabel" type="Label" parent="PopupContainer/TalkQuestionsPopup/MarginContainer/ScrollContainer/QuizVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+text = "Loading question..."
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="AnswerA" type="Button" parent="PopupContainer/TalkQuestionsPopup/MarginContainer/ScrollContainer/QuizVBox"]
+layout_mode = 2
+theme_type_variation = &"PopupButton"
+text = "A) Loading..."
+
+[node name="AnswerB" type="Button" parent="PopupContainer/TalkQuestionsPopup/MarginContainer/ScrollContainer/QuizVBox"]
+layout_mode = 2
+theme_type_variation = &"PopupButton"
+text = "B) Loading..."
+
+[node name="AnswerC" type="Button" parent="PopupContainer/TalkQuestionsPopup/MarginContainer/ScrollContainer/QuizVBox"]
+layout_mode = 2
+theme_type_variation = &"PopupButton"
+text = "C) Loading..."
+
+[node name="AnswerD" type="Button" parent="PopupContainer/TalkQuestionsPopup/MarginContainer/ScrollContainer/QuizVBox"]
+layout_mode = 2
+theme_type_variation = &"PopupButton"
+text = "D) Loading..."
+
+[connection signal="pressed" from="HBoxContainer/RightVBox/TalkButton" to="." method="_on_talk_button_pressed"]
+[connection signal="pressed" from="HBoxContainer/RightVBox/StealWritButton" to="." method="_on_steal_writ_button_pressed"]
+[connection signal="pressed" from="HBoxContainer/RightVBox/AskCoinSlotButton" to="." method="_on_ask_coin_slot_button_pressed"]
+[connection signal="pressed" from="HBoxContainer/RightVBox/BackButton" to="." method="_on_back_button_pressed"]
+[connection signal="button_pressed" from="PopupContainer/ConfirmationPopup" to="." method="_on_confirmation_popup_button_pressed"]
+[connection signal="pressed" from="PopupContainer/TalkQuestionsPopup/MarginContainer/ScrollContainer/QuizVBox/AnswerA" to="." method="_on_answer_selected" binds= ["A"]]
+[connection signal="pressed" from="PopupContainer/TalkQuestionsPopup/MarginContainer/ScrollContainer/QuizVBox/AnswerB" to="." method="_on_answer_selected" binds= ["B"]]
+[connection signal="pressed" from="PopupContainer/TalkQuestionsPopup/MarginContainer/ScrollContainer/QuizVBox/AnswerC" to="." method="_on_answer_selected" binds= ["C"]]
+[connection signal="pressed" from="PopupContainer/TalkQuestionsPopup/MarginContainer/ScrollContainer/QuizVBox/AnswerD" to="." method="_on_answer_selected" binds= ["D"]]

@@ -1,0 +1,34 @@
+# Godot 4+ specific ignores
+.godot/
+.godot/**
+.godot/export/
+
+# Godot-created files
+*.translation
+*.import
+*.md5
+
+# System files
+.DS_Store
+Thumbs.db
+desktop.ini
+nul
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~
+
+# Build/export folders
+build/
+exports/
+dist/
+
+# IDE/Editor files
+.vscode/
+.idea/
+*.code-workspace
+
+# Test directories (uncomment if you want to track tests)
+# game/test/

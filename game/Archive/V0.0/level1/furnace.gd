@@ -1,0 +1,295 @@
+extends Control
+
+# Scene follows formatting guidelines from:
+# - RESPONSIVE_LAYOUT_GUIDE.md (element heights, spacing, responsive behavior)
+# - SCENE_TEMPLATE_GUIDE.md (three-panel layout structure)
+# - POPUP_SYSTEM_GUIDE.md (popup usage if needed)
+# All menu elements use LANDSCAPE_ELEMENT_HEIGHT = 40px (see RESPONSIVE_LAYOUT_GUIDE.md)
+# NOTE: This scene needs migration to scene_template.tscn for proper layout support
+
+var click_count = 0
+var steal_click_count = 0
+var auto_shovel_timer = 0.0  # Timer for auto shovel interval
+var auto_conversion_timer = 0.0  # Timer for auto conversion interval
+var cached_mood_text: String = ""  # Cached mood text for delayed display updates
+var mood_display_timer: float = 0.0  # Timer for random mood display updates
+var next_mood_update_delay: float  # Random delay between 4-10 seconds
+var last_coal_value: int = -1  # Track last coal value to avoid unnecessary updates
+@onready var left_vbox = $HBoxContainer/LeftVBox
+@onready var right_vbox = $HBoxContainer/RightVBox
+@onready var coal_label = $HBoxContainer/LeftVBox/CoalPanel/CoalLabel
+@onready var coins_panel = $HBoxContainer/LeftVBox/CoinsPanel
+@onready var mood_label = $HBoxContainer/LeftVBox/OverseerMoodPanel/MoodLabel
+@onready var to_bar_button = $HBoxContainer/RightVBox/ToBarButton
+@onready var convert_coal_button = $HBoxContainer/RightVBox/ConvertCoalButton
+@onready var toggle_mode_button = $HBoxContainer/RightVBox/ToggleModeButton
+@onready var stamina_bar = $HBoxContainer/LeftVBox/StaminaPanel/StaminaBar
+@onready var suspicion_panel = $HBoxContainer/LeftVBox/SuspicionPanel
+@onready var suspicion_bar = $HBoxContainer/LeftVBox/SuspicionPanel/SuspicionBar
+@onready var steal_coal_button = $HBoxContainer/RightVBox/StealCoalButton
+@onready var overseer_mood_panel = $HBoxContainer/LeftVBox/OverseerMoodPanel
+
+func _ready():
+	ResponsiveLayout.apply_to_scene(self)
+	coal_label.text = "Coal Shoveled: " + str(Level1Vars.coal)
+	_update_currency_display()
+	update_stamina_bar()
+	update_suspicion_bar()
+	toggle_mode_button.visible = false
+	update_mood_panel_visibility()
+	# Initialize random delayed mood display system
+	next_mood_update_delay = randf_range(4.0, 10.0)
+	cached_mood_text = OverseerMood.get_mood_adjective()
+
+## Update currency panel with current currency values
+func _update_currency_display():
+	if coins_panel:
+		var currency_data = CurrencyManager.format_currency_for_icons(false)
+		coins_panel.setup_currency_display(currency_data)
+
+func _process(delta):
+	var ui_needs_update = false
+
+	# Auto shovel interval-based generation
+	if Level1Vars.auto_shovel_lvl > 0:
+		auto_shovel_timer += delta
+		# When timer reaches the frequency interval, generate coal
+		if auto_shovel_timer >= Level1Vars.auto_shovel_freq:
+			# Multiply quantity of auto-shovels by coal per tick
+			var coal_to_add = Level1Vars.auto_shovel_lvl * Level1Vars.auto_shovel_coal_per_tick
+			var coal_cap = Level1Vars.get_coal_cap()
+
+			# Check if we would exceed cap
+			if Level1Vars.coal + coal_to_add > coal_cap:
+				coal_to_add = max(0, coal_cap - Level1Vars.coal)
+				if coal_to_add <= 0:
+					# Show warning once when hitting cap
+					Global.show_stat_notification("Coal tracking limit reached - convert some to copper!")
+
+			Level1Vars.coal += coal_to_add
+			auto_shovel_timer -= Level1Vars.auto_shovel_freq  # Preserve excess time for accuracy
+			ui_needs_update = true
+
+	# Decrease stimulated_remaining by 1 per second
+	if Level1Vars.stimulated_remaining > 0:
+		Level1Vars.stimulated_remaining -= delta
+		if Level1Vars.stimulated_remaining < 0:
+			Level1Vars.stimulated_remaining = 0
+
+		# Show "tired again" notification when dropping below 2
+		if Level1Vars.stimulated_remaining < 2 and not Level1Vars.shown_tired_notification:
+			Global.show_stat_notification("You feel tired again")
+			Level1Vars.shown_tired_notification = true
+			ui_needs_update = true
+
+	# Decrease resilient_remaining by 1 per second
+	if Level1Vars.resilient_remaining > 0:
+		Level1Vars.resilient_remaining -= delta
+		if Level1Vars.resilient_remaining < 0:
+			Level1Vars.resilient_remaining = 0
+
+		# Show "lazy again" notification when dropping below 2
+		if Level1Vars.resilient_remaining < 2 and not Level1Vars.shown_lazy_notification:
+			Global.show_stat_notification("You feel lazy again")
+			Level1Vars.shown_lazy_notification = true
+			ui_needs_update = true
+
+	# Phase 1: Auto-conversion mode
+	if Level1Vars.auto_conversion_enabled and Level1Vars.coal >= OverseerMood.get_coal_per_coin():
+		auto_conversion_timer += delta
+		if auto_conversion_timer >= 5.0:  # Auto-convert every 5 seconds
+			auto_conversion_timer = 0.0
+			perform_auto_conversion()
+			ui_needs_update = true
+
+	# Random delayed mood display update (4-10 second intervals)
+	mood_display_timer += delta
+	if mood_display_timer >= next_mood_update_delay:
+		# Update cached mood from actual mood
+		cached_mood_text = OverseerMood.get_mood_adjective()
+		# Reset timer and set new random delay
+		mood_display_timer = 0.0
+		next_mood_update_delay = randf_range(4.0, 10.0)
+		ui_needs_update = true
+
+	# Only update UI when coal value changes or when other updates are needed
+	var current_coal = int(Level1Vars.coal)
+	if current_coal != last_coal_value or ui_needs_update:
+		last_coal_value = current_coal
+		if coal_label:
+			coal_label.text = "Coal Shoveled: " + str(current_coal)
+		_update_currency_display()
+		update_stamina_bar()
+		update_suspicion_bar()
+		update_mood_panel_visibility()
+		update_mood_display()
+		update_conversion_buttons()
+		update_dev_buttons()
+
+func _on_shovel_coal_button_pressed():
+	# Reduce stamina (less if resilient)
+	if Level1Vars.resilient_remaining > 1.0:
+		Level1Vars.stamina -= 0.4
+	else:
+		Level1Vars.stamina -= 1
+	update_stamina_bar()
+
+	# Check if stamina is depleted
+	if Level1Vars.stamina <= 0:
+		Global.change_scene_with_check(get_tree(), "res://level1/dream.tscn")
+		return
+
+	# Increase global strength exp
+	Global.add_stat_exp("strength", .4)
+
+	var coal_gained = 1 + (Level1Vars.shovel_lvl * 0.7) + (Level1Vars.plow_lvl * 3)
+
+	# Apply stimulated bonus if timer is active
+	if Level1Vars.stimulated_remaining > 1.0:
+		coal_gained *= 1.4
+
+	# Check coal cap before adding
+	var coal_cap = Level1Vars.get_coal_cap()
+	if Level1Vars.coal >= coal_cap:
+		Global.show_stat_notification("Coal tracking limit reached - convert some to copper!")
+		coal_label.text = "Coal Shoveled: " + str(int(Level1Vars.coal))
+		return
+
+	# Add coal, capped to maximum
+	var coal_to_add = min(coal_gained, coal_cap - Level1Vars.coal)
+	Level1Vars.coal += coal_to_add
+
+	# 3% chance per strength point to get a second coal
+	var bonus_coal_chance = Global.strength * 0.03
+	if randf() < bonus_coal_chance:
+		var bonus_coal = min(coal_gained, coal_cap - Level1Vars.coal)
+		Level1Vars.coal += bonus_coal
+
+	coal_label.text = "Coal Shoveled: " + str(int(Level1Vars.coal))
+	click_count += 1
+	if click_count >= 35:
+		to_bar_button.visible = true
+
+	# Count clicks for steal coal button
+	if Level1Vars.heart_taken:
+		steal_click_count += 1
+		if steal_click_count >= 100:
+			steal_coal_button.visible = true
+
+func _on_to_bar_button_pressed():
+	# Reset break time so the bar refills when taking a break
+	Level1Vars.break_time_remaining = 0.0
+	Global.change_scene_with_check(get_tree(), "res://level1/bar.tscn")
+
+func _on_steal_coal_button_pressed():
+	Level1Vars.stolen_coal += 1
+	steal_coal_button.visible = false
+	steal_click_count = 0
+
+	# Raise suspicion by random amount (5-15) minus a third of dexterity
+	var suspicion_increase = randf_range(5.0, 15.0) - (Global.dexterity / 3.0)
+	Level1Vars.suspicion += max(0, suspicion_increase)  # Ensure it doesn't go negative
+
+func update_stamina_bar():
+	if stamina_bar:
+		var stamina_percent = (Level1Vars.stamina / Level1Vars.max_stamina) * 100.0
+		stamina_bar.value = stamina_percent
+
+func update_suspicion_bar():
+	if suspicion_panel:
+		suspicion_panel.visible = Level1Vars.suspicion > 0
+	if suspicion_bar:
+		suspicion_bar.value = Level1Vars.suspicion
+
+func update_dev_buttons():
+	# Show/hide take break button based on dev_speed_mode
+	if to_bar_button:
+		if Global.dev_speed_mode:
+			to_bar_button.visible = true
+		elif click_count < 50:
+			to_bar_button.visible = false
+
+# Phase 1: Manual conversion - player chooses when to convert coal
+func perform_manual_conversion():
+	# Get coal requirement based on current mood (inverse relationship)
+	var coal_required = OverseerMood.get_coal_per_coin()
+
+	if Level1Vars.coal < coal_required:
+		Global.show_stat_notification("Not enough coal to convert")
+		return
+
+	var coins_earned = OverseerMood.manual_convert_coal(coal_required)
+
+	Level1Vars.coal -= coal_required
+	CurrencyManager.add_currency(CurrencyManager.CurrencyType.COPPER, coins_earned, "manual_conversion")
+	Level1Vars.lifetimecoins += coins_earned  # Legacy tracking (can be removed later)
+
+	# Show conversion feedback
+	var message = OverseerMood.get_conversion_message()
+	Global.show_stat_notification(message)
+
+	# Gain charisma experience for dealing with overseer
+	Global.add_stat_exp("charisma", 2.0)
+
+	DebugLogger.log_resource_change("coal", Level1Vars.coal + coal_required, Level1Vars.coal, "Manual conversion")
+
+# Phase 1: Auto conversion - happens automatically with penalty
+func perform_auto_conversion():
+	# Get coal requirement based on current mood (inverse relationship)
+	var coal_required = OverseerMood.get_coal_per_coin()
+	var coins_earned = OverseerMood.auto_convert_coal(coal_required)
+
+	Level1Vars.coal -= coal_required
+	CurrencyManager.add_currency(CurrencyManager.CurrencyType.COPPER, coins_earned, "auto_conversion")
+	Level1Vars.lifetimecoins += coins_earned  # Legacy tracking (can be removed later)
+
+	# No notification in auto mode (player discovers it's less efficient)
+	DebugLogger.log_resource_change("coal", Level1Vars.coal + coal_required, Level1Vars.coal, "Auto conversion")
+
+# Toggle between manual and auto conversion
+func toggle_conversion_mode():
+	Level1Vars.auto_conversion_enabled = not Level1Vars.auto_conversion_enabled
+	auto_conversion_timer = 0.0
+
+	if Level1Vars.auto_conversion_enabled:
+		Global.show_stat_notification("Now getting coins from Terminal")
+	else:
+		Global.show_stat_notification("Now getting coins from Overseer")
+
+# Show/hide mood panel based on unlock status
+func update_mood_panel_visibility():
+	if overseer_mood_panel:
+		overseer_mood_panel.visible = Level1Vars.mood_system_unlocked
+
+# Update mood display with qualitative adjectives (no numbers!)
+# Uses cached mood text that updates on random 4-10 second intervals
+func update_mood_display():
+	if mood_label:
+		mood_label.text = "Overseer: " + cached_mood_text
+
+# Update conversion button states
+func update_conversion_buttons():
+	if convert_coal_button:
+		var coal_required = OverseerMood.get_coal_per_coin()
+		if Level1Vars.auto_conversion_enabled:
+			convert_coal_button.text = "Auto-converting..."
+			convert_coal_button.disabled = true
+		else:
+			convert_coal_button.text = "Claim Copper Piece"
+			convert_coal_button.disabled = Level1Vars.coal < coal_required
+
+	if toggle_mode_button:
+		# Show toggle button if coin slot machine has been unlocked
+		toggle_mode_button.visible = Level1Vars.coinslot_machine_unlocked
+
+		if Level1Vars.auto_conversion_enabled:
+			toggle_mode_button.text = "Get coins from: Terminal"
+		else:
+			toggle_mode_button.text = "Get coins from: Overseer"
+
+# Button handlers
+func _on_convert_coal_button_pressed():
+	perform_manual_conversion()
+
+func _on_toggle_mode_button_pressed():
+	toggle_conversion_mode()

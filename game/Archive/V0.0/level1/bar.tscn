@@ -1,0 +1,120 @@
+[gd_scene load_steps=6 format=3 uid="uid://c8hqkr2vx4pne"]
+
+[ext_resource type="PackedScene" path="res://level1/scene_template.tscn" id="1_base"]
+[ext_resource type="Script" uid="uid://ct2m1b5l80fxo" path="res://level1/bar.gd" id="2_script"]
+[ext_resource type="Texture2D" path="res://level1/bar.jpg" id="3_texture"]
+[ext_resource type="PackedScene" uid="uid://reusable_popup" path="res://reusable_popup.tscn" id="4_popup"]
+[ext_resource type="Script" path="res://currency_panel.gd" id="currency_panel_script"]
+
+[node name="Bar" instance=ExtResource("1_base")]
+script = ExtResource("2_script")
+
+[node name="Background" parent="." index="0"]
+texture = ExtResource("3_texture")
+
+[node name="TitlePanel" type="Panel" parent="HBoxContainer/LeftVBox" index="0"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="HBoxContainer/LeftVBox/TitlePanel" index="0"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Blackbore Bar"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BreakTimerPanel" type="Panel" parent="HBoxContainer/LeftVBox" index="1"]
+theme_type_variation = &"ProgressPanel"
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+
+[node name="BreakTimerBar" type="ProgressBar" parent="HBoxContainer/LeftVBox/BreakTimerPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+value = 100.0
+show_percentage = false
+
+[node name="BreakTimer" type="Label" parent="HBoxContainer/LeftVBox/BreakTimerPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Break Timer"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CoinsPanel" type="Panel" parent="HBoxContainer/LeftVBox" index="2"]
+self_modulate = Color(1, 1, 1, 0.7)
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+script = ExtResource("currency_panel_script")
+vertical_alignment = 1
+
+[node name="AnthraciteDelightButton" type="Button" parent="HBoxContainer/RightVBox" index="0"]
+layout_mode = 2
+text = "Anthracite Delight: 1"
+
+[node name="SteelStoutButton" type="Button" parent="HBoxContainer/RightVBox" index="1"]
+layout_mode = 2
+text = "Steel Stout: 1"
+
+[node name="BribeBarkeepButton" type="Button" parent="HBoxContainer/RightVBox" index="2"]
+layout_mode = 2
+text = "Bribe Barkeep: 50"
+
+[node name="FollowVoiceButton" type="Button" parent="HBoxContainer/RightVBox" index="3"]
+visible = false
+layout_mode = 2
+text = "Follow whispering voice"
+
+[node name="DeveloperFreeCoinsButton" type="Button" parent="HBoxContainer/RightVBox" index="4"]
+layout_mode = 2
+text = "Developer: Free Copper"
+
+[node name="ToDormButton" type="Button" parent="HBoxContainer/RightVBox" index="5"]
+visible = false
+layout_mode = 2
+theme_type_variation = &"ForwardNavButton"
+text = "To Dorm"
+
+[node name="SecretPassageButton" type="Button" parent="HBoxContainer/RightVBox" index="6"]
+visible = false
+layout_mode = 2
+theme_type_variation = &"ForwardNavButton"
+text = "Enter Secret Passage"
+
+[node name="ToCoppersmithCarriageButton" type="Button" parent="HBoxContainer/RightVBox" index="7"]
+layout_mode = 2
+theme_type_variation = &"ForwardNavButton"
+text = "To Coppersmith Carriage"
+
+[node name="ToBlackboreFurnaceButton" type="Button" parent="HBoxContainer/RightVBox" index="8"]
+layout_mode = 2
+theme_type_variation = &"BackNavButton"
+text = "To Blackbore Furnace"
+
+[node name="VoicePopup" parent="PopupContainer" instance=ExtResource("4_popup")]
+
+[node name="BarkeepPopup" parent="PopupContainer" instance=ExtResource("4_popup")]
+
+[connection signal="pressed" from="HBoxContainer/RightVBox/AnthraciteDelightButton" to="." method="_on_anthracite_delight_pressed"]
+[connection signal="pressed" from="HBoxContainer/RightVBox/SteelStoutButton" to="." method="_on_steel_stout_pressed"]
+[connection signal="pressed" from="HBoxContainer/RightVBox/BribeBarkeepButton" to="." method="_on_bribe_barkeep_pressed"]
+[connection signal="pressed" from="HBoxContainer/RightVBox/SecretPassageButton" to="." method="_on_secret_passage_pressed"]
+[connection signal="pressed" from="HBoxContainer/RightVBox/DeveloperFreeCoinsButton" to="." method="_on_developer_free_coins_button_pressed"]
+[connection signal="pressed" from="HBoxContainer/RightVBox/FollowVoiceButton" to="." method="_on_follow_voice_button_pressed"]
+[connection signal="pressed" from="HBoxContainer/RightVBox/ToDormButton" to="." method="_on_to_dorm_button_pressed"]
+[connection signal="pressed" from="HBoxContainer/RightVBox/ToBlackboreFurnaceButton" to="." method="_on_to_blackbore_furnace_button_pressed"]
+[connection signal="pressed" from="HBoxContainer/RightVBox/ToCoppersmithCarriageButton" to="." method="_on_to_coppersmith_carriage_button_pressed"]
+[connection signal="button_pressed" from="PopupContainer/VoicePopup" to="." method="_on_voice_popup_button_pressed"]
+[connection signal="button_pressed" from="PopupContainer/BarkeepPopup" to="." method="_on_barkeep_popup_button_pressed"]
