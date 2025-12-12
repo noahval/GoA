@@ -29,6 +29,7 @@ NakamaManager="*res://autoloads/nakama_manager.gd"
 ResponsiveLayout="*res://responsive_layout.gd"
 ButtonHierarchy="*res://button_hierarchy.gd"
 SceneNetwork="*res://level1/scene_network.gd"
+Level1Vars="*res://level1/level_1_vars.gd"
 
 [debug]
 

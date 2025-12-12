@@ -1,13 +1,6 @@
 extends RigidBody2D
 
 const SHOVEL_WIDTH: float = 80.0
-const SHOVEL_PHYSICS_MAT = preload("res://level1/shovel_physics_material.tres")
-const FOLLOW_SPEED: float = 3000.0  # How fast shovel moves toward mouse
-const TILT_TORQUE: float = 20000.0  # Torque applied per second when holding
-const MAX_ROTATION_DEGREES: float = 45.0  # Maximum tilt angle
-const BOUNCE_BACK_TORQUE: float = 200.0  # Torque applied when hitting max tilt
-const VELOCITY_SMOOTHING: float = 0.15  # Interpolation factor for smooth movement (lower = smoother)
-const MAX_VELOCITY: float = 1200.0  # Maximum shovel speed to prevent explosive collisions
 
 var shovel_curve: PackedVector2Array
 var line_2d: Line2D
@@ -19,12 +12,12 @@ func _ready():
 	# Get reference to playarea (parent's parent)
 	playarea = get_parent().get_parent()
 
-	# RigidBody2D physics setup
+	# RigidBody2D physics setup (use Level1Vars for upgradable values)
 	lock_rotation = false  # Allow rotation for tilt mechanic
-	mass = 60.0  # Heavy enough to resist coal pushing it around
+	mass = Level1Vars.shovel_mass
 	gravity_scale = 0.0  # No gravity
-	linear_damp = 15.0  # High damping for responsive stop
-	angular_damp = 2.0  # Dampen rotation over time
+	linear_damp = Level1Vars.shovel_linear_damp
+	angular_damp = Level1Vars.shovel_angular_damp
 
 	# Collision layers
 	collision_layer = 2
@@ -53,8 +46,11 @@ func _ready():
 	line_2d.width = 6.0
 	line_2d.z_index = 1
 
-	# Apply shared physics material
-	physics_material_override = SHOVEL_PHYSICS_MAT
+	# Create physics material programmatically (upgradable at runtime)
+	var physics_mat = PhysicsMaterial.new()
+	physics_mat.friction = Level1Vars.shovel_friction
+	physics_mat.bounce = Level1Vars.shovel_bounce
+	physics_material_override = physics_mat
 
 func _physics_process(delta):
 	# Get mouse position
@@ -68,25 +64,17 @@ func _physics_process(delta):
 	# Calculate direction to mouse
 	var direction = mouse_pos - global_position
 
-	# Calculate target velocity (where we want to go)
-	var target_velocity = direction * FOLLOW_SPEED * delta
+	# Set velocity toward mouse (CRITICAL: velocity-based, not direct position)
+	linear_velocity = direction * Level1Vars.shovel_follow_speed
 
-	# Smoothly interpolate current velocity toward target velocity
-	# This prevents sudden jerky movements when mouse moves quickly
-	linear_velocity = linear_velocity.lerp(target_velocity, VELOCITY_SMOOTHING)
-
-	# Cap maximum velocity to prevent explosive collisions
-	if linear_velocity.length() > MAX_VELOCITY:
-		linear_velocity = linear_velocity.normalized() * MAX_VELOCITY
-
-	# Clamp rotation to max angle
+	# Clamp rotation to max angle (use Level1Vars for upgradable limit)
 	var current_rotation_deg = rad_to_deg(rotation)
-	if abs(current_rotation_deg) > MAX_ROTATION_DEGREES:
+	if abs(current_rotation_deg) > Level1Vars.shovel_max_rotation_degrees:
 		# Clamp rotation
-		rotation = deg_to_rad(clamp(current_rotation_deg, -MAX_ROTATION_DEGREES, MAX_ROTATION_DEGREES))
+		rotation = deg_to_rad(clamp(current_rotation_deg, -Level1Vars.shovel_max_rotation_degrees, Level1Vars.shovel_max_rotation_degrees))
 		# Apply bounce back torque in opposite direction
 		var bounce_direction = -sign(current_rotation_deg)
-		apply_torque_impulse(bounce_direction * BOUNCE_BACK_TORQUE)
+		apply_torque_impulse(bounce_direction * Level1Vars.shovel_bounce_back_torque)
 
 	# Update cooldown timer
 	if scoop_cooldown_timer > 0.0:
@@ -95,9 +83,9 @@ func _physics_process(delta):
 func tilt_left(delta: float):
 	# Apply counter-clockwise torque (negative in Godot)
 	# Scale by delta for consistent speed regardless of framerate
-	apply_torque_impulse(-TILT_TORQUE * delta)
+	apply_torque_impulse(-Level1Vars.shovel_tilt_torque * delta)
 
 func tilt_right(delta: float):
 	# Apply clockwise torque (positive in Godot)
 	# Scale by delta for consistent speed regardless of framerate
-	apply_torque_impulse(TILT_TORQUE * delta)
+	apply_torque_impulse(Level1Vars.shovel_tilt_torque * delta)
