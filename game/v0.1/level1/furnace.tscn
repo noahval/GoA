@@ -4,10 +4,9 @@
 [ext_resource type="Script" path="res://level1/furnace.gd" id="2_furnace_script"]
 [ext_resource type="Script" path="res://level1/shovel.gd" id="3_shovel_script"]
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_coal_pile"]
-radius = 100.0
-
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_obstacle"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_container_wall"]
 
 [sub_resource type="SegmentShape2D" id="SegmentShape2D_left_wall"]
 a = Vector2(-40, -5)
@@ -24,18 +23,37 @@ b = Vector2(40, -5)
 [node name="Furnace" instance=ExtResource("1_furnace_template")]
 script = ExtResource("2_furnace_script")
 
-[node name="CoalPile" type="Node2D" parent="AspectContainer/MainContainer/mainarea/PlayArea" index="0"]
+[node name="CoalContainer" type="Node2D" parent="AspectContainer/MainContainer/mainarea/PlayArea" index="0"]
 
-[node name="Polygon2D" type="Polygon2D" parent="AspectContainer/MainContainer/mainarea/PlayArea/CoalPile"]
-color = Color(0.164706, 0.164706, 0.164706, 1)
-polygon = PackedVector2Array(-80, 0, -60, -40, -20, -60, 20, -60, 60, -40, 80, 0, 60, 20, -60, 20)
+[node name="LeftWall" type="StaticBody2D" parent="AspectContainer/MainContainer/mainarea/PlayArea/CoalContainer"]
+collision_layer = 1
 
-[node name="CoalPileArea" type="Area2D" parent="AspectContainer/MainContainer/mainarea/PlayArea/CoalPile"]
-collision_layer = 4
-collision_mask = 2
+[node name="CollisionShape2D" type="CollisionShape2D" parent="AspectContainer/MainContainer/mainarea/PlayArea/CoalContainer/LeftWall"]
+shape = SubResource("RectangleShape2D_container_wall")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="AspectContainer/MainContainer/mainarea/PlayArea/CoalPile/CoalPileArea"]
-shape = SubResource("CircleShape2D_coal_pile")
+[node name="VisualLine" type="Line2D" parent="AspectContainer/MainContainer/mainarea/PlayArea/CoalContainer/LeftWall"]
+default_color = Color(0, 0, 0, 1)
+width = 3.0
+
+[node name="BottomWall" type="StaticBody2D" parent="AspectContainer/MainContainer/mainarea/PlayArea/CoalContainer"]
+collision_layer = 1
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="AspectContainer/MainContainer/mainarea/PlayArea/CoalContainer/BottomWall"]
+shape = SubResource("RectangleShape2D_container_wall")
+
+[node name="VisualLine" type="Line2D" parent="AspectContainer/MainContainer/mainarea/PlayArea/CoalContainer/BottomWall"]
+default_color = Color(0, 0, 0, 1)
+width = 3.0
+
+[node name="RightWall" type="StaticBody2D" parent="AspectContainer/MainContainer/mainarea/PlayArea/CoalContainer"]
+collision_layer = 1
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="AspectContainer/MainContainer/mainarea/PlayArea/CoalContainer/RightWall"]
+shape = SubResource("RectangleShape2D_container_wall")
+
+[node name="VisualLine" type="Line2D" parent="AspectContainer/MainContainer/mainarea/PlayArea/CoalContainer/RightWall"]
+default_color = Color(0, 0, 0, 1)
+width = 3.0
 
 [node name="FurnaceWall" type="Node2D" parent="AspectContainer/MainContainer/mainarea/PlayArea" index="1"]
 
