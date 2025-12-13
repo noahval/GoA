@@ -1,10 +1,5 @@
 extends RigidBody2D
 
-const OFFSCREEN_THRESHOLD: float = 2000.0  # Distance from origin before cleanup
-const MAX_LIFETIME: float = 30.0  # Seconds before forced cleanup
-
-var lifetime: float = 0.0
-
 func _ready():
 	# Setup physics properties
 	mass = 0.3
@@ -32,10 +27,3 @@ func _ready():
 	if visual:
 		var scale_factor = Level1Vars.coal_radius / 10.0
 		visual.scale = Vector2(scale_factor, scale_factor)
-
-func _process(delta):
-	lifetime += delta
-
-	# Cleanup if too far from origin or too old
-	if global_position.length() > OFFSCREEN_THRESHOLD or lifetime > MAX_LIFETIME:
-		queue_free()

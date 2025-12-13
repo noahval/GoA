@@ -53,9 +53,9 @@ This roadmap is for a complete game rewrite from scratch. All features listed sh
 
 ## 2. copper era
 1. scene Network - Centralized scene registry and navigation map for all Level 1 scenes (copper, silver, gold eras)
-1. Physics Objects Setup - Coal pile, furnace opening with obstacles, and shovel surface
+1. Physics Objects - Coal pile, furnace opening with obstacles, and shovel surface
 1. Coal Physics Spawning - Coal piece RigidBody2D with physics properties and scooping mechanism
-1. Coal Tracking System - Track dropped vs delivered coal with Level1Vars integration
+1. Coal Tracking - Track dropped vs delivered coal with Level1Vars integration
 1. Testing Polish - Unit tests, integration tests, and physics tuning for shovelling mechanic
 1. [!] day cycle - day and evening alternating
 1. 

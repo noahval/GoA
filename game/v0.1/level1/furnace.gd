@@ -7,6 +7,7 @@ extends Control
 
 var container_width_percent: float = 0.25  # 25% of play area width
 var container_height_percent: float = 0.15  # 15% of play area height
+var left_wall_height_percent: float = 0.30  # 30% of play area height (2x container height to catch escaping coal)
 
 var furnace_line_x: float
 var furnace_opening_top: float
@@ -18,7 +19,7 @@ var coal_piece_scene = preload("res://level1/coal_piece.tscn")
 
 # Coal tap spawning
 var coal_spawn_timer: float = 0.0
-const COAL_SPAWN_RATE: float = 0.5  # Spawn every 0.5 seconds (2 per second)
+const COAL_SPAWN_RATE: float = 0.25  # Spawn every 0.25 seconds (4 per second)
 var coal_tap_position: Vector2
 var active_coal_count: int = 0
 const MAX_COAL_PIECES: int = 100  # Performance limit
@@ -41,21 +42,23 @@ func setup_physics_objects():
 	# Calculate container dimensions
 	var container_width = playarea_size.x * container_width_percent
 	var container_height = playarea_size.y * container_height_percent
+	var left_wall_height = playarea_size.y * left_wall_height_percent
 	var wall_thickness = 5.0
 
 	# Position container at bottom-left (flush with edges)
 	coal_container.position = Vector2(0, playarea_size.y - container_height)
 
-	# Setup left wall
+	# Setup left wall (2x height of container to catch escaping coal)
 	var left_wall = coal_container.get_node("LeftWall")
 	var left_collision = left_wall.get_node("CollisionShape2D")
-	left_collision.position = Vector2(wall_thickness / 2, container_height / 2)
+	# Position left wall so bottom aligns with container bottom, extends upward
+	left_collision.position = Vector2(wall_thickness / 2, container_height - (left_wall_height / 2))
 	var left_shape = RectangleShape2D.new()
-	left_shape.size = Vector2(wall_thickness, container_height)
+	left_shape.size = Vector2(wall_thickness, left_wall_height)
 	left_collision.shape = left_shape
 	var left_visual = left_wall.get_node("VisualLine")
 	left_visual.points = PackedVector2Array([
-		Vector2(0, 0),
+		Vector2(0, container_height - left_wall_height),
 		Vector2(0, container_height)
 	])
 
@@ -91,6 +94,7 @@ func setup_physics_objects():
 	# Debug output
 	print("Container global position: ", coal_container.global_position)
 	print("Container dimensions: ", container_width, " x ", container_height)
+	print("Left wall height (2x container): ", left_wall_height)
 	print("Coal tap position: ", coal_tap_position)
 	print("Left wall collision position: ", left_collision.global_position)
 	print("Left wall collision size: ", left_shape.size)
