@@ -11,6 +11,7 @@ Claude has full permissions to:
 ## Project Overview
 **GoA** is a Godot 4.5 game project with:
 - **Primary Language**: GDScript
+- **Project Location**: C:\Goa\game\v0.1\project.godot
 
 ## Quick Commands
 **Ultra-fast command triggers - user says these, you execute immediately:**

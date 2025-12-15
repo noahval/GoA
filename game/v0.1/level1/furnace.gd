@@ -4,6 +4,8 @@ extends Control
 @onready var furnace_wall: Node2D = $AspectContainer/MainContainer/mainarea/PlayArea/FurnaceWall
 @onready var playarea: Control = $AspectContainer/MainContainer/mainarea/PlayArea
 @onready var shovel_body: RigidBody2D = $AspectContainer/MainContainer/mainarea/PlayArea/Shovel/RigidBody2D
+@onready var stamina_bar: ProgressBar = $AspectContainer/MainContainer/mainarea/Menu/StaminaBar
+@onready var focus_bar: ProgressBar = $AspectContainer/MainContainer/mainarea/Menu/FocusBar
 
 var container_width_percent: float = 0.25  # 25% of play area width
 var container_height_percent: float = 0.15  # 15% of play area height
@@ -31,6 +33,7 @@ var right_mouse_held: bool = false
 func _ready():
 	ResponsiveLayout.apply_to_scene(self)  # REQUIRED
 	connect_navigation()
+	connect_resource_bars()
 	# Defer physics setup until after layout is applied
 	await get_tree().process_frame
 	setup_physics_objects()
@@ -167,6 +170,23 @@ func connect_navigation():
 	var to_mind_button = $AspectContainer/MainContainer/mainarea/Menu/ToMindButton
 	if to_mind_button:
 		to_mind_button.pressed.connect(func(): navigate_to("mind"))
+
+func connect_resource_bars():
+	# Connect to Level1Vars signals
+	Level1Vars.stamina_changed.connect(_on_stamina_changed)
+	Level1Vars.focus_changed.connect(_on_focus_changed)
+
+	# Initialize bars with current values
+	_on_stamina_changed(Level1Vars.stamina, Level1Vars.stamina_max)
+	_on_focus_changed(Level1Vars.focus, Level1Vars.focus_max)
+
+func _on_stamina_changed(new_value: int, max_value: int):
+	stamina_bar.max_value = max_value
+	stamina_bar.value = new_value
+
+func _on_focus_changed(new_value: int, max_value: int):
+	focus_bar.max_value = max_value
+	focus_bar.value = new_value
 
 func navigate_to(scene_id: String):
 	var path = SceneNetwork.get_scene_path(scene_id)
