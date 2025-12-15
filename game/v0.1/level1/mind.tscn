@@ -1,0 +1,25 @@
+[gd_scene load_steps=3 format=3 uid="uid://mind_scene_uid"]
+
+[ext_resource type="PackedScene" uid="uid://drfp4vl2w1wvr" path="res://level1/scene_template.tscn" id="1_mind_template"]
+[ext_resource type="Script" path="res://level1/mind.gd" id="2_mind_script"]
+[ext_resource type="Texture2D" path="res://level1/backgrounds/mind.jpg" id="3_mind_background"]
+
+[node name="Mind" instance=ExtResource("1_mind_template")]
+script = ExtResource("2_mind_script")
+
+[node name="Background" type="TextureRect" parent="AspectContainer/MainContainer" index="0"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("3_mind_background")
+expand_mode = 1
+stretch_mode = 6
+mouse_filter = 2
+
+[node name="ToFurnaceButton" type="Button" parent="AspectContainer/MainContainer/mainarea/Menu" index="0"]
+layout_mode = 2
+theme_type_variation = &"BackNavButton"
+text = "To Furnace"
