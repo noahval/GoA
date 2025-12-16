@@ -28,8 +28,8 @@ var coal_radius: float = 5.0      # Coal piece size in pixels (affects collision
 var furnace_opening_height_percent: float = 0.20  # Target size (smaller = harder)
 
 # Coal tracking - gameplay stats
-var coal_spilled: int = 0   # Total coal pieces that fell/were dropped
-var coal_shovelled: int = 0 # Total coal pieces successfully delivered to furnace
+var coal_dropped: int = 0   # Total coal pieces that fell/were dropped
+var coal_delivered: int = 0 # Total coal pieces successfully delivered to furnace
 
 # Signals
 signal stamina_changed(new_value: int, max_value: int)
@@ -91,8 +91,8 @@ func get_save_data() -> Dictionary:
 		"coal_radius": coal_radius,
 		"furnace_opening_height_percent": furnace_opening_height_percent,
 		# Gameplay stats
-		"coal_spilled": coal_spilled,
-		"coal_shovelled": coal_shovelled
+		"coal_dropped": coal_dropped,
+		"coal_delivered": coal_delivered
 	}
 
 func load_save_data(data: Dictionary):
@@ -118,8 +118,8 @@ func load_save_data(data: Dictionary):
 	furnace_opening_height_percent = data.get("furnace_opening_height_percent", 0.20)
 
 	# Gameplay stats
-	coal_spilled = data.get("coal_spilled", 0)
-	coal_shovelled = data.get("coal_shovelled", 0)
+	coal_dropped = data.get("coal_dropped", 0)
+	coal_delivered = data.get("coal_delivered", 0)
 
 	# Emit signals to update UI
 	emit_signal("stamina_changed", stamina, stamina_max)
@@ -148,8 +148,8 @@ func reset_to_defaults():
 	furnace_opening_height_percent = 0.20
 
 	# Gameplay stats
-	coal_spilled = 0
-	coal_shovelled = 0
+	coal_dropped = 0
+	coal_delivered = 0
 
 	# Emit signals
 	emit_signal("stamina_changed", stamina, stamina_max)

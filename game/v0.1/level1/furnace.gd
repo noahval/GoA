@@ -33,6 +33,7 @@ var right_mouse_held: bool = false
 func _ready():
 	ResponsiveLayout.apply_to_scene(self)  # REQUIRED
 	connect_navigation()
+	connect_settings_button()
 	connect_resource_bars()
 	# Defer physics setup until after layout is applied
 	await get_tree().process_frame
@@ -170,6 +171,16 @@ func connect_navigation():
 	var to_mind_button = $AspectContainer/MainContainer/mainarea/Menu/ToMindButton
 	if to_mind_button:
 		to_mind_button.pressed.connect(func(): navigate_to("mind"))
+
+func connect_settings_button():
+	var settings_button = $AspectContainer/MainContainer/mainarea/Menu/SettingsButton
+	if settings_button:
+		settings_button.pressed.connect(_on_settings_pressed)
+
+func _on_settings_pressed():
+	# Store current scene for return navigation
+	Global.previous_scene = scene_file_path
+	Global.change_scene("res://settings.tscn")
 
 func connect_resource_bars():
 	# Connect to Level1Vars signals

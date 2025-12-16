@@ -58,12 +58,10 @@ This roadmap is for a complete game rewrite from scratch. All features listed sh
 1. Coal Physics Spawning - Coal piece RigidBody2D with physics properties and scooping mechanism
 1. Coal Tracking - Track dropped vs delivered coal with Level1Vars integration
 1. Testing Polish - Unit tests, integration tests, and physics tuning for shovelling mechanic
-1. 
+1. dropped delivered coal -
 1. furnace bars - stamina and focus
 1. stamina drain - goes down when shovel moves
-1. 
-1. 
-1. [!] day cycle - day and evening alternating
+1. Day end - 
 1. 
 1. 
 1. 

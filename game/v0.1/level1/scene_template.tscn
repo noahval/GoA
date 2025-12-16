@@ -63,6 +63,10 @@ size_flags_horizontal = 3
 layout_mode = 2
 size_flags_horizontal = 3
 
+[node name="SettingsButton" type="Button" parent="AspectContainer/MainContainer/mainarea/Menu"]
+layout_mode = 2
+text = "Settings"
+
 [node name="NotificationBar" type="VBoxContainer" parent="AspectContainer/MainContainer"]
 layout_mode = 1
 anchors_preset = 12

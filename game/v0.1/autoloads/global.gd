@@ -61,6 +61,9 @@ var current_scene_path: String = ""
 var previous_scene_path: String = ""
 var scene_transition_in_progress: bool = false
 
+# Navigation tracking for settings return (Phase 1.15)
+var previous_scene: String = ""
+
 # Scene history navigation (Phase 1.8)
 var scene_history: Array[String] = []
 const MAX_SCENE_HISTORY = 10
@@ -84,7 +87,54 @@ var preloaded_scenes: Dictionary = {}  # {scene_path: Resource}
 const MAX_PRELOADED_SCENES = 3
 
 # ===== UI SETTINGS =====
-var ui_scale: float = 1.0  # User preference for UI scaling (used by ResponsiveLayout)
+# Note: ui_scale is now managed through save_data below (Phase 1.15)
+
+# ===== SAVE SYSTEM (Phase 1.15) =====
+# Structured save data (settings/game separation for clean reset logic)
+var save_data = {
+	"settings": {
+		"ui_scale": 1.0,
+		"music_volume": 0.8,
+		"sfx_volume": 0.8,
+		"dev_speed_mode": false,
+	},
+	"game": {
+		"copper_current": 0,
+		"copper_lifetime": 0,
+		"strength": 1,
+		"dexterity": 1,
+		"constitution": 1,
+		"intelligence": 1,
+		"wisdom": 1,
+		"charisma": 1,
+		"strength_exp": 0.0,
+		"dexterity_exp": 0.0,
+		"constitution_exp": 0.0,
+		"intelligence_exp": 0.0,
+		"wisdom_exp": 0.0,
+		"charisma_exp": 0.0,
+	}
+}
+
+# Settings accessors (redirect to save_data for persistence)
+var ui_scale: float:
+	get: return save_data.settings.ui_scale
+	set(value):
+		save_data.settings.ui_scale = clampf(value, 0.8, 1.2)
+
+var music_volume: float:
+	get: return save_data.settings.music_volume
+	set(value): save_data.settings.music_volume = clampf(value, 0.0, 1.0)
+
+var sfx_volume: float:
+	get: return save_data.settings.sfx_volume
+	set(value): save_data.settings.sfx_volume = clampf(value, 0.0, 1.0)
+
+var dev_speed_mode: bool:
+	get: return save_data.settings.dev_speed_mode
+	set(value): save_data.settings.dev_speed_mode = value
+
+const SAVE_FILE_PATH = "user://save.json"
 
 # ===== VERSION MANAGEMENT =====
 
@@ -480,6 +530,124 @@ func get_scene_load_progress() -> float:
 		return 0.0
 	return load_progress[0] if load_progress.size() > 0 else 0.0
 
+# ===== SAVE SYSTEM FUNCTIONS (Phase 1.15) =====
+
+func save() -> void:
+	"""
+	Save all settings and game progress.
+	Called automatically on setting changes and after game events.
+	"""
+	# Sync current stats to save_data
+	save_data.game.strength = strength
+	save_data.game.dexterity = dexterity
+	save_data.game.constitution = constitution
+	save_data.game.intelligence = intelligence
+	save_data.game.wisdom = wisdom
+	save_data.game.charisma = charisma
+	save_data.game.strength_exp = strength_exp
+	save_data.game.dexterity_exp = dexterity_exp
+	save_data.game.constitution_exp = constitution_exp
+	save_data.game.intelligence_exp = intelligence_exp
+	save_data.game.wisdom_exp = wisdom_exp
+	save_data.game.charisma_exp = charisma_exp
+
+	var file = FileAccess.open(SAVE_FILE_PATH, FileAccess.WRITE)
+	if not file:
+		push_error("Failed to open save file for writing: " + SAVE_FILE_PATH)
+		return
+
+	var json_string = JSON.stringify(save_data, "\t")
+	file.store_string(json_string)
+	file.close()
+
+func load_save() -> void:
+	"""Load settings and game progress"""
+	if not FileAccess.file_exists(SAVE_FILE_PATH):
+		return  # Use defaults
+
+	var file = FileAccess.open(SAVE_FILE_PATH, FileAccess.READ)
+	if not file:
+		push_error("Failed to open save file for reading: " + SAVE_FILE_PATH)
+		return
+
+	var json_text = file.get_as_text()
+	file.close()
+
+	var json = JSON.new()
+	var parse_result = json.parse(json_text)
+
+	if parse_result != OK:
+		push_error("Failed to parse save file JSON at line " + str(json.get_error_line()) + ": " + json.get_error_message())
+		return
+
+	var loaded_data = json.data
+	if typeof(loaded_data) != TYPE_DICTIONARY:
+		push_error("Save file does not contain a dictionary")
+		return
+
+	# Merge loaded settings with defaults (handles new fields gracefully)
+	if loaded_data.has("settings") and typeof(loaded_data.settings) == TYPE_DICTIONARY:
+		for key in loaded_data.settings:
+			if save_data.settings.has(key):
+				save_data.settings[key] = loaded_data.settings[key]
+
+	# Merge loaded game data with defaults
+	if loaded_data.has("game") and typeof(loaded_data.game) == TYPE_DICTIONARY:
+		for key in loaded_data.game:
+			if save_data.game.has(key):
+				save_data.game[key] = loaded_data.game[key]
+
+	# Sync loaded stats to instance variables
+	strength = save_data.game.get("strength", 1)
+	dexterity = save_data.game.get("dexterity", 1)
+	constitution = save_data.game.get("constitution", 1)
+	intelligence = save_data.game.get("intelligence", 1)
+	wisdom = save_data.game.get("wisdom", 1)
+	charisma = save_data.game.get("charisma", 1)
+	strength_exp = save_data.game.get("strength_exp", 0.0)
+	dexterity_exp = save_data.game.get("dexterity_exp", 0.0)
+	constitution_exp = save_data.game.get("constitution_exp", 0.0)
+	intelligence_exp = save_data.game.get("intelligence_exp", 0.0)
+	wisdom_exp = save_data.game.get("wisdom_exp", 0.0)
+	charisma_exp = save_data.game.get("charisma_exp", 0.0)
+
+func reset_save() -> void:
+	"""Reset game progress, preserve settings (called from settings scene)"""
+	# Preserve settings, get fresh game defaults
+	var settings_backup = save_data.settings.duplicate(true)
+
+	# Reconstruct save_data with default game data
+	save_data.settings = settings_backup
+	save_data.game = get_default_game_data()
+
+	# Reset instance variables
+	reset_stats()
+
+	save()
+
+	# Return to previous scene and reload
+	if not previous_scene.is_empty():
+		change_scene(previous_scene)
+
+func get_default_game_data() -> Dictionary:
+	"""Returns default game data structure (used by reset_save and prestige)"""
+	return {
+		"copper_current": 0,
+		"copper_lifetime": 0,
+		"strength": 1,
+		"dexterity": 1,
+		"constitution": 1,
+		"intelligence": 1,
+		"wisdom": 1,
+		"charisma": 1,
+		"strength_exp": 0.0,
+		"dexterity_exp": 0.0,
+		"constitution_exp": 0.0,
+		"intelligence_exp": 0.0,
+		"wisdom_exp": 0.0,
+		"charisma_exp": 0.0,
+	}
+
 # ===== NOTIFICATION SYSTEM =====
 # Note: Basic interface only - full implementation in separate Notification plan
 
@@ -514,3 +682,6 @@ func _ready() -> void:
 	print("Global autoload initialized (v%s)" % GAME_VERSION)
 	DebugLogger.info("Game started - version %s" % GAME_VERSION, "GAME")
 	DebugLogger.info("Save version: %d" % SAVE_VERSION, "GAME")
+
+	# Load save data (Phase 1.15)
+	load_save()

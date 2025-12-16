@@ -120,8 +120,18 @@ func get_available_destinations() -> Array:
 	var current_scene = SCENE_NETWORK[current_id]
 	return current_scene.get("connections", [])
 
+# System scenes that bypass network validation (UI/utility scenes)
+const SYSTEM_SCENES = [
+	"res://settings.tscn",
+	"res://scenes/main_menu.tscn",
+]
+
 # Validator function
 func _validate_scene_network(scene_path: String) -> bool:
+	# Allow system scenes (settings, main menu, etc.)
+	if scene_path in SYSTEM_SCENES:
+		return true
+
 	var scene_id = _path_to_id(scene_path)
 
 	# Not in network? Block it
