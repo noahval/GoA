@@ -111,6 +111,8 @@ collision_layer = 1
 [node name="CollisionShape2D" type="CollisionShape2D" parent="AspectContainer/MainContainer/mainarea/PlayArea/FurnaceWall/BottomObstacle"]
 shape = SubResource("RectangleShape2D_obstacle")
 
+[node name="DeliveryZone" type="Node2D" parent="AspectContainer/MainContainer/mainarea/PlayArea/FurnaceWall"]
+
 [node name="Shovel" type="Node2D" parent="AspectContainer/MainContainer/mainarea/PlayArea" index="2"]
 
 [node name="RigidBody2D" type="RigidBody2D" parent="AspectContainer/MainContainer/mainarea/PlayArea/Shovel"]
@@ -128,6 +130,8 @@ shape = SubResource("SegmentShape2D_right_wall")
 [node name="OutlineLine2D" type="Line2D" parent="AspectContainer/MainContainer/mainarea/PlayArea/Shovel/RigidBody2D"]
 
 [node name="Line2D" type="Line2D" parent="AspectContainer/MainContainer/mainarea/PlayArea/Shovel/RigidBody2D"]
+
+[node name="BorderZones" type="Node2D" parent="AspectContainer/MainContainer/mainarea/PlayArea" index="3"]
 
 [node name="StaminaBar" type="ProgressBar" parent="AspectContainer/MainContainer/mainarea/Menu" index="0"]
 layout_mode = 2

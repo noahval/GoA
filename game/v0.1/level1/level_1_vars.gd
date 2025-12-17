@@ -31,6 +31,9 @@ var furnace_opening_height_percent: float = 0.20  # Target size (smaller = harde
 var coal_dropped: int = 0   # Total coal pieces that fell/were dropped
 var coal_delivered: int = 0 # Total coal pieces successfully delivered to furnace
 
+# Debug flags
+var DEBUG_COAL_TRACKING: bool = false  # Toggle coal drop console prints
+
 # Signals
 signal stamina_changed(new_value: int, max_value: int)
 signal focus_changed(new_value: int, max_value: int)

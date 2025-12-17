@@ -1,6 +1,11 @@
 extends RigidBody2D
 
+var has_been_tracked: bool = false  # Prevents double-counting
+
 func _ready():
+	# Add to coal group for border detection
+	add_to_group("coal")
+
 	# Setup physics properties
 	mass = 0.3
 	gravity_scale = 1.0
@@ -8,7 +13,7 @@ func _ready():
 	angular_damp = 3.0  # Increased from 1.5 to reduce spinning
 
 	# Collision layers
-	collision_layer = 3  # Coal on layer 3
+	collision_layer = 4  # Layer 3 (2^2 = 4)
 	collision_mask = 7   # Binary 111 = collides with layers 1, 2, 3
 
 	# Create physics material programmatically (upgradable at runtime)
@@ -27,3 +32,35 @@ func _ready():
 	if visual:
 		var scale_factor = Level1Vars.coal_radius / 10.0
 		visual.scale = Vector2(scale_factor, scale_factor)
+
+# Called by border zone Area2D when coal enters drop zone
+func _on_entered_drop_zone():
+	# Skip if already counted as delivered
+	if has_been_tracked:
+		queue_free()  # Still remove it, just don't count
+		return
+
+	# Mark as tracked FIRST (before incrementing)
+	has_been_tracked = true
+
+	# Track as dropped
+	Level1Vars.coal_dropped += 1
+	if Level1Vars.DEBUG_COAL_TRACKING:
+		print("[COAL] Dropped! Total: ", Level1Vars.coal_dropped)
+
+	queue_free()  # Remove immediately
+
+# Called by delivery zone Area2D when coal enters furnace
+func _on_entered_delivery_zone():
+	# Mark as tracked FIRST (prevents drop zone from counting it during fade)
+	has_been_tracked = true
+
+	# Track as delivered
+	Level1Vars.coal_delivered += 1
+	if Level1Vars.DEBUG_COAL_TRACKING:
+		print("[COAL] Delivered! Total: ", Level1Vars.coal_delivered)
+
+	# Red fade animation: gradually change color to red over 0.3 seconds, then remove
+	var tween = create_tween()
+	tween.tween_property(self, "modulate", Color.RED, 0.3)
+	tween.finished.connect(queue_free)

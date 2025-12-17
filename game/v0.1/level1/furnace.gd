@@ -4,8 +4,13 @@ extends Control
 @onready var furnace_wall: Node2D = $AspectContainer/MainContainer/mainarea/PlayArea/FurnaceWall
 @onready var playarea: Control = $AspectContainer/MainContainer/mainarea/PlayArea
 @onready var shovel_body: RigidBody2D = $AspectContainer/MainContainer/mainarea/PlayArea/Shovel/RigidBody2D
+@onready var border_zones: Node2D = $AspectContainer/MainContainer/mainarea/PlayArea/BorderZones
 @onready var stamina_bar: ProgressBar = $AspectContainer/MainContainer/mainarea/Menu/StaminaBar
 @onready var focus_bar: ProgressBar = $AspectContainer/MainContainer/mainarea/Menu/FocusBar
+@onready var delivery_zone_node: Node2D = $AspectContainer/MainContainer/mainarea/PlayArea/FurnaceWall/DeliveryZone
+
+const BORDER_THICKNESS: float = 50.0  # Border zone thickness in pixels
+const DELIVERY_ZONE_WIDTH: float = 15.0
 
 var container_width_percent: float = 0.25  # 25% of play area width
 var container_height_percent: float = 0.15  # 15% of play area height
@@ -123,7 +128,7 @@ func setup_physics_objects():
 		Vector2(0, furnace_opening_top)
 	])
 	top_line.default_color = Color.BLACK
-	top_line.width = 5.0
+	top_line.width = 15.0
 
 	var bottom_line = furnace_wall.get_node("BottomLine")
 	bottom_line.points = PackedVector2Array([
@@ -131,19 +136,126 @@ func setup_physics_objects():
 		Vector2(0, playarea_size.y)
 	])
 	bottom_line.default_color = Color.BLACK
-	bottom_line.width = 5.0
+	bottom_line.width = 15.0
 
 	# Position top obstacle
 	var top_obstacle = furnace_wall.get_node("TopObstacle/CollisionShape2D")
 	var top_height = furnace_opening_top
 	top_obstacle.position = Vector2(0, top_height / 2)
-	top_obstacle.shape.size = Vector2(40, top_height)
+	top_obstacle.shape.size = Vector2(15, top_height)
 
 	# Position bottom obstacle
 	var bottom_obstacle = furnace_wall.get_node("BottomObstacle/CollisionShape2D")
 	var bottom_height = playarea_size.y - furnace_opening_bottom
 	bottom_obstacle.position = Vector2(0, furnace_opening_bottom + (bottom_height / 2))
-	bottom_obstacle.shape.size = Vector2(40, bottom_height)
+	bottom_obstacle.shape.size = Vector2(15, bottom_height)
+
+	# Setup border zones at end of function
+	setup_border_zones()
+
+	# Setup delivery zone at end
+	setup_delivery_zone()
+
+func setup_border_zones():
+	if not border_zones:
+		push_error("BorderZones node not found in scene")
+		return
+
+	var playarea_size = playarea.size
+
+	# Create borders programmatically (overlapping at corners to prevent gaps)
+	var border_configs = [
+		{
+			"name": "TopBorder",
+			"pos": Vector2(playarea_size.x / 2, -BORDER_THICKNESS / 2),
+			"size": Vector2(playarea_size.x + BORDER_THICKNESS * 2, BORDER_THICKNESS)
+		},
+		{
+			"name": "BottomBorder",
+			"pos": Vector2(playarea_size.x / 2, playarea_size.y + BORDER_THICKNESS / 2),
+			"size": Vector2(playarea_size.x + BORDER_THICKNESS * 2, BORDER_THICKNESS)
+		},
+		{
+			"name": "LeftBorder",
+			"pos": Vector2(-BORDER_THICKNESS / 2, playarea_size.y / 2),
+			"size": Vector2(BORDER_THICKNESS, playarea_size.y + BORDER_THICKNESS * 2)
+		},
+		{
+			"name": "RightBorder",
+			"pos": Vector2(playarea_size.x + BORDER_THICKNESS / 2, playarea_size.y / 2),
+			"size": Vector2(BORDER_THICKNESS, playarea_size.y + BORDER_THICKNESS * 2)
+		}
+	]
+
+	for config in border_configs:
+		var area = Area2D.new()
+		area.name = config.name
+		area.monitoring = true
+		area.monitorable = false
+		area.collision_layer = 0
+		area.collision_mask = 4  # Layer 3 (coal) = 2^2 = 4
+
+		var shape = CollisionShape2D.new()
+		var rect = RectangleShape2D.new()
+		rect.size = config.size
+		shape.shape = rect
+		shape.position = config.pos
+
+		area.add_child(shape)
+		border_zones.add_child(area)
+		area.body_entered.connect(_on_coal_entered_border)
+
+func _on_coal_entered_border(body: Node2D):
+	# Check if it's a coal piece using group membership
+	if body.is_in_group("coal"):
+		body._on_entered_drop_zone()
+
+func setup_delivery_zone():
+	if not delivery_zone_node:
+		push_error("DeliveryZone node not found in scene")
+		return
+
+	# Guard against double setup
+	if delivery_zone_node.get_child_count() > 0:
+		push_warning("Delivery zone already setup, skipping")
+		return
+
+	# Validate opening dimensions
+	var opening_height = furnace_opening_bottom - furnace_opening_top
+	if opening_height <= 0:
+		push_error("Invalid furnace opening dimensions: top=%s bottom=%s" % [furnace_opening_top, furnace_opening_bottom])
+		return
+
+	# Create Area2D
+	var area = Area2D.new()
+	area.name = "DeliveryArea"
+	area.monitoring = true
+	area.monitorable = false
+	area.collision_layer = 0
+	area.collision_mask = 4  # Layer 3 (coal)
+
+	# Create collision shape
+	var shape = CollisionShape2D.new()
+	var rect = RectangleShape2D.new()
+	rect.size = Vector2(DELIVERY_ZONE_WIDTH, opening_height)
+	shape.shape = rect
+
+	# Position shape (local coordinates relative to DeliveryZone)
+	# DeliveryZone inherits FurnaceWall's X position (furnace_line_x)
+	# X: Center the 15px zone (half width from origin)
+	# Y: Center vertically in opening
+	shape.position = Vector2(
+		DELIVERY_ZONE_WIDTH / 2,
+		furnace_opening_top + opening_height / 2
+	)
+
+	area.add_child(shape)
+	delivery_zone_node.add_child(area)
+	area.body_entered.connect(_on_coal_entered_delivery_zone)
+
+func _on_coal_entered_delivery_zone(body: Node2D):
+	# Only coal can trigger this (collision_mask = 4)
+	body._on_entered_delivery_zone()
 
 func _process(delta):
 	# Apply continuous tilt torque while mouse buttons are held
