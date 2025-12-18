@@ -35,6 +35,9 @@ const MAX_COAL_PIECES: int = 100  # Performance limit
 var left_mouse_held: bool = false
 var right_mouse_held: bool = false
 
+# Work zone boundary visualization (dev mode only)
+var work_zone_boundary_line: Line2D
+
 func _ready():
 	ResponsiveLayout.apply_to_scene(self)  # REQUIRED
 	connect_navigation()
@@ -155,6 +158,9 @@ func setup_physics_objects():
 
 	# Setup delivery zone at end
 	setup_delivery_zone()
+
+	# Setup work zone boundary visualization (dev mode only)
+	setup_work_zone_boundary()
 
 func setup_border_zones():
 	if not border_zones:
@@ -303,7 +309,7 @@ func connect_resource_bars():
 	_on_stamina_changed(Level1Vars.stamina, Level1Vars.stamina_max)
 	_on_focus_changed(Level1Vars.focus, Level1Vars.focus_max)
 
-func _on_stamina_changed(new_value: int, max_value: int):
+func _on_stamina_changed(new_value: float, max_value: float):
 	stamina_bar.max_value = max_value
 	stamina_bar.value = new_value
 
@@ -338,3 +344,31 @@ func spawn_coal_from_tap():
 
 func _on_coal_destroyed():
 	active_coal_count -= 1
+
+func setup_work_zone_boundary():
+	# Only show when dev_speed_mode is enabled
+	if not Global.dev_speed_mode:
+		return
+
+	# Create Line2D for boundary visualization
+	work_zone_boundary_line = Line2D.new()
+	work_zone_boundary_line.name = "WorkZoneBoundary"
+	work_zone_boundary_line.default_color = Color.RED
+	work_zone_boundary_line.width = 5.0
+	work_zone_boundary_line.z_index = 100  # Draw on top
+
+	# Calculate boundary position (1/3 of playarea width)
+	# Line2D is added to playarea, so use local coordinates (just size, not global position)
+	var playarea_size = playarea.size
+	var boundary_x = playarea_size.x / 3.0
+
+	# Set line points (vertical line from top to bottom of playarea)
+	work_zone_boundary_line.points = PackedVector2Array([
+		Vector2(boundary_x, 0),
+		Vector2(boundary_x, playarea_size.y)
+	])
+
+	# Add to playarea
+	playarea.add_child(work_zone_boundary_line)
+
+	print("Work zone boundary drawn at x=", boundary_x, " (Global.dev_speed_mode)")

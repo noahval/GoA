@@ -1,10 +1,14 @@
 extends Node
 
 # Resource management
-var stamina: int = 50          # Current stamina (consumed by physical actions)
-var stamina_max: int = 100      # Maximum stamina capacity
+var stamina: float = 50.0      # Current stamina (consumed by physical actions)
+var stamina_max: float = 50.0  # Maximum stamina capacity
 var focus: int = 50            # Current focus (consumed by mental actions)
 var focus_max: int = 100        # Maximum focus capacity
+
+# Stamina drain rates (stamina per second)
+var stamina_drain_base: float = 0.2  # Base drain for shovel weight
+var stamina_drain_per_coal: float = 0.1  # Additional drain per coal piece
 
 # Shovel physics - upgradable values
 var shovel_follow_speed: float = 10.0  # How fast shovel moves toward mouse
@@ -35,21 +39,13 @@ var coal_delivered: int = 0 # Total coal pieces successfully delivered to furnac
 var DEBUG_COAL_TRACKING: bool = false  # Toggle coal drop console prints
 
 # Signals
-signal stamina_changed(new_value: int, max_value: int)
+signal stamina_changed(new_value: float, max_value: float)
 signal focus_changed(new_value: int, max_value: int)
 signal resource_depleted(resource_name: String)
 
 # Resource management functions
-func modify_stamina(amount: int) -> bool:
-	var new_value = stamina + amount
-
-	# Check if we have enough for consumption (negative amount)
-	if amount < 0 and new_value < 0:
-		emit_signal("resource_depleted", "stamina")
-		return false
-
-	# Clamp to valid range
-	stamina = clampi(new_value, 0, stamina_max)
+func modify_stamina(amount: float) -> bool:
+	stamina = clampf(stamina + amount, 0.0, stamina_max)
 	emit_signal("stamina_changed", stamina, stamina_max)
 	return true
 
