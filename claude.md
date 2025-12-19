@@ -44,6 +44,7 @@ Claude has full permissions to:
 - Confirm assumptions before making changes
 
 **Planning Workflow**
+- **ALWAYS read `.claude/skills/improve-plan.md` first** when writing any plan - it contains critical guidelines, common pitfalls, and quality standards
 - When asked to "write a plan" or "create a plan", ONLY write the plan document
 - NEVER automatically implement the plan after writing it
 - Wait for explicit user approval before implementing

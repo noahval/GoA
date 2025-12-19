@@ -397,7 +397,9 @@ func _on_debug_25_coal_pressed():
 
 func _on_debug_drain_stamina_pressed():
 	# Reduce stamina to 1.0 (triggers day end when next shovel action drains it)
-	Level1Vars.stamina = 1.0
+	# Use modify_stamina to ensure signal is emitted and UI updates
+	var target_stamina = 1.0
+	Level1Vars.modify_stamina(target_stamina - Level1Vars.stamina)
 	print("[DEBUG] Stamina drained to 1.0")
 
 func setup_work_zone_boundary():

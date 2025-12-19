@@ -170,6 +170,7 @@ The BIBLE Check Hook auto-triggers on development keywords (scene, stats, popup,
 - **Godot patterns** → [godot-dev.md](godot-dev.md)
 - **Refactor code/improve code quality** → [programming-principles.md](programming-principles.md)
 - **Code review/architectural decisions** → [programming-principles.md](programming-principles.md)
+- **Review/improve plans before implementation** → [improve-plan skill](../skills/improve-plan.md)
 
 ---
 
@@ -244,6 +245,7 @@ The BIBLE Check Hook auto-triggers on development keywords (scene, stats, popup,
 | **[sharing-skills](../skills/sharing-skills.md)** | skill sharing, contributing skills | Contributing skills to upstream |
 | **[testing-skills-with-subagents](../skills/testing-skills-with-subagents.md)** | skill testing, skill validation | Validating skill documentation |
 | **[using-superpowers](../skills/using-superpowers.md)** | skill usage, using skills, workflow selection | Beginning any task (first response checklist) |
+| **[improve-plan](../skills/improve-plan.md)** | improve plan, review plan, check plan, plan review, enhance plan | Reviewing plan quality, checking for issues before implementation |
 
 **See also**: [.claude/skills/README.md](../skills/README.md) for full skill documentation
 
