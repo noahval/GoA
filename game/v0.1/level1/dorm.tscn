@@ -1,0 +1,22 @@
+[gd_scene load_steps=2 format=3 uid="uid://b8k3ynadxvvqp"]
+
+[ext_resource type="PackedScene" uid="uid://drfp4vl2w1wvr" path="res://level1/scene_template.tscn" id="1_dorm_template"]
+[ext_resource type="Script" path="res://level1/dorm.gd" id="2_dorm_script"]
+
+[node name="Dorm" instance=ExtResource("1_dorm_template")]
+script = ExtResource("2_dorm_script")
+
+[node name="ToBarButton" type="Button" parent="AspectContainer/MainContainer/mainarea/Menu" index="1"]
+layout_mode = 2
+theme_type_variation = &"ForwardNavButton"
+text = "Bar"
+
+[node name="ToCarriageButton" type="Button" parent="AspectContainer/MainContainer/mainarea/Menu" index="2"]
+layout_mode = 2
+theme_type_variation = &"ForwardNavButton"
+text = "Coppersmith Carriage"
+
+[node name="ToMessHallButton" type="Button" parent="AspectContainer/MainContainer/mainarea/Menu" index="3"]
+layout_mode = 2
+theme_type_variation = &"ForwardNavButton"
+text = "Mess Hall"

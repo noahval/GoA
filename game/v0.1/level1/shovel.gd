@@ -199,9 +199,9 @@ func update_stamina_drain(delta: float):
 	if coal_count == 0:
 		return
 
-	# Debug output when dev_speed_mode is enabled
-	if Global.dev_speed_mode and coal_count > 0:
-		print("Shovel pos: ", global_position.x, " | Boundary: ", work_zone_boundary_x, " | In work zone: ", in_work_zone)
+	# Debug output disabled - was flooding logs every frame
+	# if Global.dev_speed_mode and coal_count > 0:
+	#	print("Shovel pos: ", global_position.x, " | Boundary: ", work_zone_boundary_x, " | In work zone: ", in_work_zone)
 
 	# Check drain condition: has coal AND in work zone
 	if in_work_zone:

@@ -1,5 +1,8 @@
 flowchart TB
-    dorm["<b>Dormitory</b><br>Buttons:<br>- Sleep"] --> bar["<b>Bar</b><br>Buttons:<br>- (list here)"] & carriage["<b>Coppersmith Carriage</b><br>Buttons:<br>- (list here)"] & n2["Mess Hall<br>- Eat Rations"]
-    furnace["<b>Furnace</b><br>Buttons:<br>- Shovel Coal<br>- Buy Auto-Shovel"] --> n1["Mind<br>Buttons"]
-    carriage --> secret["<b>Secret Passage</b><br>Buttons:<br>- Investigate"] & atm["<b>ATM</b><br>Buttons:<br>- Withdraw<br>- Deposit"] & office["<b>Overseer Office</b><br>Buttons:<br>- Bribe"] & shop["<b>Shop</b><br>Buttons:<br>- (upgrades)"]
-    secret --> puzzle["<b>Secret Puzzle</b><br>Buttons:<br>- Solve"]
+    dorm["<b>Dorm</b>"] --> bar["<b>Bar</b>"] & carriage["<b>Coppersmith Carriage</b>"] & mess["<b>Mess Hall</b>"]
+    furnace["<b>Furnace</b>"] --> mind["<b>Mind</b>"]
+    carriage --> shop@{ label: "<b>Crankshaft's</b>" } & office@{ label: "<b>Overseer's Office</b>" } & n3["<b>Frayed End</b>"]
+    secret["<b>Secret Passage</b>"] --> puzzle["<b>Secret Puzzle</b>"]
+    n3 --> n4["<b>Currency</b>"] & secret
+    bar --> n2["<b>Gambling</b>"]
+    n5["<b>Pay</b>"]

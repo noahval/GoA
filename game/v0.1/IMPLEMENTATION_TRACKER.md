@@ -11,10 +11,10 @@
 1.15-settings-panel
 1.21-simple-logging
 
-2.3-Physics Objects
-2.4-Coal Physics Spawning
-2.5-Dropped Coal
-2.6-Delivered Coal
-2.7-furnace bars
-
-
+2.2-Physics Objects
+2.3-Coal Physics Spawning
+2.4-Dropped Coal
+2.5-Delivered Coal
+2.6-furnace bars
+2.7-stamina drain
+2.8-day end

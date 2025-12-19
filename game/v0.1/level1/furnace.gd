@@ -35,14 +35,21 @@ const MAX_COAL_PIECES: int = 100  # Performance limit
 var left_mouse_held: bool = false
 var right_mouse_held: bool = false
 
+# Day end tracking
+var day_ended: bool = false
+
 # Work zone boundary visualization (dev mode only)
 var work_zone_boundary_line: Line2D
 
 func _ready():
+	# Reset day end flag
+	day_ended = false
+
 	ResponsiveLayout.apply_to_scene(self)  # REQUIRED
 	connect_navigation()
 	connect_settings_button()
 	connect_resource_bars()
+	setup_debug_buttons()
 	# Defer physics setup until after layout is applied
 	await get_tree().process_frame
 	setup_physics_objects()
@@ -313,9 +320,27 @@ func _on_stamina_changed(new_value: float, max_value: float):
 	stamina_bar.max_value = max_value
 	stamina_bar.value = new_value
 
+	# Check for depletion
+	if new_value <= 0.0:
+		end_day("stamina")
+
 func _on_focus_changed(new_value: int, max_value: int):
 	focus_bar.max_value = max_value
 	focus_bar.value = new_value
+
+	# Check for depletion (future: when focus drain implemented)
+	if new_value <= 0:
+		end_day("focus")
+
+func end_day(reason: String):
+	# Prevent double-triggering if both resources hit 0 in same frame
+	if day_ended:
+		return
+	day_ended = true
+
+	# Transition to pay scene
+	# Note: reason parameter allows future expansion (different messages/bonuses)
+	get_tree().change_scene_to_file("res://level1/pay.tscn")
 
 func navigate_to(scene_id: String):
 	var path = SceneNetwork.get_scene_path(scene_id)
@@ -344,6 +369,36 @@ func spawn_coal_from_tap():
 
 func _on_coal_destroyed():
 	active_coal_count -= 1
+
+func setup_debug_buttons():
+	# Get buttons (use get_node_or_null for safety)
+	var coal_btn = get_node_or_null("AspectContainer/MainContainer/mainarea/Menu/Debug25CoalButton")
+	var stamina_btn = get_node_or_null("AspectContainer/MainContainer/mainarea/Menu/DebugDrainStaminaButton")
+
+	if not coal_btn or not stamina_btn:
+		return  # Buttons don't exist (shouldn't happen)
+
+	# Show buttons only if dev_speed_mode enabled
+	var dev_mode = Global.dev_speed_mode
+	coal_btn.visible = dev_mode
+	stamina_btn.visible = dev_mode
+
+	if dev_mode:
+		# Connect signals (only when visible)
+		if not coal_btn.pressed.is_connected(_on_debug_25_coal_pressed):
+			coal_btn.pressed.connect(_on_debug_25_coal_pressed)
+		if not stamina_btn.pressed.is_connected(_on_debug_drain_stamina_pressed):
+			stamina_btn.pressed.connect(_on_debug_drain_stamina_pressed)
+
+func _on_debug_25_coal_pressed():
+	# Add 25 to delivered coal count
+	Level1Vars.coal_delivered += 25
+	print("[DEBUG] Added 25 coal - total delivered: %d" % Level1Vars.coal_delivered)
+
+func _on_debug_drain_stamina_pressed():
+	# Reduce stamina to 1.0 (triggers day end when next shovel action drains it)
+	Level1Vars.stamina = 1.0
+	print("[DEBUG] Stamina drained to 1.0")
 
 func setup_work_zone_boundary():
 	# Only show when dev_speed_mode is enabled

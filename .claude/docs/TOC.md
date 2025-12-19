@@ -64,7 +64,7 @@ This roadmap is for a complete game rewrite from scratch. All features listed sh
 1. 
 1. 
 1. 
-1. 
+1. pay scene juice
 1. 
 1. core-loop - Complete one work day with satisfying coal-shoveling feel
 1. permanent-progression - Prestige system with skill tree and persistent upgrades

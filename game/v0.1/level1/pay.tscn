@@ -1,0 +1,64 @@
+[gd_scene load_steps=3 format=3 uid="uid://cqm8r7vxjn3yt"]
+
+[ext_resource type="PackedScene" uid="uid://drfp4vl2w1wvr" path="res://level1/scene_template.tscn" id="1_template"]
+[ext_resource type="Script" path="res://level1/pay.gd" id="2_pay_script"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+bg_color = Color(0.58, 0.247, 0.012, 0.3)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[node name="Pay" instance=ExtResource("1_template")]
+script = ExtResource("2_pay_script")
+
+[node name="StatsPanel" type="PanelContainer" parent="AspectContainer/MainContainer/mainarea/PlayArea" index="0"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -150.0
+offset_right = 200.0
+offset_bottom = 150.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="AspectContainer/MainContainer/mainarea/PlayArea/StatsPanel"]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="TitleLabel" type="Label" parent="AspectContainer/MainContainer/mainarea/PlayArea/StatsPanel/VBoxContainer"]
+layout_mode = 2
+text = "Day Complete"
+horizontal_alignment = 1
+
+[node name="CoalDeliveredLabel" type="Label" parent="AspectContainer/MainContainer/mainarea/PlayArea/StatsPanel/VBoxContainer"]
+layout_mode = 2
+text = "Coal Delivered: 0"
+horizontal_alignment = 1
+
+[node name="CoalDroppedLabel" type="Label" parent="AspectContainer/MainContainer/mainarea/PlayArea/StatsPanel/VBoxContainer"]
+layout_mode = 2
+text = "Coal Dropped: 0"
+horizontal_alignment = 1
+
+[node name="Spacer" type="Control" parent="AspectContainer/MainContainer/mainarea/PlayArea/StatsPanel/VBoxContainer"]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+
+[node name="PayLabel" type="Label" parent="AspectContainer/MainContainer/mainarea/PlayArea/StatsPanel/VBoxContainer"]
+layout_mode = 2
+text = "Pay: 0 copper"
+horizontal_alignment = 1
+
+[node name="DormButton" type="Button" parent="AspectContainer/MainContainer/mainarea/Menu" index="1"]
+custom_minimum_size = Vector2(120, 50)
+layout_mode = 2
+theme_type_variation = &"ForwardNavButton"
+text = "Dorm"

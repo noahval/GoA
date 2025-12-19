@@ -155,3 +155,13 @@ theme_override_styles/fill = SubResource("StyleBoxFlat_focus_fill")
 layout_mode = 2
 theme_type_variation = &"ForwardNavButton"
 text = "To Mind"
+
+[node name="Debug25CoalButton" type="Button" parent="AspectContainer/MainContainer/mainarea/Menu" index="3"]
+visible = false
+layout_mode = 2
+text = "[DEBUG] +25 Coal"
+
+[node name="DebugDrainStaminaButton" type="Button" parent="AspectContainer/MainContainer/mainarea/Menu" index="4"]
+visible = false
+layout_mode = 2
+text = "[DEBUG] Drain Stamina"

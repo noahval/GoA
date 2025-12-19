@@ -35,6 +35,13 @@ var furnace_opening_height_percent: float = 0.20  # Target size (smaller = harde
 var coal_dropped: int = 0   # Total coal pieces that fell/were dropped
 var coal_delivered: int = 0 # Total coal pieces successfully delivered to furnace
 
+# Currency
+var copper_current: int = 0  # Current copper pieces owned
+
+# Pay formula variables (tuneable for balance)
+var pay_coal_per_copper: int = 25  # How many coal pieces = 1 copper
+var pay_drop_penalty_percent: float = 0.0  # Percentage reduction per dropped coal (0-1.0, currently disabled)
+
 # Debug flags
 var DEBUG_COAL_TRACKING: bool = false  # Toggle coal drop console prints
 
@@ -68,6 +75,29 @@ func restore_all_resources():
 	emit_signal("stamina_changed", stamina, stamina_max)
 	emit_signal("focus_changed", focus, focus_max)
 
+func calculate_pay() -> int:
+	# Validate pay_coal_per_copper to prevent division errors
+	if pay_coal_per_copper <= 0:
+		push_error("Invalid pay_coal_per_copper: %d" % pay_coal_per_copper)
+		return 0
+
+	# Base formula: 1 copper per 25 coal delivered
+	# Integer division rounds down (24 coal = 0 copper, 25 coal = 1 copper)
+	var base_pay = coal_delivered / pay_coal_per_copper
+
+	# Future modifications can be added here:
+	# - Drop penalties (if pay_drop_penalty_percent > 0)
+	# - Bonuses from upgrades/equipment
+	# - Event modifiers (double pay days, etc.)
+	# - Combo/streak bonuses
+
+	# Ensure non-negative result
+	return max(0, int(base_pay))
+
+func award_pay(amount: int):
+	copper_current += amount
+	# Future: emit signal for UI updates if needed
+
 # Save/load integration
 func get_save_data() -> Dictionary:
 	return {
@@ -91,7 +121,9 @@ func get_save_data() -> Dictionary:
 		"furnace_opening_height_percent": furnace_opening_height_percent,
 		# Gameplay stats
 		"coal_dropped": coal_dropped,
-		"coal_delivered": coal_delivered
+		"coal_delivered": coal_delivered,
+		# Currency
+		"copper_current": copper_current
 	}
 
 func load_save_data(data: Dictionary):
@@ -119,6 +151,9 @@ func load_save_data(data: Dictionary):
 	# Gameplay stats
 	coal_dropped = data.get("coal_dropped", 0)
 	coal_delivered = data.get("coal_delivered", 0)
+
+	# Currency
+	copper_current = data.get("copper_current", 0)
 
 	# Emit signals to update UI
 	emit_signal("stamina_changed", stamina, stamina_max)
