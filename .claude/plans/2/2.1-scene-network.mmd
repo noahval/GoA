@@ -1,8 +1,8 @@
 flowchart TB
-    dorm["<b>Dorm</b>"] --> bar["<b>Bar</b>"] & carriage["<b>Coppersmith Carriage</b>"] & mess["<b>Mess Hall</b>"]
+    dorm["<b>Dorm</b>"] --> bar["<b>Bar</b>"] & coppersmith_carriage["<b>Coppersmith Carriage</b>"] & mess_hall["<b>Mess Hall</b>"]
     furnace["<b>Furnace</b>"] --> mind["<b>Mind</b>"]
-    carriage --> shop@{ label: "<b>Crankshaft's</b>" } & office@{ label: "<b>Overseer's Office</b>" } & n3["<b>Frayed End</b>"]
-    secret["<b>Secret Passage</b>"] --> puzzle["<b>Secret Puzzle</b>"]
-    n3 --> n4["<b>Currency</b>"] & secret
-    bar --> n2["<b>Gambling</b>"]
-    n5["<b>Pay</b>"]
+    bar --> gambling["<b>Gambling</b>"]
+    frayed_end["<b>Frayed End</b>"] --> currency["<b>Currency</b>"]
+    coppersmith_carriage --> crankshafts@{ label: "<b>Crankshaft's</b>" } & bank["<b>Bank</b>"] & frayed_end
+    frayed_end --> secret_passage["<b>Secret Passage</b>"]
+    pay["<b>Pay</b>"]
