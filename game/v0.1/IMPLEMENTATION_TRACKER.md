@@ -3,6 +3,7 @@
 1.1-project-setup
 1.2-project-architecture
 1.3-global-autoload
+1.5-currencies
 1.7-stats-and-experience
 1.8-scene-management
 1.9-default-theme

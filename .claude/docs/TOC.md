@@ -29,7 +29,7 @@ This roadmap is for a complete game rewrite from scratch. All features listed sh
 1. Global Autoload - Global.gd with stats system and game state management
 1. [!] Level 1 Variables Autoload - level-1-vars.gd for level-specific state
 1. Currencies - Copper, Silver, Gold, and Platinum currencies with current and lifetime tracking
-1. Currency Manager - Currency exchange system with market rate hooks, transaction fees, and purse capacity
+
 1. [!] Stats and Experience - Six stats (STR/DEX/CON/INT/WIS/CHA) with XP tracking and level-up mechanics
 1. Scene Management - Generic scene changing with validation framework and save integration
 1. Default Theme - UI theme resource (default_theme.tres) for consistent styling
@@ -50,6 +50,10 @@ This roadmap is for a complete game rewrite from scratch. All features listed sh
 1. Version Management - Game version tracking for save compatibility
 1. Deployment Pipeline - Dev/main git workflow with automated GitHub Actions builds, version incrementing, and deployment
 1. web hosting - 
+1. currency display - 
+1. 
+1. 
+1. Currency Manager - Currency exchange system with market rate hooks, transaction fees, and purse capacity
 
 ## 2. copper era
 1. scene Network - Centralized scene registry and navigation map for level 1 scenes

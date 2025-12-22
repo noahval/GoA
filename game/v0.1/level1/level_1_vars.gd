@@ -35,8 +35,26 @@ var furnace_opening_height_percent: float = 0.20  # Target size (smaller = harde
 var coal_dropped: int = 0   # Total coal pieces that fell/were dropped
 var coal_delivered: int = 0 # Total coal pieces successfully delivered to furnace
 
-# Currency
-var copper_current: int = 0  # Current copper pieces owned
+# ===== CURRENCY SYSTEM (4-tier economy) =====
+
+# Valid currency types (prevents typos)
+const VALID_CURRENCIES = ["copper", "silver", "gold", "platinum"]
+
+# Current currency holdings
+var currency = {
+	"copper": 0.0,
+	"silver": 0.0,
+	"gold": 0.0,
+	"platinum": 0.0
+}
+
+# Lifetime currency earned (never decreases, tracks total ever earned)
+var lifetime_currency = {
+	"copper": 0.0,
+	"silver": 0.0,
+	"gold": 0.0,
+	"platinum": 0.0
+}
 
 # Pay formula variables (tuneable for balance)
 var pay_coal_per_copper: int = 25  # How many coal pieces = 1 copper
@@ -49,6 +67,7 @@ var DEBUG_COAL_TRACKING: bool = false  # Toggle coal drop console prints
 signal stamina_changed(new_value: float, max_value: float)
 signal focus_changed(new_value: int, max_value: int)
 signal resource_depleted(resource_name: String)
+signal currency_changed(currency_type: String, old_amount: float, new_amount: float)
 
 # Resource management functions
 func modify_stamina(amount: float) -> bool:
@@ -95,8 +114,96 @@ func calculate_pay() -> int:
 	return max(0, int(base_pay))
 
 func award_pay(amount: int):
-	copper_current += amount
-	# Future: emit signal for UI updates if needed
+	# Legacy function - now uses new currency system
+	add_currency("copper", float(amount))
+
+# ===== CURRENCY SYSTEM FUNCTIONS =====
+
+# Get empty currency dictionary (DRY principle)
+func _get_empty_currency_dict() -> Dictionary:
+	return {
+		"copper": 0.0,
+		"silver": 0.0,
+		"gold": 0.0,
+		"platinum": 0.0
+	}
+
+# Add currency of any type
+func add_currency(currency_type: String, amount: float) -> void:
+	if not currency_type in VALID_CURRENCIES:
+		push_error("Invalid currency type: %s. Valid: %s" % [currency_type, VALID_CURRENCIES])
+		return
+
+	if amount <= 0:
+		push_warning("Attempted to add non-positive amount: %.2f" % amount)
+		return
+
+	# Update current holdings
+	var old_amount = currency[currency_type]
+	currency[currency_type] += amount
+
+	# Update lifetime earnings
+	lifetime_currency[currency_type] += amount
+
+	# Emit signal for reactive UI
+	emit_signal("currency_changed", currency_type, old_amount, currency[currency_type])
+
+# Deduct currency of any type
+func deduct_currency(currency_type: String, amount: float) -> bool:
+	if not currency_type in VALID_CURRENCIES:
+		push_error("Invalid currency type: %s. Valid: %s" % [currency_type, VALID_CURRENCIES])
+		return false
+
+	if amount <= 0:
+		push_warning("Attempted to deduct non-positive amount: %.2f" % amount)
+		return false
+
+	# Check if player has enough
+	if currency[currency_type] < amount:
+		return false
+
+	# Deduct the amount
+	var old_amount = currency[currency_type]
+	currency[currency_type] -= amount
+
+	# Emit signal for reactive UI
+	emit_signal("currency_changed", currency_type, old_amount, currency[currency_type])
+
+	return true
+
+# Get current amount of a currency type
+func get_currency(currency_type: String) -> float:
+	return currency.get(currency_type, 0.0)
+
+# Check if player can afford an amount
+func can_afford(currency_type: String, amount: float) -> bool:
+	return get_currency(currency_type) >= amount
+
+# Check if player can afford multiple currencies at once
+func can_afford_all(costs: Dictionary) -> bool:
+	for currency_type in costs:
+		if not can_afford(currency_type, costs[currency_type]):
+			return false
+	return true
+
+# Deduct multiple currencies (all-or-nothing)
+func deduct_currencies(costs: Dictionary) -> bool:
+	# Check all first
+	if not can_afford_all(costs):
+		return false
+
+	# Deduct all
+	for currency_type in costs:
+		if not deduct_currency(currency_type, costs[currency_type]):
+			push_error("Failed to deduct %s after can_afford check passed" % currency_type)
+			return false
+
+	return true
+
+# Complete reset for new game
+func reset_all_currency() -> void:
+	currency = _get_empty_currency_dict()
+	lifetime_currency = _get_empty_currency_dict()
 
 # Save/load integration
 func get_save_data() -> Dictionary:
@@ -122,8 +229,9 @@ func get_save_data() -> Dictionary:
 		# Gameplay stats
 		"coal_dropped": coal_dropped,
 		"coal_delivered": coal_delivered,
-		# Currency
-		"copper_current": copper_current
+		# Currency (4-tier system)
+		"currency": currency,
+		"lifetime_currency": lifetime_currency
 	}
 
 func load_save_data(data: Dictionary):
@@ -152,8 +260,18 @@ func load_save_data(data: Dictionary):
 	coal_dropped = data.get("coal_dropped", 0)
 	coal_delivered = data.get("coal_delivered", 0)
 
-	# Currency
-	copper_current = data.get("copper_current", 0)
+	# Currency (4-tier system with backward compatibility)
+	if data.has("currency"):
+		currency = data.get("currency", _get_empty_currency_dict())
+		lifetime_currency = data.get("lifetime_currency", _get_empty_currency_dict())
+	else:
+		# Backward compatibility: migrate old copper_current to new system
+		currency = _get_empty_currency_dict()
+		lifetime_currency = _get_empty_currency_dict()
+		var old_copper = data.get("copper_current", 0)
+		if old_copper > 0:
+			currency["copper"] = float(old_copper)
+			lifetime_currency["copper"] = float(old_copper)
 
 	# Emit signals to update UI
 	emit_signal("stamina_changed", stamina, stamina_max)
@@ -184,6 +302,9 @@ func reset_to_defaults():
 	# Gameplay stats
 	coal_dropped = 0
 	coal_delivered = 0
+
+	# Currency
+	reset_all_currency()
 
 	# Emit signals
 	emit_signal("stamina_changed", stamina, stamina_max)
