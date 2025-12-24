@@ -4,6 +4,18 @@ func _ready():
 	ResponsiveLayout.apply_to_scene(self)  # REQUIRED
 	connect_navigation()
 	connect_settings_button()
+	add_currency_display()
+
+func add_currency_display():
+	# Create currency display for testing (Plan 1.27)
+	var currency_display = preload("res://ui/currency_display.tscn").instantiate()
+	currency_display.currency_type = "copper"
+
+	# Add to menu at the top
+	var menu = $AspectContainer/MainContainer/mainarea/Menu
+	if menu:
+		menu.add_child(currency_display)
+		menu.move_child(currency_display, 0)  # Move to top of menu
 
 func connect_navigation():
 	# Connect navigation buttons based on .mmd connections
@@ -13,11 +25,11 @@ func connect_navigation():
 
 	var to_carriage_button = $AspectContainer/MainContainer/mainarea/Menu/ToCarriageButton
 	if to_carriage_button:
-		to_carriage_button.pressed.connect(func(): navigate_to("coppersmith_carriage"))
+		to_carriage_button.pressed.connect(func(): navigate_to("coppersmith"))
 
 	var to_mess_hall_button = $AspectContainer/MainContainer/mainarea/Menu/ToMessHallButton
 	if to_mess_hall_button:
-		to_mess_hall_button.pressed.connect(func(): navigate_to("mess_hall"))
+		to_mess_hall_button.pressed.connect(func(): navigate_to("mess"))
 
 func connect_settings_button():
 	var settings_button = $AspectContainer/MainContainer/mainarea/Menu/SettingsButton

@@ -661,6 +661,17 @@ func show_notification(message: String) -> void:
 	# - Add to notification queue
 	# - Auto-dismiss after duration
 
+# ===== CURRENCY DISPLAY HELPERS =====
+
+## Refresh all CurrencyDisplay instances in the scene tree
+## Call this after any currency transaction to update all UI displays
+func refresh_all_currency_displays() -> void:
+	if not is_instance_valid(get_tree()):
+		push_error("Cannot refresh currency displays: scene tree not available")
+		return
+
+	get_tree().call_group("currency_displays", "refresh")
+
 # ===== RESET & INITIALIZATION =====
 
 func reset_stats() -> void:

@@ -11,6 +11,7 @@
 1.12-scene-template
 1.15-settings-panel
 1.21-simple-logging
+1.27-currency-display
 
 2.2-Physics Objects
 2.3-Coal Physics Spawning

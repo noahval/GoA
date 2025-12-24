@@ -18,7 +18,7 @@ const SCENE_NETWORK = {
 	"dorm": {
 		"path": "res://level1/dorm.tscn",
 		"name": "Dormitory",
-		"connections": ["bar", "carriage", "mess"],
+		"connections": ["bar", "coppersmith", "mess"],
 	},
 
 	"bar": {
@@ -27,10 +27,16 @@ const SCENE_NETWORK = {
 		"connections": ["dorm"],
 	},
 
-	"carriage": {
-		"path": "res://level1/carriage.tscn",
+	"coppersmith": {
+		"path": "res://level1/coppersmith.tscn",
 		"name": "Coppersmith Carriage",
-		"connections": ["dorm", "secret", "atm", "office", "shop"],
+		"connections": ["dorm", "crankshafts", "office", "frayed_end"],
+	},
+
+	"crankshafts": {
+		"path": "res://level1/crankshafts.tscn",
+		"name": "Crankshaft's",
+		"connections": ["coppersmith"],
 	},
 
 	"mess": {

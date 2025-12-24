@@ -1,0 +1,27 @@
+[gd_scene load_steps=2 format=3 uid="uid://dkmw8x3n5jy1p"]
+
+[ext_resource type="PackedScene" uid="uid://drfp4vl2w1wvr" path="res://level1/scene_template.tscn" id="1_template"]
+[ext_resource type="Script" path="res://level1/coppersmith.gd" id="2_script"]
+
+[node name="Coppersmith" instance=ExtResource("1_template")]
+script = ExtResource("2_script")
+
+[node name="ToCrankshaftsButton" type="Button" parent="AspectContainer/MainContainer/mainarea/Menu" index="1"]
+layout_mode = 2
+theme_type_variation = &"ForwardNavButton"
+text = "Crankshaft's"
+
+[node name="ToOfficeButton" type="Button" parent="AspectContainer/MainContainer/mainarea/Menu" index="2"]
+layout_mode = 2
+theme_type_variation = &"ForwardNavButton"
+text = "Overseer's Office"
+
+[node name="ToFrayedEndButton" type="Button" parent="AspectContainer/MainContainer/mainarea/Menu" index="3"]
+layout_mode = 2
+theme_type_variation = &"ForwardNavButton"
+text = "Frayed End"
+
+[node name="ToDormButton" type="Button" parent="AspectContainer/MainContainer/mainarea/Menu" index="4"]
+layout_mode = 2
+theme_type_variation = &"BackNavButton"
+text = "Dormitory"

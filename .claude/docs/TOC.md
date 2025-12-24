@@ -63,14 +63,17 @@ This roadmap is for a complete game rewrite from scratch. All features listed sh
 1. delivered coal - delivered tracking with Level1Vars integration (includes automated tests and performance benchmarks)
 1. furnace bars - add stamina and focus to menu
 1. stamina drain - goes down when shovel moves
-1. Day end - pay scene, dorm transition
-1. dorm scene - 
+1. day end - pay scene, dorm transition
+1. shovel experience - 
+1. upgrade pool - 
+1. shovelling level up - 
+1. 
+1. pay scene juice -
+1. lactic acid - 
+1. train shake - 
 1. 
 1. 
 1. 
-1. pay scene juice
-1. 
-1. core-loop - Complete one work day with satisfying coal-shoveling feel
 1. permanent-progression - Prestige system with skill tree and persistent upgrades
 1. roguelite-techniques - Run-based mechanics with meta-progression
 1. Breaks and Demand - Timed breaks(actions not clock), rush orders, and pressure mechanics

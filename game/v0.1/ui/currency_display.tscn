@@ -1,0 +1,19 @@
+[gd_scene load_steps=2 format=3 uid="uid://c8y3vkh1qw3jf"]
+
+[ext_resource type="Script" path="res://ui/currency_display.gd" id="1_currency_display"]
+
+[node name="CurrencyDisplay" type="HBoxContainer"]
+alignment = 1
+script = ExtResource("1_currency_display")
+
+[node name="Icon" type="TextureRect" parent="."]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Amount" type="Label" parent="."]
+layout_mode = 2
+text = "0"
+horizontal_alignment = 0
+vertical_alignment = 1
