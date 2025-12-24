@@ -44,6 +44,10 @@ window/size/mode=2
 window/stretch/mode="viewport"
 window/stretch/aspect="expand"
 
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/gut/plugin.cfg")
+
 [gui]
 
 theme/custom="res://default_theme.tres"
