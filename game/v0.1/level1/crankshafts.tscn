@@ -1,4 +1,4 @@
-[gd_scene load_steps=2 format=3 uid="uid://c8h4kpt9xjwm2"]
+[gd_scene load_steps=2 format=3 uid="uid://c8h4kpuaxjwm2"]
 
 [ext_resource type="PackedScene" uid="uid://drfp4vl2w1wvr" path="res://level1/scene_template.tscn" id="1_template"]
 [ext_resource type="Script" path="res://level1/crankshafts.gd" id="2_script"]

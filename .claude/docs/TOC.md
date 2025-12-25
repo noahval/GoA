@@ -68,6 +68,8 @@ This roadmap is for a complete game rewrite from scratch. All features listed sh
 1. upgrade pool - 
 1. shovelling level up - 
 1. 
+1. 
+1. upgrade rarity - 
 1. pay scene juice -
 1. lactic acid - 
 1. train shake - 
@@ -75,7 +77,7 @@ This roadmap is for a complete game rewrite from scratch. All features listed sh
 1. 
 1. 
 1. permanent-progression - Prestige system with skill tree and persistent upgrades
-1. roguelite-techniques - Run-based mechanics with meta-progression
+1. additional-resource-pools - Insight, Passion, Drive resources for technique unlock costs
 1. Breaks and Demand - Timed breaks(actions not clock), rush orders, and pressure mechanics
 1. Discovery Mechanics - Hidden systems revealed through experimentation
 1. content-and-balance - Tuning for difficulty curve and engagement
