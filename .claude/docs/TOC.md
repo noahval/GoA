@@ -29,7 +29,6 @@ This roadmap is for a complete game rewrite from scratch. All features listed sh
 1. Global Autoload - Global.gd with stats system and game state management
 1. [!] Level 1 Variables Autoload - level-1-vars.gd for level-specific state
 1. Currencies - Copper, Silver, Gold, and Platinum currencies with current and lifetime tracking
-
 1. [!] Stats and Experience - Six stats (STR/DEX/CON/INT/WIS/CHA) with XP tracking and level-up mechanics
 1. Scene Management - Generic scene changing with validation framework and save integration
 1. Default Theme - UI theme resource (default_theme.tres) for consistent styling
@@ -65,8 +64,10 @@ This roadmap is for a complete game rewrite from scratch. All features listed sh
 1. stamina drain - goes down when shovel moves
 1. day end - pay scene, dorm transition
 1. shovel experience - 
-1. upgrade pool - 
+1. upgrade pool -
+1. apply upgrade -  
 1. shovelling level up - 
+1. 
 1. 
 1. 
 1. upgrade rarity - 
