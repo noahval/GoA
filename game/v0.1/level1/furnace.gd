@@ -9,6 +9,9 @@ extends Control
 @onready var focus_bar: ProgressBar = $AspectContainer/MainContainer/mainarea/Menu/FocusBar
 @onready var delivery_zone_node: Node2D = $AspectContainer/MainContainer/mainarea/PlayArea/FurnaceWall/DeliveryZone
 
+# Camera for shake effects (created programmatically)
+var camera: Camera2D = null
+
 const BORDER_THICKNESS: float = 50.0  # Border zone thickness in pixels
 const DELIVERY_ZONE_WIDTH: float = 15.0
 
@@ -50,9 +53,25 @@ func _ready():
 	connect_settings_button()
 	connect_resource_bars()
 	setup_debug_buttons()
+	setup_camera()
 	# Defer physics setup until after layout is applied
 	await get_tree().process_frame
 	setup_physics_objects()
+
+	# Initialize train shake system after physics setup
+	assert(camera != null, "Camera2D not created - check setup_camera()")
+	assert(coal_container != null, "CoalContainer not found")
+	TrainShake.initialize(camera, coal_container)
+
+func setup_camera():
+	# Create Camera2D for shake effects
+	camera = Camera2D.new()
+	camera.name = "Camera2D"
+	camera.enabled = true
+	camera.anchor_mode = Camera2D.ANCHOR_MODE_FIXED_TOP_LEFT
+	camera.offset = Vector2.ZERO
+	add_child(camera)
+	print("Camera2D created for shake effects")
 
 func setup_physics_objects():
 	# Get playarea size

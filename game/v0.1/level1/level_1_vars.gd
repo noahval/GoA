@@ -31,6 +31,17 @@ var coal_radius: float = 5.0      # Coal piece size in pixels (affects collision
 # Furnace difficulty - upgradable
 var furnace_opening_height_percent: float = 0.20  # Target size (smaller = harder)
 
+# Train shake mechanic
+var shake_interval_min: float = 15.0  # Minimum seconds between shakes
+var shake_interval_max: float = 60.0  # Maximum seconds between shakes
+var shake_warning_duration: float = 0.5  # Warning time in seconds (upgradeable)
+var shake_warning_intensity: float = 1.2  # Warning shake camera intensity (15% of big shake = 1.2/8.0)
+var shake_big_duration_min: float = 0.5  # Big shake minimum duration
+var shake_big_duration_max: float = 2.0  # Big shake maximum duration
+var shake_big_intensity: float = 8.0  # Big shake camera intensity (pixels)
+var shake_coal_impulse_strength: float = 75.0  # Physics impulse applied to coal (pixels/sec)
+var shake_enabled: bool = true  # Master switch to enable/disable shakes
+
 # Coal tracking - gameplay stats
 var coal_dropped: int = 0   # Total coal pieces that fell/were dropped
 var coal_delivered: int = 0 # Total coal pieces successfully delivered to furnace
@@ -226,6 +237,16 @@ func get_save_data() -> Dictionary:
 		"shovel_bounce": shovel_bounce,
 		"coal_radius": coal_radius,
 		"furnace_opening_height_percent": furnace_opening_height_percent,
+		# Train shake mechanic
+		"shake_interval_min": shake_interval_min,
+		"shake_interval_max": shake_interval_max,
+		"shake_warning_duration": shake_warning_duration,
+		"shake_warning_intensity": shake_warning_intensity,
+		"shake_big_duration_min": shake_big_duration_min,
+		"shake_big_duration_max": shake_big_duration_max,
+		"shake_big_intensity": shake_big_intensity,
+		"shake_coal_impulse_strength": shake_coal_impulse_strength,
+		"shake_enabled": shake_enabled,
 		# Gameplay stats
 		"coal_dropped": coal_dropped,
 		"coal_delivered": coal_delivered,
@@ -255,6 +276,17 @@ func load_save_data(data: Dictionary):
 	shovel_bounce = data.get("shovel_bounce", 0.1)
 	coal_radius = data.get("coal_radius", 5.0)
 	furnace_opening_height_percent = data.get("furnace_opening_height_percent", 0.20)
+
+	# Train shake mechanic
+	shake_interval_min = data.get("shake_interval_min", 15.0)
+	shake_interval_max = data.get("shake_interval_max", 60.0)
+	shake_warning_duration = data.get("shake_warning_duration", 0.5)
+	shake_warning_intensity = data.get("shake_warning_intensity", 1.2)
+	shake_big_duration_min = data.get("shake_big_duration_min", 0.5)
+	shake_big_duration_max = data.get("shake_big_duration_max", 2.0)
+	shake_big_intensity = data.get("shake_big_intensity", 8.0)
+	shake_coal_impulse_strength = data.get("shake_coal_impulse_strength", 75.0)
+	shake_enabled = data.get("shake_enabled", true)
 
 	# Gameplay stats
 	coal_dropped = data.get("coal_dropped", 0)
@@ -298,6 +330,17 @@ func reset_to_defaults():
 	shovel_bounce = 0.1
 	coal_radius = 5.0
 	furnace_opening_height_percent = 0.20
+
+	# Train shake mechanic
+	shake_interval_min = 15.0
+	shake_interval_max = 60.0
+	shake_warning_duration = 0.5
+	shake_warning_intensity = 1.2
+	shake_big_duration_min = 0.5
+	shake_big_duration_max = 2.0
+	shake_big_intensity = 8.0
+	shake_coal_impulse_strength = 75.0
+	shake_enabled = true
 
 	# Gameplay stats
 	coal_dropped = 0
