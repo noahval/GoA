@@ -45,11 +45,21 @@ When referencing other plans in documentation, use the glob pattern format:
 
 ## Planning Process
 
-### Step 1: Understand Context
-1. **Read TOC** (`.claude/docs/TOC.md`) - Find the feature's section/line number
-2. **Check existing plans** - Look for related/dependent features
-3. **Explore codebase** - Use Explore agent to understand current implementation
-4. **Ask clarifying questions** - User preferences on design decisions
+### Step 1: Load Context and Understand Requirements
+
+**CRITICAL: Always load project documentation first**
+
+1. **Read BIBLE.md** (`.claude/docs/BIBLE.md`) - Load critical requirements:
+   - TDD methodology (RED-GREEN-REFACTOR cycle) - MUST be in Testing Strategy
+   - Knowledge as Progression design philosophy - applies to ALL features
+   - Grimdark theme requirements - applies to ALL content
+   - Technical APIs and patterns to follow
+   - Check for existing documentation on systems mentioned in the plan
+2. **Read CLAUDE.md** for development guidelines and communication style
+3. **Read TOC** (`.claude/docs/TOC.md`) - Find the feature's section/line number
+4. **Check existing plans** - Look for related/dependent features
+5. **Explore codebase** - Use Explore agent to understand current implementation
+6. **Ask clarifying questions** - User preferences on design decisions
 
 ### Step 2: Design Decisions Checklist
 
@@ -90,6 +100,11 @@ Use TEMPLATE.md sections:
    - Explanations of behavior
 
 6. **Testing Strategy**
+   - **TDD Methodology** (CRITICAL - from BIBLE.md):
+     - Specify RED-GREEN-REFACTOR cycle for each component
+     - Write failing test FIRST, then implementation
+     - Verify tests fail before implementing (RED phase)
+     - No production code without failing test first
    - Unit tests (headless tests with gdscript examples)
    - Integration tests (scenario table)
    - Manual test criteria (checkbox list)
@@ -172,23 +187,46 @@ Use TEMPLATE.md sections:
 ## Example Plan Creation Flow
 
 1. **User identifies TOC line** needing a plan
-2. **Launch Explore agent** to understand current implementation
-3. **Ask design questions** (caps? resets? UI? combined?)
-4. **Create plan** following TEMPLATE.md structure
-5. **Update TOC.md** to reference new plan
-6. **Update related plans** if needed (cross-references)
+2. **Load BIBLE.md and CLAUDE.md** to understand critical requirements
+3. **Launch Explore agent** to understand current implementation
+4. **Ask design questions** (caps? resets? UI? combined?)
+5. **Create plan** following TEMPLATE.md structure
+6. **Verify BIBLE alignment** before completing (see checklist below)
+7. **Update TOC.md** to reference new plan
+8. **Update related plans** if needed (cross-references)
+
+## BIBLE Alignment Checklist (Run Before Completing Plan)
+
+**CRITICAL: Verify plan follows all BIBLE requirements**
+
+Before marking a plan as complete, check:
+
+- [ ] **TDD Methodology**: Testing Strategy section includes RED-GREEN-REFACTOR cycle
+- [ ] **Knowledge as Progression**: If designing player-facing features, follows discovery-based design principles
+- [ ] **Grimdark Theme**: If plan includes content/narrative/mood, follows oppressive atmosphere guidelines
+- [ ] **Technical APIs**: Plan references correct Global APIs (add_stat_exp, change_scene_with_check, etc.)
+- [ ] **Existing BIBLE Docs**: If relevant docs exist for systems in plan, they are referenced
+- [ ] **No Unicode**: Plan uses ASCII only ([!], [x], ->, not emoji/special symbols)
+- [ ] **Cross-References**: All plan references use `1.x-name.md` format, not "plan 1.16"
+- [ ] **Pattern Compliance**: Plan follows established project conventions from BIBLE
+- [ ] **Contradictions Documented**: If deviating from BIBLE patterns, rationale is documented
+
+**If any checks fail**: Update plan before completing
 
 ---
 
 ## Key Learnings from Stats & Experience Plan
 
 ### What Worked Well
+- **Loaded BIBLE.md first** to understand critical requirements
+- **Included TDD methodology** in Testing Strategy section
 - Combined intimately-related systems into one plan
 - Clear separation: core mechanics vs gameplay hooks
 - Asked user preferences up front (caps, resets, UI)
 - Backend-only approach (no UI in base plan)
-- Comprehensive testing strategy
+- Comprehensive testing strategy with RED-GREEN-REFACTOR cycle
 - Design Values section for tuning
+- Verified BIBLE alignment before completion
 
 ### Template Adherence
 - Followed TEMPLATE.md structure exactly
@@ -204,12 +242,16 @@ Use TEMPLATE.md sections:
 
 ## Common Pitfalls to Avoid
 
+- ❌ Don't skip reading BIBLE.md before writing the plan (critical requirements!)
+- ❌ Don't omit TDD methodology from Testing Strategy (RED-GREEN-REFACTOR required)
 - ❌ Don't include gameplay hooks in base system plans
 - ❌ Don't skip design rationale sections
 - ❌ Don't use unicode symbols
 - ❌ Don't forget testing strategy
 - ❌ Don't leave design values undocumented
 - ❌ Don't mix backend and UI in same plan (unless user requests)
+- ❌ Don't contradict established BIBLE patterns without documenting rationale
+- ❌ Don't forget to check for existing BIBLE docs on systems being modified
 
 ---
 
