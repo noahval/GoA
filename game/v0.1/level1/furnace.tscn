@@ -9,16 +9,16 @@
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_container_wall"]
 
 [sub_resource type="SegmentShape2D" id="SegmentShape2D_left_wall"]
-a = Vector2(-40, -5)
-b = Vector2(-18, 8)
+a = Vector2(-40, -6)
+b = Vector2(-18, 7)
 
 [sub_resource type="SegmentShape2D" id="SegmentShape2D_bottom_wall"]
-a = Vector2(-18, 8)
-b = Vector2(18, 8)
+a = Vector2(-18, 7)
+b = Vector2(18, 7)
 
 [sub_resource type="SegmentShape2D" id="SegmentShape2D_right_wall"]
-a = Vector2(18, 8)
-b = Vector2(40, -5)
+a = Vector2(18, 7)
+b = Vector2(40, -6)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_stamina_bg"]
 bg_color = Color(0.2, 0.2, 0.2, 0)

@@ -38,12 +38,13 @@ func _ready():
 	collision_mask = 1 | 4  # World (layer 1) + coal (layer 3)
 
 	# Define shovel visual curve (for aesthetics only)
+	# Pivot point is at y=0, which is halfway up the slanted sides
 	shovel_curve = PackedVector2Array([
-		Vector2(-40, -5),   # Left edge, slightly raised
-		Vector2(-20, 5),    # Left-center, deeper
-		Vector2(0, 8),      # Center, deepest point
-		Vector2(20, 5),     # Right-center, deeper
-		Vector2(40, -5)     # Right edge, slightly raised
+		Vector2(-40, -6),   # Left edge, slightly raised
+		Vector2(-20, 4),    # Left-center, deeper
+		Vector2(0, 7),      # Center, deepest point
+		Vector2(20, 4),     # Right-center, deeper
+		Vector2(40, -6)     # Right edge, slightly raised
 	])
 
 	# Setup outline (gray, thicker) - draws first (behind)
@@ -160,7 +161,7 @@ func setup_coal_detection():
 	var rect_shape = RectangleShape2D.new()
 	rect_shape.size = Vector2(COAL_DETECTION_WIDTH, COAL_DETECTION_HEIGHT)
 	collision_shape.shape = rect_shape
-	collision_shape.position = Vector2(0, 0)  # Center on shovel
+	collision_shape.position = Vector2(0, 5)  # Offset down from pivot point
 	detection_area.add_child(collision_shape)
 
 	# Connect signals
