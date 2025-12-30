@@ -51,7 +51,13 @@ func _on_entered_drop_zone():
 	queue_free()  # Remove immediately
 
 # Called by delivery zone Area2D when coal enters furnace
-func _on_entered_delivery_zone():
+# Returns true if coal was successfully delivered, false if already tracked
+func _on_entered_delivery_zone() -> bool:
+	# Skip if already counted (matches drop handler pattern)
+	if has_been_tracked:
+		queue_free()  # Still remove it, just don't count
+		return false
+
 	# Mark as tracked FIRST (prevents drop zone from counting it during fade)
 	has_been_tracked = true
 
@@ -64,3 +70,5 @@ func _on_entered_delivery_zone():
 	var tween = create_tween()
 	tween.tween_property(self, "modulate", Color.RED, 0.3)
 	tween.finished.connect(queue_free)
+
+	return true

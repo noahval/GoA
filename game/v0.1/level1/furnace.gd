@@ -9,6 +9,9 @@ extends Control
 @onready var focus_bar: ProgressBar = $AspectContainer/MainContainer/mainarea/Menu/FocusBar
 @onready var delivery_zone_node: Node2D = $AspectContainer/MainContainer/mainarea/PlayArea/FurnaceWall/DeliveryZone
 
+# XP bar created programmatically
+var xp_bar: ProgressBar = null
+
 # Camera for shake effects (created programmatically)
 var camera: Camera2D = null
 
@@ -51,6 +54,7 @@ func _ready():
 	ResponsiveLayout.apply_to_scene(self)  # REQUIRED
 	connect_navigation()
 	connect_settings_button()
+	setup_xp_bar()
 	connect_resource_bars()
 	setup_debug_buttons()
 	setup_camera()
@@ -287,7 +291,10 @@ func setup_delivery_zone():
 
 func _on_coal_entered_delivery_zone(body: Node2D):
 	# Only coal can trigger this (collision_mask = 4)
-	body._on_entered_delivery_zone()
+	# Only award XP if coal was actually consumed (not already tracked)
+	if body._on_entered_delivery_zone():
+		# Award player XP for successful delivery (Plan 2.9)
+		Level1Vars.add_player_exp(1.0)
 
 func _process(delta):
 	# Apply continuous tilt torque while mouse buttons are held
@@ -326,14 +333,62 @@ func _on_settings_pressed():
 	Global.previous_scene = scene_file_path
 	Global.change_scene("res://settings.tscn")
 
+func setup_xp_bar():
+	# Create XP bar programmatically
+	var menu = $AspectContainer/MainContainer/mainarea/Menu
+	if not menu:
+		push_error("Menu node not found - cannot create XP bar")
+		return
+
+	# Create ProgressBar
+	xp_bar = ProgressBar.new()
+	xp_bar.name = "XPBar"
+	xp_bar.custom_minimum_size = Vector2(0, 20)  # Match StaminaBar/FocusBar height
+	xp_bar.min_value = 0
+	xp_bar.max_value = 100
+	xp_bar.value = 0
+	xp_bar.show_percentage = false
+
+	# Create and style background
+	var bg_style = StyleBoxFlat.new()
+	bg_style.bg_color = Color(0.2, 0.2, 0.2, 0)  # Transparent dark grey
+	bg_style.border_width_left = 1
+	bg_style.border_width_right = 1
+	bg_style.border_width_top = 1
+	bg_style.border_width_bottom = 1
+	bg_style.border_color = Color(0.3, 0.3, 0.3, 0.5)
+	bg_style.corner_radius_top_left = 2
+	bg_style.corner_radius_top_right = 2
+	bg_style.corner_radius_bottom_left = 2
+	bg_style.corner_radius_bottom_right = 2
+
+	# Create and style fill (dark orange)
+	var fill_style = StyleBoxFlat.new()
+	fill_style.bg_color = Color(0.7, 0.35, 0.05, 0.3)  # Dark orange, 30% opacity
+	fill_style.corner_radius_top_left = 2
+	fill_style.corner_radius_top_right = 2
+	fill_style.corner_radius_bottom_left = 2
+	fill_style.corner_radius_bottom_right = 2
+
+	# Apply styles
+	xp_bar.add_theme_stylebox_override("background", bg_style)
+	xp_bar.add_theme_stylebox_override("fill", fill_style)
+
+	# Add to menu (will be positioned by VBoxContainer)
+	# Insert after FocusBar (index 1), before ToMindButton
+	menu.add_child(xp_bar)
+	menu.move_child(xp_bar, 2)  # Position: StaminaBar(0), FocusBar(1), XPBar(2), ToMindButton(3)
+
 func connect_resource_bars():
 	# Connect to Level1Vars signals
 	Level1Vars.stamina_changed.connect(_on_stamina_changed)
 	Level1Vars.focus_changed.connect(_on_focus_changed)
+	Level1Vars.player_exp_changed.connect(_on_player_exp_changed)
 
 	# Initialize bars with current values
 	_on_stamina_changed(Level1Vars.stamina, Level1Vars.stamina_max)
 	_on_focus_changed(Level1Vars.focus, Level1Vars.focus_max)
+	_on_player_exp_changed(Level1Vars.player_exp, Level1Vars.get_xp_for_next_level())
 
 func _on_stamina_changed(new_value: float, max_value: float):
 	stamina_bar.max_value = max_value
@@ -350,6 +405,10 @@ func _on_focus_changed(new_value: int, max_value: int):
 	# Check for depletion (future: when focus drain implemented)
 	if new_value <= 0:
 		end_day("focus")
+
+func _on_player_exp_changed(new_value: float, xp_for_next_level: float):
+	xp_bar.max_value = xp_for_next_level
+	xp_bar.value = new_value
 
 func end_day(reason: String):
 	# Prevent double-triggering if both resources hit 0 in same frame

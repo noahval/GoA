@@ -46,6 +46,14 @@ var shake_enabled: bool = true  # Master switch to enable/disable shakes
 var coal_dropped: int = 0   # Total coal pieces that fell/were dropped
 var coal_delivered: int = 0 # Total coal pieces successfully delivered to furnace
 
+# Player progression (shoveling mastery)
+var player_level: int = 1
+var player_exp: float = 0.0
+
+# XP curve configuration
+const BASE_XP_FOR_LEVEL: float = 12.0
+const EXP_SCALING: float = 1.25  # Gentler than Global stats (1.8) for faster early progression
+
 # ===== CURRENCY SYSTEM (4-tier economy) =====
 
 # Valid currency types (prevents typos)
@@ -79,6 +87,7 @@ signal stamina_changed(new_value: float, max_value: float)
 signal focus_changed(new_value: int, max_value: int)
 signal resource_depleted(resource_name: String)
 signal currency_changed(currency_type: String, old_amount: float, new_amount: float)
+signal player_exp_changed(new_exp: float, xp_for_next_level: float)
 
 # Resource management functions
 func modify_stamina(amount: float) -> bool:
@@ -216,6 +225,62 @@ func reset_all_currency() -> void:
 	currency = _get_empty_currency_dict()
 	lifetime_currency = _get_empty_currency_dict()
 
+# ===== PLAYER PROGRESSION (XP SYSTEM) =====
+
+# Award experience and check for level-ups
+func add_player_exp(amount: float) -> void:
+	if amount <= 0:
+		return  # Reject zero/negative XP
+
+	player_exp += amount
+	emit_signal("player_exp_changed", player_exp, get_xp_for_next_level())
+
+	# Check for level-up(s)
+	while player_exp >= get_xp_for_next_level():
+		# Deduct XP for current level
+		player_exp -= get_xp_for_next_level()
+
+		# Level up
+		player_level += 1
+
+		# Show notification
+		_show_levelup_notification()
+
+		# Emit after level-up to update bar with new max value
+		emit_signal("player_exp_changed", player_exp, get_xp_for_next_level())
+
+# Calculate total cumulative XP needed to reach a specific level from level 1
+# Returns TOTAL XP, not incremental (e.g., level 3 returns sum of all XP from 1->2->3)
+func get_xp_for_level(level: int) -> float:
+	if level <= 1:
+		return 0.0
+
+	# Sum XP for all levels from 2 to target level
+	var total_xp = 0.0
+	for lvl in range(2, level + 1):
+		# Each level's XP requirement: BASE_XP * (level - 1) ^ EXP_SCALING
+		total_xp += BASE_XP_FOR_LEVEL * pow(lvl - 1, EXP_SCALING)
+
+	return total_xp
+
+# Get XP needed for next level from current level
+func get_xp_for_next_level() -> float:
+	return get_xp_for_level(player_level + 1) - get_xp_for_level(player_level)
+
+# Get progress toward next level (0.0 to 1.0)
+func get_level_progress() -> float:
+	var xp_needed = get_xp_for_next_level()
+	if xp_needed <= 0:
+		return 0.0
+	return clampf(player_exp / xp_needed, 0.0, 1.0)
+
+# Show level-up notification
+func _show_levelup_notification() -> void:
+	if Global.has_method("show_notification"):
+		Global.show_notification("Level up! You are now level %d" % player_level)
+	else:
+		print("LEVEL UP: Player is now level %d" % player_level)
+
 # Save/load integration
 func get_save_data() -> Dictionary:
 	return {
@@ -250,6 +315,9 @@ func get_save_data() -> Dictionary:
 		# Gameplay stats
 		"coal_dropped": coal_dropped,
 		"coal_delivered": coal_delivered,
+		# Player progression
+		"player_level": player_level,
+		"player_exp": player_exp,
 		# Currency (4-tier system)
 		"currency": currency,
 		"lifetime_currency": lifetime_currency
@@ -291,6 +359,10 @@ func load_save_data(data: Dictionary):
 	# Gameplay stats
 	coal_dropped = data.get("coal_dropped", 0)
 	coal_delivered = data.get("coal_delivered", 0)
+
+	# Player progression
+	player_level = data.get("player_level", 1)
+	player_exp = data.get("player_exp", 0.0)
 
 	# Currency (4-tier system with backward compatibility)
 	if data.has("currency"):
@@ -345,6 +417,10 @@ func reset_to_defaults():
 	# Gameplay stats
 	coal_dropped = 0
 	coal_delivered = 0
+
+	# Player progression (reset for new run - run-specific)
+	player_level = 1
+	player_exp = 0.0
 
 	# Currency
 	reset_all_currency()
