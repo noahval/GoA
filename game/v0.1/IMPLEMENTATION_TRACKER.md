@@ -20,3 +20,4 @@
 2.6-furnace bars
 2.7-stamina drain
 2.8-day end
+2.11-train shake
