@@ -28,10 +28,15 @@ func _ready():
 
 	# RigidBody2D physics setup (use Level1Vars for upgradable values)
 	lock_rotation = false  # Allow rotation for tilt mechanic
-	mass = Level1Vars.shovel_mass
 	gravity_scale = 0.0  # No gravity
 	linear_damp = Level1Vars.shovel_linear_damp
 	angular_damp = Level1Vars.shovel_angular_damp
+
+	# Set initial mass with technique multiplier
+	update_shovel_mass()
+
+	# Connect to clean streak signal for dynamic mass updates (Mass Training technique)
+	Level1Vars.clean_streak_changed.connect(_on_clean_streak_changed)
 
 	# Collision layers
 	collision_layer = 2
@@ -200,12 +205,21 @@ func update_stamina_drain(delta: float):
 	if coal_count == 0:
 		return
 
-	# Debug output disabled - was flooding logs every frame
-	# if Global.dev_speed_mode and coal_count > 0:
-	#	print("Shovel pos: ", global_position.x, " | Boundary: ", work_zone_boundary_x, " | In work zone: ", in_work_zone)
-
 	# Check drain condition: has coal AND in work zone
 	if in_work_zone:
-		# Calculate drain rate and apply
-		var drain_rate = Level1Vars.stamina_drain_base + (coal_count * Level1Vars.stamina_drain_per_coal)
-		Level1Vars.modify_stamina(-drain_rate * delta)
+		# Calculate drain rate with technique multipliers
+		var base_drain = Level1Vars.stamina_drain_base * Level1Vars.get_base_stamina_drain_multiplier()
+		var coal_drain = coal_count * Level1Vars.stamina_drain_per_coal * Level1Vars.get_coal_stamina_drain_multiplier()
+		var total_drain = base_drain + coal_drain
+		Level1Vars.modify_stamina(-total_drain * delta)
+
+func update_shovel_mass():
+	var base_mass = Level1Vars.shovel_mass  # Use base value from Level1Vars
+	var mass_mult = Level1Vars.get_shovel_mass_multiplier()
+	mass = base_mass * mass_mult
+
+# Signal handler for clean streak changes
+func _on_clean_streak_changed(_new_count: int):
+	# If Mass Training is active, update shovel mass dynamically
+	if "mass_training" in Level1Vars.selected_techniques:
+		update_shovel_mass()

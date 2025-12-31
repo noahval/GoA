@@ -82,12 +82,48 @@ var pay_drop_penalty_percent: float = 0.0  # Percentage reduction per dropped co
 # Debug flags
 var DEBUG_COAL_TRACKING: bool = false  # Toggle coal drop console prints
 
+# ===== UPGRADE SYSTEM (Technique Pool) =====
+
+# TechniquesData is globally available via class_name
+const TECHNIQUES = TechniquesData.TECHNIQUES
+
+# Upgrade tracking
+var upgrades_qty: int = 0  # Total upgrades selected this run (for Mind button visibility)
+
+# Technique selection tracking
+var selected_techniques: Dictionary = {}
+# Structure: { technique_id: { "level": int, "qualities": Array[String] } }
+
+# Combo system unlock flags
+var clean_streak_unlocked: bool = false
+var heavy_combo_unlocked: bool = false
+
+# UI display settings
+var show_exact_technique_values: bool = true  # Show exact percentages in descriptions
+
+# Clean streak state
+var clean_streak_count: int = 0
+var clean_streak_max: int = 20  # Increased by Streak Ceiling technique
+var forgiveness_charges: int = 0  # Charges available to save streak from drops
+var forgiveness_coal_counter: int = 0  # Coal delivered since last charge earned
+var forgiveness_threshold: int = 0  # Coal needed to earn 1 charge (set by first selection quality)
+var forgiveness_max_capacity: int = 0  # Maximum charges that can be banked
+
+# Heavy load combo state
+var heavy_combo_stacks: int = 0
+var heavy_combo_timer: float = 0.0  # Counts down from 5.0s + bonuses
+var recent_delivery_timestamps: Array[float] = []  # Timestamps of recent deliveries for batch detection
+const HEAVY_LOAD_BATCH_WINDOW: float = 1.0  # Time window for detecting 3+ coal deliveries (seconds)
+
 # Signals
 signal stamina_changed(new_value: float, max_value: float)
 signal focus_changed(new_value: int, max_value: int)
 signal resource_depleted(resource_name: String)
 signal currency_changed(currency_type: String, old_amount: float, new_amount: float)
 signal player_exp_changed(new_exp: float, xp_for_next_level: float)
+signal technique_updated(technique_id: String, new_level: int)
+signal clean_streak_changed(new_count: int)
+signal heavy_combo_changed(new_stacks: int, timer_remaining: float)
 
 # Resource management functions
 func modify_stamina(amount: float) -> bool:
@@ -281,6 +317,264 @@ func _show_levelup_notification() -> void:
 	else:
 		print("LEVEL UP: Player is now level %d" % player_level)
 
+# ===== TECHNIQUE SYSTEM FUNCTIONS =====
+
+func add_technique(technique_id: String, draw_quality: String) -> void:
+	if technique_id not in selected_techniques:
+		selected_techniques[technique_id] = {
+			"level": 1,
+			"qualities": [draw_quality]
+		}
+	else:
+		selected_techniques[technique_id]["level"] += 1
+		selected_techniques[technique_id]["qualities"].append(draw_quality)
+
+	# Check if this technique unlocks a combo system
+	if technique_id in TECHNIQUES:
+		var tech_data = TECHNIQUES[technique_id]
+		if tech_data.has("unlocks_combo") and tech_data["unlocks_combo"]:
+			if tech_data["category"] == "clean_streak":
+				clean_streak_unlocked = true
+			elif tech_data["category"] == "heavy_combo":
+				heavy_combo_unlocked = true
+
+	emit_signal("technique_updated", technique_id, selected_techniques[technique_id]["level"])
+
+func get_technique_level(technique_id: String) -> int:
+	if technique_id not in selected_techniques:
+		return 0
+	return selected_techniques[technique_id]["level"]
+
+func reset_techniques() -> void:
+	upgrades_qty = 0
+	selected_techniques.clear()
+	clean_streak_unlocked = false
+	heavy_combo_unlocked = false
+	clean_streak_count = 0
+	clean_streak_max = 20
+	forgiveness_charges = 0
+	forgiveness_coal_counter = 0
+	forgiveness_threshold = 0
+	forgiveness_max_capacity = 0
+	heavy_combo_stacks = 0
+	heavy_combo_timer = 0.0
+	recent_delivery_timestamps.clear()
+
+# ============================================================================
+# TECHNIQUE EFFECT HELPERS
+# ============================================================================
+
+# Core calculation function - sums all quality-scaled bonuses for a technique
+# Used for additive effects (XP bonuses, mass bonuses, combo stacking)
+func get_technique_total_bonus(technique_id: String) -> float:
+	if technique_id not in selected_techniques:
+		return 0.0
+
+	# Validate technique exists in definition
+	if technique_id not in TECHNIQUES:
+		push_warning("Unknown technique: " + technique_id)
+		return 0.0
+
+	# Handle boolean techniques (like Perfect Form)
+	var effect_data = TECHNIQUES[technique_id]["effect"]
+	if effect_data.has("type") and effect_data["type"] == "boolean":
+		return 0.0  # Boolean techniques checked with has_technique(), not bonus calculation
+
+	var base_bonus = effect_data["base_bonus"]
+	var qualities = selected_techniques[technique_id]["qualities"]
+	var total = 0.0
+
+	for quality in qualities:
+		var quality_mult = get_quality_multiplier(quality)
+		total += base_bonus * quality_mult
+
+	return total
+
+func get_quality_multiplier(quality: String) -> float:
+	match quality:
+		"common": return 1.0
+		"uncommon": return 1.1
+		"rare": return 1.2
+		"epic": return 1.4
+		"legendary": return 1.6
+		_:
+			push_warning("Unknown quality tier: " + quality)
+			return 1.0
+
+# Returns multiplier for base stamina drain (from holding shovel)
+# Affected by: Rhythm, Determination, Cadence, Perfect Form
+# Uses MULTIPLICATIVE stacking - each effect reduces current drain, not base drain
+func get_base_stamina_drain_multiplier() -> float:
+	var mult = 1.0
+
+	# Rhythm: Each selection reduces current drain by 20% (multiplicative)
+	if "rhythm" in selected_techniques:
+		var qualities = selected_techniques["rhythm"]["qualities"]
+		for quality in qualities:
+			var quality_mult = get_quality_multiplier(quality)
+			var reduction = 0.20 * quality_mult  # 20% base, 22-32% with quality
+			mult *= (1.0 - reduction)
+
+	# Determination: Each selection reduces current drain by 12% (multiplicative)
+	if "determination" in selected_techniques:
+		var qualities = selected_techniques["determination"]["qualities"]
+		for quality in qualities:
+			var quality_mult = get_quality_multiplier(quality)
+			var reduction = 0.12 * quality_mult  # 12% base, 13-19% with quality
+			mult *= (1.0 - reduction)
+
+	# Cadence: Clean streak applies additive reduction (total from all selections x streak count)
+	if "cadence" in selected_techniques and clean_streak_unlocked:
+		var cadence_total = get_technique_total_bonus("cadence")  # Sum all selections
+		var combo_reduction = cadence_total * clean_streak_count  # 3% per stack per selection
+		mult *= max(0.0, 1.0 - combo_reduction)  # Apply as single multiplier
+
+	# Perfect Form: -50% at 10+ streak (boolean)
+	if "perfect_form" in selected_techniques and clean_streak_count >= 10:
+		mult *= 0.50  # Reduces to 50% of current drain
+
+	return mult  # No floor cap - natural diminishing returns from multiplicative stacking
+
+# Returns multiplier for coal carrying stamina drain
+# Affected by: Economy of Motion, Determination, Power Surge
+# Uses MULTIPLICATIVE stacking - each effect reduces current drain, not base drain
+func get_coal_stamina_drain_multiplier() -> float:
+	var mult = 1.0
+
+	# Economy of Motion: Each selection reduces current drain by 15% (multiplicative)
+	if "economy_of_motion" in selected_techniques:
+		var qualities = selected_techniques["economy_of_motion"]["qualities"]
+		for quality in qualities:
+			var quality_mult = get_quality_multiplier(quality)
+			var reduction = 0.15 * quality_mult  # 15% base, 17-24% with quality
+			mult *= (1.0 - reduction)
+
+	# Determination: Each selection reduces current drain by 12% (multiplicative)
+	if "determination" in selected_techniques:
+		var qualities = selected_techniques["determination"]["qualities"]
+		for quality in qualities:
+			var quality_mult = get_quality_multiplier(quality)
+			var reduction = 0.12 * quality_mult  # 12% base, 13-19% with quality
+			mult *= (1.0 - reduction)
+
+	# Power Surge: Heavy stacks apply additive reduction (total from all selections x stack count)
+	if "power_surge" in selected_techniques and heavy_combo_unlocked and heavy_combo_timer > 0.0:
+		var surge_total = get_technique_total_bonus("power_surge")  # Sum all selections
+		var heavy_reduction = surge_total * heavy_combo_stacks  # 5% per stack per selection
+		mult *= max(0.0, 1.0 - heavy_reduction)  # Apply as single multiplier
+
+	return mult  # No floor cap - coal drain can be heavily reduced with investment
+
+# Returns XP multiplier based on combo states
+# Affected by: Repetition Learning, Pressure Training
+func get_xp_multiplier() -> float:
+	var mult = 1.0
+
+	# Repetition Learning: +10% XP per streak per selection
+	if "repetition_learning" in selected_techniques and clean_streak_unlocked:
+		var learning_bonus = get_technique_total_bonus("repetition_learning")
+		mult += learning_bonus * clean_streak_count
+
+	# Pressure Training: +20% XP per heavy stack per selection
+	if "pressure_training" in selected_techniques and heavy_combo_unlocked:
+		var pressure_bonus = get_technique_total_bonus("pressure_training")
+		mult += pressure_bonus * heavy_combo_stacks
+
+	return mult
+
+# Returns shovel mass multiplier
+# Affected by: Firm Grip, Mass Training
+func get_shovel_mass_multiplier() -> float:
+	var mult = 1.0
+
+	# Firm Grip: Each selection increases current mass by 15% (multiplicative)
+	if "firm_grip" in selected_techniques:
+		var qualities = selected_techniques["firm_grip"]["qualities"]
+		for quality in qualities:
+			var quality_mult = get_quality_multiplier(quality)
+			var increase = 0.15 * quality_mult  # 15% base, 17-24% with quality
+			mult *= (1.0 + increase)
+
+	# Mass Training: +2% per streak per selection
+	if "mass_training" in selected_techniques and clean_streak_unlocked:
+		var mass_bonus = get_technique_total_bonus("mass_training")
+		mult += mass_bonus * clean_streak_count
+
+	return mult
+
+# Returns maximum clean streak count (base 20 + Streak Ceiling bonuses)
+func get_clean_streak_max() -> int:
+	var base_max = 20
+	if "streak_ceiling" not in selected_techniques:
+		return base_max
+
+	var bonus = get_technique_total_bonus("streak_ceiling")
+	return base_max + int(bonus)
+
+# Returns coal threshold for earning 1 forgiveness charge
+# First selection sets base threshold (20/18/16/14/12 based on quality)
+# Subsequent C/U/R selections reduce threshold (-2/-3/-4)
+# Epic/Legendary selections don't affect threshold (they add capacity instead)
+func get_forgiveness_threshold() -> int:
+	if "forgiveness" not in selected_techniques:
+		return 0
+
+	var qualities = selected_techniques["forgiveness"]["qualities"]
+	if qualities.size() == 0:
+		return 0
+
+	# First selection sets base threshold
+	var first_quality = qualities[0]
+	var threshold = 20  # Base
+	match first_quality:
+		"common": threshold = 20
+		"uncommon": threshold = 18
+		"rare": threshold = 16
+		"epic": threshold = 14
+		"legendary": threshold = 12
+
+	# Subsequent C/U/R selections reduce threshold
+	for i in range(1, qualities.size()):
+		var quality = qualities[i]
+		match quality:
+			"common": threshold -= 2
+			"uncommon": threshold -= 3
+			"rare": threshold -= 4
+			# Epic and legendary don't reduce threshold
+
+	return max(1, threshold)  # Never go below 1
+
+# Returns maximum forgiveness charges that can be banked
+# First selection grants 1 capacity
+# Subsequent Epic selections grant +1, Legendary grant +2
+func get_forgiveness_max_capacity() -> int:
+	if "forgiveness" not in selected_techniques:
+		return 0
+
+	var qualities = selected_techniques["forgiveness"]["qualities"]
+	if qualities.size() == 0:
+		return 0
+
+	# First selection always grants 1 capacity
+	var capacity = 1
+
+	# Subsequent Epic/Legendary selections add capacity
+	for i in range(1, qualities.size()):
+		var quality = qualities[i]
+		match quality:
+			"epic": capacity += 1
+			"legendary": capacity += 2
+			# Common, uncommon, rare don't add capacity
+
+	return capacity
+
+# Returns heavy load timer extension in seconds
+func get_heavy_timer_extension() -> float:
+	if "extended_window" not in selected_techniques:
+		return 0.0
+
+	return get_technique_total_bonus("extended_window")
+
 # Save/load integration
 func get_save_data() -> Dictionary:
 	return {
@@ -320,7 +614,19 @@ func get_save_data() -> Dictionary:
 		"player_exp": player_exp,
 		# Currency (4-tier system)
 		"currency": currency,
-		"lifetime_currency": lifetime_currency
+		"lifetime_currency": lifetime_currency,
+		# Combo state (persists during same-day saves, resets on new day)
+		# NOTE: Techniques are NOT saved - they reset each run (per-run progression)
+		"show_exact_technique_values": show_exact_technique_values,
+		"clean_streak_count": clean_streak_count,
+		"clean_streak_max": clean_streak_max,
+		"forgiveness_charges": forgiveness_charges,
+		"forgiveness_coal_counter": forgiveness_coal_counter,
+		"forgiveness_threshold": forgiveness_threshold,
+		"forgiveness_max_capacity": forgiveness_max_capacity,
+		"heavy_combo_stacks": heavy_combo_stacks,
+		"heavy_combo_timer": heavy_combo_timer,
+		"recent_delivery_timestamps": recent_delivery_timestamps.duplicate(),
 	}
 
 func load_save_data(data: Dictionary):
@@ -377,6 +683,19 @@ func load_save_data(data: Dictionary):
 			currency["copper"] = float(old_copper)
 			lifetime_currency["copper"] = float(old_copper)
 
+	# Combo state (persists during same-day saves, resets on new day)
+	# NOTE: Techniques NOT loaded - reset each run (per-run design)
+	show_exact_technique_values = data.get("show_exact_technique_values", true)
+	clean_streak_count = data.get("clean_streak_count", 0)
+	clean_streak_max = data.get("clean_streak_max", 20)
+	forgiveness_charges = data.get("forgiveness_charges", 0)
+	forgiveness_coal_counter = data.get("forgiveness_coal_counter", 0)
+	forgiveness_threshold = data.get("forgiveness_threshold", 0)
+	forgiveness_max_capacity = data.get("forgiveness_max_capacity", 0)
+	heavy_combo_stacks = data.get("heavy_combo_stacks", 0)
+	heavy_combo_timer = data.get("heavy_combo_timer", 0.0)
+	recent_delivery_timestamps = data.get("recent_delivery_timestamps", [])
+
 	# Emit signals to update UI
 	emit_signal("stamina_changed", stamina, stamina_max)
 	emit_signal("focus_changed", focus, focus_max)
@@ -424,6 +743,9 @@ func reset_to_defaults():
 
 	# Currency
 	reset_all_currency()
+
+	# Technique system (reset for new run)
+	reset_techniques()
 
 	# Emit signals
 	emit_signal("stamina_changed", stamina, stamina_max)

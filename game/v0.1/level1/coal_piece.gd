@@ -48,6 +48,27 @@ func _on_entered_drop_zone():
 	if Level1Vars.DEBUG_COAL_TRACKING:
 		print("[COAL] Dropped! Total: ", Level1Vars.coal_dropped)
 
+	# Clean streak penalty (if unlocked)
+	if Level1Vars.clean_streak_unlocked:
+		# Check if forgiveness charges available
+		if Level1Vars.forgiveness_charges > 0:
+			# Use one forgiveness charge - don't break streak
+			Level1Vars.forgiveness_charges -= 1
+			if Level1Vars.DEBUG_COAL_TRACKING:
+				print("[STREAK] Forgiveness saved streak! Charges remaining: %d" % Level1Vars.forgiveness_charges)
+		else:
+			# No forgiveness available - reset streak
+			Level1Vars.clean_streak_count = 0
+			Level1Vars.forgiveness_coal_counter = 0
+			Level1Vars.emit_signal("clean_streak_changed", 0)
+
+	# Heavy combo penalty (if unlocked) - dropping coal resets heavy stacks
+	if Level1Vars.heavy_combo_unlocked:
+		Level1Vars.heavy_combo_stacks = 0
+		Level1Vars.heavy_combo_timer = 0.0
+		Level1Vars.recent_delivery_timestamps.clear()
+		Level1Vars.emit_signal("heavy_combo_changed", 0, 0.0)
+
 	queue_free()  # Remove immediately
 
 # Called by delivery zone Area2D when coal enters furnace
@@ -65,6 +86,28 @@ func _on_entered_delivery_zone() -> bool:
 	Level1Vars.coal_delivered += 1
 	if Level1Vars.DEBUG_COAL_TRACKING:
 		print("[COAL] Delivered! Total: ", Level1Vars.coal_delivered)
+
+	# Clean streak tracking (if unlocked)
+	if Level1Vars.clean_streak_unlocked:
+		Level1Vars.clean_streak_count = min(
+			Level1Vars.clean_streak_count + 1,
+			Level1Vars.get_clean_streak_max()
+		)
+
+		# Forgiveness charge tracking (hybrid threshold + capacity system)
+		if "forgiveness" in Level1Vars.selected_techniques:
+			Level1Vars.forgiveness_coal_counter += 1
+			var threshold = Level1Vars.get_forgiveness_threshold()
+			if Level1Vars.forgiveness_coal_counter >= threshold:
+				# Award 1 charge if below capacity
+				var max_capacity = Level1Vars.get_forgiveness_max_capacity()
+				if Level1Vars.forgiveness_charges < max_capacity:
+					Level1Vars.forgiveness_charges += 1
+					if Level1Vars.DEBUG_COAL_TRACKING:
+						print("[STREAK] Earned forgiveness charge! Total: %d/%d" % [Level1Vars.forgiveness_charges, max_capacity])
+				Level1Vars.forgiveness_coal_counter = 0
+
+		Level1Vars.emit_signal("clean_streak_changed", Level1Vars.clean_streak_count)
 
 	# Red fade animation: gradually change color to red over 0.3 seconds, then remove
 	var tween = create_tween()

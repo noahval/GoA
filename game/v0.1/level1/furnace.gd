@@ -8,6 +8,7 @@ extends Control
 @onready var stamina_bar: ProgressBar = $AspectContainer/MainContainer/mainarea/Menu/StaminaBar
 @onready var focus_bar: ProgressBar = $AspectContainer/MainContainer/mainarea/Menu/FocusBar
 @onready var delivery_zone_node: Node2D = $AspectContainer/MainContainer/mainarea/PlayArea/FurnaceWall/DeliveryZone
+@onready var mind_button: Button = $AspectContainer/MainContainer/mainarea/Menu/ToMindButton
 
 # XP bar created programmatically
 var xp_bar: ProgressBar = null
@@ -58,6 +59,7 @@ func _ready():
 	connect_resource_bars()
 	setup_debug_buttons()
 	setup_camera()
+	_update_mind_button_visibility()
 	# Defer physics setup until after layout is applied
 	await get_tree().process_frame
 	setup_physics_objects()
@@ -293,8 +295,17 @@ func _on_coal_entered_delivery_zone(body: Node2D):
 	# Only coal can trigger this (collision_mask = 4)
 	# Only award XP if coal was actually consumed (not already tracked)
 	if body._on_entered_delivery_zone():
-		# Award player XP for successful delivery (Plan 2.9)
-		Level1Vars.add_player_exp(1.0)
+		# Award player XP for successful delivery with multiplier
+		var base_xp = 1.0
+		var xp_with_multiplier = base_xp * Level1Vars.get_xp_multiplier()
+		Level1Vars.add_player_exp(xp_with_multiplier)
+
+		# Update mind button visibility on level-up
+		_update_mind_button_visibility()
+
+		# Check for heavy load batch (if unlocked)
+		if Level1Vars.heavy_combo_unlocked:
+			_check_heavy_load_batch()
 
 func _process(delta):
 	# Apply continuous tilt torque while mouse buttons are held
@@ -310,6 +321,18 @@ func _process(delta):
 			coal_spawn_timer = 0.0
 			spawn_coal_from_tap()
 
+	# Heavy combo timer countdown (if unlocked)
+	if Level1Vars.heavy_combo_unlocked and Level1Vars.heavy_combo_timer > 0.0:
+		Level1Vars.heavy_combo_timer -= delta
+
+		if Level1Vars.heavy_combo_timer <= 0.0:
+			# Timer expired - reset stacks
+			Level1Vars.heavy_combo_stacks = 0
+			Level1Vars.heavy_combo_timer = 0.0
+			Level1Vars.emit_signal("heavy_combo_changed", 0, 0.0)
+			if Level1Vars.DEBUG_COAL_TRACKING:
+				print("[COMBO] Heavy combo expired")
+
 func _input(event):
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_LEFT:
@@ -322,6 +345,12 @@ func connect_navigation():
 	var to_mind_button = $AspectContainer/MainContainer/mainarea/Menu/ToMindButton
 	if to_mind_button:
 		to_mind_button.pressed.connect(func(): navigate_to("mind"))
+
+func _update_mind_button_visibility():
+	# Show Mind button when player has unspent level-ups
+	var has_pending_upgrades = Level1Vars.player_level > Level1Vars.upgrades_qty
+	if mind_button:
+		mind_button.visible = has_pending_upgrades
 
 func connect_settings_button():
 	var settings_button = $AspectContainer/MainContainer/mainarea/Menu/SettingsButton
@@ -419,6 +448,38 @@ func end_day(reason: String):
 	# Transition to pay scene
 	# Note: reason parameter allows future expansion (different messages/bonuses)
 	get_tree().change_scene_to_file("res://level1/pay.tscn")
+
+# Check if recent deliveries constitute a heavy load (3+ coal in 1 second)
+func _check_heavy_load_batch():
+	var current_time = Time.get_ticks_msec() / 1000.0
+
+	# Clean old timestamps (older than batch window)
+	var cleaned_timestamps: Array[float] = []
+	for timestamp in Level1Vars.recent_delivery_timestamps:
+		if current_time - timestamp <= Level1Vars.HEAVY_LOAD_BATCH_WINDOW:
+			cleaned_timestamps.append(timestamp)
+	Level1Vars.recent_delivery_timestamps = cleaned_timestamps
+
+	# Add current delivery
+	Level1Vars.recent_delivery_timestamps.append(current_time)
+
+	# Check if we hit heavy load threshold (3+ deliveries in window)
+	if Level1Vars.recent_delivery_timestamps.size() >= 3:
+		# Trigger heavy load combo
+		Level1Vars.heavy_combo_stacks += 1
+
+		# Refresh timer
+		var base_timer = 5.0
+		var timer_bonus = Level1Vars.get_heavy_timer_extension()
+		Level1Vars.heavy_combo_timer = base_timer + timer_bonus
+
+		# Clear timestamps (batch consumed)
+		Level1Vars.recent_delivery_timestamps.clear()
+
+		Level1Vars.emit_signal("heavy_combo_changed", Level1Vars.heavy_combo_stacks, Level1Vars.heavy_combo_timer)
+
+		if Level1Vars.DEBUG_COAL_TRACKING:
+			print("[COMBO] Heavy load triggered! Stacks: %d, Timer: %.1fs" % [Level1Vars.heavy_combo_stacks, Level1Vars.heavy_combo_timer])
 
 func navigate_to(scene_id: String):
 	var path = SceneNetwork.get_scene_path(scene_id)

@@ -1,8 +1,20 @@
-[gd_scene load_steps=3 format=3 uid="uid://mind_scene_uid"]
+[gd_scene load_steps=5 format=3 uid="uid://mind_scene_uid"]
 
 [ext_resource type="PackedScene" uid="uid://drfp4vl2w1wvr" path="res://level1/scene_template.tscn" id="1_mind_template"]
 [ext_resource type="Script" path="res://level1/mind.gd" id="2_mind_script"]
 [ext_resource type="Texture2D" path="res://level1/backgrounds/mind.jpg" id="3_mind_background"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_card"]
+bg_color = Color(0.15, 0.15, 0.15, 0.9)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.6, 0.6, 0.6, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
 
 [node name="Mind" instance=ExtResource("1_mind_template")]
 script = ExtResource("2_mind_script")
@@ -23,3 +35,220 @@ mouse_filter = 2
 layout_mode = 2
 theme_type_variation = &"BackNavButton"
 text = "To Furnace"
+
+[node name="UpgradeContainer" type="HBoxContainer" parent="AspectContainer/MainContainer/mainarea/PlayArea" index="0"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -350.0
+offset_top = -200.0
+offset_right = 350.0
+offset_bottom = 200.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 30
+
+[node name="UpgradeCard1" type="Panel" parent="AspectContainer/MainContainer/mainarea/PlayArea/UpgradeContainer"]
+custom_minimum_size = Vector2(300, 380)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="AspectContainer/MainContainer/mainarea/PlayArea/UpgradeContainer/UpgradeCard1"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 15.0
+offset_top = 15.0
+offset_right = -15.0
+offset_bottom = -15.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 12
+
+[node name="IconPlaceholder" type="ColorRect" parent="AspectContainer/MainContainer/mainarea/PlayArea/UpgradeContainer/UpgradeCard1/VBoxContainer"]
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+color = Color(0.3, 0.3, 0.3, 0.5)
+
+[node name="NameLabel" type="Label" parent="AspectContainer/MainContainer/mainarea/PlayArea/UpgradeContainer/UpgradeCard1/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Technique Name"
+horizontal_alignment = 1
+
+[node name="LevelLabel" type="Label" parent="AspectContainer/MainContainer/mainarea/PlayArea/UpgradeContainer/UpgradeCard1/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+text = "NEW"
+horizontal_alignment = 1
+
+[node name="DescriptionLabel" type="RichTextLabel" parent="AspectContainer/MainContainer/mainarea/PlayArea/UpgradeContainer/UpgradeCard1/VBoxContainer"]
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+size_flags_vertical = 3
+bbcode_enabled = true
+text = "Technique description goes here."
+fit_content = true
+
+[node name="SelectButton" type="Button" parent="AspectContainer/MainContainer/mainarea/PlayArea/UpgradeContainer/UpgradeCard1/VBoxContainer"]
+layout_mode = 2
+theme_type_variation = &"ForwardNavButton"
+text = "Select"
+
+[node name="UpgradeCard2" type="Panel" parent="AspectContainer/MainContainer/mainarea/PlayArea/UpgradeContainer"]
+custom_minimum_size = Vector2(300, 380)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="AspectContainer/MainContainer/mainarea/PlayArea/UpgradeContainer/UpgradeCard2"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 15.0
+offset_top = 15.0
+offset_right = -15.0
+offset_bottom = -15.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 12
+
+[node name="IconPlaceholder" type="ColorRect" parent="AspectContainer/MainContainer/mainarea/PlayArea/UpgradeContainer/UpgradeCard2/VBoxContainer"]
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+color = Color(0.3, 0.3, 0.3, 0.5)
+
+[node name="NameLabel" type="Label" parent="AspectContainer/MainContainer/mainarea/PlayArea/UpgradeContainer/UpgradeCard2/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Technique Name"
+horizontal_alignment = 1
+
+[node name="LevelLabel" type="Label" parent="AspectContainer/MainContainer/mainarea/PlayArea/UpgradeContainer/UpgradeCard2/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+text = "NEW"
+horizontal_alignment = 1
+
+[node name="DescriptionLabel" type="RichTextLabel" parent="AspectContainer/MainContainer/mainarea/PlayArea/UpgradeContainer/UpgradeCard2/VBoxContainer"]
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+size_flags_vertical = 3
+bbcode_enabled = true
+text = "Technique description goes here."
+fit_content = true
+
+[node name="SelectButton" type="Button" parent="AspectContainer/MainContainer/mainarea/PlayArea/UpgradeContainer/UpgradeCard2/VBoxContainer"]
+layout_mode = 2
+theme_type_variation = &"ForwardNavButton"
+text = "Select"
+
+[node name="UpgradeCard3" type="Panel" parent="AspectContainer/MainContainer/mainarea/PlayArea/UpgradeContainer"]
+visible = false
+custom_minimum_size = Vector2(300, 380)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="AspectContainer/MainContainer/mainarea/PlayArea/UpgradeContainer/UpgradeCard3"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 15.0
+offset_top = 15.0
+offset_right = -15.0
+offset_bottom = -15.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 12
+
+[node name="IconPlaceholder" type="ColorRect" parent="AspectContainer/MainContainer/mainarea/PlayArea/UpgradeContainer/UpgradeCard3/VBoxContainer"]
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+color = Color(0.3, 0.3, 0.3, 0.5)
+
+[node name="NameLabel" type="Label" parent="AspectContainer/MainContainer/mainarea/PlayArea/UpgradeContainer/UpgradeCard3/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Technique Name"
+horizontal_alignment = 1
+
+[node name="LevelLabel" type="Label" parent="AspectContainer/MainContainer/mainarea/PlayArea/UpgradeContainer/UpgradeCard3/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+text = "NEW"
+horizontal_alignment = 1
+
+[node name="DescriptionLabel" type="RichTextLabel" parent="AspectContainer/MainContainer/mainarea/PlayArea/UpgradeContainer/UpgradeCard3/VBoxContainer"]
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+size_flags_vertical = 3
+bbcode_enabled = true
+text = "Technique description goes here."
+fit_content = true
+
+[node name="SelectButton" type="Button" parent="AspectContainer/MainContainer/mainarea/PlayArea/UpgradeContainer/UpgradeCard3/VBoxContainer"]
+layout_mode = 2
+theme_type_variation = &"ForwardNavButton"
+text = "Select"
+
+[node name="UpgradeCard4" type="Panel" parent="AspectContainer/MainContainer/mainarea/PlayArea/UpgradeContainer"]
+visible = false
+custom_minimum_size = Vector2(300, 380)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="AspectContainer/MainContainer/mainarea/PlayArea/UpgradeContainer/UpgradeCard4"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 15.0
+offset_top = 15.0
+offset_right = -15.0
+offset_bottom = -15.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 12
+
+[node name="IconPlaceholder" type="ColorRect" parent="AspectContainer/MainContainer/mainarea/PlayArea/UpgradeContainer/UpgradeCard4/VBoxContainer"]
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+color = Color(0.3, 0.3, 0.3, 0.5)
+
+[node name="NameLabel" type="Label" parent="AspectContainer/MainContainer/mainarea/PlayArea/UpgradeContainer/UpgradeCard4/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Technique Name"
+horizontal_alignment = 1
+
+[node name="LevelLabel" type="Label" parent="AspectContainer/MainContainer/mainarea/PlayArea/UpgradeContainer/UpgradeCard4/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+text = "NEW"
+horizontal_alignment = 1
+
+[node name="DescriptionLabel" type="RichTextLabel" parent="AspectContainer/MainContainer/mainarea/PlayArea/UpgradeContainer/UpgradeCard4/VBoxContainer"]
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+size_flags_vertical = 3
+bbcode_enabled = true
+text = "Technique description goes here."
+fit_content = true
+
+[node name="SelectButton" type="Button" parent="AspectContainer/MainContainer/mainarea/PlayArea/UpgradeContainer/UpgradeCard4/VBoxContainer"]
+layout_mode = 2
+theme_type_variation = &"ForwardNavButton"
+text = "Select"

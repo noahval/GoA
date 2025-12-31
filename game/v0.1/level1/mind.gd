@@ -1,9 +1,22 @@
 extends Control
 
+# TechniquesData is globally available via class_name
+const TECHNIQUES = TechniquesData.TECHNIQUES
+
+# Upgrade card references (populated in _ready)
+var upgrade_cards: Array[Panel] = []
+
+# Current upgrade options being displayed
+var current_options: Array = []
+
 func _ready():
 	ResponsiveLayout.apply_to_scene(self)  # REQUIRED
 	connect_navigation()
 	connect_settings_button()
+	setup_upgrade_cards()
+
+	# Generate and display initial upgrade options
+	generate_and_display_options()
 
 func connect_navigation():
 	# Connect Back Nav button to return to Furnace
@@ -27,3 +40,198 @@ func navigate_to(scene_id: String):
 		push_error("Unknown scene ID: " + scene_id)
 		return
 	Global.change_scene(path)
+
+func setup_upgrade_cards():
+	# Get references to upgrade card panels
+	var container = $AspectContainer/MainContainer/mainarea/PlayArea/UpgradeContainer
+	upgrade_cards = [
+		container.get_node("UpgradeCard1"),
+		container.get_node("UpgradeCard2"),
+		container.get_node("UpgradeCard3"),
+		container.get_node("UpgradeCard4"),
+	]
+
+func generate_and_display_options():
+	# Generate 2 upgrade options
+	current_options = _generate_upgrade_options(2)
+	_display_upgrade_options(current_options)
+
+func _generate_upgrade_options(count: int) -> Array:
+	# Returns array of dictionaries: [{"tech_id": "rhythm", "quality": "rare"}, ...]
+
+	var available_techniques = []
+
+	for tech_id in TECHNIQUES.keys():
+		var tech = TECHNIQUES[tech_id]
+
+		# Exclude maxed techniques
+		var current_level = Level1Vars.get_technique_level(tech_id)
+		var max_level = tech.get("max_level", 5)
+		if current_level >= max_level:
+			continue
+
+		# Check if technique requires unlocked clean streak system
+		if tech.has("requires"):
+			if tech["requires"] == "clean_streak" and not Level1Vars.clean_streak_unlocked:
+				continue
+
+		available_techniques.append(tech_id)
+
+	# Shuffle and take first 'count' items
+	available_techniques.shuffle()
+	var selected = available_techniques.slice(0, count)
+
+	# Roll quality for each selected technique
+	var options = []
+	for tech_id in selected:
+		var quality = _draw_quality_for_technique(tech_id)
+		options.append({"tech_id": tech_id, "quality": quality})
+
+	return options
+
+func _display_upgrade_options(options: Array):
+	# Hide all cards first
+	for card in upgrade_cards:
+		card.visible = false
+
+	# Populate visible cards with technique+quality data
+	for i in range(min(options.size(), 2)):
+		var option = options[i]
+		var tech_id = option["tech_id"]
+		var quality = option["quality"]
+		var tech = TECHNIQUES[tech_id]
+		var card = upgrade_cards[i]
+
+		# Set technique name
+		card.get_node("VBoxContainer/NameLabel").text = tech["name"]
+
+		# Calculate and show actual bonus with quality multiplier
+		var base_bonus = tech["effect"].get("base_bonus", 0.0)
+		var quality_mult = _get_quality_multiplier(quality)
+		var actual_bonus = base_bonus * quality_mult
+
+		# Build description with actual values
+		var description = tech["description"]
+		var description_label = card.get_node("VBoxContainer/DescriptionLabel")
+
+		if Level1Vars.show_exact_technique_values and base_bonus > 0:
+			# For percentage bonuses, show the quality-scaled value
+			var percentage_text = ""
+			if base_bonus < 1.0:  # Percentage bonus
+				percentage_text = " (%.0f%%)" % (actual_bonus * 100)
+			else:  # Flat bonus
+				percentage_text = " (+%.1f)" % actual_bonus
+
+			description_label.text = description + percentage_text
+		else:
+			description_label.text = description
+
+		# Show current level or "NEW"
+		var current_level = Level1Vars.get_technique_level(tech_id)
+		if current_level > 0:
+			card.get_node("VBoxContainer/LevelLabel").text = "Level %d" % current_level
+		else:
+			card.get_node("VBoxContainer/LevelLabel").text = "NEW"
+
+		# Set rarity-based border color and quality-based text color
+		_apply_card_styling(card, tech_id, quality)
+
+		# Connect Select button
+		var select_btn = card.get_node("VBoxContainer/SelectButton")
+		# Disconnect previous signals if any
+		for conn in select_btn.pressed.get_connections():
+			select_btn.pressed.disconnect(conn["callable"])
+		select_btn.pressed.connect(_on_upgrade_selected.bind(tech_id, quality))
+
+		card.visible = true
+
+func _on_upgrade_selected(tech_id: String, quality: String):
+	# Add technique to player's selected techniques
+	Level1Vars.add_technique(tech_id, quality)
+
+	# Increment total upgrades
+	Level1Vars.upgrades_qty += 1
+
+	# Check if more upgrades needed
+	if Level1Vars.upgrades_qty < Level1Vars.player_level:
+		# Generate new options with fresh quality rolls
+		generate_and_display_options()
+	else:
+		# All caught up, return to furnace
+		Global.change_scene("res://level1/furnace.tscn")
+
+func _draw_quality_for_technique(_tech_id: String) -> String:
+	# Uniform quality distribution for all techniques (see Part 3)
+	var roll = randf()
+
+	# 40% common, 30% uncommon, 20% rare, 8% epic, 2% legendary
+	if roll < 0.40:
+		return "common"
+	elif roll < 0.70:  # 0.40 + 0.30
+		return "uncommon"
+	elif roll < 0.90:  # 0.70 + 0.20
+		return "rare"
+	elif roll < 0.98:  # 0.90 + 0.08
+		return "epic"
+	else:  # 0.98 + 0.02
+		return "legendary"
+
+func _apply_card_styling(card: Panel, tech_id: String, quality: String):
+	# Border color based on technique rarity (how rare it is to appear)
+	var tech_rarity = TECHNIQUES[tech_id]["rarity"]
+	var border_color: Color
+
+	match tech_rarity:
+		"common":
+			border_color = Color(0.6, 0.6, 0.6)  # Gray
+		"uncommon":
+			border_color = Color(0.4, 0.8, 0.4)  # Green
+		"rare":
+			border_color = Color(0.2, 0.5, 1.0)  # Blue
+		"epic":
+			border_color = Color(0.7, 0.3, 1.0)  # Purple
+		"legendary":
+			border_color = Color(1.0, 0.8, 0.2)  # Gold
+		_:
+			border_color = Color.WHITE
+
+	# Apply border color to Panel's StyleBox
+	var stylebox = card.get_theme_stylebox("panel").duplicate()
+	stylebox.border_color = border_color
+	card.add_theme_stylebox_override("panel", stylebox)
+
+	# Text color based on quality (how powerful this draw is)
+	var quality_color: Color
+
+	match quality:
+		"common":
+			quality_color = Color(0.6, 0.6, 0.6)  # Gray
+		"uncommon":
+			quality_color = Color(0.4, 0.8, 0.4)  # Green
+		"rare":
+			quality_color = Color(0.2, 0.5, 1.0)  # Blue
+		"epic":
+			quality_color = Color(0.7, 0.3, 1.0)  # Purple
+		"legendary":
+			quality_color = Color(1.0, 0.8, 0.2)  # Gold
+		_:
+			quality_color = Color.WHITE
+
+	# Apply quality color to percentage text in description
+	var description_label = card.get_node("VBoxContainer/DescriptionLabel")
+	if description_label is RichTextLabel:
+		var text = description_label.text
+		if "(" in text:  # Has percentage text
+			var parts = text.split("(", true, 1)
+			var color_hex = quality_color.to_html(false)
+			description_label.text = parts[0] + "[color=#" + color_hex + "](" + parts[1] + "[/color]"
+			description_label.bbcode_enabled = true
+
+func _get_quality_multiplier(quality: String) -> float:
+	match quality:
+		"common": return 1.0
+		"uncommon": return 1.1
+		"rare": return 1.2
+		"epic": return 1.4
+		"legendary": return 1.6
+		_: return 1.0
