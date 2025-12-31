@@ -10,11 +10,39 @@ extends Control
 @onready var delivery_zone_node: Node2D = $AspectContainer/MainContainer/mainarea/PlayArea/FurnaceWall/DeliveryZone
 @onready var mind_button: Button = $AspectContainer/MainContainer/mainarea/Menu/ToMindButton
 
+# Combo display UI
+@onready var combo_container: VBoxContainer = $AspectContainer/MainContainer/mainarea/Menu/ComboContainer
+@onready var clean_streak_panel: PanelContainer = $AspectContainer/MainContainer/mainarea/Menu/ComboContainer/NodropComboPanel
+@onready var clean_streak_label: Label = $AspectContainer/MainContainer/mainarea/Menu/ComboContainer/NodropComboPanel/HBoxContainer/ComboLabel
+@onready var forgiveness_label: Label = $AspectContainer/MainContainer/mainarea/Menu/ComboContainer/NodropComboPanel/HBoxContainer/ForgivenessLabel
+@onready var heavy_combo_panel: PanelContainer = $AspectContainer/MainContainer/mainarea/Menu/ComboContainer/HeavyComboPanel
+@onready var heavy_stacks_label: Label = $AspectContainer/MainContainer/mainarea/Menu/ComboContainer/HeavyComboPanel/HBoxContainer/HeavyStacksLabel
+@onready var heavy_timer_bar: ProgressBar = $AspectContainer/MainContainer/mainarea/Menu/ComboContainer/HeavyComboPanel/HBoxContainer/HeavyTimerBar
+@onready var benefits_tooltip: PanelContainer = $AspectContainer/MainContainer/mainarea/Menu/BenefitsTooltip
+@onready var benefits_list: VBoxContainer = $AspectContainer/MainContainer/mainarea/Menu/BenefitsTooltip/VBoxContainer/BenefitsList
+
 # XP bar created programmatically
 var xp_bar: ProgressBar = null
 
 # Camera for shake effects (created programmatically)
 var camera: Camera2D = null
+
+# Combo UI constants
+const COMBO_CONTAINER_SPACING: int = 6
+const TOOLTIP_OFFSET: int = 8
+const BENEFIT_FONT_SIZE: int = 14
+const PANEL_PADDING: int = 8
+const PANEL_CORNER_RADIUS: int = 4
+
+# Color definitions for benefits display
+const BENEFIT_COLORS = {
+	"reduction": Color(0.4, 0.8, 0.4),  # Green for reductions
+	"bonus": Color(1.0, 0.8, 0.2),      # Gold for bonuses
+	"mass": Color(0.4, 0.8, 0.8)        # Cyan for mass
+}
+
+# Track currently hovered panel for tooltip positioning
+var _hovered_panel: PanelContainer = null
 
 const BORDER_THICKNESS: float = 50.0  # Border zone thickness in pixels
 const DELIVERY_ZONE_WIDTH: float = 15.0
@@ -64,10 +92,52 @@ func _ready():
 	await get_tree().process_frame
 	setup_physics_objects()
 
+	# Connect combo signals for counter updates (NOT tooltip updates)
+	Level1Vars.clean_streak_changed.connect(_on_clean_streak_changed)
+	Level1Vars.heavy_combo_changed.connect(_on_heavy_combo_changed)
+	Level1Vars.technique_updated.connect(_on_technique_updated)
+
+	# Connect mouse events for tooltip (only calculate benefits on hover)
+	if clean_streak_panel:
+		clean_streak_panel.mouse_entered.connect(_on_combo_panel_hover_start.bind(clean_streak_panel))
+		clean_streak_panel.mouse_exited.connect(_on_combo_panel_hover_end)
+	else:
+		push_warning("Clean streak panel not found - combo display unavailable")
+
+	if heavy_combo_panel:
+		heavy_combo_panel.mouse_entered.connect(_on_combo_panel_hover_start.bind(heavy_combo_panel))
+		heavy_combo_panel.mouse_exited.connect(_on_combo_panel_hover_end)
+	else:
+		push_warning("Heavy combo panel not found - combo display unavailable")
+
+	# Initial visibility setup
+	_update_combo_panel_visibility()
+
 	# Initialize train shake system after physics setup
 	assert(camera != null, "Camera2D not created - check setup_camera()")
 	assert(coal_container != null, "CoalContainer not found")
 	TrainShake.initialize(camera, coal_container)
+
+func _exit_tree():
+	# Clean up signal connections
+	if Level1Vars.clean_streak_changed.is_connected(_on_clean_streak_changed):
+		Level1Vars.clean_streak_changed.disconnect(_on_clean_streak_changed)
+	if Level1Vars.heavy_combo_changed.is_connected(_on_heavy_combo_changed):
+		Level1Vars.heavy_combo_changed.disconnect(_on_heavy_combo_changed)
+	if Level1Vars.technique_updated.is_connected(_on_technique_updated):
+		Level1Vars.technique_updated.disconnect(_on_technique_updated)
+
+	if clean_streak_panel:
+		if clean_streak_panel.mouse_entered.is_connected(_on_combo_panel_hover_start):
+			clean_streak_panel.mouse_entered.disconnect(_on_combo_panel_hover_start)
+		if clean_streak_panel.mouse_exited.is_connected(_on_combo_panel_hover_end):
+			clean_streak_panel.mouse_exited.disconnect(_on_combo_panel_hover_end)
+
+	if heavy_combo_panel:
+		if heavy_combo_panel.mouse_entered.is_connected(_on_combo_panel_hover_start):
+			heavy_combo_panel.mouse_entered.disconnect(_on_combo_panel_hover_start)
+		if heavy_combo_panel.mouse_exited.is_connected(_on_combo_panel_hover_end):
+			heavy_combo_panel.mouse_exited.disconnect(_on_combo_panel_hover_end)
 
 func setup_camera():
 	# Create Camera2D for shake effects
@@ -325,6 +395,10 @@ func _process(delta):
 	if Level1Vars.heavy_combo_unlocked and Level1Vars.heavy_combo_timer > 0.0:
 		Level1Vars.heavy_combo_timer -= delta
 
+		# Update timer bar display if visible
+		if heavy_timer_bar and heavy_timer_bar.visible:
+			heavy_timer_bar.value = max(0.0, Level1Vars.heavy_combo_timer)
+
 		if Level1Vars.heavy_combo_timer <= 0.0:
 			# Timer expired - reset stacks
 			Level1Vars.heavy_combo_stacks = 0
@@ -404,9 +478,9 @@ func setup_xp_bar():
 	xp_bar.add_theme_stylebox_override("fill", fill_style)
 
 	# Add to menu (will be positioned by VBoxContainer)
-	# Insert after FocusBar (index 1), before ToMindButton
+	# Insert after FocusBar (index 1), before ComboContainer
 	menu.add_child(xp_bar)
-	menu.move_child(xp_bar, 2)  # Position: StaminaBar(0), FocusBar(1), XPBar(2), ToMindButton(3)
+	menu.move_child(xp_bar, 2)  # Position: StaminaBar(0), FocusBar(1), XPBar(2), ComboContainer(3), BenefitsTooltip(4), ToMindButton(5)
 
 func connect_resource_bars():
 	# Connect to Level1Vars signals
@@ -568,3 +642,190 @@ func setup_work_zone_boundary():
 	playarea.add_child(work_zone_boundary_line)
 
 	print("Work zone boundary drawn at x=", boundary_x, " (Global.dev_speed_mode)")
+
+# ============================================================================
+# COMBO DISPLAY FUNCTIONS
+# ============================================================================
+
+# Helper function for combo color thresholds
+func _get_combo_color(count: int, green_threshold: int, gold_threshold: int) -> Color:
+	if count >= gold_threshold:
+		return Color(1.0, 0.8, 0.2)  # Gold
+	elif count >= green_threshold:
+		return Color(0.4, 0.8, 0.4)  # Green
+	return Color.WHITE
+
+func _update_combo_panel_visibility():
+	if clean_streak_panel:
+		clean_streak_panel.visible = Level1Vars.clean_streak_unlocked
+	if heavy_combo_panel:
+		heavy_combo_panel.visible = Level1Vars.heavy_combo_unlocked
+
+	# Hide entire combo container if no combos unlocked
+	if combo_container:
+		combo_container.visible = Level1Vars.clean_streak_unlocked or Level1Vars.heavy_combo_unlocked
+
+func _update_clean_streak_display(count: int):
+	if not clean_streak_label:
+		push_warning("Clean streak label not found - streak display unavailable")
+		return
+
+	# Build display text: "Streak: 15/30" or "Streak: 15/30 [2]" with charges
+	var max_combo = Level1Vars.get_clean_streak_max()
+	clean_streak_label.text = "Streak: %d/%d" % [count, max_combo]
+
+	# Show forgiveness charges if unlocked
+	if forgiveness_label:
+		if Level1Vars.forgiveness_max_capacity > 0:
+			forgiveness_label.text = "[%d]" % Level1Vars.forgiveness_charges
+			forgiveness_label.visible = true
+			# Dim the charges display
+			forgiveness_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
+		else:
+			forgiveness_label.visible = false
+
+	# Color based on milestones
+	var color = _get_combo_color(count, 5, 10)
+	clean_streak_label.add_theme_color_override("font_color", color)
+
+func _update_heavy_combo_display(stacks: int, timer: float):
+	if not heavy_stacks_label:
+		push_warning("Heavy stacks label not found - heavy combo display unavailable")
+		return
+
+	heavy_stacks_label.text = "Heavy: %d" % stacks
+
+	# Color based on stack count using helper
+	var color = _get_combo_color(stacks, 3, 5)
+	heavy_stacks_label.add_theme_color_override("font_color", color)
+
+	if heavy_timer_bar:
+		# Calculate max timer (base + extensions)
+		var base_timer = 5.0
+		var extension = Level1Vars.get_heavy_timer_extension()
+		heavy_timer_bar.max_value = base_timer + extension
+		heavy_timer_bar.value = max(0.0, timer)  # Prevent negative values
+
+		# Show/hide bar based on active timer
+		heavy_timer_bar.visible = timer > 0.0
+
+# Signal handlers
+func _on_clean_streak_changed(new_count: int):
+	_update_clean_streak_display(new_count)
+	# No tooltip update here - only on hover
+
+func _on_heavy_combo_changed(new_stacks: int, timer_remaining: float):
+	_update_heavy_combo_display(new_stacks, timer_remaining)
+	# No tooltip update here - only on hover
+
+func _on_technique_updated(_technique_id: String, _new_level: int):
+	_update_combo_panel_visibility()
+	# No tooltip update here - only on hover
+
+# Tooltip hover handlers
+func _on_combo_panel_hover_start(panel: PanelContainer):
+	if not benefits_tooltip:
+		push_warning("Benefits tooltip not found - combo tooltip unavailable")
+		return
+
+	_hovered_panel = panel
+	_rebuild_benefits_list()  # Calculate and display benefits
+	_position_tooltip_near_panel(panel)
+	benefits_tooltip.visible = true
+
+func _on_combo_panel_hover_end():
+	if benefits_tooltip:
+		benefits_tooltip.visible = false
+		_hovered_panel = null
+
+func _position_tooltip_near_panel(panel: PanelContainer):
+	if not benefits_tooltip or not panel:
+		return
+
+	# Position tooltip to the right of the hovered panel
+	# Use global_position since tooltip and panel have different parents
+	var offset = Vector2(panel.size.x + TOOLTIP_OFFSET, 0)
+	var desired_pos = panel.global_position + offset
+
+	# Clamp to viewport to prevent offscreen positioning
+	var viewport_size = get_viewport_rect().size
+	var tooltip_size = benefits_tooltip.size
+
+	# Prevent going off right edge
+	if desired_pos.x + tooltip_size.x > viewport_size.x:
+		desired_pos.x = viewport_size.x - tooltip_size.x - TOOLTIP_OFFSET
+
+	# Prevent going off bottom edge
+	if desired_pos.y + tooltip_size.y > viewport_size.y:
+		desired_pos.y = viewport_size.y - tooltip_size.y - TOOLTIP_OFFSET
+
+	# Prevent going off top edge
+	desired_pos.y = max(TOOLTIP_OFFSET, desired_pos.y)
+
+	benefits_tooltip.global_position = desired_pos
+
+func _get_active_benefits() -> Array[Dictionary]:
+	var benefits: Array[Dictionary] = []
+
+	# Stamina drain reduction
+	var drain_mult = Level1Vars.get_base_stamina_drain_multiplier()
+	if drain_mult < 1.0:
+		var reduction_pct = (1.0 - drain_mult) * 100
+		benefits.append({
+			"label": "Stamina Drain",
+			"value": "-%d%%" % int(reduction_pct),
+			"color": BENEFIT_COLORS["reduction"]
+		})
+
+	# XP multiplier
+	var xp_mult = Level1Vars.get_xp_multiplier()
+	if xp_mult > 1.0:
+		var bonus_pct = (xp_mult - 1.0) * 100
+		benefits.append({
+			"label": "XP Bonus",
+			"value": "+%d%%" % int(bonus_pct),
+			"color": BENEFIT_COLORS["bonus"]
+		})
+
+	# Shovel mass (if player is investing in it)
+	var mass_mult = Level1Vars.get_shovel_mass_multiplier()
+	if mass_mult > 1.0:
+		var bonus_pct = (mass_mult - 1.0) * 100
+		benefits.append({
+			"label": "Shovel Mass",
+			"value": "+%d%%" % int(bonus_pct),
+			"color": BENEFIT_COLORS["mass"]
+		})
+
+	# Fallback: Show at least that combo system is active
+	# This occurs when combo is unlocked but not providing bonuses yet:
+	# - Clean streak at 0 (just unlocked or recently dropped coal)
+	# - Heavy combo timer expired (stacks = 0)
+	# - No passive bonuses from Rhythm/Economy/etc (player only selected combo techniques)
+	if benefits.is_empty() and (Level1Vars.clean_streak_unlocked or Level1Vars.heavy_combo_unlocked):
+		benefits.append({
+			"label": "Combo System Active",
+			"value": "(no bonuses yet)",
+			"color": Color.WHITE
+		})
+
+	return benefits
+
+func _rebuild_benefits_list():
+	if not benefits_list:
+		push_warning("Benefits list not found - tooltip content unavailable")
+		return
+
+	# Clear existing labels (use free() not queue_free() to prevent buildup on rapid hovering)
+	for child in benefits_list.get_children():
+		child.free()
+
+	var benefits = _get_active_benefits()
+
+	# Show at least header even if no benefits
+	for benefit in benefits:
+		var label = Label.new()
+		label.text = "%s: %s" % [benefit["label"], benefit["value"]]
+		label.add_theme_color_override("font_color", benefit["color"])
+		label.add_theme_font_size_override("font_size", BENEFIT_FONT_SIZE)
+		benefits_list.add_child(label)

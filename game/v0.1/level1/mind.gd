@@ -105,26 +105,36 @@ func _display_upgrade_options(options: Array):
 		# Set technique name
 		card.get_node("VBoxContainer/NameLabel").text = tech["name"]
 
-		# Calculate and show actual bonus with quality multiplier
+		# Split description into short and long descriptions
+		var description = tech["description"]
+		var parts = description.split("\n\n", true, 1)
+		var short_desc = parts[0] if parts.size() > 0 else ""
+		var long_desc = parts[1] if parts.size() > 1 else ""
+
+		# Calculate quality-modified bonus
 		var base_bonus = tech["effect"].get("base_bonus", 0.0)
 		var quality_mult = _get_quality_multiplier(quality)
 		var actual_bonus = base_bonus * quality_mult
 
-		# Build description with actual values
-		var description = tech["description"]
-		var description_label = card.get_node("VBoxContainer/DescriptionLabel")
+		# Get quality color for BBCode
+		var quality_color = _get_quality_color(quality)
 
+		# Build short description with colored value
+		var short_label = card.get_node("VBoxContainer/ShortDescriptionLabel")
 		if Level1Vars.show_exact_technique_values and base_bonus > 0:
-			# For percentage bonuses, show the quality-scaled value
-			var percentage_text = ""
+			var value_text = ""
 			if base_bonus < 1.0:  # Percentage bonus
-				percentage_text = " (%.0f%%)" % (actual_bonus * 100)
-			else:  # Flat bonus
-				percentage_text = " (+%.1f)" % actual_bonus
+				value_text = " [color=#%s]-%.0f%%[/color]" % [quality_color, actual_bonus * 100]
+			else:  # Flat bonus (like Streak Ceiling +10)
+				value_text = " [color=#%s]+%.0f[/color]" % [quality_color, actual_bonus]
 
-			description_label.text = description + percentage_text
+			short_label.text = "[center]" + short_desc + value_text + "[/center]"
 		else:
-			description_label.text = description
+			short_label.text = "[center]" + short_desc + "[/center]"
+
+		# Set long description (no numbers, left-aligned)
+		var long_label = card.get_node("VBoxContainer/LongDescriptionLabel")
+		long_label.text = long_desc
 
 		# Show current level or "NEW"
 		var current_level = Level1Vars.get_technique_level(tech_id)
@@ -217,15 +227,27 @@ func _apply_card_styling(card: Panel, tech_id: String, quality: String):
 		_:
 			quality_color = Color.WHITE
 
-	# Apply quality color to percentage text in description
-	var description_label = card.get_node("VBoxContainer/DescriptionLabel")
-	if description_label is RichTextLabel:
-		var text = description_label.text
-		if "(" in text:  # Has percentage text
-			var parts = text.split("(", true, 1)
-			var color_hex = quality_color.to_html(false)
-			description_label.text = parts[0] + "[color=#" + color_hex + "](" + parts[1] + "[/color]"
-			description_label.bbcode_enabled = true
+	# Note: Quality color is now applied during _display_upgrade_options
+	# No additional styling needed here
+
+func _get_quality_color(quality: String) -> String:
+	# Returns hex color string (without #) for BBCode usage
+	var color: Color
+	match quality:
+		"common":
+			color = Color(0.6, 0.6, 0.6)  # Gray
+		"uncommon":
+			color = Color(0.4, 0.8, 0.4)  # Green
+		"rare":
+			color = Color(0.2, 0.5, 1.0)  # Blue
+		"epic":
+			color = Color(0.7, 0.3, 1.0)  # Purple
+		"legendary":
+			color = Color(1.0, 0.8, 0.2)  # Gold
+		_:
+			color = Color.WHITE
+
+	return color.to_html(false)
 
 func _get_quality_multiplier(quality: String) -> float:
 	match quality:

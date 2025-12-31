@@ -52,7 +52,7 @@ grow_vertical = 2
 theme_override_constants/separation = 30
 
 [node name="UpgradeCard1" type="Panel" parent="AspectContainer/MainContainer/mainarea/PlayArea/UpgradeContainer"]
-custom_minimum_size = Vector2(300, 380)
+custom_minimum_size = Vector2(300, 420)
 layout_mode = 2
 size_flags_horizontal = 4
 theme_override_styles/panel = SubResource("StyleBoxFlat_card")
@@ -88,13 +88,24 @@ theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
 text = "NEW"
 horizontal_alignment = 1
 
-[node name="DescriptionLabel" type="RichTextLabel" parent="AspectContainer/MainContainer/mainarea/PlayArea/UpgradeContainer/UpgradeCard1/VBoxContainer"]
-custom_minimum_size = Vector2(0, 80)
+[node name="ShortDescriptionLabel" type="RichTextLabel" parent="AspectContainer/MainContainer/mainarea/PlayArea/UpgradeContainer/UpgradeCard1/VBoxContainer"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+theme_override_font_sizes/normal_font_size = 15
+bbcode_enabled = true
+text = "Short description -20%"
+fit_content = true
+scroll_active = false
+
+[node name="LongDescriptionLabel" type="RichTextLabel" parent="AspectContainer/MainContainer/mainarea/PlayArea/UpgradeContainer/UpgradeCard1/VBoxContainer"]
+custom_minimum_size = Vector2(0, 100)
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_font_sizes/normal_font_size = 12
 bbcode_enabled = true
-text = "Technique description goes here."
+text = "Long flavor description goes here."
 fit_content = true
+scroll_active = false
 
 [node name="SelectButton" type="Button" parent="AspectContainer/MainContainer/mainarea/PlayArea/UpgradeContainer/UpgradeCard1/VBoxContainer"]
 layout_mode = 2
@@ -102,7 +113,7 @@ theme_type_variation = &"ForwardNavButton"
 text = "Select"
 
 [node name="UpgradeCard2" type="Panel" parent="AspectContainer/MainContainer/mainarea/PlayArea/UpgradeContainer"]
-custom_minimum_size = Vector2(300, 380)
+custom_minimum_size = Vector2(300, 420)
 layout_mode = 2
 size_flags_horizontal = 4
 theme_override_styles/panel = SubResource("StyleBoxFlat_card")
@@ -138,13 +149,24 @@ theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
 text = "NEW"
 horizontal_alignment = 1
 
-[node name="DescriptionLabel" type="RichTextLabel" parent="AspectContainer/MainContainer/mainarea/PlayArea/UpgradeContainer/UpgradeCard2/VBoxContainer"]
-custom_minimum_size = Vector2(0, 80)
+[node name="ShortDescriptionLabel" type="RichTextLabel" parent="AspectContainer/MainContainer/mainarea/PlayArea/UpgradeContainer/UpgradeCard2/VBoxContainer"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+theme_override_font_sizes/normal_font_size = 15
+bbcode_enabled = true
+text = "Short description -20%"
+fit_content = true
+scroll_active = false
+
+[node name="LongDescriptionLabel" type="RichTextLabel" parent="AspectContainer/MainContainer/mainarea/PlayArea/UpgradeContainer/UpgradeCard2/VBoxContainer"]
+custom_minimum_size = Vector2(0, 100)
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_font_sizes/normal_font_size = 12
 bbcode_enabled = true
-text = "Technique description goes here."
+text = "Long flavor description goes here."
 fit_content = true
+scroll_active = false
 
 [node name="SelectButton" type="Button" parent="AspectContainer/MainContainer/mainarea/PlayArea/UpgradeContainer/UpgradeCard2/VBoxContainer"]
 layout_mode = 2
@@ -153,7 +175,7 @@ text = "Select"
 
 [node name="UpgradeCard3" type="Panel" parent="AspectContainer/MainContainer/mainarea/PlayArea/UpgradeContainer"]
 visible = false
-custom_minimum_size = Vector2(300, 380)
+custom_minimum_size = Vector2(300, 420)
 layout_mode = 2
 size_flags_horizontal = 4
 theme_override_styles/panel = SubResource("StyleBoxFlat_card")
@@ -189,13 +211,24 @@ theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
 text = "NEW"
 horizontal_alignment = 1
 
-[node name="DescriptionLabel" type="RichTextLabel" parent="AspectContainer/MainContainer/mainarea/PlayArea/UpgradeContainer/UpgradeCard3/VBoxContainer"]
-custom_minimum_size = Vector2(0, 80)
+[node name="ShortDescriptionLabel" type="RichTextLabel" parent="AspectContainer/MainContainer/mainarea/PlayArea/UpgradeContainer/UpgradeCard3/VBoxContainer"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+theme_override_font_sizes/normal_font_size = 15
+bbcode_enabled = true
+text = "Short description -20%"
+fit_content = true
+scroll_active = false
+
+[node name="LongDescriptionLabel" type="RichTextLabel" parent="AspectContainer/MainContainer/mainarea/PlayArea/UpgradeContainer/UpgradeCard3/VBoxContainer"]
+custom_minimum_size = Vector2(0, 100)
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_font_sizes/normal_font_size = 12
 bbcode_enabled = true
-text = "Technique description goes here."
+text = "Long flavor description goes here."
 fit_content = true
+scroll_active = false
 
 [node name="SelectButton" type="Button" parent="AspectContainer/MainContainer/mainarea/PlayArea/UpgradeContainer/UpgradeCard3/VBoxContainer"]
 layout_mode = 2
@@ -204,7 +237,7 @@ text = "Select"
 
 [node name="UpgradeCard4" type="Panel" parent="AspectContainer/MainContainer/mainarea/PlayArea/UpgradeContainer"]
 visible = false
-custom_minimum_size = Vector2(300, 380)
+custom_minimum_size = Vector2(300, 420)
 layout_mode = 2
 size_flags_horizontal = 4
 theme_override_styles/panel = SubResource("StyleBoxFlat_card")
@@ -240,13 +273,24 @@ theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
 text = "NEW"
 horizontal_alignment = 1
 
-[node name="DescriptionLabel" type="RichTextLabel" parent="AspectContainer/MainContainer/mainarea/PlayArea/UpgradeContainer/UpgradeCard4/VBoxContainer"]
-custom_minimum_size = Vector2(0, 80)
+[node name="ShortDescriptionLabel" type="RichTextLabel" parent="AspectContainer/MainContainer/mainarea/PlayArea/UpgradeContainer/UpgradeCard4/VBoxContainer"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+theme_override_font_sizes/normal_font_size = 15
+bbcode_enabled = true
+text = "Short description -20%"
+fit_content = true
+scroll_active = false
+
+[node name="LongDescriptionLabel" type="RichTextLabel" parent="AspectContainer/MainContainer/mainarea/PlayArea/UpgradeContainer/UpgradeCard4/VBoxContainer"]
+custom_minimum_size = Vector2(0, 100)
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_font_sizes/normal_font_size = 12
 bbcode_enabled = true
-text = "Technique description goes here."
+text = "Long flavor description goes here."
 fit_content = true
+scroll_active = false
 
 [node name="SelectButton" type="Button" parent="AspectContainer/MainContainer/mainarea/PlayArea/UpgradeContainer/UpgradeCard4/VBoxContainer"]
 layout_mode = 2

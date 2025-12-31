@@ -58,6 +58,36 @@ corner_radius_top_right = 2
 corner_radius_bottom_right = 2
 corner_radius_bottom_left = 2
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_combo_panel"]
+bg_color = Color(0.1, 0.1, 0.1, 0.7)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.3, 0.3, 0.3, 0.5)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+content_margin_left = 8.0
+content_margin_top = 8.0
+content_margin_right = 8.0
+content_margin_bottom = 8.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_timer_bg"]
+bg_color = Color(0.2, 0.2, 0.2, 0.5)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_timer_fill"]
+bg_color = Color(0.9, 0.5, 0.2, 0.6)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
 [node name="Furnace" instance=ExtResource("1_furnace_template")]
 script = ExtResource("2_furnace_script")
 
@@ -151,17 +181,78 @@ show_percentage = false
 theme_override_styles/background = SubResource("StyleBoxFlat_focus_bg")
 theme_override_styles/fill = SubResource("StyleBoxFlat_focus_fill")
 
-[node name="ToMindButton" type="Button" parent="AspectContainer/MainContainer/mainarea/Menu" index="2"]
+[node name="ComboContainer" type="VBoxContainer" parent="AspectContainer/MainContainer/mainarea/Menu" index="2"]
+layout_mode = 2
+theme_override_constants/separation = 6
+visible = false
+
+[node name="NodropComboPanel" type="PanelContainer" parent="AspectContainer/MainContainer/mainarea/Menu/ComboContainer"]
+layout_mode = 2
+mouse_filter = 1
+theme_override_styles/panel = SubResource("StyleBoxFlat_combo_panel")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="AspectContainer/MainContainer/mainarea/Menu/ComboContainer/NodropComboPanel"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ComboLabel" type="Label" parent="AspectContainer/MainContainer/mainarea/Menu/ComboContainer/NodropComboPanel/HBoxContainer"]
+layout_mode = 2
+text = "Streak: 0/20"
+
+[node name="ForgivenessLabel" type="Label" parent="AspectContainer/MainContainer/mainarea/Menu/ComboContainer/NodropComboPanel/HBoxContainer"]
+layout_mode = 2
+text = "[0]"
+visible = false
+
+[node name="HeavyComboPanel" type="PanelContainer" parent="AspectContainer/MainContainer/mainarea/Menu/ComboContainer"]
+layout_mode = 2
+mouse_filter = 1
+theme_override_styles/panel = SubResource("StyleBoxFlat_combo_panel")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="AspectContainer/MainContainer/mainarea/Menu/ComboContainer/HeavyComboPanel"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="HeavyStacksLabel" type="Label" parent="AspectContainer/MainContainer/mainarea/Menu/ComboContainer/HeavyComboPanel/HBoxContainer"]
+layout_mode = 2
+text = "Heavy: 0"
+
+[node name="HeavyTimerBar" type="ProgressBar" parent="AspectContainer/MainContainer/mainarea/Menu/ComboContainer/HeavyComboPanel/HBoxContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(60, 16)
+max_value = 5.0
+show_percentage = false
+theme_override_styles/background = SubResource("StyleBoxFlat_timer_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_timer_fill")
+
+[node name="BenefitsTooltip" type="PanelContainer" parent="AspectContainer/MainContainer/mainarea/Menu" index="3"]
+layout_mode = 2
+visible = false
+theme_override_styles/panel = SubResource("StyleBoxFlat_combo_panel")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="AspectContainer/MainContainer/mainarea/Menu/BenefitsTooltip"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="BenefitsHeaderLabel" type="Label" parent="AspectContainer/MainContainer/mainarea/Menu/BenefitsTooltip/VBoxContainer"]
+layout_mode = 2
+text = "Active Bonuses"
+
+[node name="BenefitsList" type="VBoxContainer" parent="AspectContainer/MainContainer/mainarea/Menu/BenefitsTooltip/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="ToMindButton" type="Button" parent="AspectContainer/MainContainer/mainarea/Menu" index="4"]
 layout_mode = 2
 theme_type_variation = &"ForwardNavButton"
 text = "To Mind"
 
-[node name="Debug25CoalButton" type="Button" parent="AspectContainer/MainContainer/mainarea/Menu" index="3"]
+[node name="Debug25CoalButton" type="Button" parent="AspectContainer/MainContainer/mainarea/Menu" index="5"]
 visible = false
 layout_mode = 2
 text = "[DEBUG] +25 Coal"
 
-[node name="DebugDrainStaminaButton" type="Button" parent="AspectContainer/MainContainer/mainarea/Menu" index="4"]
+[node name="DebugDrainStaminaButton" type="Button" parent="AspectContainer/MainContainer/mainarea/Menu" index="6"]
 visible = false
 layout_mode = 2
 text = "[DEBUG] Drain Stamina"
