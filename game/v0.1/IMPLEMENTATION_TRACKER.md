@@ -15,13 +15,13 @@
 1.27-currency-display
 
 2.2-Physics Objects
-2.3-Coal Physics Spawning
+2.3-Coal Spawning
 2.4-Dropped Coal
 2.5-Delivered Coal
 2.6-furnace bars
 2.7-stamina drain
-2.8-day end
-2.9-shovel experience
+2.9-day end
+2.10-shovel experience
 2.11-train shake
 2.12-upgrade pool
 2.13-combo display

@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" uid="uid://drfp4vl2w1wvr" path="res://level1/scene_template.tscn" id="1_template"]
+[ext_resource type="Script" path="res://level1/dream.gd" id="2_dream_script"]
+
+[node name="Dream" instance=ExtResource("1_template")]
+script = ExtResource("2_dream_script")

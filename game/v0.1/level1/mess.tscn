@@ -1,0 +1,12 @@
+[gd_scene load_steps=2 format=3 uid="uid://d3lmess1hall"]
+
+[ext_resource type="PackedScene" uid="uid://drfp4vl2w1wvr" path="res://level1/scene_template.tscn" id="1_mess_template"]
+[ext_resource type="Script" path="res://level1/mess.gd" id="2_mess_script"]
+
+[node name="Mess" instance=ExtResource("1_mess_template")]
+script = ExtResource("2_mess_script")
+
+[node name="ToDormButton" type="Button" parent="AspectContainer/MainContainer/mainarea/Menu" index="0"]
+layout_mode = 2
+theme_type_variation = &"BackNavButton"
+text = "Dormitory"

@@ -130,6 +130,8 @@ func get_available_destinations() -> Array:
 const SYSTEM_SCENES = [
 	"res://settings.tscn",
 	"res://scenes/main_menu.tscn",
+	"res://level1/dream.tscn",
+	"res://level1/pay.tscn",
 ]
 
 # Validator function
