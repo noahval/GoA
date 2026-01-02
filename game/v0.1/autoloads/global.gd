@@ -5,41 +5,47 @@ const GAME_VERSION = "2.0.0"  # Semantic versioning: MAJOR.MINOR.PATCH
 const SAVE_VERSION = 1         # Increment when save structure changes
 
 # ===== SIX-STAT SYSTEM =====
-# Stats with setters to detect changes
+# Stats with setters to detect level-ups and show varied notification messages
 var strength: int = 1:
 	set(value):
 		if is_node_ready() and value > strength:
-			show_notification("You feel stronger")
+			var message = _get_stat_message("strength")
+			show_notification(message, NOTIFICATION_TYPE_STAT)
 		strength = value
 
 var dexterity: int = 1:
 	set(value):
 		if is_node_ready() and value > dexterity:
-			show_notification("You feel more precise")
+			var message = _get_stat_message("dexterity")
+			show_notification(message, NOTIFICATION_TYPE_STAT)
 		dexterity = value
 
 var constitution: int = 1:
 	set(value):
 		if is_node_ready() and value > constitution:
-			show_notification("You feel more resilient")
+			var message = _get_stat_message("constitution")
+			show_notification(message, NOTIFICATION_TYPE_STAT)
 		constitution = value
 
 var intelligence: int = 1:
 	set(value):
 		if is_node_ready() and value > intelligence:
-			show_notification("You feel smarter")
+			var message = _get_stat_message("intelligence")
+			show_notification(message, NOTIFICATION_TYPE_STAT)
 		intelligence = value
 
 var wisdom: int = 1:
 	set(value):
 		if is_node_ready() and value > wisdom:
-			show_notification("You feel more introspective")
+			var message = _get_stat_message("wisdom")
+			show_notification(message, NOTIFICATION_TYPE_STAT)
 		wisdom = value
 
 var charisma: int = 1:
 	set(value):
 		if is_node_ready() and value > charisma:
-			show_notification("You understand people better")
+			var message = _get_stat_message("charisma")
+			show_notification(message, NOTIFICATION_TYPE_STAT)
 		charisma = value
 
 # ===== EXPERIENCE SYSTEM =====
@@ -649,17 +655,207 @@ func get_default_game_data() -> Dictionary:
 	}
 
 # ===== NOTIFICATION SYSTEM =====
-# Note: Basic interface only - full implementation in separate Notification plan
 
-func show_notification(message: String) -> void:
-	# Temporary implementation: print to console
-	# Will be replaced with visual notification system in Phase 1.X
-	print("[NOTIFICATION] " + message)
+# Currently visible notifications (max 3)
+var active_notifications: Array[Dictionary] = []
 
-	# TODO: Phase 1.X - Implement visual notification panels
-	# - Create notification UI
-	# - Add to notification queue
-	# - Auto-dismiss after duration
+# Queue for overflow (max 20, FIFO)
+var notification_queue: Array[Dictionary] = []
+const MAX_NOTIFICATION_QUEUE = 20
+
+# Notification types (stored for future visual differentiation)
+const NOTIFICATION_TYPE_INFO = "info"       # General messages
+const NOTIFICATION_TYPE_STAT = "stat"       # Stat level-ups
+const NOTIFICATION_TYPE_WARNING = "warning" # Warnings/errors
+const NOTIFICATION_TYPE_SUCCESS = "success" # Achievements/milestones
+
+# Stat message pools (5 variants each)
+const STAT_MESSAGES = {
+	"strength": [
+		"You feel stronger",
+		"Your muscles harden",
+		"Power surges through you",
+		"You can lift more weight",
+		"Raw strength flows into your limbs"
+	],
+	"dexterity": [
+		"You feel more precise",
+		"Your movements sharpen",
+		"Agility comes naturally",
+		"Your hands move with grace",
+		"Reflexes quicken"
+	],
+	"constitution": [
+		"You feel more resilient",
+		"Your body toughens",
+		"Endurance wells up within",
+		"You can withstand more",
+		"Vitality courses through you"
+	],
+	"intelligence": [
+		"You feel smarter",
+		"Clarity fills your mind",
+		"Understanding deepens",
+		"Patterns become clear",
+		"Knowledge expands"
+	],
+	"wisdom": [
+		"You feel more introspective",
+		"Insight dawns upon you",
+		"Perception sharpens",
+		"The world makes more sense",
+		"Wisdom settles in"
+	],
+	"charisma": [
+		"You understand people better",
+		"Social grace comes easier",
+		"Others seem drawn to you",
+		"Words flow more smoothly",
+		"Presence strengthens"
+	]
+}
+
+func show_notification(message: String, type: String = NOTIFICATION_TYPE_INFO) -> void:
+	# Create notification data
+	var notification_data = {
+		"message": message,
+		"type": type
+	}
+
+	# Check if we can display immediately
+	if active_notifications.size() < 3:
+		_display_notification(notification_data)
+	else:
+		# Queue for later display (with overflow protection)
+		if notification_queue.size() >= MAX_NOTIFICATION_QUEUE:
+			notification_queue.pop_front()  # Drop oldest
+		notification_queue.append(notification_data)
+
+func _display_notification(notification_data: Dictionary) -> void:
+	# Find NotificationBar container (handles both orientations)
+	var notification_bar = _find_notification_bar()
+	if not notification_bar:
+		push_warning("No NotificationBar found in current scene")
+		return
+
+	# Create panel
+	var notification_panel = Panel.new()
+	notification_panel.custom_minimum_size = Vector2(0, 40)  # Base height
+
+	# Style panel (translucent dark background)
+	var style_box = StyleBoxFlat.new()
+	style_box.bg_color = Color(0.15, 0.15, 0.15, 0.4)  # Dark grey, 40% opacity
+	style_box.corner_radius_top_left = 8
+	style_box.corner_radius_top_right = 8
+	style_box.corner_radius_bottom_left = 8
+	style_box.corner_radius_bottom_right = 8
+	style_box.content_margin_top = 5
+	style_box.content_margin_bottom = 5
+	style_box.content_margin_left = 10
+	style_box.content_margin_right = 10
+	style_box.expand_margin_top = 3  # Spacing between stacked notifications
+	style_box.expand_margin_bottom = 3
+	notification_panel.add_theme_stylebox_override("panel", style_box)
+
+	# Create label
+	var notification_label = Label.new()
+	notification_label.text = notification_data.message
+	notification_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	notification_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	notification_label.add_theme_color_override("font_color", Color(1, 1, 1, 1))  # White
+	notification_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+
+	# Fill panel (anchor to all edges)
+	notification_label.anchor_left = 0
+	notification_label.anchor_right = 1
+	notification_label.anchor_top = 0
+	notification_label.anchor_bottom = 1
+
+	notification_panel.add_child(notification_label)
+
+	# Create timer (dynamic duration: 1 sec base + 45ms per character)
+	var notification_timer = Timer.new()
+	notification_timer.one_shot = true
+	notification_timer.wait_time = 1.0 + (notification_data.message.length() * 0.045)
+	add_child(notification_timer)  # Child of Global (persists across scenes)
+
+	# Update notification_data with UI references
+	notification_data["panel"] = notification_panel
+	notification_data["label"] = notification_label
+	notification_data["timer"] = notification_timer
+
+	# Add to active list
+	active_notifications.append(notification_data)
+
+	# Connect timer to removal
+	notification_timer.timeout.connect(_remove_notification.bind(notification_data))
+
+	# Add to scene
+	notification_bar.add_child(notification_panel)
+
+	# Apply responsive scaling (font size based on resolution and orientation)
+	var scaled_font_size = ResponsiveLayout.get_scaled_font_size(25)
+	notification_label.add_theme_font_size_override("font_size", scaled_font_size)
+
+	# Scale panel height based on resolution
+	var final_scale = ResponsiveLayout.get_final_scale()
+	var scaled_height = 40 * final_scale
+	notification_panel.custom_minimum_size = Vector2(0, scaled_height)
+
+	# Start timer
+	notification_timer.start()
+
+func _remove_notification(notification_data: Dictionary) -> void:
+	# Guard against invalid data or double-removal
+	if not notification_data:
+		return
+
+	# Remove from active list
+	var index = active_notifications.find(notification_data)
+	if index != -1:
+		active_notifications.remove_at(index)
+
+	# Free UI nodes (with validity checks for scene changes)
+	if notification_data.has("panel") and is_instance_valid(notification_data.panel):
+		notification_data.panel.queue_free()
+	if notification_data.has("timer") and is_instance_valid(notification_data.timer):
+		notification_data.timer.queue_free()
+
+	# Process queue if notifications waiting
+	if notification_queue.size() > 0:
+		var next_notification = notification_queue.pop_front()
+		_display_notification(next_notification)
+
+func _find_notification_bar() -> Node:
+	var current_scene = get_tree().current_scene
+	if not current_scene:
+		return null
+
+	# Try landscape location (direct child of root)
+	var notification_bar = current_scene.get_node_or_null("AspectContainer/MainContainer/NotificationBar")
+	if notification_bar:
+		return notification_bar
+
+	# Try portrait location (reparented by ResponsiveLayout into VBoxContainer)
+	notification_bar = current_scene.get_node_or_null("VBoxContainer/NotificationBar")
+	if notification_bar:
+		return notification_bar
+
+	# Try direct child as fallback
+	notification_bar = current_scene.get_node_or_null("NotificationBar")
+	if notification_bar:
+		return notification_bar
+
+	return null
+
+func _get_stat_message(stat_name: String) -> String:
+	"""Get random message variant for stat level-up."""
+	var messages = STAT_MESSAGES.get(stat_name.to_lower(), [])
+	if messages.is_empty():
+		return "You feel improved"  # Fallback
+
+	# Pick random variant
+	return messages[randi() % messages.size()]
 
 # ===== CURRENCY DISPLAY HELPERS =====
 

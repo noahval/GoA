@@ -62,6 +62,7 @@ This roadmap is for a complete game rewrite from scratch. All features listed sh
 1. delivered coal - delivered tracking with Level1Vars integration (includes automated tests and performance benchmarks)
 1. furnace bars - add stamina and focus to menu
 1. stamina drain - goes down when shovel moves
+1. rage
 1. day end - pay scene, dorm transition
 1. shovel experience -
 1. train shake -

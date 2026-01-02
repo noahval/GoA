@@ -9,7 +9,8 @@
 1.9-default-theme
 1.10-responsive-layout
 1.12-scene-template
-1.15-settings-panel
+1.14-settings-panel
+1.15-notifications
 1.21-simple-logging
 1.27-currency-display
 

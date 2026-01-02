@@ -135,7 +135,6 @@ The BIBLE Check Hook auto-triggers on development keywords (scene, stats, popup,
 | **[scene-template.md](scene-template.md)** | scene, template, layout, container, background | Four-container layout, scene inheritance, container structure, background auto-loading |
 | **[responsive-layout.md](responsive-layout.md)** | responsive, portrait, landscape, scaling, mobile | UI scaling, orientation handling, ResponsiveLayout system, mouse_filter management |
 | **[popup-system.md](popup-system.md)** | popup, dialog, modal, PopupContainer | Popup API, PopupContainer requirement, implementation patterns |
-| **[notifications.md](notifications.md)** | notification, NotificationBar, show_stat_notification | Notification flow, dynamic panel creation, auto-removal timers |
 | **[theme-system.md](theme-system.md)** | theme, styling, colors, StyleBoxFlat | default_theme.tres, base styles, theme variations, color palette |
 | **[button-hierarchy.md](button-hierarchy.md)** | button order, button hierarchy, navigation buttons, button organization, ForwardNavButton, BackNavButton, RightVBox, LeftVBox | Button ordering standards, navigation button hierarchy, configurable button priority system, left/right panel organization |
 | **[debug-system.md](debug-system.md)** | debug, logging, test, DebugLogger, validate | Testing procedures, DebugLogger, headless testing, log analysis |
@@ -160,7 +159,7 @@ The BIBLE Check Hook auto-triggers on development keywords (scene, stats, popup,
 - **Deploy to GitHub Pages/setup workflow** → [deployment.md](deployment.md)
 - **Create/modify scenes** → [scene-template.md](scene-template.md) + [responsive-layout.md](responsive-layout.md)
 - **Add popup/dialog** → [popup-system.md](popup-system.md)
-- **Display notifications** → [notifications.md](notifications.md)
+- **Display notifications** → See Plan 1.x-notifications.md in .claude/plans/
 - **Fix UI scaling/buttons** → [responsive-layout.md](responsive-layout.md)
 - **Change colors/theme** → [theme-system.md](theme-system.md)
 - **Order buttons in scenes/navigation hierarchy** → [button-hierarchy.md](button-hierarchy.md)
@@ -210,7 +209,7 @@ The BIBLE Check Hook auto-triggers on development keywords (scene, stats, popup,
 ### Technical APIs (ALWAYS use, NEVER bypass)
 - **Stats**: `Global.add_stat_exp()` (not direct modification)
 - **Scene changes**: `Global.change_scene_with_check()` (not direct change_scene)
-- **Notifications**: `Global.show_stat_notification()`
+- **Notifications**: `Global.show_notification(message, type)`
 - **Popups**: Place in `PopupContainer`
 - **Responsive**: Call `ResponsiveLayout.apply_to_scene(self)` in `_ready()`
 - **Timers**: Use Global timers (not scene-local)

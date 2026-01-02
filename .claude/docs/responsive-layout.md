@@ -261,7 +261,30 @@ SceneRoot (Control)
 ## Utility Functions
 
 `ResponsiveLayout.is_portrait_mode(viewport)` - Returns true if portrait
-`ResponsiveLayout.get_font_scale(viewport)` - Returns current font scale (1.0 or 1.75)
+`ResponsiveLayout.get_font_scale(viewport)` - Returns current font scale multiplier (1.0 landscape, 1.75 portrait)
+`ResponsiveLayout.get_scaled_font_size(viewport, base_size)` - Returns scaled font size in pixels
+
+### get_scaled_font_size Usage
+
+For dynamically created UI elements that need consistent font scaling:
+
+```gdscript
+# Get scaled font size (base 25px)
+var font_size = ResponsiveLayout.get_scaled_font_size(get_viewport(), 25)
+label.add_theme_font_size_override("font_size", font_size)
+
+# At 720p landscape: 25px
+# At 1080p landscape: ~37px (1.5x)
+# At 720p portrait: 44px (1.75x)
+# At 1080p portrait: ~65px (1.5x * 1.75x)
+```
+
+**Implementation** (add to responsive_layout.gd):
+```gdscript
+static func get_scaled_font_size(viewport: Viewport, base_size: int = 25) -> int:
+    var scale = get_font_scale(viewport)
+    return int(base_size * scale)
+```
 
 ---
 
