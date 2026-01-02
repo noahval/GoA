@@ -20,8 +20,9 @@
 2.5-Delivered Coal
 2.6-furnace bars
 2.7-stamina drain
-2.9-day end
-2.10-shovel experience
-2.11-train shake
-2.12-upgrade pool
+2.8-day end
+2.9-eveening morning cycle
+2.11-shovel experience
+2.12-train shake
 2.13-combo display
+2.14-upgrade pool

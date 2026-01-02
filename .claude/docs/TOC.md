@@ -67,10 +67,12 @@ This roadmap is for a complete game rewrite from scratch. All features listed sh
 1. rage - 
 1. shovel experience -
 1. train shake -
+1. combo display
 1. upgrade pool - Complete upgrade system (UI flow, technique pool, effects, combo mechanics)
-1.
-1. pay scene juice -
-1. lactic acid - 
+1. 
+1. 
+1. 
+1. 
 1. 
 1. 
 1. 
