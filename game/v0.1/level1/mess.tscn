@@ -6,7 +6,18 @@
 [node name="Mess" instance=ExtResource("1_mess_template")]
 script = ExtResource("2_mess_script")
 
-[node name="ToDormButton" type="Button" parent="AspectContainer/MainContainer/mainarea/Menu" index="0"]
+[node name="StaminaBar" type="ProgressBar" parent="AspectContainer/MainContainer/mainarea/Menu" index="0"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 20)
+show_percentage = false
+
+[node name="ToDormButton" type="Button" parent="AspectContainer/MainContainer/mainarea/Menu" index="1"]
 layout_mode = 2
 theme_type_variation = &"BackNavButton"
 text = "Dormitory"
+
+[node name="EatRationsButton" type="Button" parent="AspectContainer/MainContainer/mainarea/Menu" index="2"]
+visible = false
+layout_mode = 2
+theme_type_variation = &"ForwardNavButton"
+text = "Eat Rations"

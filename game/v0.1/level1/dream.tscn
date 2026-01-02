@@ -5,3 +5,8 @@
 
 [node name="Dream" instance=ExtResource("1_template")]
 script = ExtResource("2_dream_script")
+
+[node name="WakeButton" type="Button" parent="AspectContainer/MainContainer/mainarea/Menu" index="0"]
+layout_mode = 2
+theme_type_variation = &"ForwardNavButton"
+text = "Wake Up"

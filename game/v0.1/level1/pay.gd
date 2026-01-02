@@ -11,6 +11,10 @@ func _ready():
 	# Apply responsive layout (handles background auto-loading, font scaling)
 	ResponsiveLayout.apply_to_scene(self)
 
+	# Player is hungry after a day's work
+	Level1Vars.hungry = true
+	Level1Vars.hunger_changed.emit(true)
+
 	# Calculate pay from run stats
 	pay_amount = Level1Vars.calculate_pay()
 
