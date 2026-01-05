@@ -64,6 +64,9 @@ var furnace_opening_height_percent: float = 0.20  # 20% of playarea height
 # Preload coal scene
 var coal_piece_scene = preload("res://level1/coal_piece.tscn")
 
+# Preload vignette overlay scene
+var vignette_overlay_scene = preload("res://level1/vignette_overlay.tscn")
+
 # Coal tap spawning
 var coal_spawn_timer: float = 0.0
 const COAL_SPAWN_RATE: float = 0.167  # Spawn every 0.167 seconds (6 per second)
@@ -117,6 +120,15 @@ func _ready():
 	assert(coal_container != null, "CoalContainer not found")
 	TrainShake.initialize(camera, coal_container)
 
+	# Add vignette overlay for rage system visual feedback
+	var vignette_overlay = vignette_overlay_scene.instantiate()
+	add_child(vignette_overlay)
+
+	# Connect rage system signals
+	Level1Vars.rage_warning_triggered.connect(_on_overseer_warning)
+	Level1Vars.rage_severe_warning_triggered.connect(_on_overseer_severe_warning)
+	Level1Vars.rage_whip_triggered.connect(_on_player_whipped)
+
 func _exit_tree():
 	# Clean up signal connections
 	if Level1Vars.clean_streak_changed.is_connected(_on_clean_streak_changed):
@@ -125,6 +137,14 @@ func _exit_tree():
 		Level1Vars.heavy_combo_changed.disconnect(_on_heavy_combo_changed)
 	if Level1Vars.technique_updated.is_connected(_on_technique_updated):
 		Level1Vars.technique_updated.disconnect(_on_technique_updated)
+
+	# Clean up rage signal connections
+	if Level1Vars.rage_warning_triggered.is_connected(_on_overseer_warning):
+		Level1Vars.rage_warning_triggered.disconnect(_on_overseer_warning)
+	if Level1Vars.rage_severe_warning_triggered.is_connected(_on_overseer_severe_warning):
+		Level1Vars.rage_severe_warning_triggered.disconnect(_on_overseer_severe_warning)
+	if Level1Vars.rage_whip_triggered.is_connected(_on_player_whipped):
+		Level1Vars.rage_whip_triggered.disconnect(_on_player_whipped)
 
 	if combo_container:
 		if combo_container.mouse_entered.is_connected(_on_combo_panel_hover_start):
@@ -897,3 +917,17 @@ func _rebuild_benefits_list():
 		label.add_theme_color_override("font_color", benefit["color"])
 		label.add_theme_font_size_override("font_size", BENEFIT_FONT_SIZE)
 		benefits_list.add_child(label)
+
+# ============================================================================
+# RAGE SYSTEM HANDLERS
+# ============================================================================
+
+func _on_overseer_warning(message: String):
+	Global.show_notification(message, Global.NOTIFICATION_TYPE_WARNING)
+
+func _on_overseer_severe_warning(message: String):
+	Global.show_notification(message, Global.NOTIFICATION_TYPE_WARNING)
+
+func _on_player_whipped(stamina_removed: int):
+	var msg = "The overseer's whip bites deep. -%d stamina" % stamina_removed
+	Global.show_notification(msg, Global.NOTIFICATION_TYPE_WARNING)

@@ -127,6 +127,40 @@ var heavy_combo_timer: float = 0.0  # Counts down from 5.0s + bonuses
 var recent_delivery_timestamps: Array[float] = []  # Timestamps of recent deliveries for batch detection
 const HEAVY_LOAD_BATCH_WINDOW: float = 1.0  # Time window for detecting 3+ coal deliveries (seconds)
 
+# ===== RAGE SYSTEM =====
+
+# Constants (tuneable for balance)
+const RAGE_WARNING_THRESHOLD: int = 2
+const RAGE_SEVERE_WARNING_THRESHOLD: int = 5
+const RAGE_WHIP_THRESHOLD: int = 8
+const RAGE_WHIP_INTERVAL: int = 4
+const RAGE_BASE_WHIP_DAMAGE: int = 10
+const RAGE_WHIP_DAMAGE_INCREASE: int = 5
+const RAGE_CONSTITUTION_EXP_PER_WHIP: float = 0.5
+const RAGE_COAL_PER_DECREASE: int = 10
+
+# Warning dialog pools
+const RAGE_WARNINGS: Array[String] = [
+	"Watch yourself, rat. That coal isn't free.",
+	"Another piece lost. The furnace master is counting.",
+	"Clumsy hands make for busy whips.",
+	"I see that coal hit the floor. So does the ledger.",
+	"Keep dropping coal and you'll be carrying the quota on your back.",
+]
+
+const RAGE_SEVERE_WARNINGS: Array[String] = [
+	"LAST WARNING. The next piece that falls, you answer for in flesh.",
+	"My patience is gone. One more and the whip comes out.",
+	"You're testing me, rat. The lash is hungry.",
+	"I've had enough. Drop another and you'll feel every piece you've wasted.",
+	"Final chance. The next coal that touches the floor, your back pays the price.",
+]
+
+# Rage tracking state (reset daily)
+var _rage_coal_delivered_counter: int = 0
+var _rage_last_warning_level: int = -1
+var _rage_last_severe_level: int = -1
+
 # Signals
 signal stamina_changed(new_value: float, max_value: float)
 signal focus_changed(new_value: int, max_value: int)
@@ -137,6 +171,11 @@ signal technique_updated(technique_id: String, new_level: int)
 signal clean_streak_changed(new_count: int)
 signal heavy_combo_changed(new_stacks: int, timer_remaining: float)
 signal hunger_changed(is_hungry: bool)
+
+# ===== RAGE SYSTEM SIGNALS =====
+signal rage_warning_triggered(message: String)
+signal rage_severe_warning_triggered(message: String)
+signal rage_whip_triggered(stamina_removed: int)
 
 # Resource management functions
 func modify_stamina(amount: float) -> bool:
@@ -330,6 +369,58 @@ func _show_levelup_notification() -> void:
 	else:
 		print("LEVEL UP: Player is now level %d" % player_level)
 
+# ===== RAGE SYSTEM FUNCTIONS =====
+
+func on_coal_dropped_rage():
+	rage += 1
+	_check_rage_thresholds()
+
+func on_coal_delivered_rage():
+	_rage_coal_delivered_counter += 1
+	if _rage_coal_delivered_counter >= RAGE_COAL_PER_DECREASE:
+		_rage_coal_delivered_counter = 0
+		if rage > 0:
+			rage -= 1
+			if rage < RAGE_WARNING_THRESHOLD:
+				_rage_last_warning_level = -1
+			if rage < RAGE_SEVERE_WARNING_THRESHOLD:
+				_rage_last_severe_level = -1
+
+func _check_rage_thresholds():
+	# Check for whipping (8, 12, 16, 20...)
+	if rage >= RAGE_WHIP_THRESHOLD:
+		var whips_due = 1 + int((rage - RAGE_WHIP_THRESHOLD) / RAGE_WHIP_INTERVAL)
+		if whips_due > whip_count:
+			_apply_whip()
+			return
+
+	# Check for severe warning (5, 6, 7)
+	if rage >= RAGE_SEVERE_WARNING_THRESHOLD and rage < RAGE_WHIP_THRESHOLD:
+		if rage != _rage_last_severe_level:
+			_rage_last_severe_level = rage
+			var msg = RAGE_SEVERE_WARNINGS[randi() % RAGE_SEVERE_WARNINGS.size()]
+			rage_severe_warning_triggered.emit(msg)
+			return
+
+	# Check for warning (2, 3, 4)
+	if rage >= RAGE_WARNING_THRESHOLD and rage < RAGE_SEVERE_WARNING_THRESHOLD:
+		if rage != _rage_last_warning_level:
+			_rage_last_warning_level = rage
+			var msg = RAGE_WARNINGS[randi() % RAGE_WARNINGS.size()]
+			rage_warning_triggered.emit(msg)
+
+func _apply_whip():
+	whip_count += 1
+	var stamina_removed = RAGE_BASE_WHIP_DAMAGE + (RAGE_WHIP_DAMAGE_INCREASE * (whip_count - 1))
+
+	# Apply stamina damage
+	modify_stamina(-stamina_removed)
+
+	# Increase constitution experience (toughening effect)
+	Global.add_stat_exp("constitution", RAGE_CONSTITUTION_EXP_PER_WHIP)
+
+	rage_whip_triggered.emit(stamina_removed)
+
 # ===== TECHNIQUE SYSTEM FUNCTIONS =====
 
 func add_technique(technique_id: String, draw_quality: String) -> void:
@@ -383,6 +474,9 @@ func perform_daily_reset():
 	# Reset rage system
 	rage = 0
 	whip_count = 0
+	_rage_coal_delivered_counter = 0
+	_rage_last_warning_level = -1
+	_rage_last_severe_level = -1
 
 	# Reset focus to full (mental rest from sleep)
 	focus = focus_max
@@ -669,6 +763,9 @@ func get_save_data() -> Dictionary:
 		# Rage system
 		"rage": rage,
 		"whip_count": whip_count,
+		"_rage_coal_delivered_counter": _rage_coal_delivered_counter,
+		"_rage_last_warning_level": _rage_last_warning_level,
+		"_rage_last_severe_level": _rage_last_severe_level,
 	}
 
 func load_save_data(data: Dictionary):
@@ -744,6 +841,9 @@ func load_save_data(data: Dictionary):
 	# Rage system
 	rage = data.get("rage", 0)
 	whip_count = data.get("whip_count", 0)
+	_rage_coal_delivered_counter = data.get("_rage_coal_delivered_counter", 0)
+	_rage_last_warning_level = data.get("_rage_last_warning_level", -1)
+	_rage_last_severe_level = data.get("_rage_last_severe_level", -1)
 
 	# Emit signals to update UI
 	emit_signal("stamina_changed", stamina, stamina_max)
@@ -803,6 +903,9 @@ func reset_to_defaults():
 	# Rage system (reset for new run)
 	rage = 0
 	whip_count = 0
+	_rage_coal_delivered_counter = 0
+	_rage_last_warning_level = -1
+	_rage_last_severe_level = -1
 
 	# Emit signals
 	emit_signal("stamina_changed", stamina, stamina_max)

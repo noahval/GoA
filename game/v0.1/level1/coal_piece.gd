@@ -48,6 +48,16 @@ func _on_entered_drop_zone():
 	if Level1Vars.DEBUG_COAL_TRACKING:
 		print("[COAL] Dropped! Total: ", Level1Vars.coal_dropped)
 
+	# Trigger rage system
+	Level1Vars.on_coal_dropped_rage()
+
+	# Flash red vignette
+	var tree = get_tree()
+	if tree:
+		var vignette = tree.get_first_node_in_group("vignette")
+		if vignette:
+			vignette.flash_red()
+
 	# Clean streak penalty (if unlocked)
 	if Level1Vars.clean_streak_unlocked:
 		# Check if forgiveness charges available
@@ -86,6 +96,9 @@ func _on_entered_delivery_zone() -> bool:
 	Level1Vars.coal_delivered += 1
 	if Level1Vars.DEBUG_COAL_TRACKING:
 		print("[COAL] Delivered! Total: ", Level1Vars.coal_delivered)
+
+	# Notify rage system (integrated in Level1Vars)
+	Level1Vars.on_coal_delivered_rage()
 
 	# Clean streak tracking (if unlocked)
 	if Level1Vars.clean_streak_unlocked:
