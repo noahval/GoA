@@ -20,3 +20,8 @@ text = "Coppersmith Carriage"
 layout_mode = 2
 theme_type_variation = &"ForwardNavButton"
 text = "Mess Hall"
+
+[node name="SleepButton" type="Button" parent="AspectContainer/MainContainer/mainarea/Menu" index="4"]
+layout_mode = 2
+theme_type_variation = &"ForwardNavButton"
+text = "Go to Sleep"

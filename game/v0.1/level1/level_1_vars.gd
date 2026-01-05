@@ -6,6 +6,18 @@ var stamina_max: float = 50.0  # Maximum stamina capacity
 var focus: int = 50            # Current focus (consumed by mental actions)
 var focus_max: int = 100        # Maximum focus capacity
 
+# Hunger tracking
+var hungry: bool = false  # Set true at end of work day, cleared by eating
+var hunger_skip: bool = false  # True if player dismissed the hungry warning popup
+
+# Overseer rage tracking
+var rage: int = 0  # Increases when coal dropped, decreases when coal delivered
+var whip_count: int = 0  # Track whip count for escalating punishment
+
+# Stamina restoration values (tuneable for balance)
+var stamina_restore_eating: float = 30.0  # Stamina gained from eating in mess hall
+var stamina_restore_sleeping: float = 20.0  # Stamina gained from sleeping in dorm
+
 # Stamina drain rates (stamina per second)
 var stamina_drain_base: float = 0.2  # Base drain for shovel weight
 var stamina_drain_per_coal: float = 0.1  # Additional drain per coal piece
@@ -124,6 +136,7 @@ signal player_exp_changed(new_exp: float, xp_for_next_level: float)
 signal technique_updated(technique_id: String, new_level: int)
 signal clean_streak_changed(new_count: int)
 signal heavy_combo_changed(new_stacks: int, timer_remaining: float)
+signal hunger_changed(is_hungry: bool)
 
 # Resource management functions
 func modify_stamina(amount: float) -> bool:
@@ -359,6 +372,29 @@ func reset_techniques() -> void:
 	heavy_combo_stacks = 0
 	heavy_combo_timer = 0.0
 	recent_delivery_timestamps.clear()
+
+# Perform daily reset when player sleeps
+# Resets stats from today's work shift, prepares for tomorrow
+func perform_daily_reset():
+	# Reset coal tracking for new day
+	coal_dropped = 0
+	coal_delivered = 0
+
+	# Reset rage system
+	rage = 0
+	whip_count = 0
+
+	# Reset focus to full (mental rest from sleep)
+	focus = focus_max
+	focus_changed.emit(focus, focus_max)
+
+	# Reset technique system (calls existing function)
+	reset_techniques()
+
+	# Reset hunger state for new day
+	hungry = false
+	hunger_skip = false
+	hunger_changed.emit(false)
 
 # ============================================================================
 # TECHNIQUE EFFECT HELPERS
@@ -627,6 +663,12 @@ func get_save_data() -> Dictionary:
 		"heavy_combo_stacks": heavy_combo_stacks,
 		"heavy_combo_timer": heavy_combo_timer,
 		"recent_delivery_timestamps": recent_delivery_timestamps.duplicate(),
+		# Hunger state
+		"hungry": hungry,
+		"hunger_skip": hunger_skip,
+		# Rage system
+		"rage": rage,
+		"whip_count": whip_count,
 	}
 
 func load_save_data(data: Dictionary):
@@ -696,6 +738,13 @@ func load_save_data(data: Dictionary):
 	heavy_combo_timer = data.get("heavy_combo_timer", 0.0)
 	recent_delivery_timestamps = data.get("recent_delivery_timestamps", [])
 
+	# Hunger state
+	hungry = data.get("hungry", false)
+	hunger_skip = data.get("hunger_skip", false)
+	# Rage system
+	rage = data.get("rage", 0)
+	whip_count = data.get("whip_count", 0)
+
 	# Emit signals to update UI
 	emit_signal("stamina_changed", stamina, stamina_max)
 	emit_signal("focus_changed", focus, focus_max)
@@ -746,6 +795,14 @@ func reset_to_defaults():
 
 	# Technique system (reset for new run)
 	reset_techniques()
+
+	# Hunger state (reset for new run)
+	hungry = false
+	hunger_skip = false
+
+	# Rage system (reset for new run)
+	rage = 0
+	whip_count = 0
 
 	# Emit signals
 	emit_signal("stamina_changed", stamina, stamina_max)
