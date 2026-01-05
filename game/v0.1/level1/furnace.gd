@@ -49,7 +49,8 @@ const DELIVERY_ZONE_WIDTH: float = 15.0
 
 var container_width_percent: float = 0.25  # 25% of play area width
 var container_height_percent: float = 0.15  # 15% of play area height
-var left_wall_height_percent: float = 0.30  # 30% of play area height (2x container height to catch escaping coal)
+var left_wall_height_percent: float = 0.35  # 35% of play area height
+var right_wall_height_percent: float = 0.22  # 22% of play area height
 
 # Physics wall extension (invisible padding beyond visual walls to prevent tunneling)
 const WALL_PHYSICS_EXTENSION: float = 30.0  # Extend physics walls this far beyond visible edges
@@ -67,7 +68,7 @@ var coal_piece_scene = preload("res://level1/coal_piece.tscn")
 
 # Coal tap spawning
 var coal_spawn_timer: float = 0.0
-const COAL_SPAWN_RATE: float = 0.25  # Spawn every 0.25 seconds (4 per second)
+const COAL_SPAWN_RATE: float = 0.167  # Spawn every 0.167 seconds (6 per second)
 var coal_tap_position: Vector2
 var active_coal_count: int = 0
 const MAX_COAL_PIECES: int = 100  # Performance limit
@@ -225,18 +226,43 @@ func setup_physics_objects():
 	# Setup right wall (at the visible right edge of container)
 	var right_wall = coal_container.get_node("RightWall")
 	var right_collision = right_wall.get_node("CollisionShape2D")
-	# Physics wall extends further right by WALL_PHYSICS_EXTENSION
-	var right_physics_x = total_container_width + WALL_PHYSICS_EXTENSION / 2
-	right_collision.position = Vector2(right_physics_x, container_height / 2)
-	var right_shape = RectangleShape2D.new()
-	right_shape.size = Vector2(wall_thickness + WALL_PHYSICS_EXTENSION, container_height + WALL_PHYSICS_EXTENSION)
-	right_collision.shape = right_shape
-	# Visual line: draw at visible edge
-	var right_visual = right_wall.get_node("VisualLine")
-	right_visual.points = PackedVector2Array([
-		Vector2(total_container_width, 0),
-		Vector2(total_container_width, slope_right_y)
+	var right_wall_height = playarea_size.y * right_wall_height_percent
+	var right_wall_width = 15.0
+	var right_wall_top_slant = 10.0  # How much lower the left-top corner is (creates inward slope)
+
+	# Define wall corners (polygon shape for slanted top)
+	var right_wall_top_y = slope_right_y - right_wall_height
+	var wall_left_x = total_container_width
+	var wall_right_x = total_container_width + right_wall_width
+
+	# Polygon points (clockwise): top-left, top-right, bottom-right, bottom-left
+	# Top-left is lower (+ slant) so coal rolls back into container
+	var wall_polygon = PackedVector2Array([
+		Vector2(wall_left_x, right_wall_top_y + right_wall_top_slant),  # top-left (lower)
+		Vector2(wall_right_x, right_wall_top_y),                        # top-right
+		Vector2(wall_right_x, slope_right_y),                           # bottom-right
+		Vector2(wall_left_x, slope_right_y)                             # bottom-left
 	])
+
+	# Use ConvexPolygonShape2D for collision
+	var right_shape = ConvexPolygonShape2D.new()
+	right_shape.points = wall_polygon
+	right_collision.shape = right_shape
+	right_collision.position = Vector2.ZERO  # Polygon uses absolute coords
+
+	# Visual: filled polygon for solid wall
+	var right_visual = right_wall.get_node("VisualLine")
+	right_visual.visible = false  # Hide the Line2D, use Polygon2D instead
+
+	# Create filled polygon if it doesn't exist
+	var fill_name = "WallFill"
+	var wall_fill: Polygon2D = right_wall.get_node_or_null(fill_name)
+	if not wall_fill:
+		wall_fill = Polygon2D.new()
+		wall_fill.name = fill_name
+		right_wall.add_child(wall_fill)
+	wall_fill.polygon = wall_polygon
+	wall_fill.color = Color.BLACK
 
 	# Calculate coal tap position (off-screen, at top of the slope)
 	# Spawn in the off-screen portion so coal rolls in naturally
@@ -250,7 +276,7 @@ func setup_physics_objects():
 	print("Coal tap position (off-screen): ", coal_tap_position)
 	print("Left wall physics size: ", left_shape.size, " (extended by ", WALL_PHYSICS_EXTENSION, ")")
 	print("Bottom wall physics size: ", bottom_shape.size, " (extended by ", WALL_PHYSICS_EXTENSION, ")")
-	print("Right wall physics size: ", right_shape.size, " (extended by ", WALL_PHYSICS_EXTENSION, ")")
+	print("Right wall polygon points: ", right_shape.points)
 
 	# Calculate furnace positions
 	var furnace_opening_height = playarea_size.y * furnace_opening_height_percent

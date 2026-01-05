@@ -59,7 +59,7 @@ var coal_dropped: int = 0   # Total coal pieces that fell/were dropped
 var coal_delivered: int = 0 # Total coal pieces successfully delivered to furnace
 
 # Player progression (shoveling mastery)
-var player_level: int = 1
+var player_level: int = 0
 var player_exp: float = 0.0
 
 # XP curve configuration
@@ -709,7 +709,7 @@ func load_save_data(data: Dictionary):
 	coal_delivered = data.get("coal_delivered", 0)
 
 	# Player progression
-	player_level = data.get("player_level", 1)
+	player_level = data.get("player_level", 0)
 	player_exp = data.get("player_exp", 0.0)
 
 	# Currency (4-tier system with backward compatibility)
@@ -787,7 +787,7 @@ func reset_to_defaults():
 	coal_delivered = 0
 
 	# Player progression (reset for new run - run-specific)
-	player_level = 1
+	player_level = 0
 	player_exp = 0.0
 
 	# Currency

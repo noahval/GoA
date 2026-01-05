@@ -102,7 +102,6 @@ var save_data = {
 		"ui_scale": 1.0,
 		"music_volume": 0.8,
 		"sfx_volume": 0.8,
-		"dev_speed_mode": false,
 	},
 	"game": {
 		"copper_current": 0,
@@ -136,9 +135,8 @@ var sfx_volume: float:
 	get: return save_data.settings.sfx_volume
 	set(value): save_data.settings.sfx_volume = clampf(value, 0.0, 1.0)
 
-var dev_speed_mode: bool:
-	get: return save_data.settings.dev_speed_mode
-	set(value): save_data.settings.dev_speed_mode = value
+# Session-only setting (not persisted - always starts false)
+var dev_speed_mode: bool = false
 
 const SAVE_FILE_PATH = "user://save.json"
 
