@@ -69,7 +69,7 @@ This roadmap is for a complete game rewrite from scratch. All features listed sh
 1. train shake -
 1. combo display
 1. upgrade pool - Complete upgrade system (UI flow, technique pool, effects, combo mechanics)
-1. 
+1. Tutorial - onboarding
 1. 
 1. 
 1. 
@@ -81,7 +81,7 @@ This roadmap is for a complete game rewrite from scratch. All features listed sh
 1. Breaks and Demand - Timed breaks(actions not clock), rush orders, and pressure mechanics
 1. Discovery Mechanics - Hidden systems revealed through experimentation
 1. content-and-balance - Tuning for difficulty curve and engagement
-1. [!] Tutorial and FTUE - onboarding
+
 1. [!] Feedback Systems - Particles, screen shake, sound effects for player actions
 1. [!] Tooltip System - UI help text and explanations
 1. [!] Manual Shovel Upgrade - Increase coal per drag (multiple tiers)

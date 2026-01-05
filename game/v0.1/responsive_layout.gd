@@ -202,7 +202,8 @@ func _apply_font_scaling(node: Node) -> void:
 	if node is Label or node is Button or node is RichTextLabel:
 		# Only apply if node doesn't have a custom theme font size already set
 		# This allows manual overrides for special cases (titles, debug text, etc.)
-		node.add_theme_font_size_override("font_size", scaled_font)
+		if not node.has_theme_font_size_override("font_size"):
+			node.add_theme_font_size_override("font_size", scaled_font)
 
 		# Cache this node for future updates
 		if node not in nodes_to_scale:

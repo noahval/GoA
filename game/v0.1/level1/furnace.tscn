@@ -59,20 +59,20 @@ corner_radius_bottom_right = 2
 corner_radius_bottom_left = 2
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_combo_panel"]
-bg_color = Color(0.1, 0.1, 0.1, 0.7)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.3, 0.3, 0.3, 0.5)
-corner_radius_top_left = 4
-corner_radius_top_right = 4
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 4
-content_margin_left = 8.0
-content_margin_top = 8.0
-content_margin_right = 8.0
-content_margin_bottom = 8.0
+bg_color = Color(0.2, 0.1, 0.25, 0.3)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.35, 0.2, 0.4, 0.4)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+content_margin_left = 6.0
+content_margin_top = 4.0
+content_margin_right = 6.0
+content_margin_bottom = 4.0
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_timer_bg"]
 bg_color = Color(0.2, 0.2, 0.2, 0.5)
@@ -172,6 +172,18 @@ show_percentage = false
 theme_override_styles/background = SubResource("StyleBoxFlat_stamina_bg")
 theme_override_styles/fill = SubResource("StyleBoxFlat_stamina_fill")
 
+[node name="Label" type="Label" parent="AspectContainer/MainContainer/mainarea/Menu/StaminaBar"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 14
+text = "Stamina"
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="FocusBar" type="ProgressBar" parent="AspectContainer/MainContainer/mainarea/Menu" index="1"]
 layout_mode = 2
 custom_minimum_size = Vector2(0, 20)
@@ -181,45 +193,48 @@ show_percentage = false
 theme_override_styles/background = SubResource("StyleBoxFlat_focus_bg")
 theme_override_styles/fill = SubResource("StyleBoxFlat_focus_fill")
 
-[node name="ComboContainer" type="VBoxContainer" parent="AspectContainer/MainContainer/mainarea/Menu" index="2"]
-layout_mode = 2
-theme_override_constants/separation = 6
-visible = false
+[node name="Label" type="Label" parent="AspectContainer/MainContainer/mainarea/Menu/FocusBar"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 14
+text = "Focus"
+horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="NodropComboPanel" type="PanelContainer" parent="AspectContainer/MainContainer/mainarea/Menu/ComboContainer"]
+[node name="ComboContainer" type="PanelContainer" parent="AspectContainer/MainContainer/mainarea/Menu" index="2"]
 layout_mode = 2
+visible = false
 mouse_filter = 1
 theme_override_styles/panel = SubResource("StyleBoxFlat_combo_panel")
 
-[node name="HBoxContainer" type="HBoxContainer" parent="AspectContainer/MainContainer/mainarea/Menu/ComboContainer/NodropComboPanel"]
+[node name="HBoxContainer" type="HBoxContainer" parent="AspectContainer/MainContainer/mainarea/Menu/ComboContainer"]
 layout_mode = 2
-theme_override_constants/separation = 8
+alignment = 1
+theme_override_constants/separation = 40
 
-[node name="ComboLabel" type="Label" parent="AspectContainer/MainContainer/mainarea/Menu/ComboContainer/NodropComboPanel/HBoxContainer"]
+[node name="CleanStreakLabel" type="Label" parent="AspectContainer/MainContainer/mainarea/Menu/ComboContainer/HBoxContainer"]
 layout_mode = 2
-text = "Streak: 0/20"
+theme_override_font_sizes/font_size = 14
+text = "No-drop: 0/20"
 
-[node name="ForgivenessLabel" type="Label" parent="AspectContainer/MainContainer/mainarea/Menu/ComboContainer/NodropComboPanel/HBoxContainer"]
+[node name="ForgivenessLabel" type="Label" parent="AspectContainer/MainContainer/mainarea/Menu/ComboContainer/HBoxContainer"]
 layout_mode = 2
+theme_override_font_sizes/font_size = 14
 text = "[0]"
 visible = false
 
-[node name="HeavyComboPanel" type="PanelContainer" parent="AspectContainer/MainContainer/mainarea/Menu/ComboContainer"]
+[node name="HeavyStacksLabel" type="Label" parent="AspectContainer/MainContainer/mainarea/Menu/ComboContainer/HBoxContainer"]
 layout_mode = 2
-mouse_filter = 1
-theme_override_styles/panel = SubResource("StyleBoxFlat_combo_panel")
-
-[node name="HBoxContainer" type="HBoxContainer" parent="AspectContainer/MainContainer/mainarea/Menu/ComboContainer/HeavyComboPanel"]
-layout_mode = 2
-theme_override_constants/separation = 8
-
-[node name="HeavyStacksLabel" type="Label" parent="AspectContainer/MainContainer/mainarea/Menu/ComboContainer/HeavyComboPanel/HBoxContainer"]
-layout_mode = 2
+theme_override_font_sizes/font_size = 14
 text = "Heavy: 0"
 
-[node name="HeavyTimerBar" type="ProgressBar" parent="AspectContainer/MainContainer/mainarea/Menu/ComboContainer/HeavyComboPanel/HBoxContainer"]
+[node name="HeavyTimerBar" type="ProgressBar" parent="AspectContainer/MainContainer/mainarea/Menu/ComboContainer/HBoxContainer"]
 layout_mode = 2
-custom_minimum_size = Vector2(60, 16)
+custom_minimum_size = Vector2(50, 12)
 max_value = 5.0
 show_percentage = false
 theme_override_styles/background = SubResource("StyleBoxFlat_timer_bg")

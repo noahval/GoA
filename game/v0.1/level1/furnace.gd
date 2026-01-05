@@ -10,14 +10,12 @@ extends Control
 @onready var delivery_zone_node: Node2D = $AspectContainer/MainContainer/mainarea/PlayArea/FurnaceWall/DeliveryZone
 @onready var mind_button: Button = $AspectContainer/MainContainer/mainarea/Menu/ToMindButton
 
-# Combo display UI
-@onready var combo_container: VBoxContainer = $AspectContainer/MainContainer/mainarea/Menu/ComboContainer
-@onready var clean_streak_panel: PanelContainer = $AspectContainer/MainContainer/mainarea/Menu/ComboContainer/NodropComboPanel
-@onready var clean_streak_label: Label = $AspectContainer/MainContainer/mainarea/Menu/ComboContainer/NodropComboPanel/HBoxContainer/ComboLabel
-@onready var forgiveness_label: Label = $AspectContainer/MainContainer/mainarea/Menu/ComboContainer/NodropComboPanel/HBoxContainer/ForgivenessLabel
-@onready var heavy_combo_panel: PanelContainer = $AspectContainer/MainContainer/mainarea/Menu/ComboContainer/HeavyComboPanel
-@onready var heavy_stacks_label: Label = $AspectContainer/MainContainer/mainarea/Menu/ComboContainer/HeavyComboPanel/HBoxContainer/HeavyStacksLabel
-@onready var heavy_timer_bar: ProgressBar = $AspectContainer/MainContainer/mainarea/Menu/ComboContainer/HeavyComboPanel/HBoxContainer/HeavyTimerBar
+# Combo display UI (single-line layout, centered)
+@onready var combo_container: PanelContainer = $AspectContainer/MainContainer/mainarea/Menu/ComboContainer
+@onready var clean_streak_label: Label = $AspectContainer/MainContainer/mainarea/Menu/ComboContainer/HBoxContainer/CleanStreakLabel
+@onready var forgiveness_label: Label = $AspectContainer/MainContainer/mainarea/Menu/ComboContainer/HBoxContainer/ForgivenessLabel
+@onready var heavy_stacks_label: Label = $AspectContainer/MainContainer/mainarea/Menu/ComboContainer/HBoxContainer/HeavyStacksLabel
+@onready var heavy_timer_bar: ProgressBar = $AspectContainer/MainContainer/mainarea/Menu/ComboContainer/HBoxContainer/HeavyTimerBar
 @onready var benefits_tooltip: PanelContainer = $AspectContainer/MainContainer/mainarea/Menu/BenefitsTooltip
 @onready var benefits_list: VBoxContainer = $AspectContainer/MainContainer/mainarea/Menu/BenefitsTooltip/VBoxContainer/BenefitsList
 
@@ -104,18 +102,12 @@ func _ready():
 	Level1Vars.heavy_combo_changed.connect(_on_heavy_combo_changed)
 	Level1Vars.technique_updated.connect(_on_technique_updated)
 
-	# Connect mouse events for tooltip (only calculate benefits on hover)
-	if clean_streak_panel:
-		clean_streak_panel.mouse_entered.connect(_on_combo_panel_hover_start.bind(clean_streak_panel))
-		clean_streak_panel.mouse_exited.connect(_on_combo_panel_hover_end)
+	# Connect mouse events for tooltip (single panel hover)
+	if combo_container:
+		combo_container.mouse_entered.connect(_on_combo_panel_hover_start.bind(combo_container))
+		combo_container.mouse_exited.connect(_on_combo_panel_hover_end)
 	else:
-		push_warning("Clean streak panel not found - combo display unavailable")
-
-	if heavy_combo_panel:
-		heavy_combo_panel.mouse_entered.connect(_on_combo_panel_hover_start.bind(heavy_combo_panel))
-		heavy_combo_panel.mouse_exited.connect(_on_combo_panel_hover_end)
-	else:
-		push_warning("Heavy combo panel not found - combo display unavailable")
+		push_warning("Combo container not found - combo display unavailable")
 
 	# Initial visibility setup
 	_update_combo_panel_visibility()
@@ -134,17 +126,11 @@ func _exit_tree():
 	if Level1Vars.technique_updated.is_connected(_on_technique_updated):
 		Level1Vars.technique_updated.disconnect(_on_technique_updated)
 
-	if clean_streak_panel:
-		if clean_streak_panel.mouse_entered.is_connected(_on_combo_panel_hover_start):
-			clean_streak_panel.mouse_entered.disconnect(_on_combo_panel_hover_start)
-		if clean_streak_panel.mouse_exited.is_connected(_on_combo_panel_hover_end):
-			clean_streak_panel.mouse_exited.disconnect(_on_combo_panel_hover_end)
-
-	if heavy_combo_panel:
-		if heavy_combo_panel.mouse_entered.is_connected(_on_combo_panel_hover_start):
-			heavy_combo_panel.mouse_entered.disconnect(_on_combo_panel_hover_start)
-		if heavy_combo_panel.mouse_exited.is_connected(_on_combo_panel_hover_end):
-			heavy_combo_panel.mouse_exited.disconnect(_on_combo_panel_hover_end)
+	if combo_container:
+		if combo_container.mouse_entered.is_connected(_on_combo_panel_hover_start):
+			combo_container.mouse_entered.disconnect(_on_combo_panel_hover_start)
+		if combo_container.mouse_exited.is_connected(_on_combo_panel_hover_end):
+			combo_container.mouse_exited.disconnect(_on_combo_panel_hover_end)
 
 func setup_camera():
 	# Create Camera2D for shake effects
@@ -542,10 +528,21 @@ func setup_xp_bar():
 	xp_bar.add_theme_stylebox_override("background", bg_style)
 	xp_bar.add_theme_stylebox_override("fill", fill_style)
 
-	# Add to menu (will be positioned by VBoxContainer)
+	# Add to menu FIRST (will be positioned by VBoxContainer)
 	# Insert after FocusBar (index 1), before ComboContainer
 	menu.add_child(xp_bar)
 	menu.move_child(xp_bar, 2)  # Position: StaminaBar(0), FocusBar(1), XPBar(2), ComboContainer(3), BenefitsTooltip(4), ToMindButton(5)
+
+	# Add label to XP bar AFTER bar is in scene tree (anchors need parent size)
+	var xp_label = Label.new()
+	xp_label.name = "Label"
+	xp_label.text = "XP"
+	xp_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	xp_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	xp_label.add_theme_font_size_override("font_size", 14)
+	xp_bar.add_child(xp_label)
+	# Must use set_anchors_and_offsets_preset to reset both anchors AND offsets
+	xp_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
 func connect_resource_bars():
 	# Connect to Level1Vars signals
@@ -721,23 +718,29 @@ func _get_combo_color(count: int, green_threshold: int, gold_threshold: int) -> 
 	return Color.WHITE
 
 func _update_combo_panel_visibility():
-	if clean_streak_panel:
-		clean_streak_panel.visible = Level1Vars.clean_streak_unlocked
-	if heavy_combo_panel:
-		heavy_combo_panel.visible = Level1Vars.heavy_combo_unlocked
+	var clean_unlocked = Level1Vars.clean_streak_unlocked
+	var heavy_unlocked = Level1Vars.heavy_combo_unlocked
+
+	# Individual label visibility
+	if clean_streak_label:
+		clean_streak_label.visible = clean_unlocked
+	if heavy_stacks_label:
+		heavy_stacks_label.visible = heavy_unlocked
+	if heavy_timer_bar:
+		heavy_timer_bar.visible = heavy_unlocked and Level1Vars.heavy_combo_timer > 0.0
 
 	# Hide entire combo container if no combos unlocked
 	if combo_container:
-		combo_container.visible = Level1Vars.clean_streak_unlocked or Level1Vars.heavy_combo_unlocked
+		combo_container.visible = clean_unlocked or heavy_unlocked
 
 func _update_clean_streak_display(count: int):
 	if not clean_streak_label:
 		push_warning("Clean streak label not found - streak display unavailable")
 		return
 
-	# Build display text: "Streak: 15/30" or "Streak: 15/30 [2]" with charges
+	# Build display text: "No-drop: 15/30"
 	var max_combo = Level1Vars.get_clean_streak_max()
-	clean_streak_label.text = "Streak: %d/%d" % [count, max_combo]
+	clean_streak_label.text = "No-drop: %d/%d" % [count, max_combo]
 
 	# Show forgiveness charges if unlocked
 	if forgiveness_label:
