@@ -51,6 +51,12 @@ var container_width_percent: float = 0.25  # 25% of play area width
 var container_height_percent: float = 0.15  # 15% of play area height
 var left_wall_height_percent: float = 0.30  # 30% of play area height (2x container height to catch escaping coal)
 
+# Physics wall extension (invisible padding beyond visual walls to prevent tunneling)
+const WALL_PHYSICS_EXTENSION: float = 30.0  # Extend physics walls this far beyond visible edges
+
+# Slope configuration for coal container bottom
+const CONTAINER_SLOPE_HEIGHT: float = 25.0  # How much higher the left side is than the right
+
 var furnace_line_x: float
 var furnace_opening_top: float
 var furnace_opening_bottom: float
@@ -159,63 +165,92 @@ func setup_physics_objects():
 	var left_wall_height = playarea_size.y * left_wall_height_percent
 	var wall_thickness = 5.0
 
-	# Position container at bottom-left (flush with edges)
-	coal_container.position = Vector2(0, playarea_size.y - container_height)
+	# Off-screen extension: move left side and spawn point off-screen
+	var offscreen_extension = 60.0  # How far left the container extends off-screen
 
-	# Setup left wall (2x height of container to catch escaping coal)
+	# Slope: left side is higher, right side is at container_height
+	# Left Y = container_height - CONTAINER_SLOPE_HEIGHT (higher up)
+	# Right Y = container_height (flush with bottom)
+	var slope_left_y = container_height - CONTAINER_SLOPE_HEIGHT
+	var slope_right_y = container_height
+
+	# Position container at bottom-left, but extend off-screen to the left
+	coal_container.position = Vector2(-offscreen_extension, playarea_size.y - container_height)
+
+	# Adjust container width to include off-screen portion
+	var total_container_width = container_width + offscreen_extension
+
+	# Setup left wall (extends off-screen, 2x height to catch escaping coal)
 	var left_wall = coal_container.get_node("LeftWall")
 	var left_collision = left_wall.get_node("CollisionShape2D")
-	# Position left wall so bottom aligns with container bottom, extends upward
-	left_collision.position = Vector2(wall_thickness / 2, container_height - (left_wall_height / 2))
+	# Position at left edge (x=0 in container local coords, which is off-screen)
+	# Physics wall extends further left by WALL_PHYSICS_EXTENSION
+	var left_physics_x = -WALL_PHYSICS_EXTENSION / 2
+	left_collision.position = Vector2(left_physics_x, slope_left_y - (left_wall_height / 2))
 	var left_shape = RectangleShape2D.new()
-	left_shape.size = Vector2(wall_thickness, left_wall_height)
+	left_shape.size = Vector2(wall_thickness + WALL_PHYSICS_EXTENSION, left_wall_height)
 	left_collision.shape = left_shape
+	# Visual line: only draw from where it becomes visible (at x = offscreen_extension)
+	# Since container starts at -offscreen_extension, visible portion starts at local x = offscreen_extension
 	var left_visual = left_wall.get_node("VisualLine")
-	left_visual.points = PackedVector2Array([
-		Vector2(0, container_height - left_wall_height),
-		Vector2(0, container_height)
-	])
+	left_visual.points = PackedVector2Array()  # Hide visual - wall is off-screen
 
-	# Setup bottom wall
+	# Setup bottom wall as a sloped surface using a rotated rectangle
 	var bottom_wall = coal_container.get_node("BottomWall")
 	var bottom_collision = bottom_wall.get_node("CollisionShape2D")
-	bottom_collision.position = Vector2(container_width / 2, container_height - wall_thickness / 2)
+
+	# Calculate slope angle and length
+	var slope_dx = total_container_width
+	var slope_dy = slope_right_y - slope_left_y  # Positive = going down left to right
+	var slope_length = sqrt(slope_dx * slope_dx + slope_dy * slope_dy)
+	var slope_angle = atan2(slope_dy, slope_dx)
+
+	# Position at center of slope, with physics extension downward
+	var slope_center_x = total_container_width / 2
+	var slope_center_y = (slope_left_y + slope_right_y) / 2 + WALL_PHYSICS_EXTENSION / 2
+	bottom_collision.position = Vector2(slope_center_x, slope_center_y)
+	bottom_collision.rotation = slope_angle
 	var bottom_shape = RectangleShape2D.new()
-	bottom_shape.size = Vector2(container_width, wall_thickness)
+	# Width = slope length, height = wall thickness + downward extension
+	bottom_shape.size = Vector2(slope_length + WALL_PHYSICS_EXTENSION, wall_thickness + WALL_PHYSICS_EXTENSION)
 	bottom_collision.shape = bottom_shape
+
+	# Visual line: sloped from top-left to bottom-right (only visible portion)
 	var bottom_visual = bottom_wall.get_node("VisualLine")
 	bottom_visual.points = PackedVector2Array([
-		Vector2(0, container_height),
-		Vector2(container_width, container_height)
+		Vector2(offscreen_extension, slope_left_y),  # Where slope becomes visible
+		Vector2(total_container_width, slope_right_y)
 	])
 
-	# Setup right wall
+	# Setup right wall (at the visible right edge of container)
 	var right_wall = coal_container.get_node("RightWall")
 	var right_collision = right_wall.get_node("CollisionShape2D")
-	right_collision.position = Vector2(container_width - wall_thickness / 2, container_height / 2)
+	# Physics wall extends further right by WALL_PHYSICS_EXTENSION
+	var right_physics_x = total_container_width + WALL_PHYSICS_EXTENSION / 2
+	right_collision.position = Vector2(right_physics_x, container_height / 2)
 	var right_shape = RectangleShape2D.new()
-	right_shape.size = Vector2(wall_thickness, container_height)
+	right_shape.size = Vector2(wall_thickness + WALL_PHYSICS_EXTENSION, container_height + WALL_PHYSICS_EXTENSION)
 	right_collision.shape = right_shape
+	# Visual line: draw at visible edge
 	var right_visual = right_wall.get_node("VisualLine")
 	right_visual.points = PackedVector2Array([
-		Vector2(container_width, 0),
-		Vector2(container_width, container_height)
+		Vector2(total_container_width, 0),
+		Vector2(total_container_width, slope_right_y)
 	])
 
-	# Calculate coal tap position (just above top-left of container)
-	coal_tap_position = coal_container.global_position + Vector2(container_width * 0.15, -10)
+	# Calculate coal tap position (off-screen, at top of the slope)
+	# Spawn in the off-screen portion so coal rolls in naturally
+	coal_tap_position = coal_container.global_position + Vector2(offscreen_extension * 0.3, slope_left_y - 15)
 
 	# Debug output
 	print("Container global position: ", coal_container.global_position)
-	print("Container dimensions: ", container_width, " x ", container_height)
-	print("Left wall height (2x container): ", left_wall_height)
-	print("Coal tap position: ", coal_tap_position)
-	print("Left wall collision position: ", left_collision.global_position)
-	print("Left wall collision size: ", left_shape.size)
-	print("Bottom wall collision position: ", bottom_collision.global_position)
-	print("Bottom wall collision size: ", bottom_shape.size)
-	print("Right wall collision position: ", right_collision.global_position)
-	print("Right wall collision size: ", right_shape.size)
+	print("Container dimensions (visible): ", container_width, " x ", container_height)
+	print("Container dimensions (total with offscreen): ", total_container_width, " x ", container_height)
+	print("Slope: left_y=", slope_left_y, " right_y=", slope_right_y, " angle=", rad_to_deg(slope_angle), " deg")
+	print("Coal tap position (off-screen): ", coal_tap_position)
+	print("Left wall physics size: ", left_shape.size, " (extended by ", WALL_PHYSICS_EXTENSION, ")")
+	print("Bottom wall physics size: ", bottom_shape.size, " (extended by ", WALL_PHYSICS_EXTENSION, ")")
+	print("Right wall physics size: ", right_shape.size, " (extended by ", WALL_PHYSICS_EXTENSION, ")")
 
 	# Calculate furnace positions
 	var furnace_opening_height = playarea_size.y * furnace_opening_height_percent
@@ -271,21 +306,25 @@ func setup_border_zones():
 
 	var playarea_size = playarea.size
 
+	# Offset left border to accommodate off-screen coal container
+	# Coal spawns at -60px (offscreen_extension), so left border must be further left
+	var left_border_offset = 80.0  # Push left border this far past playarea edge
+
 	# Create borders programmatically (overlapping at corners to prevent gaps)
 	var border_configs = [
 		{
 			"name": "TopBorder",
 			"pos": Vector2(playarea_size.x / 2, -BORDER_THICKNESS / 2),
-			"size": Vector2(playarea_size.x + BORDER_THICKNESS * 2, BORDER_THICKNESS)
+			"size": Vector2(playarea_size.x + BORDER_THICKNESS * 2 + left_border_offset, BORDER_THICKNESS)
 		},
 		{
 			"name": "BottomBorder",
 			"pos": Vector2(playarea_size.x / 2, playarea_size.y + BORDER_THICKNESS / 2),
-			"size": Vector2(playarea_size.x + BORDER_THICKNESS * 2, BORDER_THICKNESS)
+			"size": Vector2(playarea_size.x + BORDER_THICKNESS * 2 + left_border_offset, BORDER_THICKNESS)
 		},
 		{
 			"name": "LeftBorder",
-			"pos": Vector2(-BORDER_THICKNESS / 2, playarea_size.y / 2),
+			"pos": Vector2(-left_border_offset - BORDER_THICKNESS / 2, playarea_size.y / 2),
 			"size": Vector2(BORDER_THICKNESS, playarea_size.y + BORDER_THICKNESS * 2)
 		},
 		{
