@@ -1,0 +1,11 @@
+[gd_scene load_steps=2 format=3 uid="uid://nd2y7gy8acvg"]
+
+[ext_resource type="PackedScene" uid="uid://drfp4vl2w1wvr" path="res://level1/scene_template.tscn" id="1_tutorial_template"]
+[ext_resource type="Script" path="res://level1/tutorial.gd" id="2_tutorial_script"]
+
+[node name="Tutorial" instance=ExtResource("1_tutorial_template")]
+script = ExtResource("2_tutorial_script")
+
+[node name="OkButton" type="Button" parent="AspectContainer/MainContainer/mainarea/Menu" index="0"]
+layout_mode = 2
+text = "OK"

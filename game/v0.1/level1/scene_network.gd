@@ -132,6 +132,7 @@ const SYSTEM_SCENES = [
 	"res://scenes/main_menu.tscn",
 	"res://level1/dream.tscn",
 	"res://level1/pay.tscn",
+	"res://level1/tutorial.tscn",
 ]
 
 # Validator function

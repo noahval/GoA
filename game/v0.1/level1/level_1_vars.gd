@@ -94,6 +94,9 @@ var pay_drop_penalty_percent: float = 0.0  # Percentage reduction per dropped co
 # Debug flags
 var DEBUG_COAL_TRACKING: bool = false  # Toggle coal drop console prints
 
+# Tutorial tracking
+var tutorial_completed: bool = false  # Set true after player dismisses tutorial
+
 # ===== UPGRADE SYSTEM (Technique Pool) =====
 
 # TechniquesData is globally available via class_name
@@ -766,6 +769,8 @@ func get_save_data() -> Dictionary:
 		"_rage_coal_delivered_counter": _rage_coal_delivered_counter,
 		"_rage_last_warning_level": _rage_last_warning_level,
 		"_rage_last_severe_level": _rage_last_severe_level,
+		# Tutorial
+		"tutorial_completed": tutorial_completed,
 	}
 
 func load_save_data(data: Dictionary):
@@ -844,6 +849,9 @@ func load_save_data(data: Dictionary):
 	_rage_coal_delivered_counter = data.get("_rage_coal_delivered_counter", 0)
 	_rage_last_warning_level = data.get("_rage_last_warning_level", -1)
 	_rage_last_severe_level = data.get("_rage_last_severe_level", -1)
+
+	# Tutorial
+	tutorial_completed = data.get("tutorial_completed", false)
 
 	# Emit signals to update UI
 	emit_signal("stamina_changed", stamina, stamina_max)

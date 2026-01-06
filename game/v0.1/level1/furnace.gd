@@ -85,6 +85,11 @@ var day_ended: bool = false
 var work_zone_boundary_line: Line2D
 
 func _ready():
+	# Tutorial gate - redirect if not completed
+	if not Level1Vars.tutorial_completed:
+		get_tree().change_scene_to_file("res://level1/tutorial.tscn")
+		return
+
 	# Reset day end flag
 	day_ended = false
 
