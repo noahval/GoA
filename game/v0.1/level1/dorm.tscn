@@ -23,5 +23,5 @@ text = "Mess Hall"
 
 [node name="SleepButton" type="Button" parent="AspectContainer/MainContainer/mainarea/Menu" index="4"]
 layout_mode = 2
-theme_type_variation = &"ForwardNavButton"
+theme_type_variation = &"AffirmativeButton"
 text = "Go to Sleep"
