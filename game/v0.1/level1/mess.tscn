@@ -19,5 +19,4 @@ text = "Dormitory"
 [node name="EatRationsButton" type="Button" parent="AspectContainer/MainContainer/mainarea/Menu" index="2"]
 visible = false
 layout_mode = 2
-theme_type_variation = &"ForwardNavButton"
 text = "Eat Rations"

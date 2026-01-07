@@ -104,6 +104,7 @@ const TECHNIQUES = TechniquesData.TECHNIQUES
 
 # Upgrade tracking
 var upgrades_qty: int = 0  # Total upgrades selected this run (for Mind button visibility)
+var technique_tier: int = 1  # Current unlock tier (1-4). External systems set this to unlock higher tiers.
 
 # Technique selection tracking
 var selected_techniques: Dictionary = {}
@@ -470,6 +471,11 @@ func reset_techniques() -> void:
 # Perform daily reset when player sleeps
 # Resets stats from today's work shift, prepares for tomorrow
 func perform_daily_reset():
+	# Reset player level for new day
+	player_level = 0
+	player_exp = 0.0
+	player_exp_changed.emit(player_exp, get_xp_for_next_level())
+
 	# Reset coal tracking for new day
 	coal_dropped = 0
 	coal_delivered = 0
@@ -750,6 +756,8 @@ func get_save_data() -> Dictionary:
 		"lifetime_currency": lifetime_currency,
 		# Combo state (persists during same-day saves, resets on new day)
 		# NOTE: Techniques are NOT saved - they reset each run (per-run progression)
+		# technique_tier IS saved - persistent progression, only reset via full game reset
+		"technique_tier": technique_tier,
 		"show_exact_technique_values": show_exact_technique_values,
 		"clean_streak_count": clean_streak_count,
 		"clean_streak_max": clean_streak_max,
@@ -829,6 +837,8 @@ func load_save_data(data: Dictionary):
 
 	# Combo state (persists during same-day saves, resets on new day)
 	# NOTE: Techniques NOT loaded - reset each run (per-run design)
+	# technique_tier IS loaded - persistent progression
+	technique_tier = data.get("technique_tier", 1)
 	show_exact_technique_values = data.get("show_exact_technique_values", true)
 	clean_streak_count = data.get("clean_streak_count", 0)
 	clean_streak_max = data.get("clean_streak_max", 20)
@@ -903,6 +913,7 @@ func reset_to_defaults():
 
 	# Technique system (reset for new run)
 	reset_techniques()
+	technique_tier = 1  # Reset tier unlock progression (only on full game reset)
 
 	# Hunger state (reset for new run)
 	hungry = false

@@ -7,6 +7,8 @@ func _ready():
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	# Shader is assigned in scene, just ensure full screen coverage
 	anchors_preset = Control.PRESET_FULL_RECT
+	# Reset intensity to 0 in case scene was reloaded mid-flash
+	_set_intensity(0.0)
 
 func flash_red():
 	var tween = create_tween()

@@ -64,6 +64,11 @@ func _generate_upgrade_options(count: int) -> Array:
 	for tech_id in TECHNIQUES.keys():
 		var tech = TECHNIQUES[tech_id]
 
+		# Exclude techniques from locked tiers
+		var tech_tier = tech.get("tier", 1)
+		if tech_tier > Level1Vars.technique_tier:
+			continue
+
 		# Exclude maxed techniques
 		var current_level = Level1Vars.get_technique_level(tech_id)
 		var max_level = tech.get("max_level", 5)
@@ -123,8 +128,13 @@ func _display_upgrade_options(options: Array):
 		var short_label = card.get_node("VBoxContainer/ShortDescriptionLabel")
 		if Level1Vars.show_exact_technique_values and base_bonus > 0:
 			var value_text = ""
+			var category = tech.get("category", "")
 			if base_bonus < 1.0:  # Percentage bonus
-				value_text = " [color=#%s]-%.0f%%[/color]" % [quality_color, actual_bonus * 100]
+				# Mass category shows as increase (+), others show as reduction (-)
+				if category == "mass":
+					value_text = " [color=#%s]+%.0f%%[/color]" % [quality_color, actual_bonus * 100]
+				else:
+					value_text = " [color=#%s]-%.0f%%[/color]" % [quality_color, actual_bonus * 100]
 			else:  # Flat bonus (like Streak Ceiling +10)
 				value_text = " [color=#%s]+%.0f[/color]" % [quality_color, actual_bonus]
 
