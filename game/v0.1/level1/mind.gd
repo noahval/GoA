@@ -130,7 +130,7 @@ func _display_upgrade_options(options: Array):
 			var value_text = ""
 			var category = tech.get("category", "")
 			if base_bonus < 1.0:  # Percentage bonus
-				# Mass category shows as increase (+), others show as reduction (-)
+				# Stability category shows as increase (+), others show as reduction (-)
 				if category == "mass":
 					value_text = " [color=#%s]+%.0f%%[/color]" % [quality_color, actual_bonus * 100]
 				else:

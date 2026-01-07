@@ -146,7 +146,7 @@ const TECHNIQUES = {
 	},
 
 	# ========================================================================
-	# SHOVEL MASS TECHNIQUES
+	# SHOVEL STABILITY TECHNIQUES
 	# ========================================================================
 
 	"firm_grip": {
@@ -155,8 +155,8 @@ const TECHNIQUES = {
 		"cost": 12,
 		"max_level": 5,
 		"tier": 1,
-		"description": "Shovel mass\n\nA steadier hold on the shovel. Coal shifting on the blade has less impact on your balance, giving you more control when carrying heavy loads.",
-		"effect": {"base_bonus": 0.15},  # +15% mass per selection (multiplicative)
+		"description": "Shovel stability\n\nA steadier hold on the shovel. Coal shifting on the blade has less impact on your balance, giving you more control when carrying heavy loads.",
+		"effect": {"base_bonus": 0.15},  # +15% stability per selection (multiplicative)
 		"category": "mass"
 	},
 	"mass_training": {
@@ -165,8 +165,8 @@ const TECHNIQUES = {
 		"cost": 35,
 		"max_level": 5,
 		"tier": 4,
-		"description": "Shovel mass per streak\n\nFear sharpens your grip. As your clean streak builds and the pressure mounts, you hold the shovel tighter - more control, less wobble. Breaking your streak relaxes your grip.",
-		"effect": {"base_bonus": 0.02},  # +2% grip per streak per selection
+		"description": "Shovel stability per streak\n\nFear sharpens your grip. As your clean streak builds and the pressure mounts, you hold the shovel tighter - more control, less wobble. Breaking your streak relaxes your grip.",
+		"effect": {"base_bonus": 0.02},  # +2% stability per streak per selection
 		"category": "mass",
 		"requires": "clean_streak"  # Must have unlocked clean streak system
 	},

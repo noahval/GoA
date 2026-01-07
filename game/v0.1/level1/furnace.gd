@@ -392,6 +392,12 @@ func setup_border_zones():
 func _on_coal_entered_border(body: Node2D):
 	# Check if it's a coal piece using group membership
 	if body.is_in_group("coal"):
+		# Don't count as dropped if coal is past the furnace line (it went into furnace)
+		# This prevents fast-moving coal from triggering both delivered AND dropped
+		if body.global_position.x >= furnace_line_x:
+			body.has_been_tracked = true
+			body.queue_free()
+			return
 		body._on_entered_drop_zone()
 
 func setup_delivery_zone():
@@ -880,12 +886,12 @@ func _get_active_benefits() -> Array[Dictionary]:
 			"color": BENEFIT_COLORS["bonus"]
 		})
 
-	# Shovel mass (if player is investing in it)
+	# Shovel stability (if player is investing in it)
 	var mass_mult = Level1Vars.get_shovel_mass_multiplier()
 	if mass_mult > 1.0:
 		var bonus_pct = (mass_mult - 1.0) * 100
 		benefits.append({
-			"label": "Shovel Mass",
+			"label": "Shovel Stability",
 			"value": "+%d%%" % int(bonus_pct),
 			"color": BENEFIT_COLORS["mass"]
 		})
