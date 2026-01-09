@@ -70,7 +70,7 @@ This roadmap is for a complete game rewrite from scratch. All features listed sh
 1. combo display
 1. upgrade pool - Complete upgrade system (UI flow, technique pool, effects, combo mechanics)
 1. Tutorial - onboarding
-1. 
+1. evening ideas - 
 1. 
 1. 
 1. 
