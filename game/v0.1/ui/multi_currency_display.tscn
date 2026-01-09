@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://hpefntqyw0pj"]
+
+[ext_resource type="Script" path="res://ui/multi_currency_display.gd" id="1_multi_script"]
+
+[node name="MultiCurrencyDisplay" type="PanelContainer"]
+script = ExtResource("1_multi_script")

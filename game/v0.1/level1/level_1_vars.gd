@@ -66,17 +66,33 @@ var player_exp: float = 0.0
 const BASE_XP_FOR_LEVEL: float = 12.0
 const EXP_SCALING: float = 1.25  # Gentler than Global stats (1.8) for faster early progression
 
-# ===== CURRENCY SYSTEM (4-tier economy) =====
+# ===== CURRENCY SYSTEM =====
+# Official currencies: copper/silver/gold/platinum (4-tier economy)
+# Underworld currencies: holes, weeps (parallel economy, bad exchange rates)
 
 # Valid currency types (prevents typos)
-const VALID_CURRENCIES = ["copper", "silver", "gold", "platinum"]
+const VALID_CURRENCIES = ["copper", "silver", "gold", "platinum", "holes", "weeps"]
+
+# Exchange rates to copper (for future trader mechanic)
+# Official: 1000:1 ratios between tiers
+# Underworld: terrible rates to discourage pure passive play
+const CURRENCY_TO_COPPER_RATE = {
+	"copper": 1.0,
+	"silver": 1000.0,
+	"gold": 1000000.0,
+	"platinum": 1000000000.0,
+	"holes": 0.02,   # 50 holes = 1 copper
+	"weeps": 0.01,   # 100 weeps = 1 copper
+}
 
 # Current currency holdings
 var currency = {
 	"copper": 0.0,
 	"silver": 0.0,
 	"gold": 0.0,
-	"platinum": 0.0
+	"platinum": 0.0,
+	"holes": 0.0,
+	"weeps": 0.0,
 }
 
 # Lifetime currency earned (never decreases, tracks total ever earned)
@@ -84,7 +100,9 @@ var lifetime_currency = {
 	"copper": 0.0,
 	"silver": 0.0,
 	"gold": 0.0,
-	"platinum": 0.0
+	"platinum": 0.0,
+	"holes": 0.0,
+	"weeps": 0.0,
 }
 
 # Pay formula variables (tuneable for balance)
@@ -237,7 +255,9 @@ func _get_empty_currency_dict() -> Dictionary:
 		"copper": 0.0,
 		"silver": 0.0,
 		"gold": 0.0,
-		"platinum": 0.0
+		"platinum": 0.0,
+		"holes": 0.0,
+		"weeps": 0.0,
 	}
 
 # Add currency of any type

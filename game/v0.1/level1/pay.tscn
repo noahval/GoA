@@ -57,6 +57,11 @@ layout_mode = 2
 text = "Pay: 0 copper"
 horizontal_alignment = 1
 
+[node name="TimecardLabel" type="Label" parent="AspectContainer/MainContainer/mainarea/PlayArea/StatsPanel/VBoxContainer"]
+layout_mode = 2
+text = "Your timecard was punched, you keep the punched paper."
+horizontal_alignment = 1
+
 [node name="DormButton" type="Button" parent="AspectContainer/MainContainer/mainarea/Menu" index="1"]
 custom_minimum_size = Vector2(120, 50)
 layout_mode = 2

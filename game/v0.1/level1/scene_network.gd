@@ -24,7 +24,13 @@ const SCENE_NETWORK = {
 	"bar": {
 		"path": "res://level1/bar.tscn",
 		"name": "Bar",
-		"connections": ["dorm"],
+		"connections": ["dorm", "gambling"],
+	},
+
+	"gambling": {
+		"path": "res://level1/gambling.tscn",
+		"name": "Gambling",
+		"connections": ["bar"],
 	},
 
 	"coppersmith": {

@@ -3,6 +3,7 @@ extends Control
 @onready var coal_delivered_label: Label = $AspectContainer/MainContainer/mainarea/PlayArea/StatsPanel/VBoxContainer/CoalDeliveredLabel
 @onready var coal_dropped_label: Label = $AspectContainer/MainContainer/mainarea/PlayArea/StatsPanel/VBoxContainer/CoalDroppedLabel
 @onready var pay_label: Label = $AspectContainer/MainContainer/mainarea/PlayArea/StatsPanel/VBoxContainer/PayLabel
+@onready var timecard_label: Label = $AspectContainer/MainContainer/mainarea/PlayArea/StatsPanel/VBoxContainer/TimecardLabel
 @onready var dorm_button: Button = $AspectContainer/MainContainer/mainarea/Menu/DormButton
 
 var pay_amount: int = 0
@@ -21,6 +22,9 @@ func _ready():
 	# Award pay to player
 	Level1Vars.award_pay(pay_amount)
 
+	# Award daily holes currency (punched timecard)
+	Level1Vars.add_currency("holes", 1.0)
+
 	# Update UI labels
 	update_stats_display()
 
@@ -34,6 +38,9 @@ func update_stats_display():
 
 	# Just show final pay amount - no formula explanation
 	pay_label.text = "Pay: %d copper" % pay_amount
+
+	# Timecard punch flavor text
+	timecard_label.text = "Your timecard was punched, you keep the punched paper."
 
 func _on_dorm_button_pressed():
 	# Stats will be reset when furnace scene starts next run

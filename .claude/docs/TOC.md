@@ -71,8 +71,8 @@ This roadmap is for a complete game rewrite from scratch. All features listed sh
 1. upgrade pool - Complete upgrade system (UI flow, technique pool, effects, combo mechanics)
 1. Tutorial - onboarding
 1. evening ideas - 
-1. 
-1. 
+1. Offline Earnings - 
+1. dishwash - 
 1. 
 1. 
 1. 
@@ -85,7 +85,6 @@ This roadmap is for a complete game rewrite from scratch. All features listed sh
 1. [!] Feedback Systems - Particles, screen shake, sound effects for player actions
 1. [!] Tooltip System - UI help text and explanations
 1. [!] Manual Shovel Upgrade - Increase coal per drag (multiple tiers)
-1. Offline Earnings - Automatic
 1. [!] Break Timer System - time spent away from furnace
 1. ATM Scene - Currency exchange UI with live market rate display and transaction preview
 1. [!] Prestige System - Lifetime equipment value tracking, reputation currency, clear progress, retain upgrades, skill tree in dorm scene

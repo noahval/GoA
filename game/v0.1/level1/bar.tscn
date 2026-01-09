@@ -1,0 +1,17 @@
+[gd_scene load_steps=2 format=3 uid="uid://b3k8basascene"]
+
+[ext_resource type="PackedScene" uid="uid://drfp4vl2w1wvr" path="res://level1/scene_template.tscn" id="1_bar_template"]
+[ext_resource type="Script" path="res://level1/bar.gd" id="2_bar_script"]
+
+[node name="Bar" instance=ExtResource("1_bar_template")]
+script = ExtResource("2_bar_script")
+
+[node name="ToGamblingButton" type="Button" parent="AspectContainer/MainContainer/mainarea/Menu" index="1"]
+layout_mode = 2
+theme_type_variation = &"ForwardNavButton"
+text = "Gambling"
+
+[node name="ToDormButton" type="Button" parent="AspectContainer/MainContainer/mainarea/Menu" index="2"]
+layout_mode = 2
+theme_type_variation = &"BackNavButton"
+text = "Dormitory"

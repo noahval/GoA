@@ -1,0 +1,12 @@
+[gd_scene load_steps=2 format=3 uid="uid://dak7gambl1ng"]
+
+[ext_resource type="PackedScene" uid="uid://drfp4vl2w1wvr" path="res://level1/scene_template.tscn" id="1_gambling_template"]
+[ext_resource type="Script" path="res://level1/gambling.gd" id="2_gambling_script"]
+
+[node name="Gambling" instance=ExtResource("1_gambling_template")]
+script = ExtResource("2_gambling_script")
+
+[node name="ToBarButton" type="Button" parent="AspectContainer/MainContainer/mainarea/Menu" index="1"]
+layout_mode = 2
+theme_type_variation = &"BackNavButton"
+text = "Bar"

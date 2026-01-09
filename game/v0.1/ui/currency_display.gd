@@ -12,14 +12,17 @@ class_name CurrencyDisplay
 @onready var icon: TextureRect = $Icon
 @onready var amount_label: Label = $Amount
 
-# ===== ICON PATHS =====
-const CURRENCY_ICONS = {
-	"copper": "res://level1/icons/copper.png",
-	# Add later when currencies unlock:
-	# "silver": "res://level1/icons/silver.png",
-	# "gold": "res://level1/icons/gold.png",
-	# "platinum": "res://level1/icons/platinum.png",
+# ===== ICON PATHS (base paths, extension added during load) =====
+# Supports both .png and .jpg (tries png first, falls back to jpg)
+const CURRENCY_ICON_BASES = {
+	"copper": "res://level1/icons/copper",
+	"silver": "res://level1/icons/silver",
+	"gold": "res://level1/icons/gold",
+	"platinum": "res://level1/icons/platinum",
+	"holes": "res://level1/icons/holes",
+	"weeps": "res://level1/icons/weeps",
 }
+const ICON_EXTENSIONS = [".png", ".jpg"]
 
 # ===== LIFECYCLE =====
 func _ready():
@@ -38,22 +41,23 @@ func _ready():
 
 # ===== ICON LOADING =====
 func _load_icon():
-	if currency_type not in CURRENCY_ICONS:
+	if currency_type not in CURRENCY_ICON_BASES:
 		push_error("Unknown currency type: " + currency_type)
 		return
 
-	var icon_path = CURRENCY_ICONS[currency_type]
+	var base_path = CURRENCY_ICON_BASES[currency_type]
 
-	# Validate file exists before loading
-	if not ResourceLoader.exists(icon_path):
-		push_error("Icon file missing: " + icon_path)
-		return
+	# Try each extension (png first, then jpg)
+	for ext in ICON_EXTENSIONS:
+		var full_path = base_path + ext
+		if ResourceLoader.exists(full_path):
+			var texture = load(full_path)
+			if texture:
+				icon.texture = texture
+				return
 
-	var texture = load(icon_path)
-	if texture:
-		icon.texture = texture
-	else:
-		push_error("Failed to load currency icon: " + icon_path)
+	# No icon found with any extension
+	push_error("Icon file missing: " + base_path + " (tried: " + ", ".join(ICON_EXTENSIONS) + ")")
 
 # ===== GROUP-BASED REFRESH =====
 # Component is added to "currency_displays" group in _ready()
@@ -109,7 +113,7 @@ func _format_number(value: float) -> String:
 # ===== PUBLIC API =====
 # Change currency type dynamically
 func set_currency_type(new_type: String):
-	if new_type not in CURRENCY_ICONS:
+	if new_type not in CURRENCY_ICON_BASES:
 		push_error("Invalid currency type: " + new_type)
 		return
 	currency_type = new_type
@@ -120,7 +124,7 @@ func set_currency_type(new_type: String):
 func is_currency_unlocked() -> bool:
 	# Integrate with Level1Vars unlock system
 	match currency_type:
-		"copper":
+		"copper", "holes", "weeps":
 			return true  # Always unlocked
 		"silver":
 			return Level1Vars.get("unlocked_silver") if Level1Vars.get("unlocked_silver") != null else false
