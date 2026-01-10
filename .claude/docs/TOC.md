@@ -76,6 +76,12 @@ This roadmap is for a complete game rewrite from scratch. All features listed sh
 1. 
 1. 
 1. 
+1. 
+1. 
+1. 
+1. 
+1. 
+1. 
 1. permanent-progression - Prestige system with skill tree and persistent upgrades
 1. additional-resource-pools - Insight, Passion, Drive resources for technique unlock costs
 1. Breaks and Demand - Timed breaks(actions not clock), rush orders, and pressure mechanics
