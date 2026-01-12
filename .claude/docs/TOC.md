@@ -79,7 +79,7 @@ This roadmap is for a complete game rewrite from scratch. All features listed sh
 1. 
 1. 
 1. 
-1. 
+1. characters - 
 1. 
 1. 
 1. permanent-progression - Prestige system with skill tree and persistent upgrades
