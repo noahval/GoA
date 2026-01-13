@@ -1,9 +1,15 @@
 extends Control
 
+# Dishwash minigame references (use scene-unique names)
+@onready var wash_mugs_button: Button = %WashMugsButton
+@onready var stop_washing_button: Button = %StopWashingButton
+@onready var dishwash_minigame = $AspectContainer/MainContainer/mainarea/PlayArea/DishwashMinigame
+
 func _ready():
 	ResponsiveLayout.apply_to_scene(self)  # REQUIRED
 	connect_navigation()
 	connect_settings_button()
+	connect_dishwash_buttons()
 	add_currency_display()
 
 func add_currency_display():
@@ -16,6 +22,13 @@ func add_currency_display():
 	if menu:
 		menu.add_child(currency_display)
 		menu.move_child(currency_display, 0)  # Move to top of menu
+
+	# Also add holes display for dishwash earnings
+	var holes_display = preload("res://ui/currency_display.tscn").instantiate()
+	holes_display.currency_type = "holes"
+	if menu:
+		menu.add_child(holes_display)
+		menu.move_child(holes_display, 1)  # After copper
 
 func connect_navigation():
 	# Connect navigation buttons based on .mmd connections
@@ -31,6 +44,24 @@ func connect_settings_button():
 	var settings_button = $AspectContainer/MainContainer/mainarea/Menu/SettingsButton
 	if settings_button:
 		settings_button.pressed.connect(_on_settings_pressed)
+
+func connect_dishwash_buttons():
+	if wash_mugs_button:
+		wash_mugs_button.pressed.connect(_on_wash_mugs_pressed)
+	if stop_washing_button:
+		stop_washing_button.pressed.connect(_on_stop_washing_pressed)
+
+func _on_wash_mugs_pressed():
+	if dishwash_minigame:
+		dishwash_minigame.start_washing()
+		wash_mugs_button.disabled = true
+		stop_washing_button.visible = true
+
+func _on_stop_washing_pressed():
+	if dishwash_minigame:
+		dishwash_minigame.stop_washing()
+		wash_mugs_button.disabled = false
+		stop_washing_button.visible = false
 
 func _on_settings_pressed():
 	# Store current scene for return navigation
