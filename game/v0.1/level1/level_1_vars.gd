@@ -115,10 +115,6 @@ var DEBUG_COAL_TRACKING: bool = false  # Toggle coal drop console prints
 # Tutorial tracking
 var tutorial_completed: bool = false  # Set true after player dismisses tutorial
 
-# Dishwash minigame tracking
-var mugs_washed: int = 0  # Lifetime total for mastery tracking
-var dishwash_mastery_unlocked: bool = false  # Unlocks passive mode at 150 mugs
-
 # ===== UPGRADE SYSTEM (Technique Pool) =====
 
 # TechniquesData is globally available via class_name
@@ -803,9 +799,6 @@ func get_save_data() -> Dictionary:
 		"_rage_last_severe_level": _rage_last_severe_level,
 		# Tutorial
 		"tutorial_completed": tutorial_completed,
-		# Dishwash minigame
-		"mugs_washed": mugs_washed,
-		"dishwash_mastery_unlocked": dishwash_mastery_unlocked,
 	}
 
 func load_save_data(data: Dictionary):
@@ -890,10 +883,6 @@ func load_save_data(data: Dictionary):
 	# Tutorial
 	tutorial_completed = data.get("tutorial_completed", false)
 
-	# Dishwash minigame
-	mugs_washed = data.get("mugs_washed", 0)
-	dishwash_mastery_unlocked = data.get("dishwash_mastery_unlocked", false)
-
 	# Emit signals to update UI
 	emit_signal("stamina_changed", stamina, stamina_max)
 	emit_signal("focus_changed", focus, focus_max)
@@ -956,10 +945,6 @@ func reset_to_defaults():
 	_rage_coal_delivered_counter = 0
 	_rage_last_warning_level = -1
 	_rage_last_severe_level = -1
-
-	# Dishwash minigame (reset for full game reset)
-	mugs_washed = 0
-	dishwash_mastery_unlocked = false
 
 	# Emit signals
 	emit_signal("stamina_changed", stamina, stamina_max)
