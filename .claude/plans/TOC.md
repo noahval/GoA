@@ -96,6 +96,7 @@ When referencing other plans, use the format `X.Y-feature-name.md` (e.g., `1.8-d
 ### Evening Activities & Economy
 - [2.16-evening-ideas.md](2/2.16-evening-ideas.md)
 - [2.17-offline-earnings.md](2/2.17-offline-earnings.md)
+- [2.27-job-board.md](2/2.27-job-board.md) - Idle job assignment and mastery progression
 - [2.37-atm-scene.md](2/2.37-atm-scene.md)
 
 ### Bar Work Minigames: Dishwashing
