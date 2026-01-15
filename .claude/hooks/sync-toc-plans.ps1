@@ -86,10 +86,22 @@ $existingPlans = Get-ChildItem -Path $PlansDir -Filter "*.md" -Recurse | Where-O
 
 # Build mapping of slug -> existing file
 $slugToFile = @{}
+# Track files in named subfolders (e.g., 2.18-dishwash/) for grouping
+$subfolderFiles = @{}
 foreach ($file in $existingPlans) {
     if ($file.Name -match '^\d+\.\d+-(.+)\.md$') {
         $slug = $matches[1]
         $slugToFile[$slug] = $file
+
+        # Check if file is in a named subfolder (format: N.N-name/)
+        $parentFolder = Split-Path -Leaf $file.DirectoryName
+        if ($parentFolder -match '^\d+\.\d+-(.+)$') {
+            $folderSlug = $matches[1]
+            if (-not $subfolderFiles.ContainsKey($folderSlug)) {
+                $subfolderFiles[$folderSlug] = @()
+            }
+            $subfolderFiles[$folderSlug] += $slug
+        }
     }
 }
 
@@ -105,28 +117,31 @@ foreach ($item in $lineItems) {
 
     # Determine target folder based on section number (1.x goes to folder 1/, 2.x to 2/, etc.)
     $sectionFolder = Join-Path $PlansDir $item.Section
-    $expectedPath = Join-Path $sectionFolder $expectedFilename
 
     if ($slugToFile.ContainsKey($item.Slug)) {
         $existingFile = $slugToFile[$item.Slug]
         $matchedSlugs[$item.Slug] = $true  # Mark this slug as matched
 
-        # Check if rename/move is needed (name or location changed)
-        if ($existingFile.FullName -ne $expectedPath) {
-            # Ensure target folder exists
-            if (-not (Test-Path $sectionFolder)) {
-                New-Item -Path $sectionFolder -ItemType Directory -Force | Out-Null
-            }
+        # Keep file in its current folder (support for subfolders within section folders)
+        # Only rename if the filename changed, don't move between folders
+        $currentFolder = $existingFile.DirectoryName
+        $expectedPath = Join-Path $currentFolder $expectedFilename
 
+        # Check if rename is needed (filename changed)
+        if ($existingFile.FullName -ne $expectedPath) {
             $renames += @{
                 OldPath = $existingFile.FullName
                 NewPath = $expectedPath
                 OldName = $existingFile.Name
                 NewName = $expectedFilename
-                OldFolder = $existingFile.DirectoryName
-                NewFolder = $sectionFolder
+                OldFolder = $currentFolder
+                NewFolder = $currentFolder
             }
         }
+    } elseif ($subfolderFiles.ContainsKey($item.Slug)) {
+        # A subfolder exists for this TOC entry (e.g., 2.18-dishwash/ for "dishwash")
+        # Mark as matched so files in the subfolder aren't orphaned
+        $matchedSlugs[$item.Slug] = $true
     } else {
         # No plan file exists for this item
         $missingPlans += $item
@@ -198,10 +213,25 @@ if ($missingPlans.Count -gt 0 -and (Test-Path $templatePath)) {
 }
 
 # Detect orphaned plans (plans with no corresponding TOC line)
+# Plans in named subfolders are not orphaned if the folder matches a TOC entry
 $orphanedPlans = @()
 foreach ($slug in $slugToFile.Keys) {
     if (-not $matchedSlugs.ContainsKey($slug)) {
-        $orphanedPlans += $slugToFile[$slug]
+        $file = $slugToFile[$slug]
+        $parentFolder = Split-Path -Leaf $file.DirectoryName
+
+        # Check if file is in a named subfolder that matches a TOC entry
+        $isGrouped = $false
+        if ($parentFolder -match '^\d+\.\d+-(.+)$') {
+            $folderSlug = $matches[1]
+            if ($matchedSlugs.ContainsKey($folderSlug)) {
+                $isGrouped = $true  # File is grouped under a TOC entry via its folder
+            }
+        }
+
+        if (-not $isGrouped) {
+            $orphanedPlans += $file
+        }
     }
 }
 
