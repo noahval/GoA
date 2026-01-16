@@ -1,4 +1,4 @@
-# GoA - Complete Feature Implementation Roadmap
+﻿# GoA - Complete Feature Implementation Roadmap
 
 This document lists every feature in sequential implementation order for building the game from scratch. Each feature is numbered for tracking and reference.
 
@@ -14,6 +14,7 @@ This roadmap is for a complete game rewrite from scratch. All features listed sh
 - When a line item matches an existing plan doc name (e.g., "core-loop" -> `2.1-core-loop.md`), consult that doc for detailed implementation steps
 - Check the plans folder if unsure whether a plan doc exists for a specific feature
 - `[!]` markers indicate features that need a plan document created
+- `[D]` markers indicate the plan is a folder containing multiple sub-plans
 
 **Cross-Referencing Plans:**
 - When plans reference other plans, use the format: `1.x-feature-name.md`
@@ -71,17 +72,17 @@ This roadmap is for a complete game rewrite from scratch. All features listed sh
 1. upgrade pool - Complete upgrade system (UI flow, technique pool, effects, combo mechanics)
 1. Tutorial - onboarding
 1. evening ideas - 
-1. Offline Earnings - 
-1. dishwash - 
-1. 
-1. 
-1. 
-1. 
-1. 
-1. 
-1. 
-1. 
+1. Offline Earnings -
 1. job board - 
+1. [D] dishwash - 
+1. 
+1. 
+1. 
+1. 
+1. 
+1. 
+1. 
+1. 
 1. 
 1. 
 1. 
@@ -126,12 +127,12 @@ This roadmap is for a complete game rewrite from scratch. All features listed sh
 1. Worker Management - 3 types, 7 quality tiers, hidden fatigue/morale, breaks, hiring, food, amenities
 1. Worker UI Formulas - Roster display, hiring/food/upgrade dialogs, production formulas
 1. Hired Overseer - Offline progression with quality/duration/style upgrades, hidden charisma gain
-1. Furnace Upgrades - Materials (7 tiers, 700°C-3,000°C), thickness, linings, special systems
+1. Furnace Upgrades - Materials (7 tiers, 700Â°C-3,000Â°C), thickness, linings, special systems
 
 ## 6. environmental complexity
 1. [!] Phase 6 Progressive Introduction - 2 systems per prestige cycle increase to avoid overwhelming
 1. [!] Coal Quality Types - 3 types: Regular, Fine, Coarse with different properties
-1. [!] Temperature Regulation System - 800-1500°F range with performance sweet spots
+1. [!] Temperature Regulation System - 800-1500Â°F range with performance sweet spots
 1. [!] Hidden Coal Synergy Combinations - 5 secret combinations for bonus effects (discovery-based)
 1. [!] Dynamic Temperature Sweet Spots - Optimal ranges vary by time, coal type, worker treatment, speed, weather
 1. [!] Time of Day Cycling - 6-hour phases: Dawn/Midday/Dusk/Night with different effects
