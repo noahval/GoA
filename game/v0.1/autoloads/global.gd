@@ -4,6 +4,12 @@ extends Node
 const GAME_VERSION = "2.0.0"  # Semantic versioning: MAJOR.MINOR.PATCH
 const SAVE_VERSION = 1         # Increment when save structure changes
 
+# ========================================
+# SAVED VARIABLES (Cloud/Local Persistence)
+# ========================================
+# These variables are serialized in save_data.game section
+# They persist across sessions and survive game restarts
+
 # ===== SIX-STAT SYSTEM =====
 # Stats with setters to detect level-ups and show varied notification messages
 var strength: int = 1:
@@ -61,6 +67,15 @@ var charisma_exp: float = 0.0
 const BASE_XP_FOR_LEVEL = 100.0
 const EXP_SCALING = 1.8  # 1.5 = gentle, 2.0 = balanced, 2.5 = steep
 
+# Play time tracking (for migration conflict resolution)
+var total_play_length: float = 0.0  # Total seconds played across all sessions
+
+# ========================================
+# SESSION-ONLY VARIABLES (Not Saved)
+# ========================================
+# These variables reset every time you launch the game
+# They represent runtime state that doesn't need persistence
+
 # ===== SCENE MANAGEMENT =====
 # Basic tracking (from Phase 1.3)
 var current_scene_path: String = ""
@@ -92,11 +107,10 @@ var last_successful_scene: String = ""
 var preloaded_scenes: Dictionary = {}  # {scene_path: Resource}
 const MAX_PRELOADED_SCENES = 3
 
-# ===== UI SETTINGS =====
-# Note: ui_scale is now managed through save_data below (Phase 1.15)
-
-# ===== SAVE SYSTEM (Phase 1.15) =====
-# Structured save data (settings/game separation for clean reset logic)
+# ========================================
+# SAVED SETTINGS & GAME DATA
+# ========================================
+# Structured save data (settings persist during reset/prestige, game data can be reset)
 var save_data = {
 	"settings": {
 		"ui_scale": 1.0,
@@ -118,6 +132,7 @@ var save_data = {
 		"intelligence_exp": 0.0,
 		"wisdom_exp": 0.0,
 		"charisma_exp": 0.0,
+		"total_play_length": 0.0,
 	}
 }
 
@@ -554,6 +569,7 @@ func save() -> void:
 	save_data.game.intelligence_exp = intelligence_exp
 	save_data.game.wisdom_exp = wisdom_exp
 	save_data.game.charisma_exp = charisma_exp
+	save_data.game.total_play_length = total_play_length
 
 	var file = FileAccess.open(SAVE_FILE_PATH, FileAccess.WRITE)
 	if not file:
@@ -614,6 +630,7 @@ func load_save() -> void:
 	intelligence_exp = save_data.game.get("intelligence_exp", 0.0)
 	wisdom_exp = save_data.game.get("wisdom_exp", 0.0)
 	charisma_exp = save_data.game.get("charisma_exp", 0.0)
+	total_play_length = save_data.game.get("total_play_length", 0.0)
 
 func reset_save() -> void:
 	"""Reset game progress, preserve settings (called from settings scene)"""
@@ -650,6 +667,7 @@ func get_default_game_data() -> Dictionary:
 		"intelligence_exp": 0.0,
 		"wisdom_exp": 0.0,
 		"charisma_exp": 0.0,
+		"total_play_length": 0.0,
 	}
 
 # ===== NOTIFICATION SYSTEM =====
@@ -882,6 +900,12 @@ func reset_stats() -> void:
 	intelligence_exp = 0.0
 	wisdom_exp = 0.0
 	charisma_exp = 0.0
+
+	total_play_length = 0.0
+
+func _process(delta: float) -> void:
+	# Track total play time (for migration conflict resolution)
+	total_play_length += delta
 
 func _ready() -> void:
 	print("Global autoload initialized (v%s)" % GAME_VERSION)

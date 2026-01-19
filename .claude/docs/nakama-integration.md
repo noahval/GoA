@@ -2,7 +2,7 @@
 
 **Purpose**: Online backend for authentication, cloud saves, and multiplayer features
 **Server**: `https://nakama.goasso.xyz`
-**Autoload**: `NakamaClient`
+**Autoload**: `NakamaManager`
 
 ---
 
@@ -59,7 +59,7 @@ PostgreSQL Database
 
 Location: `res://nakama_client.gd`
 
-The `NakamaClient` autoload provides centralized access to Nakama features.
+The `NakamaManager` autoload provides centralized access to Nakama features.
 
 ### Properties
 

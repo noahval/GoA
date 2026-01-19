@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://b7xk8vq3qm8oj"]
+
+[ext_resource type="Script" path="res://tests/test_nakama_connection.gd" id="1_test_nakama"]
+
+[node name="NakamaConnectionTest" type="Node"]
+script = ExtResource("1_test_nakama")

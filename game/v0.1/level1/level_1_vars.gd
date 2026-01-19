@@ -1,5 +1,11 @@
 extends Node
 
+# ========================================
+# SAVED VARIABLES (Cloud/Local Persistence)
+# ========================================
+# These variables are serialized in get_save_data() and persist across sessions
+# See get_save_data() function below for the authoritative list
+
 # Resource management
 var stamina: float = 50.0      # Current stamina (consumed by physical actions)
 var stamina_max: float = 50.0  # Maximum stamina capacity
@@ -120,20 +126,23 @@ var tutorial_completed: bool = false  # Set true after player dismisses tutorial
 # TechniquesData is globally available via class_name
 const TECHNIQUES = TechniquesData.TECHNIQUES
 
-# Upgrade tracking
-var upgrades_qty: int = 0  # Total upgrades selected this run (for Mind button visibility)
-var technique_tier: int = 1  # Current unlock tier (1-4). External systems set this to unlock higher tiers.
+# Persistent progression (SAVED)
+var technique_tier: int = 1  # Current unlock tier (1-4). Persists across runs.
+var show_exact_technique_values: bool = true  # Show exact percentages in descriptions (SAVED)
 
-# Technique selection tracking
-var selected_techniques: Dictionary = {}
+# ========================================
+# SESSION-ONLY VARIABLES (Not Saved)
+# ========================================
+# These variables reset every session (daily reset or game restart)
+
+# Per-run technique tracking (resets each day)
+var upgrades_qty: int = 0  # Total upgrades selected this run (for Mind button visibility)
+var selected_techniques: Dictionary = {}  # Technique selections this run
 # Structure: { technique_id: { "level": int, "qualities": Array[String] } }
 
-# Combo system unlock flags
+# Combo system unlock flags (derived from selected_techniques)
 var clean_streak_unlocked: bool = false
 var heavy_combo_unlocked: bool = false
-
-# UI display settings
-var show_exact_technique_values: bool = true  # Show exact percentages in descriptions
 
 # Clean streak state
 var clean_streak_count: int = 0
