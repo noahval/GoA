@@ -14,42 +14,42 @@ const SAVE_VERSION = 1         # Increment when save structure changes
 # Stats with setters to detect level-ups and show varied notification messages
 var strength: int = 1:
 	set(value):
-		if is_node_ready() and value > strength:
+		if is_node_ready() and value > strength and not is_loading_cloud_save:
 			var message = _get_stat_message("strength")
 			show_notification(message, NOTIFICATION_TYPE_STAT)
 		strength = value
 
 var dexterity: int = 1:
 	set(value):
-		if is_node_ready() and value > dexterity:
+		if is_node_ready() and value > dexterity and not is_loading_cloud_save:
 			var message = _get_stat_message("dexterity")
 			show_notification(message, NOTIFICATION_TYPE_STAT)
 		dexterity = value
 
 var constitution: int = 1:
 	set(value):
-		if is_node_ready() and value > constitution:
+		if is_node_ready() and value > constitution and not is_loading_cloud_save:
 			var message = _get_stat_message("constitution")
 			show_notification(message, NOTIFICATION_TYPE_STAT)
 		constitution = value
 
 var intelligence: int = 1:
 	set(value):
-		if is_node_ready() and value > intelligence:
+		if is_node_ready() and value > intelligence and not is_loading_cloud_save:
 			var message = _get_stat_message("intelligence")
 			show_notification(message, NOTIFICATION_TYPE_STAT)
 		intelligence = value
 
 var wisdom: int = 1:
 	set(value):
-		if is_node_ready() and value > wisdom:
+		if is_node_ready() and value > wisdom and not is_loading_cloud_save:
 			var message = _get_stat_message("wisdom")
 			show_notification(message, NOTIFICATION_TYPE_STAT)
 		wisdom = value
 
 var charisma: int = 1:
 	set(value):
-		if is_node_ready() and value > charisma:
+		if is_node_ready() and value > charisma and not is_loading_cloud_save:
 			var message = _get_stat_message("charisma")
 			show_notification(message, NOTIFICATION_TYPE_STAT)
 		charisma = value
@@ -75,6 +75,10 @@ var total_play_length: float = 0.0  # Total seconds played across all sessions
 # ========================================
 # These variables reset every time you launch the game
 # They represent runtime state that doesn't need persistence
+
+# ===== CLOUD SAVE LOADING =====
+# Flag to suppress notifications during cloud save load (prevents spam)
+var is_loading_cloud_save: bool = false
 
 # ===== SCENE MANAGEMENT =====
 # Basic tracking (from Phase 1.3)

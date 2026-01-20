@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://b7x8qj2vwgkbn"]
+
+[ext_resource type="Script" path="res://tests/test_nakama_serialization.gd" id="1_test"]
+
+[node name="TestNakamaSerialization" type="Node"]
+script = ExtResource("1_test")
