@@ -34,6 +34,7 @@ signal save_conflict_detected(device_save, account_save)  # Used in 1.17.5-migra
 signal migration_completed(success: bool)  # Used in 1.17.5-migration.md
 signal connection_lost()  # Used in 1.17.3-cloud-storage.md, 1.17.6-connection-ui.md
 signal connection_restored()  # Used in 1.17.3-cloud-storage.md, 1.17.6-connection-ui.md
+signal connection_recovery_requested()  # Used in 1.17.2-authentication.md (startup retry flow)
 
 
 func _ready() -> void:
