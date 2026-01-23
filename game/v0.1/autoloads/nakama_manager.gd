@@ -101,6 +101,15 @@ func _restore_session() -> void:
 
 # === AUTHENTICATION METHODS (1.17.2-authentication.md) ===
 
+# Shared validation helper (used by authenticate_username and link_email)
+func _validate_username_password(username_input: String, password: String) -> String:
+	if username_input.length() < 3:
+		return "Username must be at least 3 characters"
+	if password.length() < 8:
+		return "Password must be at least 8 characters"
+	return ""  # Valid
+
+
 # Device ID Authentication - Cloud-based auth using device ID
 func authenticate_device(device_id: String = "") -> bool:
 	if not client:
@@ -158,13 +167,10 @@ func authenticate_username(username_input: String, password: String, create_acco
 		authentication_failed.emit("Client not initialized")
 		return false
 
-	# Validate inputs client-side (fail fast)
-	if username_input.length() < 3:
-		authentication_failed.emit("Username must be at least 3 characters")
-		return false
-
-	if password.length() < 8:
-		authentication_failed.emit("Password must be at least 8 characters")
+	# Validate inputs using shared helper
+	var validation_error = _validate_username_password(username_input, password)
+	if not validation_error.is_empty():
+		authentication_failed.emit(validation_error)
 		return false
 
 	# Convert username to email format for Nakama
@@ -292,6 +298,80 @@ func attempt_startup_connection() -> bool:
 
 func retry_connection() -> bool:
 	return await restore_session()
+
+
+# === ACCOUNT LINKING METHODS (1.17.4-account-linking.md) ===
+
+# Link email to current device account
+func link_email(username_input: String, password: String) -> bool:
+	if not is_authenticated:
+		authentication_failed.emit("Not logged in")
+		return false
+
+	# Validate inputs using shared helper
+	var validation_error = _validate_username_password(username_input, password)
+	if not validation_error.is_empty():
+		authentication_failed.emit(validation_error)
+		return false
+
+	# Convert username to email format (same as authenticate_username)
+	var email = username_input.to_lower() + "@goa.game"
+
+	var result = await client.link_email_async(session, email, password)
+
+	if result.is_exception():
+		var error = result.get_exception().message
+		DebugLogger.error("Email link failed: " + error, "NAKAMA")
+
+		# Check if username already taken
+		if "already in use" in error.to_lower() or "exists" in error.to_lower():
+			authentication_failed.emit("That username is already taken. Please choose a different one.")
+		else:
+			authentication_failed.emit("Failed to link account. Please try again.")
+		return false
+
+	DebugLogger.info("Email linked to account", "NAKAMA")
+	return true
+
+
+# Link Google to current device account (stub - implementation in 1.17.7-google-oauth.md)
+func link_google(google_token: String) -> bool:
+	push_warning("NAKAMA: link_google() not yet implemented")
+	authentication_failed.emit("Google linking not available yet")
+	return false
+
+
+# Query which auth methods are linked to current account
+func get_linked_auth_methods() -> Array[String]:
+	if not is_authenticated or not session:
+		return []
+
+	var account = await client.get_account_async(session)
+	if account.is_exception():
+		DebugLogger.error("Failed to get account info", "NAKAMA")
+		return []
+
+	var methods: Array[String] = []
+	if account.user.email and not account.user.email.is_empty():
+		methods.append("email")
+	if account.user.google_id and not account.user.google_id.is_empty():
+		methods.append("google")
+	if account.user.devices and account.user.devices.size() > 0:
+		methods.append("device")
+
+	return methods
+
+
+# Check if email is linked to current account
+func has_email_linked() -> bool:
+	var methods = await get_linked_auth_methods()
+	return "email" in methods
+
+
+# Check if Google is linked to current account
+func has_google_linked() -> bool:
+	var methods = await get_linked_auth_methods()
+	return "google" in methods
 
 
 # Stub methods for later plans - prevents errors if called before implementation
