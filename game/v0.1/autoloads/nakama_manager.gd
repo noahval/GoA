@@ -94,15 +94,204 @@ func _initialize_client() -> bool:
 	return true
 
 
-# Stub for session restoration - implemented in 1.17.2-authentication.md
+# Session restoration - calls attempt_startup_connection() from authentication.md
 func _restore_session() -> void:
-	# TODO: Implement in 1.17.2-authentication.md
-	# This will:
-	# 1. Load stored session token from SESSION_TOKEN_PATH
-	# 2. Validate the session with the server
-	# 3. Set is_authenticated and session variables
-	# 4. Emit authentication_succeeded or authentication_failed
-	pass
+	await attempt_startup_connection()
+
+
+# === AUTHENTICATION METHODS (1.17.2-authentication.md) ===
+
+# Device ID Authentication - Cloud-based auth using device ID
+func authenticate_device(device_id: String = "") -> bool:
+	if not client:
+		authentication_failed.emit("Client not initialized")
+		return false
+
+	if device_id.is_empty():
+		device_id = _get_device_id()
+
+	var result = await client.authenticate_device_async(device_id, null, true, {})
+
+	if result.is_exception():
+		var error = result.get_exception().message
+		DebugLogger.error("Device auth failed: " + error, "NAKAMA")
+		authentication_failed.emit(_sanitize_auth_error(error))
+		return false
+
+	session = result  # No type cast - keeps dynamic loading working
+	is_authenticated = true
+	user_id = session.user_id
+	username = session.username
+	_save_session_data(session)
+	DebugLogger.info("Authenticated as: " + username, "NAKAMA")
+	authentication_succeeded.emit({"user_id": user_id, "username": username})
+	return true
+
+
+func _get_device_id() -> String:
+	var id = OS.get_unique_id()
+	if id.is_empty():
+		# Web builds may return empty - use persistent ID
+		id = _load_or_create_web_device_id()
+	return id
+
+
+func _load_or_create_web_device_id() -> String:
+	const WEB_ID_PATH = "user://web_device_id.dat"
+	if FileAccess.file_exists(WEB_ID_PATH):
+		var file = FileAccess.open(WEB_ID_PATH, FileAccess.READ)
+		if file:
+			return file.get_as_text().strip_edges()
+
+	# Generate new ID using cryptographic randomness (Godot 4)
+	var bytes = Crypto.new().generate_random_bytes(16)
+	var id = bytes.hex_encode()  # 32-char hex string
+	var file = FileAccess.open(WEB_ID_PATH, FileAccess.WRITE)
+	if file:
+		file.store_string(id)
+	return id
+
+
+# Username/Password Authentication - For portable accounts
+func authenticate_username(username_input: String, password: String, create_account: bool) -> bool:
+	if not client:
+		authentication_failed.emit("Client not initialized")
+		return false
+
+	# Validate inputs client-side (fail fast)
+	if username_input.length() < 3:
+		authentication_failed.emit("Username must be at least 3 characters")
+		return false
+
+	if password.length() < 8:
+		authentication_failed.emit("Password must be at least 8 characters")
+		return false
+
+	# Convert username to email format for Nakama
+	var email = username_input.to_lower() + "@goa.game"
+
+	var result = await client.authenticate_email_async(email, password, username_input, create_account, {})
+
+	if result.is_exception():
+		var error = result.get_exception().message
+		DebugLogger.error("Username auth failed: " + error, "NAKAMA")
+		authentication_failed.emit(_sanitize_auth_error(error))
+		return false
+
+	session = result  # No type cast - keeps dynamic loading working
+	is_authenticated = true
+	user_id = session.user_id
+	username = session.username
+	_save_session_data(session)
+	DebugLogger.info("Authenticated as: " + username, "NAKAMA")
+	authentication_succeeded.emit({"user_id": user_id, "username": username})
+	return true
+
+
+func _sanitize_auth_error(error: String) -> String:
+	# Prevent username enumeration - vague messages for security
+	if "already exists" in error.to_lower():
+		return "Username already taken"
+	if "not found" in error.to_lower() or "invalid" in error.to_lower():
+		return "Invalid username or password"
+	return "Authentication failed. Please try again."
+
+
+func logout():
+	is_authenticated = false
+	user_id = ""
+	username = ""
+	session = null
+	if FileAccess.file_exists(SESSION_TOKEN_PATH):
+		var dir = DirAccess.open("user://")
+		if dir:
+			dir.remove("nakama_session.dat")
+	DebugLogger.info("User logged out", "NAKAMA")
+
+
+# Session Persistence - Store and load session tokens
+func _save_session_data(nakama_session) -> void:  # Untyped param for dynamic loading
+	var data = {
+		"token": nakama_session.token,
+		"refresh_token": nakama_session.refresh_token,
+		"username": nakama_session.username,
+		"user_id": nakama_session.user_id
+	}
+	var file = FileAccess.open(SESSION_TOKEN_PATH, FileAccess.WRITE)
+	if file:
+		file.store_string(JSON.stringify(data))
+
+
+func _load_session_data() -> Dictionary:
+	if not FileAccess.file_exists(SESSION_TOKEN_PATH):
+		return {}
+
+	var file = FileAccess.open(SESSION_TOKEN_PATH, FileAccess.READ)
+	if not file:
+		return {}
+
+	var data = JSON.parse_string(file.get_as_text())
+	return data if data != null else {}
+
+
+func restore_session() -> bool:
+	if not client:
+		return false
+
+	var data = _load_session_data()
+	if data.is_empty():
+		return false
+
+	var token = data.get("token", "")
+	var refresh_token = data.get("refresh_token", "")
+	if token.is_empty():
+		return false
+
+	# Restore session by creating NakamaSession from stored tokens
+	var NakamaSession = load("res://addons/com.heroiclabs.nakama/api/NakamaSession.gd")
+	session = NakamaSession.new(token, false, refresh_token)
+
+	if not session or not session.is_valid():
+		DebugLogger.info("Stored session invalid", "NAKAMA")
+		logout()
+		return false
+
+	# Check if expired locally before hitting server
+	if session.is_expired():
+		DebugLogger.info("Stored session expired", "NAKAMA")
+		logout()
+		return false
+
+	# Validate with server
+	var account = await client.get_account_async(session)
+	if account.is_exception():
+		DebugLogger.info("Session invalid on server", "NAKAMA")
+		logout()
+		return false
+
+	# Session valid - restore auth state
+	is_authenticated = true
+	user_id = data.get("user_id", session.user_id)
+	username = data.get("username", account.user.username)
+	DebugLogger.info("Session restored for: " + username, "NAKAMA")
+	authentication_succeeded.emit({"user_id": user_id, "username": username})
+	return true
+
+
+# Startup Connection & Retry
+func attempt_startup_connection() -> bool:
+	var data = _load_session_data()
+	if data.is_empty():
+		return false
+
+	var success = await restore_session()
+	if not success:
+		connection_recovery_requested.emit()
+	return success
+
+
+func retry_connection() -> bool:
+	return await restore_session()
 
 
 # Stub methods for later plans - prevents errors if called before implementation

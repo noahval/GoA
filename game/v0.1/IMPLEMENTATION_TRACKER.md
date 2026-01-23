@@ -17,7 +17,7 @@
 1.15-notifications
 
 1.17.1-core-client
-
+1.17.2-authentication
 
 
 1.20-simple-logging
