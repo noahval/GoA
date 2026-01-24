@@ -87,6 +87,8 @@ var work_zone_boundary_line: Line2D
 func _ready():
 	# Tutorial gate - redirect if not completed
 	if not Level1Vars.tutorial_completed:
+		# Wait for tree setup to complete before changing scenes
+		await get_tree().process_frame
 		get_tree().change_scene_to_file("res://level1/tutorial.tscn")
 		return
 
@@ -606,7 +608,7 @@ func _on_player_exp_changed(new_value: float, xp_for_next_level: float):
 	xp_bar.max_value = xp_for_next_level
 	xp_bar.value = new_value
 
-func end_day(reason: String):
+func end_day(_reason: String):
 	# Prevent double-triggering if both resources hit 0 in same frame
 	if day_ended:
 		return
