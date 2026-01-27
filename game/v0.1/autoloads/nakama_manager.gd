@@ -38,7 +38,10 @@ var username: String = ""
 
 # Connection state
 var is_connected: bool = false  # False until first successful save
-var last_successful_save_timestamp: float = 0.0  # For quit warning (see 1.17.6)
+var last_successful_save_timestamp: float = 0.0  # For quit warning (see 1.17.5)
+
+# Quit warning state (1.17.5-connection-ui.md)
+var _saving_before_quit: bool = false
 
 # Signals
 signal authentication_succeeded(session_data)
@@ -754,3 +757,66 @@ func set_auto_save_enabled(enabled: bool):
 			auto_save_timer.start()
 		else:
 			auto_save_timer.stop()
+
+
+# === QUIT WARNING SYSTEM (1.17.5-connection-ui.md) ===
+
+func show_unsaved_progress_warning():
+	"""Public API called by main scene when quit requested while disconnected"""
+	_show_unsaved_progress_warning()
+
+
+func _show_unsaved_progress_warning():
+	var last_save_str = _format_timestamp(last_successful_save_timestamp)
+
+	var popup = preload("res://ui/popups/unsaved_warning_popup.tscn").instantiate()
+	popup.set_last_save_time(last_save_str)
+	popup.reconnect_pressed.connect(_on_reconnect_pressed.bind(popup))
+	popup.close_anyway_pressed.connect(_on_close_anyway_pressed.bind(popup))
+
+	# Add to current scene
+	get_tree().current_scene.add_child(popup)
+
+
+func _format_timestamp(unix_time: float) -> String:
+	if unix_time == 0.0:
+		return "Never"
+	var datetime = Time.get_datetime_dict_from_unix_time(int(unix_time))
+	return "%02d:%02d %s" % [
+		datetime.hour % 12 if datetime.hour % 12 != 0 else 12,
+		datetime.minute,
+		"AM" if datetime.hour < 12 else "PM"
+	]
+
+
+func _on_reconnect_pressed(popup: Node):
+	if _saving_before_quit:
+		return
+
+	_saving_before_quit = true
+
+	var reconnect_button = popup.get_node("MarginContainer/VBoxContainer/ButtonHBox/ReconnectButton")
+	if reconnect_button:
+		reconnect_button.disabled = true
+		reconnect_button.text = "Saving..."
+
+	var success = await save_game()
+
+	_saving_before_quit = false
+
+	if success:
+		popup.queue_free()
+		await get_tree().process_frame
+		get_tree().quit()
+	else:
+		if reconnect_button:
+			reconnect_button.disabled = false
+			reconnect_button.text = "Reconnect"
+
+		Global.show_notification("Save failed. Still disconnected.", Global.NOTIFICATION_TYPE_WARNING)
+
+
+func _on_close_anyway_pressed(popup: Node):
+	popup.queue_free()
+	await get_tree().process_frame
+	get_tree().quit()

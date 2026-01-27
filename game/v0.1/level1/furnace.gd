@@ -85,6 +85,9 @@ var day_ended: bool = false
 var work_zone_boundary_line: Line2D
 
 func _ready():
+	# Disable automatic quit - we handle it manually (1.17.5-connection-ui.md)
+	get_tree().set_auto_accept_quit(false)
+
 	# Tutorial gate - redirect if not completed
 	if not Level1Vars.tutorial_completed:
 		# Wait for tree setup to complete before changing scenes
@@ -158,6 +161,21 @@ func _exit_tree():
 			combo_container.mouse_entered.disconnect(_on_combo_panel_hover_start)
 		if combo_container.mouse_exited.is_connected(_on_combo_panel_hover_end):
 			combo_container.mouse_exited.disconnect(_on_combo_panel_hover_end)
+
+
+func _notification(what):
+	# Quit interception (1.17.5-connection-ui.md)
+	if what == NOTIFICATION_WM_CLOSE_REQUEST:
+		_handle_quit_request()
+
+
+func _handle_quit_request():
+	if NakamaManager.is_connected:
+		# Connected - safe to quit
+		get_tree().quit()
+	else:
+		# Disconnected - show warning popup
+		NakamaManager.show_unsaved_progress_warning()
 
 func setup_camera():
 	# Create Camera2D for shake effects

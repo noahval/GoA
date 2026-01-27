@@ -15,6 +15,12 @@ const VOLUME_MAX = 100
 @onready var save_reset_button = $Background/AspectContainer/MainContainer/CenterContainer/PanelContainer/MarginContainer/VBoxContainer/SaveResetButton
 @onready var back_button = $Background/AspectContainer/MainContainer/CenterContainer/PanelContainer/MarginContainer/VBoxContainer/BackButton
 
+# Connection status UI (1.17.5-connection-ui.md)
+@onready var connection_dot = $Background/AspectContainer/MainContainer/CenterContainer/PanelContainer/MarginContainer/VBoxContainer/HeaderHBox/ConnectionStatus/ConnectionDot
+@onready var connection_label = $Background/AspectContainer/MainContainer/CenterContainer/PanelContainer/MarginContainer/VBoxContainer/HeaderHBox/ConnectionStatus/ConnectionLabel
+@onready var retry_button = $Background/AspectContainer/MainContainer/CenterContainer/PanelContainer/MarginContainer/VBoxContainer/HeaderHBox/ConnectionStatus/RetryButton
+@onready var last_save_label = $Background/AspectContainer/MainContainer/CenterContainer/PanelContainer/MarginContainer/VBoxContainer/LastSaveLabel
+
 func _ready():
 	ResponsiveLayout.apply_to_scene(self)
 
@@ -43,6 +49,16 @@ func _ready():
 	sfx_slider.value_changed.connect(_on_sfx_volume_changed)
 	dev_speed_checkbox.toggled.connect(_on_dev_speed_toggled)
 	save_reset_button.pressed.connect(_on_save_reset_pressed)
+
+	# Connection status (1.17.5-connection-ui.md)
+	NakamaManager.connection_lost.connect(_update_connection_display)
+	NakamaManager.connection_restored.connect(_update_connection_display)
+	retry_button.pressed.connect(_on_retry_pressed)
+	_update_connection_display()
+
+
+func _process(_delta):
+	_update_last_save_display()
 
 func _on_back_pressed():
 	# Return to previous scene
@@ -98,3 +114,58 @@ func update_value_labels():
 	ui_scale_value.text = "%d%%" % int(Global.ui_scale * 100)
 	music_value.text = "%d%%" % int(Global.music_volume * 100)
 	sfx_value.text = "%d%%" % int(Global.sfx_volume * 100)
+
+
+# === CONNECTION STATUS (1.17.5-connection-ui.md) ===
+
+func _update_connection_display():
+	# Hide connection UI if not authenticated (no cloud connection to show)
+	var connection_status = connection_dot.get_parent()
+	if not NakamaManager.is_authenticated:
+		connection_status.visible = false
+		last_save_label.visible = false
+		return
+
+	connection_status.visible = true
+	last_save_label.visible = true
+
+	if NakamaManager.is_connected:
+		connection_dot.color = Color(0.2, 0.8, 0.3)  # Green
+		connection_label.text = "Connected"
+		retry_button.visible = false
+	else:
+		connection_dot.color = Color(1.0, 0.5, 0.0)  # Orange
+		connection_label.text = "Disconnected"
+		retry_button.visible = true
+
+
+func _update_last_save_display():
+	# Skip if not authenticated
+	if not NakamaManager.is_authenticated:
+		return
+
+	if NakamaManager.last_successful_save_timestamp > 0:
+		var elapsed = Time.get_unix_time_from_system() - NakamaManager.last_successful_save_timestamp
+		var minutes = int(elapsed / 60)
+
+		if minutes == 0:
+			last_save_label.text = "Last saved: just now"
+		elif minutes == 1:
+			last_save_label.text = "Last saved: 1 minute ago"
+		else:
+			last_save_label.text = "Last saved: %d minutes ago" % minutes
+	else:
+		last_save_label.text = "Last saved: never"
+
+
+func _on_retry_pressed():
+	retry_button.text = "Retrying..."
+	retry_button.disabled = true
+
+	var success = await NakamaManager.save_game()
+
+	retry_button.text = "Retry"
+	retry_button.disabled = false
+
+	# Update display (notification may not be available on settings scene)
+	_update_connection_display()
