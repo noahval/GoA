@@ -119,24 +119,21 @@ func update_value_labels():
 # === CONNECTION STATUS (1.17.5-connection-ui.md) ===
 
 func _update_connection_display():
-	# Hide connection UI if not authenticated (no cloud connection to show)
-	var connection_status = connection_dot.get_parent()
 	if not NakamaManager.is_authenticated:
-		connection_status.visible = false
+		connection_dot.color = Color(1.0, 0.5, 0.0)  # Orange
+		connection_label.text = "Not authenticated"
+		retry_button.visible = false
 		last_save_label.visible = false
-		return
-
-	connection_status.visible = true
-	last_save_label.visible = true
-
-	if NakamaManager.is_connected:
+	elif NakamaManager.is_connected:
 		connection_dot.color = Color(0.2, 0.8, 0.3)  # Green
 		connection_label.text = "Connected"
 		retry_button.visible = false
+		last_save_label.visible = true
 	else:
 		connection_dot.color = Color(1.0, 0.5, 0.0)  # Orange
 		connection_label.text = "Disconnected"
 		retry_button.visible = true
+		last_save_label.visible = true
 
 
 func _update_last_save_display():

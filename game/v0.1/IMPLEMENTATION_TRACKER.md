@@ -20,7 +20,7 @@
 1.17.2-authentication
 1.17.3-cloud storage
 1.17.4-account-linking
-
+1.17.5-connection-UI
 
 1.20-simple-logging
 1.27-currency-display
